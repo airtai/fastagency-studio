@@ -157,7 +157,7 @@ jobs:
       - coverage-combine
       - test-macos-latest
       - test-windows-latest
-      
+
     runs-on: ubuntu-latest
 
     steps:

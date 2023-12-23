@@ -1,0 +1,9 @@
+---
+search:
+  exclude: true
+---
+- [Features](fastagency.md)
+- Contributing
+    - [Development](getting-started/contributing/CONTRIBUTING.md)
+    - [Documentation](getting-started/contributing/docs.md)
+- [Release Notes](release.md)

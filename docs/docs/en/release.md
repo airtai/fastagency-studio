@@ -12,4 +12,8 @@ hide:
 ---
 
 # Release Notes
+## 0.0.0dev0
 
+**Full Changelog**: [#0.0.0dev0](https://github.com/airtai/fastagency/commits/0.0.0dev0){.external-link target="_blank"}
+
+Initial commit

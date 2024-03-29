@@ -10,13 +10,15 @@ on:
 
 jobs:
   static_analysis:
-    if: github.event.pull_request.draft == false
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.python-version }}
       - name: Install Dependencies and library
         shell: bash
         run: |
@@ -36,12 +38,11 @@ jobs:
         run: semgrep scan --config auto --error
 
   test:
-    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-        pydantic-version: ["pydantic-v1", "pydantic-v2"]
+        pydantic-version: ["pydantic-v2"]
       fail-fast: false
 
     steps:
@@ -52,7 +53,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
           cache-dependency-path: pyproject.toml
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: cache
         with:
           path: ${{ env.pythonLocation }}
@@ -68,7 +69,7 @@ jobs:
         run: pip install --pre "pydantic>=2,<3"
       - run: mkdir coverage
       - name: Test
-        run: bash scripts/test.sh -m "slow"
+        run: bash scripts/test.sh
         env:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
           CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
@@ -94,7 +95,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
       - name: Test
-        run: bash scripts/test.sh -m slow
+        run: bash scripts/test.sh
 
   test-windows-latest:
     if: github.event.pull_request.draft == false
@@ -111,7 +112,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
       - name: Test
-        run: bash scripts/test.sh -m slow
+        run: bash scripts/test.sh
 
   coverage-combine:
     if: github.event.pull_request.draft == false

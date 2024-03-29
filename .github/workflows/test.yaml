@@ -69,7 +69,7 @@ jobs:
         run: pip install --pre "pydantic>=2,<3"
       - run: mkdir coverage
       - name: Test
-        run: bash scripts/test.sh -m "slow"
+        run: bash scripts/test.sh
         env:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
           CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
@@ -95,7 +95,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
       - name: Test
-        run: bash scripts/test.sh -m slow
+        run: bash scripts/test.sh
 
   test-windows-latest:
     if: github.event.pull_request.draft == false
@@ -112,7 +112,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
       - name: Test
-        run: bash scripts/test.sh -m slow
+        run: bash scripts/test.sh
 
   coverage-combine:
     if: github.event.pull_request.draft == false

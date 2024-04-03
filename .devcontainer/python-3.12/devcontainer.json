@@ -1,6 +1,6 @@
 {
-    "name": "python-3.9",
-    "image": "mcr.microsoft.com/devcontainers/python:3.9",
+    "name": "python-3.12",
+    "image": "mcr.microsoft.com/devcontainers/python:3.12",
     "runArgs": [],
     "remoteEnv": {},
     "features": {
@@ -20,7 +20,7 @@
             "ppa": true
         }
     },
-    "updateContentCommand": "bash .devcontainer/setup.sh",
+    "updateContentCommand": "bash .devcontainer/python-3.12/setup.sh",
     "postCreateCommand": [],
     "customizations": {
         "vscode": {

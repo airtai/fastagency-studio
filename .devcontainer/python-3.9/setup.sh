@@ -5,7 +5,7 @@ sudo ln -s -f /usr/local/bin/python3.9 /usr/bin/python3
 pip install --upgrade pip
 
 # install dev packages
-pip install -e .[dev]
+pip install -e ".[dev]"
 
 # install pre-commit hook if not installed already
 pre-commit install

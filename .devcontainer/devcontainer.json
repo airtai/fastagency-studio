@@ -1,5 +1,5 @@
 {
-    "name": "cuda-tf",
+    "name": "python-3.9",
     "image": "mcr.microsoft.com/devcontainers/python:3.9",
     "runArgs": [],
     "remoteEnv": {},
@@ -21,9 +21,7 @@
         }
     },
     "updateContentCommand": "bash .devcontainer/setup.sh",
-    "postCreateCommand": [
-        "nvidia-smi"
-    ],
+    "postCreateCommand": [],
     "customizations": {
         "vscode": {
             "settings": {

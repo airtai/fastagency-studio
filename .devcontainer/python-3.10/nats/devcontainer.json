@@ -1,9 +1,9 @@
 {
     "name": "Nats Container",
     "dockerComposeFile": [
-        "../../docker-compose.yml"
+        "../docker-compose.yml"
     ],
     "service": "nats-fastagency",
     "shutdownAction": "none",
-    "workspaceFolder": "/workspace"
+    "workspaceFolder": "/workspaces"
 }

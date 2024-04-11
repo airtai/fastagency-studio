@@ -4,7 +4,7 @@ services:
   python-3.10:
     image: mcr.microsoft.com/devcontainers/python:3.10
     volumes:
-      - .:/workspace:cached
+      - ../../:/workspaces/fastagency:cached
     command: sleep infinity
     links:
       - nats-fastagency
@@ -15,5 +15,5 @@ services:
       - "4222:4222"
       - "9222:9222"
     volumes:
-      - ./examples/nats/server.conf:/etc/nats/server.conf
+      - ../../examples/nats/server.conf:/etc/nats/server.conf
     command: ["--config", "/etc/nats/server.conf"]

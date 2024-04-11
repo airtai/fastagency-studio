@@ -1,7 +1,13 @@
 {
     "name": "python-3.10",
-    "image": "mcr.microsoft.com/devcontainers/python:3.10",
-    "runArgs": [],
+    // "image": "mcr.microsoft.com/devcontainers/python:3.10",
+    "dockerComposeFile": [
+        "../../docker-compose.yml"
+    ],
+    "service": "python-3.10",
+    "shutdownAction": "none",
+    "workspaceFolder": "/workspace",
+    // "runArgs": [],
     "remoteEnv": {},
     "features": {
         "ghcr.io/devcontainers/features/common-utils:2": {

@@ -111,6 +111,7 @@ dev = [
     "pre-commit==3.5.0; python_version < '3.9'",
     "pre-commit==3.7.0; python_version >= '3.9'",
     "detect-secrets==1.4.0",
+    "nats-py==2.7.2",
 ]
 
 [project.urls]

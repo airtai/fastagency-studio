@@ -1,9 +1,9 @@
-from faststream import FastStream, Logger
-from faststream.nats import JStream, NatsBroker
-from faststream.nats import NatsMessage
-from typing import Dict, Any
 import json
 import random
+from typing import Any, Dict
+
+from faststream import FastStream, Logger
+from faststream.nats import JStream, NatsBroker, NatsMessage
 
 process_id = random.randint(1, 1000)
 

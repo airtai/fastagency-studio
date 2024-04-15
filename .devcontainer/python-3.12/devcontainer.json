@@ -1,10 +1,10 @@
 {
-    "name": "python-3.9",
-    // "image": "mcr.microsoft.com/devcontainers/python:3.9",
+    "name": "python-3.12",
+    // "image": "mcr.microsoft.com/devcontainers/python:3.12",
     "dockerComposeFile": [
         "./docker-compose.yml"
     ],
-    "service": "python-3.9",
+    "service": "python-3.12",
     "shutdownAction": "none",
     "workspaceFolder": "/workspaces/fastagency",
     // "runArgs": [],

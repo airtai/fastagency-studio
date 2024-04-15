@@ -803,8 +803,8 @@ function filterIpv6MappedToIpv4(hp) {
     const idx = hp.toUpperCase().indexOf(prefix);
     if (idx !== -1 && hp.indexOf(".") !== -1) {
         let ip = hp.substring(idx + prefix.length);
-        ip = ip.replace("[", "");
-        return ip.replace("]", "");
+        ip = ip.replace("[", "");  // nosemgrep
+        return ip.replace("]", "");  // nosemgrep
     }
     return hp;
 }

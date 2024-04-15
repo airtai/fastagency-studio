@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  python-3.12:  # nosemgrep
+    image: mcr.microsoft.com/devcontainers/python:3.12
+    volumes:
+      - ../../:/workspaces/fastagency:cached
+    command: sleep infinity
+    links:
+      - nats-fastagency
+  nats-fastagency:  # nosemgrep
+    image: nats:latest
+    container_name: nats-fastagency
+    ports:
+      - "4222:4222"
+      - "9222:9222"
+    volumes:
+      - ../../examples/nats/server.conf:/etc/nats/server.conf
+    command: ["--config", "/etc/nats/server.conf"]

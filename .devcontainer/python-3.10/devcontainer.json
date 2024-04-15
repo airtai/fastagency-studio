@@ -1,7 +1,13 @@
 {
     "name": "python-3.10",
-    "image": "mcr.microsoft.com/devcontainers/python:3.10",
-    "runArgs": [],
+    // "image": "mcr.microsoft.com/devcontainers/python:3.10",
+    "dockerComposeFile": [
+        "./docker-compose.yml"
+    ],
+    "service": "python-3.10",
+    "shutdownAction": "none",
+    "workspaceFolder": "/workspaces/fastagency",
+    // "runArgs": [],
     "remoteEnv": {},
     "features": {
         "ghcr.io/devcontainers/features/common-utils:2": {
@@ -13,14 +19,14 @@
             "userGid": "1000"
             // "upgradePackages": "true"
         },
-        "ghcr.io/devcontainers/features/python:1": {},
+        // "ghcr.io/devcontainers/features/python:1": {},
         // "ghcr.io/devcontainers/features/node:1": "none",
         "ghcr.io/devcontainers/features/git:1": {
             "version": "latest",
             "ppa": true
         }
     },
-    "updateContentCommand": "bash .devcontainer/python-3.10/setup.sh",
+    "updateContentCommand": "bash .devcontainer/setup.sh",
     "postCreateCommand": [],
     "customizations": {
         "vscode": {

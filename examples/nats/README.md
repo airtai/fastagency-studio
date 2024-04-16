@@ -1,6 +1,6 @@
 # How to run?
 
-1. First create jetstream subject by running 
+1. First create jetstream subject by running
    ```cmd
    python examples/nats/create_jetstream.py
    ```

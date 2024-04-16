@@ -1,21 +1,16 @@
 from fastapi.testclient import TestClient
 
 from fastagency.app import app
-from fastagency.models.llms import AzureOAI, OpenAI
+from fastagency.models.llms import AzureOAI, LLMSchema, OpenAI
 
 client = TestClient(app)
 
 
-class TestApp:
-    def test_list_llms(self) -> None:
-        response = client.get("/models/llms")
-        assert response.status_code == 200
-        expected = ["OpenAI", "AzureOAI"]
-        assert response.json() == expected
-
+class TestValidateOpenAI:
     def test_get_openai_schema(self) -> None:
-        response = client.get("/models/llms/OpenAI")
+        response = client.get("/models/llms/schemas")
         assert response.status_code == 200
+
         expected = {
             "properties": {
                 "model": {
@@ -52,11 +47,15 @@ class TestApp:
             "title": "OpenAI",
             "type": "object",
         }
-        # print(f"{response.json()=}")
-        assert response.json() == expected
+        llm_schema = [  # noqa: RUF015
+            LLMSchema(**json)
+            for json in response.json()["schemas"]
+            if json["name"] == "OpenAI"
+        ][0]
 
+        # print(f"{llm_schema=}")
+        assert llm_schema.json_schema == expected
 
-class TestValidateOpenAI:
     def test_validate_success(self) -> None:
         response = client.post(
             f"/models/llms/{OpenAI.__name__}/validate",
@@ -136,6 +135,60 @@ class TestValidateOpenAI:
 
 
 class TestValidateAzureOAI:
+    def test_get_azure_schema(self) -> None:
+        response = client.get("/models/llms/schemas")
+        assert response.status_code == 200
+
+        expected = {
+            "properties": {
+                "model": {
+                    "default": "gpt-3.5-turbo",
+                    "description": "The model to use for the Azure OpenAI API, e.g. 'gpt-3.5-turbo'",
+                    "title": "Model",
+                    "type": "string",
+                },
+                "api_key": {
+                    "description": "The API key for the Azure OpenAI API, e.g. 'sk-1234567890abcdef1234567890abcdef'",
+                    "title": "API Key",
+                    "type": "string",
+                },
+                "base_url": {
+                    "default": "https://api.openai.com/v1",
+                    "description": "The base URL of the Azure OpenAI API",
+                    "format": "uri",
+                    "maxLength": 2083,
+                    "minLength": 1,
+                    "title": "Base Url",
+                    "type": "string",
+                },
+                "api_type": {
+                    "const": "azure",
+                    "default": "azure",
+                    "description": "The type of the API, must be 'azure'",
+                    "enum": ["azure"],
+                    "title": "API type",
+                    "type": "string",
+                },
+                "api_version": {
+                    "default": "latest",
+                    "description": "The version of the Azure OpenAI API, e.g. '2024-02-15-preview' or 'latest",
+                    "enum": ["2024-02-15-preview", "latest"],
+                    "title": "Api Version",
+                    "type": "string",
+                },
+            },
+            "required": ["api_key"],
+            "title": "AzureOAI",
+            "type": "object",
+        }
+        llm_schema = [  # noqa: RUF015
+            LLMSchema(**json)
+            for json in response.json()["schemas"]
+            if json["name"] == "AzureOAI"
+        ][0]
+        # print(f"{llm_schema=}")
+        assert llm_schema.json_schema == expected
+
     def test_validate_success(self) -> None:
         response = client.post(
             f"/models/llms/{AzureOAI.__name__}/validate",

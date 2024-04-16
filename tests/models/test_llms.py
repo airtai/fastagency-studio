@@ -1,4 +1,4 @@
-from fastagency.models.llms import AzureOAI, OpenAI
+from fastagency.models.llms import AzureOAI, OpenAI, get_llm_schemas
 
 
 class TestOpenAI:
@@ -21,3 +21,10 @@ class TestAzureOAI:
         schema = AzureOAI.model_json_schema()
         assert schema
         # print(schema)
+
+
+class TestLLMs:
+    def test_get_llms(self) -> None:
+        llms = get_llm_schemas()
+        assert llms
+        # print(llms)

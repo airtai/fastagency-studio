@@ -1,4 +1,4 @@
-from typing import Annotated, Dict, List, Literal, Type, TypeVar
+from typing import Annotated, Any, Dict, List, Literal, Type, TypeVar
 
 from pydantic import BaseModel, Field, HttpUrl
 
@@ -79,3 +79,27 @@ def list_llms() -> List[str]:
 
 def get_llm_type(name: str) -> Type[BaseModel]:
     return _llm_registry[name]
+
+
+class LLMSchema(BaseModel):
+    name: Annotated[str, Field(description="The name of the LLM")]
+    json_schema: Annotated[Dict[str, Any], Field(description="The schema for the LLM")]
+
+
+class LLMSchemas(BaseModel):
+    schemas: Annotated[List[LLMSchema], Field(description="The schemas for the LLMs")]
+
+
+def get_llm_schemas() -> LLMSchemas:
+    """Get the schemas for all registered LLMs.
+
+    Returns:
+        LLMSchemas: The schemas for all registered LLMs.
+
+    """
+    return LLMSchemas(
+        schemas=[
+            LLMSchema(name=name, json_schema=model.model_json_schema())
+            for name, model in _llm_registry.items()
+        ]
+    )

@@ -1,25 +1,24 @@
 from functools import cache
-from typing import Any, Dict, List
 
 from fastapi import FastAPI
 
-from .models.llms import get_llm_type, list_llms
+from .models.llms import LLMSchemas, get_llm_schemas, get_llm_type, list_llms
 
 app = FastAPI()
 
 
-@app.get("/models/llms/")
+@app.get("/models/llms/schemas")
 @cache
-def list_llms_models() -> List[str]:
-    return list_llms()
+def models_llms_schemas() -> LLMSchemas:
+    return get_llm_schemas()
 
 
-@app.get("/models/llms/{model_name}")
-@cache
-def get_schema_for_llm_model(model_name: str) -> Dict[str, Any]:
-    model = get_llm_type(model_name)
-    schema = model.model_json_schema()
-    return schema
+# @app.get("/models/llms/{model_name}")
+# @cache
+# def get_schema_for_llm_model(model_name: str) -> Dict[str, Any]:
+#     model = get_llm_type(model_name)
+#     schema = model.model_json_schema()
+#     return schema
 
 
 for model_name in list_llms():

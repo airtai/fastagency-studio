@@ -91,13 +91,3 @@ class AzureOAI(DefaultModel):
             description="The version of the Azure OpenAI API, e.g. '2024-02-15-preview' or 'latest"
         ),
     ] = "latest"
-
-
-class Agent(BaseModel):
-    name: Annotated[str, Field(description="The name of the agent")]
-    system_message: Annotated[
-        str,
-        Field(
-            description="The system message of the agent. This message is used to inform the agent about his role in the conversation"
-        ),
-    ]

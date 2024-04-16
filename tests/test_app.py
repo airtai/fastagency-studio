@@ -142,6 +142,29 @@ class TestValidateOpenAI:
         }
         assert msg_dict == expected
 
+    def test_validate_incorrect_uuid(self) -> None:
+        response = client.post(
+            f"/models/llms/{OpenAI.__name__}/validate",
+            json={
+                "uuid": "12345678-123",
+                "api_key": "sk-1234567890abcdef1234567890abcdef",  # pragma: allowlist secret
+                "model": "gpt-3.5-turbo",
+                "base_url": "https://api.openai.com/v1",
+                "api_type": "openai",
+            },
+        )
+        assert response.status_code == 422
+        msg_dict = response.json()["detail"][0]
+        msg_dict.pop("input")
+        msg_dict.pop("url")
+        excepted = {
+            "type": "uuid_parsing",
+            "loc": ["body", "uuid"],
+            "msg": "Input should be a valid UUID, invalid group count: expected 5, found 2",
+            "ctx": {"error": "invalid group count: expected 5, found 2"},
+        }
+        assert msg_dict == excepted
+
 
 class TestValidateAzureOAI:
     def test_validate_success(self) -> None:
@@ -156,3 +179,93 @@ class TestValidateAzureOAI:
             },
         )
         assert response.status_code == 200
+
+
+class TestAgents:
+    def test_get_agent_schema(self) -> None:
+        response = client.get("/models/agents")
+        assert response.status_code == 200
+        expected = {
+            "properties": {
+                "uuid": {
+                    "description": "The unique identifier for agent instance",
+                    "format": "uuid",
+                    "title": "UUID",
+                    "type": "string",
+                },
+                "model_uuid": {
+                    "description": "The unique identifier for the model instance",
+                    "format": "uuid",
+                    "title": "UUID",
+                    "type": "string",
+                },
+                "name": {
+                    "description": "The name of the agent",
+                    "title": "Name",
+                    "type": "string",
+                },
+                "system_message": {
+                    "description": "The system message of the agent. This message is used to inform the agent about his role in the conversation",
+                    "title": "System Message",
+                    "type": "string",
+                },
+            },
+            "required": ["uuid", "model_uuid", "name", "system_message"],
+            "title": "Agent",
+            "type": "object",
+        }
+        assert response.json() == expected
+
+    def test_validate_agent_success(self) -> None:
+        response = client.post(
+            "/models/agents/validate",
+            json={
+                "uuid": "12345678-1234-5678-1234-567812345678",
+                "model_uuid": "87654321-1234-5678-1234-567812345678",
+                "name": "test agent",
+                "system_message": "test system message",
+            },
+        )
+        assert response.status_code == 200
+
+    def test_validate_agent_missing_model_uuid(self) -> None:
+        response = client.post(
+            "/models/agents/validate",
+            json={
+                "uuid": "12345678-1234-5678-1234-567812345678",
+                "name": "test agent",
+                "system_message": "test system message",
+            },
+        )
+        assert response.status_code == 422
+        msg_dict = response.json()["detail"][0]
+        msg_dict.pop("input")
+        msg_dict.pop("url")
+        excepted = {
+            "type": "missing",
+            "loc": ["body", "model_uuid"],
+            "msg": "Field required",
+        }
+        assert msg_dict == excepted
+
+    def test_validate_agent_invalid_model_uuid(self) -> None:
+        response = client.post(
+            "/models/agents/validate",
+            json={
+                "model_uuid": "87654321-1234-5678",
+                "uuid": "12345678-1234-5678-1234-567812345678",
+                "name": "test agent",
+                "system_message": "test system message",
+            },
+        )
+        assert response.status_code == 422
+        msg_dict = response.json()["detail"][0]
+        msg_dict.pop("input")
+        msg_dict.pop("url")
+        excepted = {
+            "type": "uuid_parsing",
+            "loc": ["body", "model_uuid"],
+            "msg": "Input should be a valid UUID, invalid group count: expected 5, found 3",
+            "ctx": {"error": "invalid group count: expected 5, found 3"},
+        }
+        assert msg_dict == excepted

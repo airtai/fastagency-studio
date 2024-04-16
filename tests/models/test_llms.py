@@ -12,7 +12,6 @@ class TestOpenAI:
     def test_openai_model_schema(self) -> None:
         schema = OpenAI.model_json_schema()
         assert schema
-        # print(schema)
 
 
 class TestAzureOAI:
@@ -24,4 +23,3 @@ class TestAzureOAI:
     def test_openai_model_schema(self) -> None:
         schema = AzureOAI.model_json_schema()
         assert schema
-        # print(schema)

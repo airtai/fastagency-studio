@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 
 from fastapi import FastAPI
 
+from .models.agents import Agent
 from .models.llms import get_llm_type, list_llms
 
 app = FastAPI()
@@ -28,3 +29,15 @@ for model_name in list_llms():
     @app.post(f"/models/llms/{model_name}/validate")
     def validate_llm_model(llm: LLMType) -> None:  # type: ignore[valid-type]
         pass
+
+
+@app.get("/models/agents/")
+@cache
+def get_agent_schema() -> Dict[str, Any]:
+    schema = Agent.model_json_schema()
+    return schema
+
+
+@app.post("/models/agents/validate")
+def validate_agent_model(agent: Agent) -> None:
+    pass

@@ -109,6 +109,7 @@ class TestValidateOpenAI:
             "msg": "Input should be 'gpt-4' or 'gpt-3.5-turbo'",
             "ctx": {"expected": "'gpt-4' or 'gpt-3.5-turbo'"},
         }
+        # print(f"{msg_dict=}")
         assert msg_dict == expected
 
     def test_validate_incorrect_base_url(self) -> None:

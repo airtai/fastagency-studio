@@ -4107,7 +4107,7 @@ class crc16 {
         return ba == expected;
     }
 }
-const b32Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+const b32Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";  // pragma: allowlist secret
 class base32 {
     static encode(src) {
         let bits = 0;
@@ -6345,7 +6345,7 @@ function init(lookup, revLookup, urlsafe = false) {
 }
 const lookup = [];
 const revLookup = [];
-const code = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const code = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";  // pragma: allowlist secret
 for (let i = 0, l = code.length; i < l; ++i) {
     lookup[i] = code[i];
     revLookup[code.charCodeAt(i)] = i;

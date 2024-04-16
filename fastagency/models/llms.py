@@ -2,6 +2,8 @@ from typing import Annotated, Dict, List, Literal, Type, TypeVar
 
 from pydantic import BaseModel, Field, HttpUrl
 
+from .constants import AZURE_API_VERSIONS_LITERAL, OPENAI_MODELS_LITERAL
+
 __all__ = ["OpenAI", "AzureOAI", "list_llms", "get_llm_type"]
 
 BM = TypeVar("BM", bound=Type[BaseModel])
@@ -19,13 +21,10 @@ def register_llm(m: BM) -> BM:
     return m
 
 
-OPENAI_MODEL_NAMES = ["gpt-4", "gpt-3.5-turbo"]
-
-
 @register_llm
 class OpenAI(BaseModel):
-    model: Annotated[  # type: ignore[valid-type]
-        Literal[*OPENAI_MODEL_NAMES],
+    model: Annotated[
+        OPENAI_MODELS_LITERAL,
         Field(description="The model to use for the OpenAI API, e.g. 'gpt-3.5-turbo'"),
     ] = "gpt-3.5-turbo"
     api_key: Annotated[
@@ -42,9 +41,6 @@ class OpenAI(BaseModel):
         Literal["openai"],
         Field(title="API Type", description="The type of the API, must be 'openai'"),
     ] = "openai"
-
-
-AZURE_API_VERSIONS = ["2024-02-15-preview", "latest"]
 
 
 @register_llm
@@ -69,8 +65,8 @@ class AzureOAI(BaseModel):
         Literal["azure"],
         Field(title="API type", description="The type of the API, must be 'azure'"),
     ] = "azure"
-    api_version: Annotated[  # type: ignore[valid-type]
-        Literal[AZURE_API_VERSIONS],
+    api_version: Annotated[
+        AZURE_API_VERSIONS_LITERAL,
         Field(
             description="The version of the Azure OpenAI API, e.g. '2024-02-15-preview' or 'latest"
         ),

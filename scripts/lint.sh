@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo "Running pyup_dirs..."
 pyup_dirs --py38-plus --recursive fastagency examples tests docs

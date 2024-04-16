@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from fastagency.app import app
+from fastagency.models.agents import AssistantAgent, WebSurferAgent
 from fastagency.models.llms import AzureOAI, OpenAI
 
 client = TestClient(app)
@@ -182,8 +183,16 @@ class TestValidateAzureOAI:
 
 
 class TestAgents:
-    def test_get_agent_schema(self) -> None:
+    def test_list_agents(self) -> None:
         response = client.get("/models/agents")
+        assert response.status_code == 200
+        expected = ["AssistantAgent", "WebSurferAgent"]
+        assert response.json() == expected
+
+
+class TestAssistantAgents:
+    def test_get_assistant_agent_schema(self) -> None:
+        response = client.get(f"/models/agents/{AssistantAgent.__name__}")
         assert response.status_code == 200
         expected = {
             "properties": {
@@ -193,15 +202,15 @@ class TestAgents:
                     "title": "UUID",
                     "type": "string",
                 },
-                "llm_uuid": {
-                    "description": "The unique identifier for the model instance",
-                    "format": "uuid",
-                    "title": "UUID",
-                    "type": "string",
-                },
                 "name": {
                     "description": "The name of the agent",
                     "title": "Name",
+                    "type": "string",
+                },
+                "llm_uuid": {
+                    "description": "The unique identifier for the model instance",
+                    "format": "uuid",
+                    "title": "LLM UUID",
                     "type": "string",
                 },
                 "system_message": {
@@ -210,15 +219,15 @@ class TestAgents:
                     "type": "string",
                 },
             },
-            "required": ["uuid", "llm_uuid", "name", "system_message"],
-            "title": "Agent",
+            "required": ["uuid", "name", "llm_uuid", "system_message"],
+            "title": "AssistantAgent",
             "type": "object",
         }
         assert response.json() == expected
 
-    def test_validate_agent_success(self) -> None:
+    def test_validate_assistant_agent_success(self) -> None:
         response = client.post(
-            "/models/agents/validate",
+            f"/models/agents/{AssistantAgent.__name__}/validate",
             json={
                 "uuid": "12345678-1234-5678-1234-567812345678",
                 "llm_uuid": "87654321-1234-5678-1234-567812345678",
@@ -228,9 +237,9 @@ class TestAgents:
         )
         assert response.status_code == 200
 
-    def test_validate_agent_missing_llm_uuid(self) -> None:
+    def test_validate_assistant_agent_missing_llm_uuid(self) -> None:
         response = client.post(
-            "/models/agents/validate",
+            f"/models/agents/{AssistantAgent.__name__}/validate",
             json={
                 "uuid": "12345678-1234-5678-1234-567812345678",
                 "name": "test agent",
@@ -248,9 +257,9 @@ class TestAgents:
         }
         assert msg_dict == excepted
 
-    def test_validate_agent_invalid_llm_uuid(self) -> None:
+    def test_validate_assistant_agent_invalid_llm_uuid(self) -> None:
         response = client.post(
-            "/models/agents/validate",
+            f"/models/agents/{AssistantAgent.__name__}/validate",
             json={
                 "llm_uuid": "87654321-1234-5678",
                 "uuid": "12345678-1234-5678-1234-567812345678",
@@ -269,3 +278,65 @@ class TestAgents:
             "ctx": {"error": "invalid group count: expected 5, found 3"},
         }
         assert msg_dict == excepted
+
+
+class TestWebSurferAgent:
+    def test_get_web_surfer_agent_schema(self) -> None:
+        response = client.get(f"/models/agents/{WebSurferAgent.__name__}")
+        assert response.status_code == 200
+        expected = {
+            "properties": {
+                "uuid": {
+                    "description": "The unique identifier for agent instance",
+                    "format": "uuid",
+                    "title": "UUID",
+                    "type": "string",
+                },
+                "name": {
+                    "description": "The name of the agent",
+                    "title": "Name",
+                    "type": "string",
+                },
+                "llm_uuid": {
+                    "description": "The unique identifier for the model instance",
+                    "format": "uuid",
+                    "title": "LLM UUID",
+                    "type": "string",
+                },
+                "summarizer_llm_uuid": {
+                    "description": "The unique identifier for the summarizer model instance",
+                    "format": "uuid",
+                    "title": "Summarizer LLM UUID",
+                    "type": "string",
+                },
+                "viewport_size": {
+                    "default": 1080,
+                    "description": "The viewport size of the browser",
+                    "title": "Viewport Size",
+                    "type": "integer",
+                },
+                "bing_api_key": {
+                    "anyOf": [{"type": "string"}, {"type": "null"}],
+                    "default": None,
+                    "description": "The Bing API key for the browser",
+                    "title": "Bing Api Key",
+                },
+            },
+            "required": ["uuid", "name", "llm_uuid", "summarizer_llm_uuid"],
+            "title": "WebSurferAgent",
+            "type": "object",
+        }
+        assert response.json() == expected
+
+    def test_validate_web_surfer_agent_success(self) -> None:
+        response = client.post(
+            f"/models/agents/{WebSurferAgent.__name__}/validate",
+            json={
+                "uuid": "12345678-1234-5678-1234-567812345678",
+                "llm_uuid": "87654321-1234-5678-1234-567812345678",
+                "summarizer_llm_uuid": "87654321-1234-5678-1234-567812345678",
+                "name": "test agent",
+                "system_message": "test system message",
+            },
+        )
+        assert response.status_code == 200

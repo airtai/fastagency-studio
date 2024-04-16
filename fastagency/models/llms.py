@@ -33,7 +33,7 @@ def get_llm_type(name: str) -> Type[BaseModel]:
 OPENAI_MODEL_NAMES = ["gpt-4", "gpt-3.5-turbo"]
 
 
-class DefaultModel(BaseModel):
+class _DefaultModel(BaseModel):
     uuid: Annotated[
         UUID,
         Field(title="UUID", description="The unique identifier for the model instance"),
@@ -41,7 +41,7 @@ class DefaultModel(BaseModel):
 
 
 @register_llm
-class OpenAI(DefaultModel):
+class OpenAI(_DefaultModel):
     model: Annotated[  # type: ignore[valid-type]
         Literal[OPENAI_MODELS_LITERAL],
         Field(description="The model to use for the OpenAI API, e.g. 'gpt-3.5-turbo'"),
@@ -66,7 +66,7 @@ AZURE_API_VERSIONS = ["2024-02-15-preview", "latest"]
 
 
 @register_llm
-class AzureOAI(DefaultModel):
+class AzureOAI(_DefaultModel):
     model: Annotated[
         str,
         Field(

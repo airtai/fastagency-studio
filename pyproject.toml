@@ -60,17 +60,17 @@ server = [
 
 # dev dependencies
 devdocs = [
-    "mkdocs-material==9.5.3",
+    "mkdocs-material==9.5.17",
     "mkdocs-static-i18n==1.2.0",
     "mdx-include==1.4.2",
-    "mkdocstrings[python]==0.24.0",
+    "mkdocstrings[python]==0.24.3",
     "mkdocs-literate-nav==0.6.1",
     "mkdocs-git-revision-date-localized-plugin==1.2.4",
     "mike==2.0.0",  # versioning
-    "mkdocs-minify-plugin==0.7.2",
+    "mkdocs-minify-plugin==0.8.0",
     "mkdocs-macros-plugin==1.0.5",  # includes with variables
     "mkdocs-glightbox==0.3.7",  # img zoom
-    "pillow==10.1.0",
+    "pillow==10.3.0",
     "cairosvg==2.7.1",
     "requests",  # do not pin it
 ]
@@ -82,7 +82,7 @@ lint = [
     "types-Pygments",
     "types-docutils",
     "mypy==1.9.0",
-    "ruff==0.3.4",
+    "ruff==0.3.7",
     "pyupgrade-directories==0.3.0",
     "bandit==1.7.8",
     "semgrep==1.67.0",

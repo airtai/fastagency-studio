@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, HttpUrl
 
+from .constants import AZURE_API_VERSIONS_LITERAL, OPENAI_MODELS_LITERAL
+
 __all__ = ["OpenAI", "AzureOAI", "list_llms", "get_llm_type"]
 
 BM = TypeVar("BM", bound=Type[BaseModel])
@@ -41,7 +43,7 @@ class DefaultModel(BaseModel):
 @register_llm
 class OpenAI(DefaultModel):
     model: Annotated[  # type: ignore[valid-type]
-        Literal[*OPENAI_MODEL_NAMES],
+        Literal[OPENAI_MODELS_LITERAL],
         Field(description="The model to use for the OpenAI API, e.g. 'gpt-3.5-turbo'"),
     ] = "gpt-3.5-turbo"
     api_key: Annotated[
@@ -85,8 +87,8 @@ class AzureOAI(DefaultModel):
         Literal["azure"],
         Field(title="API type", description="The type of the API, must be 'azure'"),
     ] = "azure"
-    api_version: Annotated[  # type: ignore[valid-type]
-        Literal[AZURE_API_VERSIONS],
+    api_version: Annotated[
+        AZURE_API_VERSIONS_LITERAL,
         Field(
             description="The version of the Azure OpenAI API, e.g. '2024-02-15-preview' or 'latest"
         ),

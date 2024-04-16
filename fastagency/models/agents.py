@@ -9,7 +9,7 @@ class Agent(BaseModel):
         UUID,
         Field(title="UUID", description="The unique identifier for agent instance"),
     ]
-    model_uuid: Annotated[
+    llm_uuid: Annotated[
         UUID,
         Field(title="UUID", description="The unique identifier for the model instance"),
     ]

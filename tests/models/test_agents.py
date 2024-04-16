@@ -5,10 +5,10 @@ from fastagency.models.agents import Agent
 
 class TestAgents:
     def test_agent_model(self) -> None:
-        model_uuid = uuid.uuid4()
+        llm_uuid = uuid.uuid4()
         agent_uuid = uuid.uuid4()
         agent = Agent(
-            model_uuid=model_uuid,
+            llm_uuid=llm_uuid,
             name="test agent",
             system_message="test system message",
             uuid=agent_uuid,

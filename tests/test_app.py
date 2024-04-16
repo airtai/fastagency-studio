@@ -193,7 +193,7 @@ class TestAgents:
                     "title": "UUID",
                     "type": "string",
                 },
-                "model_uuid": {
+                "llm_uuid": {
                     "description": "The unique identifier for the model instance",
                     "format": "uuid",
                     "title": "UUID",
@@ -210,7 +210,7 @@ class TestAgents:
                     "type": "string",
                 },
             },
-            "required": ["uuid", "model_uuid", "name", "system_message"],
+            "required": ["uuid", "llm_uuid", "name", "system_message"],
             "title": "Agent",
             "type": "object",
         }
@@ -221,14 +221,14 @@ class TestAgents:
             "/models/agents/validate",
             json={
                 "uuid": "12345678-1234-5678-1234-567812345678",
-                "model_uuid": "87654321-1234-5678-1234-567812345678",
+                "llm_uuid": "87654321-1234-5678-1234-567812345678",
                 "name": "test agent",
                 "system_message": "test system message",
             },
         )
         assert response.status_code == 200
 
-    def test_validate_agent_missing_model_uuid(self) -> None:
+    def test_validate_agent_missing_llm_uuid(self) -> None:
         response = client.post(
             "/models/agents/validate",
             json={
@@ -243,16 +243,16 @@ class TestAgents:
         msg_dict.pop("url")
         excepted = {
             "type": "missing",
-            "loc": ["body", "model_uuid"],
+            "loc": ["body", "llm_uuid"],
             "msg": "Field required",
         }
         assert msg_dict == excepted
 
-    def test_validate_agent_invalid_model_uuid(self) -> None:
+    def test_validate_agent_invalid_llm_uuid(self) -> None:
         response = client.post(
             "/models/agents/validate",
             json={
-                "model_uuid": "87654321-1234-5678",
+                "llm_uuid": "87654321-1234-5678",
                 "uuid": "12345678-1234-5678-1234-567812345678",
                 "name": "test agent",
                 "system_message": "test system message",
@@ -264,7 +264,7 @@ class TestAgents:
         msg_dict.pop("url")
         excepted = {
             "type": "uuid_parsing",
-            "loc": ["body", "model_uuid"],
+            "loc": ["body", "llm_uuid"],
             "msg": "Input should be a valid UUID, invalid group count: expected 5, found 3",
             "ctx": {"error": "invalid group count: expected 5, found 3"},
         }

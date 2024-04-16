@@ -5,7 +5,13 @@
    python examples/nats/create_jetstream.py
    ```
 
-2. Then start the backend script by running
+2. Then start the faststream backend script by running
+   ```cmd
+   cd examples/nats
+   faststream run faststream_backend:app --workers 2
+   ```
+
+   If you want to start nats-py backend then run(**not recommended**)
    ```cmd
    python examples/nats/backend.py
    ```

@@ -23,7 +23,8 @@
         "ghcr.io/devcontainers/features/git:1": {
             "version": "latest",
             "ppa": true
-        }
+        },
+        "ghcr.io/robbert229/devcontainer-features/postgresql-client:1": {}
     },
     "updateContentCommand": "bash .devcontainer/setup.sh",
     "postCreateCommand": [],

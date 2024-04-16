@@ -2,7 +2,7 @@ from typing import Annotated, Dict, List, Literal, Type, TypeVar
 
 from pydantic import BaseModel, Field, HttpUrl
 
-__all__ = ["OpenAI", "AzureOAI", "list_llms", "get_llm"]
+__all__ = ["OpenAI", "AzureOAI", "list_llms", "get_llm_type"]
 
 BM = TypeVar("BM", bound=Type[BaseModel])
 
@@ -25,7 +25,7 @@ OPENAI_MODEL_NAMES = ["gpt-4", "gpt-3.5-turbo"]
 @register_llm
 class OpenAI(BaseModel):
     model: Annotated[  # type: ignore[valid-type]
-        Literal[OPENAI_MODEL_NAMES],
+        Literal[*OPENAI_MODEL_NAMES],
         Field(description="The model to use for the OpenAI API, e.g. 'gpt-3.5-turbo'"),
     ] = "gpt-3.5-turbo"
     api_key: Annotated[
@@ -81,5 +81,5 @@ def list_llms() -> List[str]:
     return list(_llm_registry.keys())
 
 
-def get_llm(name: str) -> Type[BaseModel]:
+def get_llm_type(name: str) -> Type[BaseModel]:
     return _llm_registry[name]

@@ -1,4 +1,5 @@
 from typing import Annotated, Dict, List, Literal, Type, TypeVar
+from uuid import UUID
 
 from pydantic import BaseModel, Field, HttpUrl
 
@@ -19,11 +20,26 @@ def register_llm(m: BM) -> BM:
     return m
 
 
+def list_llms() -> List[str]:
+    return list(_llm_registry.keys())
+
+
+def get_llm_type(name: str) -> Type[BaseModel]:
+    return _llm_registry[name]
+
+
 OPENAI_MODEL_NAMES = ["gpt-4", "gpt-3.5-turbo"]
 
 
+class DefaultModel(BaseModel):
+    uuid: Annotated[
+        UUID,
+        Field(title="UUID", description="The unique identifier for the model instance"),
+    ]
+
+
 @register_llm
-class OpenAI(BaseModel):
+class OpenAI(DefaultModel):
     model: Annotated[  # type: ignore[valid-type]
         Literal[*OPENAI_MODEL_NAMES],
         Field(description="The model to use for the OpenAI API, e.g. 'gpt-3.5-turbo'"),
@@ -48,7 +64,7 @@ AZURE_API_VERSIONS = ["2024-02-15-preview", "latest"]
 
 
 @register_llm
-class AzureOAI(BaseModel):
+class AzureOAI(DefaultModel):
     model: Annotated[
         str,
         Field(
@@ -77,9 +93,11 @@ class AzureOAI(BaseModel):
     ] = "latest"
 
 
-def list_llms() -> List[str]:
-    return list(_llm_registry.keys())
-
-
-def get_llm_type(name: str) -> Type[BaseModel]:
-    return _llm_registry[name]
+class Agent(BaseModel):
+    name: Annotated[str, Field(description="The name of the agent")]
+    system_message: Annotated[
+        str,
+        Field(
+            description="The system message of the agent. This message is used to inform the agent about his role in the conversation"
+        ),
+    ]

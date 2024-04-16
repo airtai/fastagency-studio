@@ -18,6 +18,12 @@ class TestApp:
         assert response.status_code == 200
         expected = {
             "properties": {
+                "uuid": {
+                    "description": "The unique identifier for the model instance",
+                    "format": "uuid",
+                    "title": "UUID",
+                    "type": "string",
+                },
                 "model": {
                     "default": "gpt-3.5-turbo",
                     "description": "The model to use for the OpenAI API, e.g. 'gpt-3.5-turbo'",
@@ -48,11 +54,10 @@ class TestApp:
                     "type": "string",
                 },
             },
-            "required": ["api_key"],
+            "required": ["uuid", "api_key"],
             "title": "OpenAI",
             "type": "object",
         }
-        # print(f"{response.json()=}")
         assert response.json() == expected
 
 
@@ -61,6 +66,7 @@ class TestValidateOpenAI:
         response = client.post(
             f"/models/llms/{OpenAI.__name__}/validate",
             json={
+                "uuid": "12345678-1234-5678-1234-567812345678",
                 "api_key": "sk-1234567890abcdef1234567890abcdef",  # pragma: allowlist secret
                 "model": "gpt-3.5-turbo",
                 "base_url": "https://api.openai.com/v1",
@@ -73,6 +79,7 @@ class TestValidateOpenAI:
         response = client.post(
             f"/models/llms/{OpenAI.__name__}/validate",
             json={
+                "uuid": "12345678-1234-5678-1234-567812345678",
                 "model": "gpt-3.5-turbo",
                 "base_url": "https://api.openai.com/v1",
                 "api_type": "openai",
@@ -93,6 +100,7 @@ class TestValidateOpenAI:
         response = client.post(
             f"/models/llms/{OpenAI.__name__}/validate",
             json={
+                "uuid": "12345678-1234-5678-1234-567812345678",
                 "api_key": "sk-1234567890abcdef1234567890abcdef",  # pragma: allowlist secret
                 "model": "gpt-3.14-turbo_gti_diesel",
                 "base_url": "https://api.openai.com/v1",
@@ -115,6 +123,7 @@ class TestValidateOpenAI:
         response = client.post(
             f"/models/llms/{OpenAI.__name__}/validate",
             json={
+                "uuid": "12345678-1234-5678-1234-567812345678",
                 "api_key": "sk-1234567890abcdef1234567890abcdef",  # pragma: allowlist secret
                 "model": "gpt-3.5-turbo",
                 "base_url": "mailto://api.openai.com/v1",
@@ -139,6 +148,7 @@ class TestValidateAzureOAI:
         response = client.post(
             f"/models/llms/{AzureOAI.__name__}/validate",
             json={
+                "uuid": "12345678-1234-5678-1234-567812345678",
                 "api_key": "sk-1234567890abcdef1234567890abcdef",  # pragma: allowlist secret
                 "model": "gpt-3.5-turbo",
                 "base_url": "https://api.openai.com/v1",

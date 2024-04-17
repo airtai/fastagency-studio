@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.AzureOAI
+::: fastagency.models.llms.LLMSchema

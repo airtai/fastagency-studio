@@ -25,7 +25,7 @@ services:
     container_name: $USER-postgres-fastagency
     environment:
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: password  # pragma: allowlist secret
       POSTGRES_DB: fastagency
     ports:
       - "${PORT_PREFIX}5432:5432"

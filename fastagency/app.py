@@ -1,8 +1,12 @@
+import json
 from functools import cache
+from typing import Any, Dict, List
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from pydantic import ValidationError
 
-from .models.llms import LLMSchemas, get_llm_schemas, get_llm_type, list_llms
+from .models.agents import get_agent_type, list_agents
+from .models.llms import LLMSchemas, get_llm_schemas, validate_model
 
 app = FastAPI()
 
@@ -13,17 +17,37 @@ def models_llms_schemas() -> LLMSchemas:
     return get_llm_schemas()
 
 
-# @app.get("/models/llms/{model_name}")
-# @cache
-# def get_schema_for_llm_model(model_name: str) -> Dict[str, Any]:
-#     model = get_llm_type(model_name)
-#     schema = model.model_json_schema()
-#     return schema
+@app.post("/models/llms/{model_name}/validate")
+def validate_llm_model(model_name: str, llm: Dict[str, Any]) -> None:
+    try:
+        validate_model(llm, model_name)
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=json.loads(e.json())) from e
+    except ValueError as e:
+        raise HTTPException(
+            status_code=422,
+            detail={"error": f"{model_name} is not a valid model name."},
+        ) from e
 
 
-for model_name in list_llms():
-    LLMType = get_llm_type(model_name)
+@app.get("/models/agents/")
+@cache
+def list_agent_models() -> List[str]:
+    return list_agents()
 
-    @app.post(f"/models/llms/{model_name}/validate")
-    def validate_llm_model(llm: LLMType) -> None:  # type: ignore[valid-type]
+
+@app.get("/models/agents/{agent_name}")
+@cache
+def get_agent_schema(agent_name: str) -> Dict[str, Any]:
+    model = get_agent_type(agent_name)
+    schema = model.model_json_schema()
+
+    return schema
+
+
+for agent_name in list_agents():
+    AgentType = get_agent_type(agent_name)
+
+    @app.post(f"/models/agents/{agent_name}/validate")
+    def validate_agent_model(agent: AgentType) -> None:  # type: ignore[valid-type]
         pass

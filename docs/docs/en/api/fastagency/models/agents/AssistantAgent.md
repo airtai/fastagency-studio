@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.get_llm_type
+::: fastagency.models.agents.AssistantAgent

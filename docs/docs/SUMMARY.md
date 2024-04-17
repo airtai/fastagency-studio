@@ -5,19 +5,25 @@ search:
 - [Features](fastagency.md)
 - Reference
     - fastagency
-        - [AzureOAI](api/fastagency/AzureOAI.md)
-        - [OpenAI](api/fastagency/OpenAI.md)
-        - [get_llm_type](api/fastagency/get_llm_type.md)
-        - [list_llms](api/fastagency/list_llms.md)
+        - [get_llm_schemas](api/fastagency/get_llm_schemas.md)
+        - [validate_model](api/fastagency/validate_model.md)
         - app
+            - [validate_agent_model](api/fastagency/app/validate_agent_model.md)
             - [validate_llm_model](api/fastagency/app/validate_llm_model.md)
         - models
+            - agents
+                - [AssistantAgent](api/fastagency/models/agents/AssistantAgent.md)
+                - [WebSurferAgent](api/fastagency/models/agents/WebSurferAgent.md)
+                - [get_agent_type](api/fastagency/models/agents/get_agent_type.md)
+                - [list_agents](api/fastagency/models/agents/list_agents.md)
+                - [register_agent](api/fastagency/models/agents/register_agent.md)
             - llms
                 - [AzureOAI](api/fastagency/models/llms/AzureOAI.md)
+                - [LLMSchema](api/fastagency/models/llms/LLMSchema.md)
+                - [LLMSchemas](api/fastagency/models/llms/LLMSchemas.md)
                 - [OpenAI](api/fastagency/models/llms/OpenAI.md)
-                - [get_llm_type](api/fastagency/models/llms/get_llm_type.md)
-                - [list_llms](api/fastagency/models/llms/list_llms.md)
-                - [register_llm](api/fastagency/models/llms/register_llm.md)
+                - [get_llm_schemas](api/fastagency/models/llms/get_llm_schemas.md)
+                - [validate_model](api/fastagency/models/llms/validate_model.md)
 - Contributing
     - [Development](getting-started/contributing/CONTRIBUTING.md)
     - [Documentation](getting-started/contributing/docs.md)

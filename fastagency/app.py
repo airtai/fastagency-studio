@@ -1,34 +1,33 @@
+import json
 from functools import cache
 from typing import Any, Dict, List
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from pydantic import ValidationError
 
 from .models.agents import get_agent_type, list_agents
-from .models.llms import get_llm_type, list_llms
+from .models.llms import LLMSchemas, get_llm_schemas, validate_model
 
 app = FastAPI()
 
 
-@app.get("/models/llms/")
+@app.get("/models/llms/schemas")
 @cache
-def list_llms_models() -> List[str]:
-    return list_llms()
+def models_llms_schemas() -> LLMSchemas:
+    return get_llm_schemas()
 
 
-@app.get("/models/llms/{model_name}")
-@cache
-def get_schema_for_llm_model(model_name: str) -> Dict[str, Any]:
-    model = get_llm_type(model_name)
-    schema = model.model_json_schema()
-    return schema
-
-
-for model_name in list_llms():
-    LLMType = get_llm_type(model_name)
-
-    @app.post(f"/models/llms/{model_name}/validate")
-    def validate_llm_model(llm: LLMType) -> None:  # type: ignore[valid-type]
-        pass
+@app.post("/models/llms/{model_name}/validate")
+def validate_llm_model(model_name: str, llm: Dict[str, Any]) -> None:
+    try:
+        validate_model(llm, model_name)
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=json.loads(e.json())) from e
+    except ValueError as e:
+        raise HTTPException(
+            status_code=422,
+            detail={"error": f"{model_name} is not a valid model name."},
+        ) from e
 
 
 @app.get("/models/agents/")

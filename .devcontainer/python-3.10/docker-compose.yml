@@ -3,17 +3,35 @@ version: '3'
 services:
   python-3.10:  # nosemgrep
     image: mcr.microsoft.com/devcontainers/python:3.10
+    container_name: $USER-python-3.10
     volumes:
       - ../../:/workspaces/fastagency:cached
     command: sleep infinity
-    links:
-      - nats-fastagency
+    networks:
+      - fastagency-network
   nats-fastagency:  # nosemgrep
     image: nats:latest
-    container_name: nats-fastagency
+    container_name: $USER-nats-fastagency
     ports:
-      - "4222:4222"
-      - "9222:9222"
+      - "${PORT_PREFIX}4222:4222"
+      - "${PORT_PREFIX}9222:9222"
     volumes:
       - ../../examples/nats/server.conf:/etc/nats/server.conf
-    command: ["--config", "/etc/nats/server.conf"]
+    command: [ "--config", "/etc/nats/server.conf" ]
+    networks:
+      - fastagency-network
+  postgres-fastagency:  # nosemgrep
+    image: postgres:latest
+    container_name: $USER-postgres-fastagency
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password  # pragma: allowlist secret
+      POSTGRES_DB: fastagency
+    ports:
+      - "${PORT_PREFIX}5432:5432"
+    networks:
+      - fastagency-network
+
+networks:
+  fastagency-network:
+    name: "${USER}-fastagency-network"

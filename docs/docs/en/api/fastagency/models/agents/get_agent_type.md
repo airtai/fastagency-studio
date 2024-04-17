@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.OpenAI
+::: fastagency.models.agents.get_agent_type

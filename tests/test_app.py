@@ -2,25 +2,22 @@ from fastapi.testclient import TestClient
 
 from fastagency.app import app
 from fastagency.models.agents import AssistantAgent, WebSurferAgent
-from fastagency.models.llms import AzureOAI, OpenAI
+from fastagency.models.llms import LLMSchema, OpenAI
+from fastagency.models.llms._registry import LLMSchemas
 
 client = TestClient(app)
 
 
-class TestApp:
-    def test_list_llms(self) -> None:
-        response = client.get("/models/llms")
-        assert response.status_code == 200
-        expected = ["OpenAI", "AzureOAI"]
-        assert response.json() == expected
-
+# we will do this for OpenAI only, the rest should be the same
+class TestValidateOpenAI:
     def test_get_openai_schema(self) -> None:
-        response = client.get("/models/llms/OpenAI")
+        response = client.get("/models/llms/schemas")
         assert response.status_code == 200
+
         expected = {
             "properties": {
                 "uuid": {
-                    "description": "The unique identifier for the model instance",
+                    "description": "The unique identifier",
                     "format": "uuid",
                     "title": "UUID",
                     "type": "string",
@@ -59,10 +56,15 @@ class TestApp:
             "title": "OpenAI",
             "type": "object",
         }
-        assert response.json() == expected
+        llm_schema = [  # noqa: RUF015
+            LLMSchema(**json)
+            for json in response.json()["schemas"]
+            if json["name"] == "OpenAI"
+        ][0]
 
+        # print(f"{llm_schema.json_schema=}")
+        assert llm_schema.json_schema == expected
 
-class TestValidateOpenAI:
     def test_validate_success(self) -> None:
         response = client.post(
             f"/models/llms/{OpenAI.__name__}/validate",
@@ -92,7 +94,7 @@ class TestValidateOpenAI:
         msg_dict.pop("url")
         expected = {
             "type": "missing",
-            "loc": ["body", "api_key"],
+            "loc": ["api_key"],
             "msg": "Field required",
         }
         assert msg_dict == expected
@@ -114,7 +116,7 @@ class TestValidateOpenAI:
         msg_dict.pop("url")
         expected = {
             "type": "literal_error",
-            "loc": ["body", "model"],
+            "loc": ["model"],
             "msg": "Input should be 'gpt-4' or 'gpt-3.5-turbo'",
             "ctx": {"expected": "'gpt-4' or 'gpt-3.5-turbo'"},
         }
@@ -137,7 +139,7 @@ class TestValidateOpenAI:
         msg_dict.pop("url")
         expected = {
             "ctx": {"expected_schemes": "'http' or 'https'"},
-            "loc": ["body", "base_url"],
+            "loc": ["base_url"],
             "msg": "URL scheme should be 'http' or 'https'",
             "type": "url_scheme",
         }
@@ -160,26 +162,19 @@ class TestValidateOpenAI:
         msg_dict.pop("url")
         excepted = {
             "type": "uuid_parsing",
-            "loc": ["body", "uuid"],
+            "loc": ["uuid"],
             "msg": "Input should be a valid UUID, invalid group count: expected 5, found 2",
             "ctx": {"error": "invalid group count: expected 5, found 2"},
         }
         assert msg_dict == excepted
 
 
-class TestValidateAzureOAI:
-    def test_validate_success(self) -> None:
-        response = client.post(
-            f"/models/llms/{AzureOAI.__name__}/validate",
-            json={
-                "uuid": "12345678-1234-5678-1234-567812345678",
-                "api_key": "sk-1234567890abcdef1234567890abcdef",  # pragma: allowlist secret
-                "model": "gpt-3.5-turbo",
-                "base_url": "https://api.openai.com/v1",
-                "api_type": "azure",
-            },
-        )
-        assert response.status_code == 200
+def test_get_schemas() -> None:
+    response = client.get("/models/llms/schemas")
+    assert response.status_code == 200
+
+    schemas = LLMSchemas(**response.json())
+    assert len(schemas.schemas) >= 2
 
 
 class TestAgents:

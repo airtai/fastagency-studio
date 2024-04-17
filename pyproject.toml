@@ -86,6 +86,7 @@ lint = [
     "pyupgrade-directories==0.3.0",
     "bandit==1.7.8",
     "semgrep==1.67.0",
+    "pytest-mypy-plugins==3.1.2",
 ]
 
 test-core = [
@@ -137,7 +138,7 @@ ignore_missing_imports = true
 install_types = true
 non_interactive = true
 plugins = [
-    "pydantic.mypy"
+    "pydantic.mypy",
 ]
 
 # from https://blog.wolt.com/engineering/2021/09/30/professional-grade-mypy-configuration/

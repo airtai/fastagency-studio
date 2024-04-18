@@ -4,7 +4,7 @@
         "./docker-compose.yml"
     ],
     "service": "python-3.11",
-    "shutdownAction": "none",
+    "shutdownAction": "stopCompose",
     "workspaceFolder": "/workspaces/fastagency",
     // "runArgs": [],
     "remoteEnv": {},

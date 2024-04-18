@@ -7,6 +7,10 @@ on:
   merge_group:
   workflow_dispatch:
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   static_analysis:
     strategy:
@@ -154,8 +158,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    env:
-      PORT: ${{ vars.PORT }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

@@ -3,11 +3,10 @@ from typing import Annotated, Literal
 from pydantic import Field, HttpUrl
 
 from ...constants import AZURE_API_VERSIONS_LITERAL
-from ._base import UUIDModel
-from ._registry import register_llm
+from ._base import UUIDModel, _llm_registry
 
 
-@register_llm
+@_llm_registry.register
 class AzureOAI(UUIDModel):
     model: Annotated[
         str,

@@ -5,25 +5,24 @@ search:
 - [Features](fastagency.md)
 - Reference
     - fastagency
-        - [get_llm_schemas](api/fastagency/get_llm_schemas.md)
-        - [validate_model](api/fastagency/validate_model.md)
+        - [get_llm_registry](api/fastagency/get_llm_registry.md)
         - app
             - [validate_agent_model](api/fastagency/app/validate_agent_model.md)
             - [validate_llm_model](api/fastagency/app/validate_llm_model.md)
         - models
+            - [Schema](api/fastagency/models/Schema.md)
+            - [Schemas](api/fastagency/models/Schemas.md)
             - agents
-                - [AssistantAgent](api/fastagency/models/agents/AssistantAgent.md)
-                - [WebSurferAgent](api/fastagency/models/agents/WebSurferAgent.md)
-                - [get_agent_type](api/fastagency/models/agents/get_agent_type.md)
-                - [list_agents](api/fastagency/models/agents/list_agents.md)
-                - [register_agent](api/fastagency/models/agents/register_agent.md)
+                - agents
+                    - [AssistantAgent](api/fastagency/models/agents/agents/AssistantAgent.md)
+                    - [WebSurferAgent](api/fastagency/models/agents/agents/WebSurferAgent.md)
+                    - [get_agent_type](api/fastagency/models/agents/agents/get_agent_type.md)
+                    - [list_agents](api/fastagency/models/agents/agents/list_agents.md)
+                    - [register_agent](api/fastagency/models/agents/agents/register_agent.md)
             - llms
                 - [AzureOAI](api/fastagency/models/llms/AzureOAI.md)
-                - [LLMSchema](api/fastagency/models/llms/LLMSchema.md)
-                - [LLMSchemas](api/fastagency/models/llms/LLMSchemas.md)
                 - [OpenAI](api/fastagency/models/llms/OpenAI.md)
-                - [get_llm_schemas](api/fastagency/models/llms/get_llm_schemas.md)
-                - [validate_model](api/fastagency/models/llms/validate_model.md)
+                - [get_llm_registry](api/fastagency/models/llms/get_llm_registry.md)
 - Contributing
     - [Development](getting-started/contributing/CONTRIBUTING.md)
     - [Documentation](getting-started/contributing/docs.md)

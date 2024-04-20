@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.get_llm_schemas
+::: fastagency.models.agents.agents.get_agent_type

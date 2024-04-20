@@ -5,22 +5,23 @@ from typing import Any, Dict, List
 from fastapi import FastAPI, HTTPException
 from pydantic import ValidationError
 
-from .models.agents import get_agent_type, list_agents
-from .models.llms import LLMSchemas, get_llm_schemas, validate_model
+from .models import Schemas
+from .models.agents.agents import get_agent_type, list_agents
+from .models.llms import get_llm_registry
 
 app = FastAPI()
 
 
 @app.get("/models/llms/schemas")
 @cache
-def models_llms_schemas() -> LLMSchemas:
-    return get_llm_schemas()
+def models_llms_schemas() -> Schemas:
+    return get_llm_registry().get_schemas()
 
 
 @app.post("/models/llms/{model_name}/validate")
 def validate_llm_model(model_name: str, llm: Dict[str, Any]) -> None:
     try:
-        validate_model(llm, model_name)
+        get_llm_registry().validate(llm, model_name)
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=json.loads(e.json())) from e
     except ValueError as e:

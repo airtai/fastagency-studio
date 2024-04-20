@@ -221,7 +221,7 @@ source = [
     "docs/docs_src",
     "examples",
     "fastagency",
-    "tests"
+#    "tests",
 ]
 context = '${CONTEXT}'
 omit = [
@@ -231,6 +231,8 @@ omit = [
 [tool.coverage.report]
 show_missing = true
 skip_empty = true
+sort = "miss"
+
 exclude_also = [
     "if __name__ == .__main__.:",
     "self.logger",

@@ -1,6 +1,6 @@
 import uuid
 
-from fastagency.models.agents import AssistantAgent, WebSurferAgent
+from fastagency.models.agents.agents import AssistantAgent, WebSurferAgent
 
 
 class TestAssistantAgent:

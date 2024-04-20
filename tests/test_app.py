@@ -1,9 +1,9 @@
 from fastapi.testclient import TestClient
 
 from fastagency.app import app
-from fastagency.models.agents import AssistantAgent, WebSurferAgent
-from fastagency.models.llms import LLMSchema, OpenAI
-from fastagency.models.llms._registry import LLMSchemas
+from fastagency.models import Schema, Schemas
+from fastagency.models.agents.agents import AssistantAgent, WebSurferAgent
+from fastagency.models.llms import OpenAI
 
 client = TestClient(app)
 
@@ -57,7 +57,7 @@ class TestValidateOpenAI:
             "type": "object",
         }
         llm_schema = [  # noqa: RUF015
-            LLMSchema(**json)
+            Schema(**json)
             for json in response.json()["schemas"]
             if json["name"] == "OpenAI"
         ][0]
@@ -173,7 +173,7 @@ def test_get_schemas() -> None:
     response = client.get("/models/llms/schemas")
     assert response.status_code == 200
 
-    schemas = LLMSchemas(**response.json())
+    schemas = Schemas(**response.json())
     assert len(schemas.schemas) >= 2
 
 
@@ -244,7 +244,7 @@ class TestAssistantAgents:
         assert response.status_code == 422
         msg_dict = response.json()["detail"][0]
         msg_dict.pop("input")
-        msg_dict.pop("url")
+        # msg_dict.pop("url")
         excepted = {
             "type": "missing",
             "loc": ["body", "llm_uuid"],
@@ -265,7 +265,7 @@ class TestAssistantAgents:
         assert response.status_code == 422
         msg_dict = response.json()["detail"][0]
         msg_dict.pop("input")
-        msg_dict.pop("url")
+        # msg_dict.pop("url")
         excepted = {
             "type": "uuid_parsing",
             "loc": ["body", "llm_uuid"],

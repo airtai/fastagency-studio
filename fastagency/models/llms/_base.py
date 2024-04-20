@@ -1,11 +1,11 @@
-from typing import Annotated, Any, Dict
+from typing import Annotated
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from ._registry import _llm_registry
+from .._registry import Registry
 
-__all__ = ["UUIDModel", "validate_model"]
+__all__ = ["UUIDModel", "get_llm_registry"]
 
 
 class UUIDModel(BaseModel):
@@ -15,19 +15,13 @@ class UUIDModel(BaseModel):
     ]
 
 
-def validate_model(model_dict: Dict[str, Any], model_name: str) -> None:
-    """Validate a model instance.
+_llm_registry = Registry("llm_registry")
 
-    Args:
-        model_dict (BaseModel): The model instance to validate.
-        model_name (str): The name of the model.
 
-    Raises:
-        ValueError: If the model is not valid.
+def get_llm_registry() -> Registry:
+    """Get the LLM registry.
 
+    Returns:
+        Registry: The LLM registry
     """
-    model_type = _llm_registry.get(model_name)
-    if model_type is None:
-        raise ValueError(f"Model '{model_name}' not found")
-
-    model_type(**model_dict)
+    return _llm_registry

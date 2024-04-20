@@ -1,10 +1,18 @@
 from typing import Annotated, Any, Dict, List, Optional, Type, TypeVar
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-__all__ = ["Registry", "Schema", "Schemas"]
+__all__ = ["Registry", "Schema", "Schemas", "UUIDModel"]
 
-BM = TypeVar("BM", bound="Type[BaseModel]")
+BM = TypeVar("BM", bound="Type[UUIDModel]")
+
+
+class UUIDModel(BaseModel):
+    uuid: Annotated[
+        UUID,
+        Field(title="UUID", description="The unique identifier"),
+    ]
 
 
 class Schema(BaseModel):
@@ -22,7 +30,7 @@ class Schemas(BaseModel):
 
 class Registry:
     def __init__(self, name: str):
-        self._registry: Dict[str, "Type[BaseModel]"] = {}
+        self._registry: Dict[str, "Type[UUIDModel]"] = {}
         self._name = name
 
     def register(self, m: BM) -> BM:
@@ -34,7 +42,7 @@ class Registry:
 
         return m
 
-    def get(self, name: str) -> "Optional[Type[BaseModel]]":
+    def get(self, name: str) -> "Optional[Type[UUIDModel]]":
         return self._registry.get(name, None)
 
     def get_schemas(self) -> Schemas:

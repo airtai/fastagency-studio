@@ -3,7 +3,11 @@ from typing import Annotated, Literal
 from pydantic import Field, HttpUrl
 
 from ...constants import OPENAI_MODELS_LITERAL
-from ._base import UUIDModel, _llm_registry
+from ._base import UUIDModel, get_llm_registry
+
+__all__ = ["OpenAI"]
+
+_llm_registry = get_llm_registry()
 
 
 @_llm_registry.register

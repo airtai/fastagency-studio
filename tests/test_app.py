@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from fastagency.app import app
-from fastagency.models import Schema, Schemas
+from fastagency.models import ModelSchemas, Schemas
 from fastagency.models.agents.agents import AssistantAgent, WebSurferAgent
 from fastagency.models.llms import OpenAI
 
@@ -12,7 +12,7 @@ client = TestClient(app)
 # we will do this for OpenAI only, the rest should be the same
 class TestValidateOpenAI:
     def test_get_openai_schema(self) -> None:
-        response = client.get("/models/llms/schemas")
+        response = client.get("/models/schemas")
         assert response.status_code == 200
 
         expected = {
@@ -58,13 +58,17 @@ class TestValidateOpenAI:
             "type": "object",
         }
         llm_schema = [  # noqa: RUF015
-            Schema(**json)
+            ModelSchemas(**json)
             for json in response.json()["schemas"]
-            if json["name"] == "OpenAI"
+            if json["name"] == "llm"
+        ][0]
+
+        openai_schema = [  # noqa: RUF015
+            schema for schema in llm_schema.schemas if schema.name == OpenAI.__name__
         ][0]
 
         # print(f"{llm_schema.json_schema=}")
-        assert llm_schema.json_schema == expected
+        assert openai_schema.json_schema == expected
 
     def test_validate_success(self) -> None:
         response = client.post(
@@ -171,7 +175,7 @@ class TestValidateOpenAI:
 
 
 def test_get_schemas() -> None:
-    response = client.get("/models/llms/schemas")
+    response = client.get("/models/schemas")
     assert response.status_code == 200
 
     schemas = Schemas(**response.json())

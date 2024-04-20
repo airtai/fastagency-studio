@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from ..constants import REGISTRED_MODEL_TYPES
 
-__all__ = ["Registry", "Schema", "Schemas", "UUIDModel"]
+__all__ = ["Registry", "Schema", "Schemas", "ModelSchemas", "UUIDModel"]
 
 BM = TypeVar("BM", bound="Type[UUIDModel]")
 
@@ -24,9 +24,17 @@ class Schema(BaseModel):
     ]
 
 
+class ModelSchemas(BaseModel):
+    name: Annotated[REGISTRED_MODEL_TYPES, Field(description="The name of the Model")]
+    schemas: Annotated[
+        List[Schema],
+        Field(description="The schemas for all registred models of particular types"),
+    ]
+
+
 class Schemas(BaseModel):
     schemas: Annotated[
-        List[Schema], Field(description="The schemas for all registred models")
+        List[ModelSchemas], Field(description="The schemas for all registred models")
     ]
 
 
@@ -54,11 +62,20 @@ class Registry:
     ) -> "Optional[Type[UUIDModel]]":
         return self._registry[type].get(name, None)
 
-    def get_schemas(self, type: REGISTRED_MODEL_TYPES) -> Schemas:
-        return Schemas(
+    def get_schemas_for_type(self, type: REGISTRED_MODEL_TYPES) -> ModelSchemas:
+        return ModelSchemas(
+            name=type,
             schemas=[
                 Schema(name=name, json_schema=model.model_json_schema())
                 for name, model in self._registry[type].items()
+            ],
+        )
+
+    def get_schemas(self) -> Schemas:
+        return Schemas(
+            schemas=[
+                self.get_schemas_for_type(type)
+                for type in REGISTRED_MODEL_TYPES.__args__  # type: ignore[attr-defined]
             ]
         )
 

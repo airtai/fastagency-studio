@@ -1,3 +1,3 @@
-from ._registry import Registry, Schema, Schemas
+from ._registry import ModelSchemas, Registry, Schema, Schemas
 
-__all__ = ["Registry", "Schema", "Schemas"]
+__all__ = ["Registry", "Schema", "ModelSchemas", "Schemas"]

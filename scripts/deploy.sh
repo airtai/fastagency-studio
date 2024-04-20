@@ -32,7 +32,7 @@ $ssh_command "docker logs $container_name >> $log_file 2>&1 || echo 'No containe
 $ssh_command "if [ \$(stat -c%s \"$log_file\") -ge 1073741824 ]; then echo 'Log file size exceeds 1GB, trimming...'; tail -c 1073741824 \"$log_file\" > \"$log_file.tmp\" && mv \"$log_file.tmp\" \"$log_file\"; fi"
 
 echo "INFO: stopping already running docker containers"
-$ssh_command "export PORT='$PORT' && docker-compose down || echo 'No containers available to stop'"
+$ssh_command "export PORT='$PORT' && docker compose down || echo 'No containers available to stop'"
 $ssh_command "docker container prune -f || echo 'No stopped containers to delete'"
 
 echo "INFO: SCPing docker-compose.yaml"
@@ -50,12 +50,5 @@ $ssh_command "docker system prune -f || echo 'No images to delete'"
 echo "INFO: starting docker containers"
 
 $ssh_command "export GITHUB_REPOSITORY='$GITHUB_REPOSITORY' TAG='$TAG' container_name='$container_name' \
-	PORT='$PORT' DATABASE_URL='$DATABASE_URL' CLIENT_SECRET='$CLIENT_SECRET' \
-	DEVELOPER_TOKEN='$DEVELOPER_TOKEN' \
-	AZURE_API_VERSION='$AZURE_API_VERSION' AZURE_API_ENDPOINT='$AZURE_API_ENDPOINT' \
-	AZURE_GPT4_MODEL='$AZURE_GPT4_MODEL' AZURE_GPT35_MODEL='$AZURE_GPT35_MODEL' \
-	AZURE_OPENAI_API_KEY='$AZURE_OPENAI_API_KEY' \
-	INFOBIP_BASE_URL='$INFOBIP_BASE_URL' INFOBIP_API_KEY='$INFOBIP_API_KEY' REACT_APP_API_URL='$REACT_APP_API_URL' \
-	REDIRECT_DOMAIN='$REDIRECT_DOMAIN' \
 	DOMAIN='$DOMAIN' \
-	&& docker-compose up -d"
+	&& docker compose up -d"

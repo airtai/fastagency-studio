@@ -6,16 +6,16 @@ search:
 - Reference
     - fastagency
         - app
-            - [validate_llm_model](api/fastagency/app/validate_llm_model.md)
+            - [get_models_schemas](api/fastagency/app/get_models_schemas.md)
+            - [validate_model](api/fastagency/app/validate_model.md)
         - models
+            - [ModelSchemas](api/fastagency/models/ModelSchemas.md)
             - [Registry](api/fastagency/models/Registry.md)
             - [Schema](api/fastagency/models/Schema.md)
             - [Schemas](api/fastagency/models/Schemas.md)
             - agents
-                - agents
-                    - [AgentBaseModel](api/fastagency/models/agents/agents/AgentBaseModel.md)
-                    - [AssistantAgent](api/fastagency/models/agents/agents/AssistantAgent.md)
-                    - [WebSurferAgent](api/fastagency/models/agents/agents/WebSurferAgent.md)
+                - [AssistantAgent](api/fastagency/models/agents/AssistantAgent.md)
+                - [WebSurferAgent](api/fastagency/models/agents/WebSurferAgent.md)
             - llms
                 - [AzureOAI](api/fastagency/models/llms/AzureOAI.md)
                 - [OpenAI](api/fastagency/models/llms/OpenAI.md)

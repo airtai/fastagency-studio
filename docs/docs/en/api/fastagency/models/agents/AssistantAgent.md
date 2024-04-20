@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.models.agents.agents.WebSurferAgent
+::: fastagency.models.agents.AssistantAgent

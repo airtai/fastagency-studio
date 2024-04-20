@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.models.agents.agents.AgentBaseModel
+::: fastagency.app.get_models_schemas

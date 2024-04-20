@@ -1,7 +1,8 @@
-from fastagency.models.llms._base import _llm_registry
+from fastagency.models._registry import Registry
 
 
 def test_get_llm_schemas() -> None:
-    schemas = _llm_registry.get_schemas()
+    registry = Registry.get_default()
+    schemas = registry.get_schemas("llm")
     names = {schema.name for schema in schemas.schemas}
     assert names == {"OpenAI", "AzureOAI"}

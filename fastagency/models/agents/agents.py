@@ -1,47 +1,45 @@
-from typing import Annotated, Dict, List, Optional, Type, TypeVar
+from typing import Annotated, Optional, Type, TypeVar
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from ._base import UUIDModel, register
+
 BM = TypeVar("BM", bound=Type[BaseModel])
 
-_agent_registry: Dict[str, Type[BaseModel]] = {}
+# _agent_registry: Dict[str, Type[BaseModel]] = {}
 
 
-def register_agent(m: BM) -> BM:
-    name = m.__name__  # type: ignore[attr-defined]
-    if name in _agent_registry:
-        raise ValueError(f"Model '{name}' already registered")
+# def register_agent(m: BM) -> BM:
+#     name = m.__name__  # type: ignore[attr-defined]
+#     if name in _agent_registry:
+#         raise ValueError(f"Model '{name}' already registered")
 
-    _agent_registry[name] = m
+#     _agent_registry[name] = m
 
-    return m
-
-
-def list_agents() -> List[str]:
-    return list(_agent_registry.keys())
+#     return m
 
 
-def get_agent_type(name: str) -> Type[BaseModel]:
-    return _agent_registry[name]
+# def list_agents() -> List[str]:
+#     return list(_agent_registry.keys())
 
 
-class _DefaultModel(BaseModel):
-    uuid: Annotated[
-        UUID,
-        Field(title="UUID", description="The unique identifier for agent instance"),
-    ]
+# def get_agent_type(name: str) -> Type[BaseModel]:
+#     return _agent_registry[name]
+
+
+class AgentBaseModel(UUIDModel):
     name: Annotated[str, Field(description="The name of the agent")]
     llm_uuid: Annotated[
         UUID,
         Field(
-            title="LLM UUID", description="The unique identifier for the model instance"
+            title="LLM UUID", description="The unique identifier for the LLM instance"
         ),
     ]
 
 
-@register_agent
-class AssistantAgent(_DefaultModel):
+@register
+class AssistantAgent(AgentBaseModel):
     system_message: Annotated[
         str,
         Field(
@@ -50,8 +48,8 @@ class AssistantAgent(_DefaultModel):
     ]
 
 
-@register_agent
-class WebSurferAgent(_DefaultModel):
+@register
+class WebSurferAgent(AgentBaseModel):
     summarizer_llm_uuid: Annotated[
         UUID,
         Field(

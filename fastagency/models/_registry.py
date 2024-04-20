@@ -1,7 +1,9 @@
-from typing import Annotated, Any, Dict, List, Optional, Type, TypeVar
+from typing import Annotated, Any, Callable, Dict, List, Optional, Type, TypeVar
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+
+from ..constants import REGISTRED_MODEL_TYPES
 
 __all__ = ["Registry", "Schema", "Schemas", "UUIDModel"]
 
@@ -29,33 +31,50 @@ class Schemas(BaseModel):
 
 
 class Registry:
-    def __init__(self, name: str):
-        self._registry: Dict[str, "Type[UUIDModel]"] = {}
-        self._name = name
+    def __init__(self) -> None:
+        keys: List[str] = REGISTRED_MODEL_TYPES.__args__  # type: ignore[attr-defined]
+        self._registry: Dict[str, Dict[str, "Type[UUIDModel]"]] = {
+            key: {} for key in keys
+        }
 
-    def register(self, m: BM) -> BM:
-        name = m.__name__  # type: ignore[attr-defined]
-        if name in self._registry:
-            raise ValueError(f"Class '{name}' already registered in '{self._name}'")
+    def register(self, type: REGISTRED_MODEL_TYPES) -> Callable[[BM], BM]:
+        def _inner(m: BM) -> BM:
+            name = m.__name__  # type: ignore[attr-defined]
+            if name in self._registry[type]:
+                raise ValueError(f"Class '{name}' already registered as '{type}'")
 
-        self._registry[name] = m
+            self._registry[type][name] = m
 
-        return m
+            return m
 
-    def get(self, name: str) -> "Optional[Type[UUIDModel]]":
-        return self._registry.get(name, None)
+        return _inner
 
-    def get_schemas(self) -> Schemas:
+    def get(
+        self, type: REGISTRED_MODEL_TYPES, name: str
+    ) -> "Optional[Type[UUIDModel]]":
+        return self._registry[type].get(name, None)
+
+    def get_schemas(self, type: REGISTRED_MODEL_TYPES) -> Schemas:
         return Schemas(
             schemas=[
                 Schema(name=name, json_schema=model.model_json_schema())
-                for name, model in self._registry.items()
+                for name, model in self._registry[type].items()
             ]
         )
 
-    def validate(self, model_dict: Dict[str, Any], model_name: str) -> None:
-        model_type = self.get(model_name)
+    def validate(
+        self, type: REGISTRED_MODEL_TYPES, model_dict: Dict[str, Any], model_name: str
+    ) -> None:
+        model_type = self.get(type, model_name)
         if model_type is None:
-            raise ValueError(f"Model '{model_name}' not found in '{self._name}")
+            raise ValueError(f"Model '{model_name}' not found as '{type}'")
 
         model_type(**model_dict)
+
+    _default_registry: "Optional[Registry]" = None
+
+    @classmethod
+    def get_default(cls) -> "Registry":
+        if cls._default_registry is None:
+            cls._default_registry = cls()
+        return cls._default_registry

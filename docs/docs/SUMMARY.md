@@ -5,24 +5,20 @@ search:
 - [Features](fastagency.md)
 - Reference
     - fastagency
-        - [get_llm_registry](api/fastagency/get_llm_registry.md)
         - app
-            - [validate_agent_model](api/fastagency/app/validate_agent_model.md)
             - [validate_llm_model](api/fastagency/app/validate_llm_model.md)
         - models
+            - [Registry](api/fastagency/models/Registry.md)
             - [Schema](api/fastagency/models/Schema.md)
             - [Schemas](api/fastagency/models/Schemas.md)
             - agents
                 - agents
+                    - [AgentBaseModel](api/fastagency/models/agents/agents/AgentBaseModel.md)
                     - [AssistantAgent](api/fastagency/models/agents/agents/AssistantAgent.md)
                     - [WebSurferAgent](api/fastagency/models/agents/agents/WebSurferAgent.md)
-                    - [get_agent_type](api/fastagency/models/agents/agents/get_agent_type.md)
-                    - [list_agents](api/fastagency/models/agents/agents/list_agents.md)
-                    - [register_agent](api/fastagency/models/agents/agents/register_agent.md)
             - llms
                 - [AzureOAI](api/fastagency/models/llms/AzureOAI.md)
                 - [OpenAI](api/fastagency/models/llms/OpenAI.md)
-                - [get_llm_registry](api/fastagency/models/llms/get_llm_registry.md)
 - Contributing
     - [Development](getting-started/contributing/CONTRIBUTING.md)
     - [Documentation](getting-started/contributing/docs.md)

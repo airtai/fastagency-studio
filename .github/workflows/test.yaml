@@ -359,58 +359,58 @@ jobs:
 
       - run: rm key.pem
 
-    deploy_frontend:
-      runs-on: ubuntu-22.04
-      permissions:
-        contents: write
-      needs: [deploy_fastapi]
-      if: github.ref_name == 'main' || github.ref_name == 'dev'
-      env:
-        STAGING_NODE_DOMAIN: ${{ vars.STAGING_NODE_DOMAIN }}
-        STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
-        REACT_APP_CUSTOMER_PORTAL_LINK: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_CUSTOMER_PORTAL_LINK || vars.STAGING_REACT_APP_CUSTOMER_PORTAL_LINK }}
-        REACT_APP_API_URL: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_API_URL || vars.STAGING_REACT_APP_API_URL }}
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
-        - uses: actions/setup-node@v3
-          with:
-            node-version: 20
+  deploy_frontend:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    needs: [deploy_fastapi]
+    if: github.ref_name == 'main' || github.ref_name == 'dev'
+    env:
+      STAGING_NODE_DOMAIN: ${{ vars.STAGING_NODE_DOMAIN }}
+      STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+      REACT_APP_CUSTOMER_PORTAL_LINK: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_CUSTOMER_PORTAL_LINK || vars.STAGING_REACT_APP_CUSTOMER_PORTAL_LINK }}
+      REACT_APP_API_URL: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_API_URL || vars.STAGING_REACT_APP_API_URL }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
 
-        - name: Install wasp
-          run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
+      - name: Install wasp
+        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
 
-        - name: Temporary wasp fix
-          run: |
-            PATCH_FILE_PATH=$(cat $(whereis wasp | cut -d " " -f 2) | tail -1 | cut -d " " -f 1 | cut -d "=" -f 2)/Generator/templates/server/package.json
-            echo $PATCH_FILE_PATH
-            sed -i 's/"postinstall": "patch-package"/"postinstall": ""/' $PATCH_FILE_PATH
+      - name: Temporary wasp fix
+        run: |
+          PATCH_FILE_PATH=$(cat $(whereis wasp | cut -d " " -f 2) | tail -1 | cut -d " " -f 1 | cut -d "=" -f 2)/Generator/templates/server/package.json
+          echo $PATCH_FILE_PATH
+          sed -i 's/"postinstall": "patch-package"/"postinstall": ""/' $PATCH_FILE_PATH
 
-        - name: Build wasp
-          run: cd app && wasp build
-        - name: Build frontend
-          run: cd app && cd .wasp/build/web-app && npm install && REACT_APP_API_URL=$REACT_APP_API_URL npm run build
-        - name: Copy 404.html
-          run: cp 404.html app/.wasp/build/web-app/build
+      - name: Build wasp
+        run: cd app && wasp build
+      - name: Build frontend
+        run: cd app && cd .wasp/build/web-app && npm install && REACT_APP_API_URL=$REACT_APP_API_URL npm run build
+      - name: Copy 404.html
+        run: cp 404.html app/.wasp/build/web-app/build
 
-        - name: Deploy to github pages
-          if: github.ref_name == 'main'
-          uses: JamesIves/github-pages-deploy-action@v4
-          with:
-            folder: app/.wasp/build/web-app/build
+      - name: Deploy to github pages
+        if: github.ref_name == 'main'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: app/.wasp/build/web-app/build
 
-        - name: Deploy UI to staging
-          if: github.ref_name == 'dev'
-          run: |
-            apt-get update -y && apt-get install openssh-client git -y
-            eval $(ssh-agent -s)
-            mkdir -p ~/.ssh
-            chmod 700 ~/.ssh
-            ssh-keyscan "$STAGING_NODE_DOMAIN" >> ~/.ssh/known_hosts
-            chmod 644 ~/.ssh/known_hosts
-            echo "$STAGING_SSH_KEY" | base64 --decode > key.pem
-            chmod 600 key.pem
-            ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$STAGING_NODE_DOMAIN" "ls -lah /var/www/html/UI"
-            scp -i key.pem -r app/.wasp/build/web-app/build azureuser@"$STAGING_NODE_DOMAIN":/var/www/html/UI
-            ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$STAGING_NODE_DOMAIN" "ls -lah /var/www/html/UI"
-            rm key.pem
+      - name: Deploy UI to staging
+        if: github.ref_name == 'dev'
+        run: |
+          apt-get update -y && apt-get install openssh-client git -y
+          eval $(ssh-agent -s)
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan "$STAGING_NODE_DOMAIN" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          echo "$STAGING_SSH_KEY" | base64 --decode > key.pem
+          chmod 600 key.pem
+          ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$STAGING_NODE_DOMAIN" "ls -lah /var/www/html/UI"
+          scp -i key.pem -r app/.wasp/build/web-app/build azureuser@"$STAGING_NODE_DOMAIN":/var/www/html/UI
+          ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$STAGING_NODE_DOMAIN" "ls -lah /var/www/html/UI"
+          rm key.pem

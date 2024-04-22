@@ -183,7 +183,7 @@ jobs:
 
   docker_build_push_node:
     runs-on: ubuntu-22.04
-    needs: [unit_test]
+    needs: [unit_test_wasp]
     permissions:
       contents: read
       packages: write

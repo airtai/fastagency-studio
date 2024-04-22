@@ -184,7 +184,7 @@ const RevenueAndProfitChart = ({ weeklyStats, isLoading }: DailyStatsProps) => {
         },
         yaxis: {
           ...options.yaxis,
-          // get the min & max values to the neareast hundred
+          // get the min & max values to the neareast hundred 
           max: Math.ceil(Math.max(...dailyRevenueArray) / 100) * 100,
           min: Math.floor(Math.min(...dailyRevenueArray) / 100) * 100,
         },

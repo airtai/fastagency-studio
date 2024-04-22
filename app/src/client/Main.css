@@ -125,10 +125,10 @@ code {
 }
 
 .toc-marketing-container{
-  -webkit-transition: max-height 0.5s;
-  -moz-transition: max-height 0.5s;
-  -ms-transition: max-height 0.5s;
-  -o-transition: max-height 0.5s;
+  -webkit-transition: max-height 0.5s; 
+  -moz-transition: max-height 0.5s; 
+  -ms-transition: max-height 0.5s; 
+  -o-transition: max-height 0.5s; 
   transition: max-height 0.5s;
   overflow: hidden;
 }
@@ -222,7 +222,7 @@ code {
   opacity: 38%;
 }
 
-.gsi-material-button:not(:disabled):active .gsi-material-button-state,
+.gsi-material-button:not(:disabled):active .gsi-material-button-state, 
 .gsi-material-button:not(:disabled):focus .gsi-material-button-state {
   background-color: #303030;
   opacity: 12%;

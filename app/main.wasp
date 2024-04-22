@@ -6,10 +6,10 @@ app OpenSaaS {
   head: [
         "<meta property='og:type' content='website' />",
         "<meta property='og:title' content='FastAgency' />",
-        "<meta property='og:url' content='https://fastagency.ai/' />",
+        "<meta property='og:url' content='https://fastagency.ai/' />", 
         "<meta property='og:description' content='Quickly build scalable SaaS solutions using our powerful, multi-agent AI framework that streamlines complex processes.' />",
         "<meta property='og:image' content='https://fastagency.ai/public-banner.png' />",
-        "<meta name='twitter:image' content='https://fastagency.ai/public-banner.png' />",
+        "<meta name='twitter:image' content='https://fastagency.ai/public-banner.png' />", 
         "<meta name='twitter:image:width' content='800' />",
         "<meta name='twitter:image:height' content='400' />",
         "<meta name='twitter:card' content='summary_large_image' />",
@@ -17,7 +17,7 @@ app OpenSaaS {
         // "<script defer data-domain='<your-site-id>' src='https://plausible.io/js/script.js'></script>",
         // plausible has script extension `script.local.js` for local development
         // "<script defer data-domain='<your-site-id>' src='https://plausible.io/js/script.local.js'></script>",
-        // google analytics only needs one script and will automatically detect if you are in dev mode
+        // google analytics only needs one script and will automatically detect if you are in dev mode 
         //"<!-- Google tag (gtag.js) --><script>...</script>"
         "<script type='text/javascript'> (function(l) { if (l.search[1] === '/' ) { var decoded = l.search.slice(1).split('&').map(function(s) { return s.replace(/~and~/g, '&') }).join('?'); window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash ); } }(window.location)) </script>",
   ],
@@ -33,7 +33,7 @@ app OpenSaaS {
     onAuthFailedRedirectTo: "/login",
     onAuthSucceededRedirectTo: "/chat",
   },
-  db: {
+  db: { 
     system: PostgreSQL,
     seeds: [
       import { devSeedUsers } from "@src/server/scripts/usersSeed.js",
@@ -42,21 +42,21 @@ app OpenSaaS {
   client: {
     rootComponent: import App from "@src/client/App",
   },
-
+  
   emailSender: {
-    // Note that the "Dummy" provider is just for local development purposes.
+    // Note that the "Dummy" provider is just for local development purposes. 
     // Make sure to check the server logs for the confirmation email token (it will not be sent to an address)!
     // Please use SendGrid in production. See: https://docs.opensaas.sh/guides/email-sending/
-    provider: SendGrid,
+    provider: SendGrid, 
     defaultFrom: {
       name: "Open SaaS App",
       // When using SendGrid, you must use the same email address that you configured your account to send out emails with!
-      email: "me@example.com"
+      email: "me@example.com" 
     },
   },
 }
 
-/* 💽 Wasp defines DB entities via Prisma Database Models:
+/* 💽 Wasp defines DB entities via Prisma Database Models: 
  * https://wasp-lang.dev/docs/data-model/entities
  */
 
@@ -70,17 +70,17 @@ entity User {=psl
   hasAcceptedTos             Boolean         @default(false)
   hasSubscribedToMarketingEmails  Boolean         @default(false)
   isSignUpComplete          Boolean         @default(false)
-  stripeId                  String?
+  stripeId                  String? 
   checkoutSessionId         String?
   hasPaid                   Boolean         @default(false)
   subscriptionTier          String?
   subscriptionStatus        String?
   sendEmail                 Boolean         @default(false)
   datePaid                  DateTime?
-  credits                   Int             @default(3)
+  credits                   Int             @default(3)  
 psl=}
 
-entity DailyStats {=psl
+entity DailyStats {=psl 
   id                               Int             @id @default(autoincrement())
   date                             DateTime        @default(now()) @unique
   totalViews                       Int             @default(0)
@@ -95,9 +95,9 @@ entity DailyStats {=psl
 psl=}
 
 entity PageViewSource {=psl
-  date                     DateTime        @default(now())
-  name                     String
-  visitors                 Int
+  date                     DateTime        @default(now())       
+  name                     String          
+  visitors                 Int             
   dailyStats               DailyStats?     @relation(fields: [dailyStatsId], references: [id])
   dailyStatsId             Int?
   @@id([date, name])
@@ -257,7 +257,7 @@ query getPaginatedUsers {
 /*
  * 📡 These are custom Wasp API Endpoints. Use them for callbacks, webhooks, etc.
  * https://wasp-lang.dev/docs/advanced/apis
- */
+ */ 
 
 api stripeWebhook {
   fn: import { stripeWebhook } from "@src/server/webhooks/stripe.js",

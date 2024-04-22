@@ -61,7 +61,7 @@ server = [
 # dev dependencies
 devdocs = [
     "mkdocs-material==9.5.17",
-    "mkdocs-static-i18n==1.2.0",
+    "mkdocs-static-i18n==1.2.2",
     "mdx-include==1.4.2",
     "mkdocstrings[python]==0.24.3",
     "mkdocs-literate-nav==0.6.1",

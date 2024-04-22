@@ -48,7 +48,7 @@ jobs:
           git checkout gh-pages
 
       - name: Prepare for mode switch
-        run: |
+        run: | # nosemgrep
           if [ "${{ github.event.inputs.choice }}" == "maintenance" ]; then
             timestamp=$(date +"%Y%m%d%H%M%S")
             mv index.html index_${timestamp}.html

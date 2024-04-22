@@ -151,7 +151,79 @@ jobs:
           name: coverage-html
           path: htmlcov
 
-  docker_build_push:
+  unit_test_wasp:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install wasp
+        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
+
+      - name: Temporary wasp fix
+        run: |
+          PATCH_FILE_PATH=$(cat $(whereis wasp | cut -d " " -f 2) | tail -1 | cut -d " " -f 1 | cut -d "=" -f 2)/Generator/templates/server/package.json
+          echo $PATCH_FILE_PATH
+          sed -i 's/"postinstall": "patch-package"/"postinstall": ""/' $PATCH_FILE_PATH
+
+      - name: Run client tests
+        run: cd app && wasp test client run --silent
+
+      - name: Build wasp
+        run: cd app && wasp build
+
+      - name: Build frontend
+        run: cd app && cd .wasp/build/web-app && npm install && REACT_APP_API_URL=$REACT_APP_API_URL npm run build
+
+  docker_build_push_node:
+    runs-on: ubuntu-22.04
+    needs: [unit_test]
+    permissions:
+      contents: read
+      packages: write
+    env:
+      PORT: ${{ vars.PORT }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install wasp
+        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
+
+      - name: Temporary wasp fix
+        run: |
+          PATCH_FILE_PATH=$(cat $(whereis wasp | cut -d " " -f 2) | tail -1 | cut -d " " -f 1 | cut -d "=" -f 2)/Generator/templates/server/package.json
+          echo $PATCH_FILE_PATH
+          sed -i 's/"postinstall": "patch-package"/"postinstall": ""/' $PATCH_FILE_PATH
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: docker pull ghcr.io/$GITHUB_REPOSITORY-node:$GITHUB_REF_NAME || docker pull ghcr.io/$GITHUB_REPOSITORY-node:dev || true
+      - name: Build wasp
+        run: cd app && wasp build
+      - run: docker build --build-arg PORT=$PORT -t ghcr.io/$GITHUB_REPOSITORY-node:${GITHUB_REF_NAME////-} ./app/.wasp/build/
+      - name: Add tag latest if branch is main
+        if: github.ref_name == 'main'
+        run: docker tag ghcr.io/$GITHUB_REPOSITORY-node:$GITHUB_REF_NAME ghcr.io/$GITHUB_REPOSITORY-node:latest
+      - name: Push only if branch name is main or dev
+        if: github.ref_name == 'main' || github.ref_name == 'dev'
+        run: docker push ghcr.io/$GITHUB_REPOSITORY-node --all-tags
+
+  docker_build_push_fastapi:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -191,7 +263,9 @@ jobs:
       - coverage-combine
       - test-macos-latest
       - test-windows-latest
-      - docker_build_push
+      - unit_test_wasp
+      - docker_build_push_node
+      - docker_build_push_fastapi
 
     runs-on: ubuntu-latest
 
@@ -201,7 +275,7 @@ jobs:
         with:
           jobs: ${{ toJSON(needs) }}
 
-  deploy:
+  deploy_fastapi:
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -236,3 +310,107 @@ jobs:
       - run: bash scripts/deploy.sh
 
       - run: rm key.pem
+
+  deploy_node:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash
+    needs: [deploy_fastapi]
+    if: github.ref_name == 'main' || github.ref_name == 'dev'
+    env:
+      GITHUB_USERNAME: ${{ github.actor }}
+      GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      PORT: ${{ vars.PORT }}
+      REACT_APP_CUSTOMER_PORTAL_LINK: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_CUSTOMER_PORTAL_LINK || vars.STAGING_REACT_APP_CUSTOMER_PORTAL_LINK }}
+      GOOGLE_CLIENT_ID: ${{ github.ref_name == 'main' && secrets.PROD_GOOGLE_CLIENT_ID || secrets.STAGING_GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ github.ref_name == 'main' && secrets.PROD_GOOGLE_CLIENT_SECRET || secrets.STAGING_GOOGLE_CLIENT_SECRET }}
+      ADMIN_EMAILS: ${{ vars.ADMIN_EMAILS }}
+      WASP_SERVER_URL: ${{ github.ref_name == 'main' && vars.PROD_WASP_SERVER_URL || vars.STAGING_WASP_SERVER_URL }}
+      ADS_SERVER_URL: ${{ github.ref_name == 'main' && vars.PROD_ADS_SERVER_URL || vars.STAGING_ADS_SERVER_URL }}
+      NODE_DOMAIN: ${{ github.ref_name == 'main' && vars.PROD_NODE_DOMAIN || vars.STAGING_NODE_DOMAIN }}
+      WASP_WEB_CLIENT_URL: ${{ github.ref_name == 'main' && vars.PROD_WASP_WEB_CLIENT_URL || vars.STAGING_WASP_WEB_CLIENT_URL }}
+      DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
+      REACT_APP_API_URL: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_API_URL || vars.STAGING_REACT_APP_API_URL }}
+      JWT_SECRET: ${{ github.ref_name == 'main' && secrets.PROD_JWT_SECRET || secrets.STAGING_JWT_SECRET }}
+      PRO_SUBSCRIPTION_PRICE_ID: ${{ github.ref_name == 'main' && secrets.PROD_PRO_SUBSCRIPTION_PRICE_ID || secrets.STAGING_PRO_SUBSCRIPTION_PRICE_ID }}
+      STRIPE_KEY: ${{ github.ref_name == 'main' && secrets.PROD_STRIPE_KEY || secrets.STAGING_STRIPE_KEY }}
+      STRIPE_WEBHOOK_SECRET: ${{ github.ref_name == 'main' && secrets.PROD_STRIPE_WEBHOOK_SECRET || secrets.STAGING_STRIPE_WEBHOOK_SECRET }}
+      SSH_KEY: ${{ github.ref_name == 'main' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
+    steps:
+      - uses: actions/checkout@v3
+      # This is to fix GIT not liking owner of the checkout dir - https://github.com/actions/runner/issues/2033#issuecomment-1204205989
+      - run: chown -R $(id -u):$(id -g) $PWD
+
+      - run: if [[ $GITHUB_REF_NAME == "main" ]]; then echo "TAG=latest" >> $GITHUB_ENV ; else echo "TAG=dev" >> $GITHUB_ENV ; fi;
+
+      - run: echo "PATH=$PATH:/github/home/.local/bin" >> $GITHUB_ENV
+      - run: "which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )"
+      - run: eval $(ssh-agent -s)
+      - run: mkdir -p ~/.ssh
+      - run: chmod 700 ~/.ssh
+      - run: ssh-keyscan "$NODE_DOMAIN" >> ~/.ssh/known_hosts
+      - run: chmod 644 ~/.ssh/known_hosts
+      - run: echo "$SSH_KEY" | base64 --decode > key.pem
+      - run: chmod 600 key.pem
+
+      - run: ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$NODE_DOMAIN" "docker images"
+      - run: bash scripts/deploy_node.sh
+
+      - run: rm key.pem
+
+    deploy_frontend:
+      runs-on: ubuntu-22.04
+      permissions:
+        contents: write
+      needs: [deploy_fastapi]
+      if: github.ref_name == 'main' || github.ref_name == 'dev'
+      env:
+        STAGING_NODE_DOMAIN: ${{ vars.STAGING_NODE_DOMAIN }}
+        STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+        REACT_APP_CUSTOMER_PORTAL_LINK: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_CUSTOMER_PORTAL_LINK || vars.STAGING_REACT_APP_CUSTOMER_PORTAL_LINK }}
+        REACT_APP_API_URL: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_API_URL || vars.STAGING_REACT_APP_API_URL }}
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+        - uses: actions/setup-node@v3
+          with:
+            node-version: 20
+
+        - name: Install wasp
+          run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
+
+        - name: Temporary wasp fix
+          run: |
+            PATCH_FILE_PATH=$(cat $(whereis wasp | cut -d " " -f 2) | tail -1 | cut -d " " -f 1 | cut -d "=" -f 2)/Generator/templates/server/package.json
+            echo $PATCH_FILE_PATH
+            sed -i 's/"postinstall": "patch-package"/"postinstall": ""/' $PATCH_FILE_PATH
+
+        - name: Build wasp
+          run: cd app && wasp build
+        - name: Build frontend
+          run: cd app && cd .wasp/build/web-app && npm install && REACT_APP_API_URL=$REACT_APP_API_URL npm run build
+        - name: Copy 404.html
+          run: cp 404.html app/.wasp/build/web-app/build
+
+        - name: Deploy to github pages
+          if: github.ref_name == 'main'
+          uses: JamesIves/github-pages-deploy-action@v4
+          with:
+            folder: app/.wasp/build/web-app/build
+
+        - name: Deploy UI to staging
+          if: github.ref_name == 'dev'
+          run: |
+            apt-get update -y && apt-get install openssh-client git -y
+            eval $(ssh-agent -s)
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            ssh-keyscan "$STAGING_NODE_DOMAIN" >> ~/.ssh/known_hosts
+            chmod 644 ~/.ssh/known_hosts
+            echo "$STAGING_SSH_KEY" | base64 --decode > key.pem
+            chmod 600 key.pem
+            ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$STAGING_NODE_DOMAIN" "ls -lah /var/www/html/UI"
+            scp -i key.pem -r app/.wasp/build/web-app/build azureuser@"$STAGING_NODE_DOMAIN":/var/www/html/UI
+            ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$STAGING_NODE_DOMAIN" "ls -lah /var/www/html/UI"
+            rm key.pem

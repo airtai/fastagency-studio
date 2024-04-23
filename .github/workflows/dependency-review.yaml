@@ -19,14 +19,3 @@ jobs:
         uses: actions/checkout@v4
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v4
-        with:
-          license-check: true
-          vulnerability-check: true
-          show-openssf-scorecard: false
-      - name: 'Dependency Review - Show OpenSSF Scorecard'
-        uses: actions/dependency-review-action@v4
-        with:
-          license-check: false
-          vulnerability-check: false
-          warn-only: true
-          show-openssf-scorecard: true

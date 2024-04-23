@@ -1,5 +1,5 @@
 import { ApexOptions } from 'apexcharts';
-import React, { useState, useMemo, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { DailyStatsProps } from '../common/types';
 
@@ -11,7 +11,7 @@ const options: ApexOptions = {
   },
   colors: ['#3C50E0', '#80CAEE'],
   chart: {
-    fontFamily: 'Satoshi, sans-serif',
+    fontFamily: 'Rubik-Medium, sans-serif',
     height: 335,
     type: 'area',
     dropShadow: {
@@ -184,7 +184,7 @@ const RevenueAndProfitChart = ({ weeklyStats, isLoading }: DailyStatsProps) => {
         },
         yaxis: {
           ...options.yaxis,
-          // get the min & max values to the neareast hundred 
+          // get the min & max values to the neareast hundred
           max: Math.ceil(Math.max(...dailyRevenueArray) / 100) * 100,
           min: Math.floor(Math.min(...dailyRevenueArray) / 100) * 100,
         },

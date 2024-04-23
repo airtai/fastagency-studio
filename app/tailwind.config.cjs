@@ -9,7 +9,6 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        satoshi: ['Satoshi', 'sans-serif'],
         rubik: ['Rubik-Medium', 'sans-serif'],
       },
       colors: {

@@ -75,8 +75,7 @@ export const footerNavigation = {
   //   { name: 'Blog', href: BLOG_URL },
   // ],
   company: [
-    { name: 'airt', href: 'https://airt.ai/' },
     { name: 'Privacy', href: '/privacy' },
-    { name: 'Terms of Service', href: '/toc' },
+    { name: 'Terms & Conditions', href: '/toc' },
   ],
 };

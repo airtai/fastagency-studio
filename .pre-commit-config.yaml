@@ -16,7 +16,6 @@ repos:
       - id: check-added-large-files
         exclude: |
           (?x)^(
-              app/src/client/static/open-saas-banner.png|
               blog/package-lock.json
           )$
 

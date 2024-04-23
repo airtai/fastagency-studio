@@ -115,14 +115,7 @@ export default function App({ children }: { children: ReactNode }) {
                   <div className='relative flex flex-col min-h-screen justify-between'>
                     {shouldDisplayAppNavBar && <AppNavBar />}
                     {children}
-                    <div>
-                      <Footer />
-                      <div className='flex items-center h-20 bg-airt-footer-copyrights'>
-                        <p className='text-center w-full text-sm text-airt-font-base opacity-50'>
-                          © 2024 airt. All rights reserved.
-                        </p>
-                      </div>
-                    </div>
+                    <FooterWrapper />
                   </div>
                 )}
               </>
@@ -147,17 +140,31 @@ export default function App({ children }: { children: ReactNode }) {
                 ))
               )}
             </div>
-            <div>
-              <Footer />
-              <div className='flex items-center h-20 bg-airt-footer-copyrights'>
-                <p className='text-center w-full text-sm text-airt-font-base opacity-50'>
-                  © 2024 airt. All rights reserved.
-                </p>
-              </div>
-            </div>
+            <FooterWrapper />
           </div>
         )}
       </div>
     </>
   );
 }
+
+const FooterWrapper: React.FC = () => {
+  return (
+    <div>
+      <Footer />
+      <div className='flex items-center h-20 bg-airt-footer-copyrights'>
+        <p className='text-center w-full text-sm text-airt-font-base opacity-50'>
+          © 2024{' '}
+          <a
+            href='https://airt.ai'
+            className='text-sm leading-6 text-airt-font-base underline dark:text-white hover:opacity-80'
+            target='_blank'
+          >
+            airt
+          </a>
+          . All rights reserved.
+        </p>
+      </div>
+    </div>
+  );
+};

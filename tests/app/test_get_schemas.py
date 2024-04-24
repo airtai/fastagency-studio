@@ -1,31 +1,28 @@
-import pytest
 from fastapi.testclient import TestClient
 
 from fastagency.app import app
-from fastagency.models import ModelSchemas
+from fastagency.models.registry import Schemas
 
 client = TestClient(app)
 
 
 class TestGetSchema:
-    @pytest.mark.parametrize(
-        ("type_name", "expected"),
-        [
-            ("llm", ("OpenAI", "AzureOAI")),
-            ("agent", ("AssistantAgent", "WebSurferAgent")),
-        ],
-    )
-    def test_return_all(self, type_name: str, expected: tuple[str]) -> None:
+    def test_return_all(self) -> None:
         response = client.get("/models/schemas")
         assert response.status_code == 200
 
-        schemas = [
-            ModelSchemas(**json)
-            for json in response.json()["schemas"]
-            if json["name"] == type_name
-        ]
-        assert len(schemas) == 1
-        schema = schemas[0]
+        schemas = Schemas(**response.json())
 
-        schemas_names = [schema.name for schema in schema.schemas]
-        assert set(schemas_names) == set(expected)
+        types = {schemas.name: schemas.schemas for schemas in schemas.list_of_schemas}
+        assert set(types.keys()) == {"secret", "llm", "agent"}
+
+        model_names = {
+            type_name: {model.name for model in model_schema_list}
+            for type_name, model_schema_list in types.items()
+        }
+        expected = {
+            "secret": {"AzureOAIAPIKey", "OpenAIAPIKey"},
+            "llm": {"AzureOAI", "OpenAI"},
+            "agent": {"AssistantAgent", "WebSurferAgent"},
+        }
+        assert model_names == expected

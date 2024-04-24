@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.models.Schemas
+::: fastagency.models.registry.Schemas

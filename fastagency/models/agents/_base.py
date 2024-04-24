@@ -1,16 +1,16 @@
 from typing import Annotated
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
-from .._registry import Registry, UUIDModel
+from ..registry import Registry
 
 __all__ = ["AgentBaseModel", "register"]
 
 register = Registry.get_default().register("agent")
 
 
-class AgentBaseModel(UUIDModel):
+class AgentBaseModel(BaseModel):
     name: Annotated[str, Field(description="The name of the agent")]
     llm_uuid: Annotated[
         UUID,

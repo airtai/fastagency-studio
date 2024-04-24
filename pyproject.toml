@@ -132,6 +132,9 @@ exclude = [
 ]
 
 [tool.mypy]
+
+files = ["fastagency", "tests"]
+
 strict = true
 python_version = "3.9"
 ignore_missing_imports = true

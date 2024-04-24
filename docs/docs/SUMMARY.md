@@ -9,16 +9,23 @@ search:
             - [get_models_schemas](api/fastagency/app/get_models_schemas.md)
             - [validate_model](api/fastagency/app/validate_model.md)
         - models
-            - [ModelSchemas](api/fastagency/models/ModelSchemas.md)
             - [Registry](api/fastagency/models/Registry.md)
-            - [Schema](api/fastagency/models/Schema.md)
-            - [Schemas](api/fastagency/models/Schemas.md)
             - agents
                 - [AssistantAgent](api/fastagency/models/agents/AssistantAgent.md)
                 - [WebSurferAgent](api/fastagency/models/agents/WebSurferAgent.md)
             - llms
                 - [AzureOAI](api/fastagency/models/llms/AzureOAI.md)
                 - [OpenAI](api/fastagency/models/llms/OpenAI.md)
+            - registry
+                - [ModelSchema](api/fastagency/models/registry/ModelSchema.md)
+                - [ModelSchemas](api/fastagency/models/registry/ModelSchemas.md)
+                - [ObjectReference](api/fastagency/models/registry/ObjectReference.md)
+                - [ObjectWrapper](api/fastagency/models/registry/ObjectWrapper.md)
+                - [Registry](api/fastagency/models/registry/Registry.md)
+                - [Schemas](api/fastagency/models/registry/Schemas.md)
+                - [get_reference_model](api/fastagency/models/registry/get_reference_model.md)
+                - [get_wrapper_model](api/fastagency/models/registry/get_wrapper_model.md)
+                - [register](api/fastagency/models/registry/register.md)
 - Contributing
     - [Development](getting-started/contributing/CONTRIBUTING.md)
     - [Documentation](getting-started/contributing/docs.md)

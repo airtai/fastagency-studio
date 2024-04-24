@@ -294,7 +294,7 @@ jobs:
       DOMAIN: ${{ github.ref_name == 'main' && vars.PROD_DOMAIN || vars.STAGING_DOMAIN }}
       SSH_KEY: ${{ github.ref_name == 'main' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
     steps:
-      - uses: actions/checkout@v3 # Don't change it to cheackout@v4. V4 is not working with container image.
+      - uses: actions/checkout@v4 # Don't change it to cheackout@v4. V4 is not working with container image.
       # This is to fix GIT not liking owner of the checkout dir - https://github.com/actions/runner/issues/2033#issuecomment-1204205989
       - run: chown -R $(id -u):$(id -g) $PWD
 
@@ -342,7 +342,7 @@ jobs:
       STRIPE_WEBHOOK_SECRET: ${{ github.ref_name == 'main' && secrets.PROD_STRIPE_WEBHOOK_SECRET || secrets.STAGING_STRIPE_WEBHOOK_SECRET }}
       SSH_KEY: ${{ github.ref_name == 'main' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           lfs: true
       # This is to fix GIT not liking owner of the checkout dir - https://github.com/actions/runner/issues/2033#issuecomment-1204205989

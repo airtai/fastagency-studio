@@ -3,7 +3,7 @@ import React from 'react';
 import { getModels, useQuery, updateUserModels, addUserModels, deleteUserModels } from 'wasp/client/operations';
 
 import { useModels, ModelsActionType } from '../hooks/useModels';
-import CustomLayout from './layout/CustomLayout';
+import TypesManagerLayout from './layout/TypesManagerLayout';
 import CustomBreadcrumb from '../components/CustomBreadcrumb';
 import Loader from '../admin/common/Loader';
 import NotificationBox from '../components/NotificationBox';
@@ -11,7 +11,7 @@ import ModelsList from '../components/ModelsList';
 import ModelForm from '../components/ModelForm';
 import Button from '../components/Button';
 
-const ModelsPage = () => {
+const LLMsPage = () => {
   const { state, dispatch, fetchData } = useModels();
   const { data: modelsList, refetch: refetchModels, isLoading: getModelsIsLoading } = useQuery(getModels);
 
@@ -64,7 +64,7 @@ const ModelsPage = () => {
   };
 
   return (
-    <CustomLayout>
+    <TypesManagerLayout>
       <CustomBreadcrumb pageName='Models' />
       <div className='flex flex-col gap-10'>
         <div className='flex flex-col gap-4'>
@@ -119,11 +119,11 @@ const ModelsPage = () => {
           </div>
         </div>
       </div>
-    </CustomLayout>
+    </TypesManagerLayout>
   );
 };
 
-export default ModelsPage;
+export default LLMsPage;
 
 const LoaderComponent: React.FC = () => (
   <div className='absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>

@@ -1,9 +1,9 @@
-import CustomLayout from './layout/CustomLayout';
+import TypesManagerLayout from './layout/TypesManagerLayout';
 import CustomBreadcrumb from '../components/CustomBreadcrumb';
 
 const AgentsPage = () => {
   return (
-    <CustomLayout>
+    <TypesManagerLayout>
       <CustomBreadcrumb pageName='Agents' />
       <div className='flex flex-col gap-10'>
         <div className='flex flex-col gap-4'>
@@ -17,7 +17,7 @@ const AgentsPage = () => {
           </div>
         </div>
       </div>
-    </CustomLayout>
+    </TypesManagerLayout>
   );
 };
 

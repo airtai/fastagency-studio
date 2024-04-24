@@ -37,7 +37,7 @@ const ModelForm: React.FC<ModelFormProps> = ({
           {initialModelSchema && (
             <DynamicFormBuilder
               jsonSchema={initialModelSchema}
-              validationURL={`models/llms/${selectedModel}/validate`}
+              validationURL={`models/${selectedModel}/validate`}
               updateExistingModel={updateExistingModel ?? null}
               onSuccessCallback={onSuccessCallback}
               onCancelCallback={onCancelCallback}

@@ -101,7 +101,7 @@ export const getAvailableModels: GetAvailableModels<void, any> = async (user, co
   }
 
   try {
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/models/llms/schemas`, {
+    const response = await fetch(`${FASTAGENCY_SERVER_URL}/models/schemas`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });

@@ -9,7 +9,7 @@ interface Props {
   children?: ReactNode;
 }
 
-const CustomLayout: FC<Props> = ({ children }) => {
+const TypesManagerLayout: FC<Props> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: user, isError, isSuccess, isLoading } = useAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -143,4 +143,4 @@ const CustomLayout: FC<Props> = ({ children }) => {
   );
 };
 
-export default CustomLayout;
+export default TypesManagerLayout;

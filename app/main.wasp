@@ -134,9 +134,9 @@ page ToolBoxPage {
   component: import ToolBoxPage from "@src/client/app/ToolBoxPage"
 }
 
-route ModelsRoute { path: "/build/models", to: ModelsPage }
-page ModelsPage {
-  component: import ModelsPage from "@src/client/app/ModelsPage"
+route LLMsRoute { path: "/build/llms", to: LLMsPage }
+page LLMsPage {
+  component: import LLMsPage from "@src/client/app/LLMsPage"
 }
 
 route TeamsRoute { path: "/build/teams", to: TeamsPage }

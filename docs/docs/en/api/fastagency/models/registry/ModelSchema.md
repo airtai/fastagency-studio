@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.app.validate_agent_model
+::: fastagency.models.registry.ModelSchema

@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.models.llms.validate_model
+::: fastagency.models.registry.ObjectReference

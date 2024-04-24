@@ -1,66 +1,40 @@
 import json
-from functools import cache
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, ValidationError
 
-from .models.agents import get_agent_type, list_agents
-from .models.llms import LLMSchemas, get_llm_schemas, validate_model
+# from .constants import REGISTRED_MODEL_TYPES
+from .models.registry import Registry, Schemas
 
 app = FastAPI()
 
 
-@app.get("/models/llms/schemas")
-@cache
-def models_llms_schemas() -> LLMSchemas:
-    return get_llm_schemas()
+@app.get("/models/schemas")
+async def get_models_schemas() -> Schemas:
+    schemas = Registry.get_default().get_schemas()
+    return schemas
 
 
-@app.post("/models/llms/{model_name}/validate")
-def validate_llm_model(model_name: str, llm: Dict[str, Any]) -> None:
+# todo: replace str with Literal[REGISTRED_MODEL_TYPES]
+@app.post("/models/validate")
+async def validate_model(model_json: Dict[str, Any]) -> None:
     try:
-        validate_model(llm, model_name)
+        Registry.get_default().validate(model_json)
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=json.loads(e.json())) from e
-    except ValueError as e:
-        raise HTTPException(
-            status_code=422,
-            detail={"error": f"{model_name} is not a valid model name."},
-        ) from e
 
-
-@app.get("/models/agents/")
-@cache
-def list_agent_models() -> List[str]:
-    return list_agents()
-
-
-@app.get("/models/agents/{agent_name}")
-@cache
-def get_agent_schema(agent_name: str) -> Dict[str, Any]:
-    model = get_agent_type(agent_name)
-    schema = model.model_json_schema()
-
-    return schema
-
-
-for agent_name in list_agents():
-    AgentType = get_agent_type(agent_name)
-
-    @app.post(f"/models/agents/{agent_name}/validate")
-    def validate_agent_model(agent: AgentType) -> None:  # type: ignore[valid-type]
-        pass
 
 # new routes
 
-all_models: Dict[str, List[Any]] = {}
+all_models: Dict[int, List[Optional[Dict[str, Any]]]] = {}
+
 
 def find_model(user_id: int, uuid: str) -> Dict[str, Any]:
     if user_id not in all_models:
         raise HTTPException(status_code=404, detail="User not found")
     for model in all_models[user_id]:
-        if model["uuid"] == uuid:
+        if model and model["uuid"] == uuid:
             return model
     raise HTTPException(status_code=404, detail="Model not found")
 

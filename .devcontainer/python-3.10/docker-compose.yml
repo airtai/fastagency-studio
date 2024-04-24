@@ -2,7 +2,7 @@ version: '3'
 
 services:
   python-3.10:  # nosemgrep
-    image: mcr.microsoft.com/devcontainers/python:3.10
+    image: mcr.microsoft.com/devcontainers/python:3.10-bullseye
     container_name: $USER-python-3.10
     volumes:
       - ../../:/workspaces/fastagency:cached

@@ -1,36 +1,67 @@
 import uuid
 
+import pytest
 from pydantic_core import Url
 
-from fastagency.models.llms._openai import OpenAI
+from fastagency.models.llms._openai import OpenAI, OpenAIAPIKey, OpenAIAPIKeyRef
 
 
 class TestOpenAI:
     def test_openai_model(self) -> None:
-        llm_uuid = uuid.uuid4()
+        api_key_uuid = uuid.uuid4()
+        api_key = OpenAIAPIKeyRef(uuid=api_key_uuid)
+
         model = OpenAI(
-            api_key="sk-1234567890abcdef1234567890abcdef",  # pragma: allowlist secret
-            uuid=llm_uuid,
+            api_key=api_key,
         )
         expected = {
             "model": "gpt-3.5-turbo",
-            "api_key": "sk-1234567890abcdef1234567890abcdef",  # pragma: allowlist secret
+            "api_key": {
+                "type": "secret",
+                "name": "OpenAIAPIKey",
+                "uuid": api_key_uuid,
+            },
             "base_url": Url("https://api.openai.com/v1"),
             "api_type": "openai",
-            "uuid": llm_uuid,
         }
+
         assert model.model_dump() == expected
 
-    def test_openai_model_schema(self) -> None:
+    def test_openai_schema(self) -> None:
         schema = OpenAI.model_json_schema()
         expected = {
+            "$defs": {
+                "OpenAIAPIKeyRef": {
+                    "properties": {
+                        "type": {
+                            "const": "secret",
+                            "default": "secret",
+                            "description": "The name of the type of the data",
+                            "enum": ["secret"],
+                            "title": "Type",
+                            "type": "string",
+                        },
+                        "name": {
+                            "const": "OpenAIAPIKey",
+                            "default": "OpenAIAPIKey",
+                            "description": "The name of the data",
+                            "enum": ["OpenAIAPIKey"],
+                            "title": "Name",
+                            "type": "string",
+                        },
+                        "uuid": {
+                            "description": "The unique identifier",
+                            "format": "uuid",
+                            "title": "UUID",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["uuid"],
+                    "title": "OpenAIAPIKeyRef",
+                    "type": "object",
+                }
+            },
             "properties": {
-                "uuid": {
-                    "description": "The unique identifier",
-                    "format": "uuid",
-                    "title": "UUID",
-                    "type": "string",
-                },
                 "model": {
                     "default": "gpt-3.5-turbo",
                     "description": "The model to use for the OpenAI API, e.g. 'gpt-3.5-turbo'",
@@ -38,11 +69,7 @@ class TestOpenAI:
                     "title": "Model",
                     "type": "string",
                 },
-                "api_key": {
-                    "description": "The API key for the OpenAI API, e.g. 'sk-1234567890abcdef1234567890abcdef'",
-                    "title": "API Key",
-                    "type": "string",
-                },
+                "api_key": {"$ref": "#/$defs/OpenAIAPIKeyRef"},
                 "base_url": {
                     "default": "https://api.openai.com/v1",
                     "description": "The base URL of the OpenAI API",
@@ -61,8 +88,25 @@ class TestOpenAI:
                     "type": "string",
                 },
             },
-            "required": ["uuid", "api_key"],
+            "required": ["api_key"],
             "title": "OpenAI",
             "type": "object",
         }
         assert schema == expected
+
+
+class TestOpenAIAPIKey:
+    def test_constructor_success(self) -> None:
+        api_key = OpenAIAPIKey(
+            api_key="sk-1234567890abcdef1234567890abcdef"  # pragma: allowlist secret
+        )  # pragma: allowlist secret
+        assert (
+            api_key.api_key
+            == "sk-1234567890abcdef1234567890abcdef"  # pragma: allowlist secret
+        )  # pragma: allowlist secret
+
+    def test_constructor_failure(self) -> None:
+        with pytest.raises(ValueError, match="API Key must start with 'sk-'"):
+            OpenAIAPIKey(
+                api_key="1234567890abcdef1234567890abcdef"  # pragma: allowlist secret
+            )  # pragma: allowlist secret

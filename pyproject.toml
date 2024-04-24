@@ -132,6 +132,9 @@ exclude = [
 ]
 
 [tool.mypy]
+
+files = ["fastagency", "tests"]
+
 strict = true
 python_version = "3.9"
 ignore_missing_imports = true
@@ -221,7 +224,7 @@ source = [
     "docs/docs_src",
     "examples",
     "fastagency",
-    "tests"
+#    "tests",
 ]
 context = '${CONTEXT}'
 omit = [
@@ -231,6 +234,8 @@ omit = [
 [tool.coverage.report]
 show_missing = true
 skip_empty = true
+sort = "miss"
+
 exclude_also = [
     "if __name__ == .__main__.:",
     "self.logger",

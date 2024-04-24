@@ -136,7 +136,7 @@ export const addUserModels: AddUserModels<AddUserModelsPayload, void> = async (a
     throw new HttpError(401);
   }
   try {
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/models/add`, {
+    const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: context.user.id, ...args.data }),
@@ -173,7 +173,7 @@ export const updateUserModels: UpdateUserModels<UpdateUserModelsPayload, void> =
   }
 
   try {
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/models/update`, {
+    const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models/update`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: context.user.id, ...args.data, uuid: args.uuid }),
@@ -200,7 +200,7 @@ export const deleteUserModels: DeleteUserModels<DeleteUserModelsPayload, void> =
   }
 
   try {
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/models/delete`, {
+    const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models/delete`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: context.user.id, uuid: args.uuid }),

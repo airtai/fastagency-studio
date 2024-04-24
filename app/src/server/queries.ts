@@ -117,7 +117,7 @@ type GetModelsValues = {
 export const getModels: GetModels<void, GetModelsValues[]> = async (_args, context) => {
   try {
     const data = { user_id: context.user.id };
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/models`, {
+    const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

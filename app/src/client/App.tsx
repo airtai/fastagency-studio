@@ -49,13 +49,16 @@ export default function App({ children }: { children: ReactNode }) {
     return location.pathname.startsWith('/account');
   }, [location]);
 
-  const isChatPage = useMemo(() => {
-    return location.pathname.startsWith('/chat');
+  const isPlayGroundPage = useMemo(() => {
+    return location.pathname.startsWith('/playground');
+  }, [location]);
+
+  const isBuildPage = useMemo(() => {
+    return location.pathname.startsWith('/build');
   }, [location]);
 
   useEffect(() => {
     if (user) {
-      console.log('user', user);
       if (!user.isSignUpComplete) {
         if (user.hasAcceptedTos) {
           updateCurrentUser({
@@ -101,7 +104,7 @@ export default function App({ children }: { children: ReactNode }) {
     <>
       <div className='bg-gradient-to-b from-airt-hero-gradient-start via-airt-hero-gradient-middle to-airt-secondary min-h-screen dark:text-white dark:bg-boxdark-2'>
         {isError && (addServerErrorClass(), (<ServerNotRechableComponent />))}
-        {isAdminDashboard || isChatPage ? (
+        {isAdminDashboard || isPlayGroundPage || isBuildPage ? (
           <>
             {showTosAndMarketingEmailsModal ? (
               <>
@@ -109,15 +112,24 @@ export default function App({ children }: { children: ReactNode }) {
               </>
             ) : (
               <>
-                {isAdminDashboard ? (
+                {shouldDisplayAppNavBar && <AppNavBar />}
+                {children}
+                {/* {isAdminDashboard ? (
                   children
                 ) : (
                   <div className='relative flex flex-col min-h-screen justify-between'>
                     {shouldDisplayAppNavBar && <AppNavBar />}
                     {children}
-                    <FooterWrapper />
+                    <div>
+                      <Footer />
+                      <div className='flex items-center h-20 bg-airt-footer-copyrights'>
+                        <p className='text-center w-full text-sm text-airt-font-base opacity-50'>
+                          © 2024 airt. All rights reserved.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                )}
+                )} */}
               </>
             )}
           </>
@@ -140,31 +152,17 @@ export default function App({ children }: { children: ReactNode }) {
                 ))
               )}
             </div>
-            <FooterWrapper />
+            <div>
+              <Footer />
+              <div className='flex items-center h-20 bg-airt-footer-copyrights'>
+                <p className='text-center w-full text-sm text-airt-font-base opacity-50'>
+                  © 2024 airt. All rights reserved.
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </div>
     </>
   );
 }
-
-const FooterWrapper: React.FC = () => {
-  return (
-    <div>
-      <Footer />
-      <div className='flex items-center h-20 bg-airt-footer-copyrights'>
-        <p className='text-center w-full text-sm text-airt-font-base opacity-50'>
-          © 2024{' '}
-          <a
-            href='https://airt.ai'
-            className='text-sm leading-6 text-airt-font-base underline dark:text-white hover:opacity-80'
-            target='_blank'
-          >
-            airt
-          </a>
-          . All rights reserved.
-        </p>
-      </div>
-    </div>
-  );
-};

@@ -17,8 +17,8 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({ type, message, onClic
         <div className='mt-4 text-right'>
           <button
             onClick={onClick}
-            className={`py-2 px-4 rounded text-airt-font-base focus:outline-none ${
-              isSuccess ? 'bg-airt-secondary' : 'bg-airt-secondary'
+            className={`py-2 px-4 rounded text-airt-font-base focus:outline-none hover:bg-opacity-85 ${
+              isSuccess ? 'bg-airt-secondary' : 'bg-airt-error'
             }`}
           >
             OK

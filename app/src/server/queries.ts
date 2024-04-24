@@ -1,6 +1,7 @@
 import { type DailyStats, type User, type PageViewSource } from 'wasp/entities';
 import { HttpError } from 'wasp/server';
-import { type GetDailyStats, type GetPaginatedUsers } from 'wasp/server/operations';
+import { type GetDailyStats, type GetPaginatedUsers, type GetModels } from 'wasp/server/operations';
+import { FASTAGENCY_SERVER_URL } from './common/constants';
 
 type DailyStatsWithSources = DailyStats & {
   sources: PageViewSource[];
@@ -103,4 +104,34 @@ export const getPaginatedUsers: GetPaginatedUsers<GetPaginatedUsersInput, GetPag
     users: queryResults,
     totalPages,
   };
+};
+
+type GetModelsValues = {
+  model: string;
+  base_url: string;
+  api_type: string;
+  api_version?: string;
+  uuid: string;
+};
+
+export const getModels: GetModels<void, GetModelsValues[]> = async (_args, context) => {
+  try {
+    const data = { user_id: context.user.id };
+    const response = await fetch(`${FASTAGENCY_SERVER_URL}/models`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
+
+    if (!response.ok) {
+      const errorMsg = json.detail || `HTTP error with status code ${response.status}`;
+      console.error('Server Error:', errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    return json;
+  } catch (error: any) {
+    throw new HttpError(500, error.message);
+  }
 };

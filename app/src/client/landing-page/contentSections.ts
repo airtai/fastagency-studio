@@ -4,7 +4,8 @@ import avatarPlaceholder from '../static/avatar-placeholder.png';
 
 export const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Chat', href: '/chat' },
+  { name: 'Build', href: '/build' },
+  { name: 'Playground', href: '/playground' },
   { name: 'Pricing', href: '/pricing' },
 ];
 export const features = [
@@ -76,6 +77,6 @@ export const footerNavigation = {
   // ],
   company: [
     { name: 'Privacy', href: '/privacy' },
-    { name: 'Terms & Conditions', href: '/toc' },
+    { name: 'Terms of Service', href: '/toc' },
   ],
 };

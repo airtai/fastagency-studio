@@ -1,22 +1,17 @@
 import { useAuth } from 'wasp/client/auth';
-import React, { useState, ReactElement, FC, useRef, useEffect } from 'react';
+import React, { useState, ReactNode, FC, useRef, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import CustomSidebar from '../../components/CustomSidebar';
 import LoadingComponent from '../../components/LoadingComponent';
 import { cn } from '../../../shared/utils';
 
-interface ChildComponentProps {
-  activeComponent: string;
-}
-
 interface Props {
-  children: ReactElement<ChildComponentProps>[] | ReactElement<ChildComponentProps>;
+  children?: ReactNode;
 }
 
 const TypesManagerLayout: FC<Props> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: user, isError, isSuccess, isLoading } = useAuth();
-  const [activeComponent, setActiveComponent] = useState<string>('secrets');
   const scrollRef = useRef<HTMLDivElement>(null);
   const history = useHistory();
 
@@ -55,20 +50,12 @@ const TypesManagerLayout: FC<Props> = ({ children }) => {
     ? 'h-[calc(100vh-165px)]'
     : 'h-[calc(100vh-80px)]';
 
-  const handleMenuChange = (menuName: string) => {
-    setActiveComponent(menuName);
-  };
-
-  const enhancedChildren = React.Children.map(children, (child) =>
-    React.isValidElement(child) ? React.cloneElement(child, { activeComponent }) : child
-  );
-  console.log('enhancedChildren: ', enhancedChildren);
   return (
     <div className='dark:bg-boxdark-2 dark:text-bodydark bg-captn-light-blue'>
       {/* <!-- ===== Page Wrapper Start ===== --> */}
       <div className={`flex ${wrapperClass} overflow-hidden`}>
         {/* <!-- ===== Sidebar Start ===== --> */}
-        <CustomSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onMenuSelect={handleMenuChange} />
+        <CustomSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         {/* <!-- ===== Sidebar End ===== --> */}
 
         {/* <!-- ===== Content Area Start ===== --> */}
@@ -143,7 +130,7 @@ const TypesManagerLayout: FC<Props> = ({ children }) => {
 
           {/* <!-- ===== Main Content Start ===== --> */}
           <main className='lg:mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10' ref={scrollRef}>
-            <div className='w-full lg:min-w-[700px] 2xl:min-w-[1000px]'>{enhancedChildren}</div>
+            <div className='w-full lg:min-w-[700px] 2xl:min-w-[1000px]'>{children}</div>
           </main>
           {/* <!-- ===== Main Content End ===== --> */}
           <></>

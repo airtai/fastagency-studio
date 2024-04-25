@@ -8,7 +8,7 @@ const CustomAuthRequiredLayout = (Page: any) => {
     const { data: user, isError, isSuccess, isLoading } = useAuth();
     if (isSuccess) {
       if (user) {
-        return <Page {...props} user={user} activeComponent='testing' />;
+        return <Page {...props} user={user} />;
       } else {
         return <Redirect to='/login' />;
       }

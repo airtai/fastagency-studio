@@ -129,24 +129,29 @@ page BuildPage {
   component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
 }
 
-route ToolBoxRoute { path: "/build/toolbox", to: ToolBoxPage }
+route SecretsRoute { path: "/build/secrets", to: SecretsPage }
+page SecretsPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
+}
+
+route ToolBoxRoute { path: "/build/toolboxes", to: ToolBoxPage }
 page ToolBoxPage {
-  component: import ToolBoxPage from "@src/client/app/ToolBoxPage"
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
 }
 
 route LLMsRoute { path: "/build/llms", to: LLMsPage }
 page LLMsPage {
-  component: import LLMsPage from "@src/client/app/LLMsPage"
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
 }
 
 route TeamsRoute { path: "/build/teams", to: TeamsPage }
 page TeamsPage {
-  component: import TeamsPage from "@src/client/app/TeamsPage"
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
 }
 
 route AgentsRoute { path: "/build/agents", to: AgentsPage }
 page AgentsPage {
-  component: import AgentsPage from "@src/client/app/AgentsPage"
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
 }
 
 route LoginRoute { path: "/login", to: LoginPage }

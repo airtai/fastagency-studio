@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.models.llms.OpenAI
+::: fastagency.models.agents.assistant.AssistantAgent

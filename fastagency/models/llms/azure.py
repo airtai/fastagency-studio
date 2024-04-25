@@ -1,32 +1,28 @@
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import Field, HttpUrl
 from typing_extensions import TypeAlias
 
 from ...constants import AZURE_API_VERSIONS_LITERAL
-from ..registry import get_reference_model, get_wrapper_model, register
+from ..base import Model
+from ..registry import register
 
 __all__ = [
     "AzureOAIAPIKey",
-    "AzureOAIAPIKeyRef",
-    "AzureOAIAPIKeyWrapper",
     "AzureOAI",
-    "AzureOAIRef",
-    "AzureOAIWrapper",
 ]
 
 
 @register("secret")
-class AzureOAIAPIKey(BaseModel):
+class AzureOAIAPIKey(Model):
     api_key: Annotated[str, Field(description="The API Key from OpenAI")]
 
 
-AzureOAIAPIKeyRef: TypeAlias = get_reference_model(AzureOAIAPIKey)  # type: ignore[valid-type]
-AzureOAIAPIKeyWrapper: TypeAlias = get_wrapper_model(AzureOAIAPIKey)  # type: ignore[valid-type]
+AzureOAIAPIKeyRef: TypeAlias = AzureOAIAPIKey.get_reference_model()  # type: ignore[valid-type]
 
 
 @register("llm")
-class AzureOAI(BaseModel):
+class AzureOAI(Model):
     model: Annotated[
         str,
         Field(
@@ -51,7 +47,3 @@ class AzureOAI(BaseModel):
             description="The version of the Azure OpenAI API, e.g. '2024-02-15-preview' or 'latest"
         ),
     ] = "latest"
-
-
-AzureOAIRef: TypeAlias = get_reference_model(AzureOAI)  # type: ignore[valid-type]
-AzureOAIWrapper: TypeAlias = get_wrapper_model(AzureOAI)  # type: ignore[valid-type]

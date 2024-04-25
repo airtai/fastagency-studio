@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.models.agents.AssistantAgent
+::: fastagency.models.base.create_wrapper_model

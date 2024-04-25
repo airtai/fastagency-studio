@@ -1,20 +1,22 @@
-from typing import Annotated
-from uuid import UUID
+from typing import Annotated, Union
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-from ..registry import Registry
+from ..base import Model
+from ..llms.azure import AzureOAIAPIKeyRef
+from ..llms.openai import OpenAIAPIKeyRef
 
-__all__ = ["AgentBaseModel", "register"]
+__all__ = ["AgentBaseModel"]
 
-register = Registry.get_default().register("agent")
+# todo: this should be a mixin
 
 
-class AgentBaseModel(BaseModel):
+class AgentBaseModel(Model):
     name: Annotated[str, Field(description="The name of the agent")]
-    llm_uuid: Annotated[
-        UUID,
+    llm: Annotated[
+        Union[OpenAIAPIKeyRef, AzureOAIAPIKeyRef],
         Field(
-            title="LLM UUID", description="The unique identifier for the LLM instance"
+            title="LLM",
+            description="LLM used by the agent for producing responses",
         ),
     ]

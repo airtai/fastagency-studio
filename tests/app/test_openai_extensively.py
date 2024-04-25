@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from fastagency.app import app
-from fastagency.models.llms._openai import OpenAI, OpenAIAPIKeyRef, OpenAIWrapper
+from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 from fastagency.models.registry import Schemas
 
 client = TestClient(app)
@@ -17,10 +17,12 @@ class TestValidateOpenAI:
     @pytest.fixture()
     def model_json(self) -> Dict[str, Any]:
         key_uuid = uuid.uuid4()
+        OpenAIAPIKeyRef = OpenAIAPIKey.get_reference_model()  # noqa: N806
         api_key = OpenAIAPIKeyRef(uuid=key_uuid)
 
         model = OpenAI(api_key=api_key)
         openai_uuid = uuid.uuid4()
+        OpenAIWrapper = OpenAI.get_wrapper_model()  # noqa: N806
         model_wrapper = OpenAIWrapper(uuid=openai_uuid, data=model)
         model_json = json.loads(model_wrapper.model_dump_json())
 

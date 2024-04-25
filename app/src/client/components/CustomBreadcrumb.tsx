@@ -7,7 +7,7 @@ const CustomBreadcrumb = ({ pageName }: BreadcrumbProps) => {
     <div className='mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
       <h2 className='text-title-md2 font-semibold text-airt-font-base dark:text-white'>{pageName}</h2>
 
-      <nav>
+      {/* <nav>
         <ol className='flex items-center gap-2'>
           <li>
             <Link className='text-airt-font-base' to='/build'>
@@ -16,7 +16,7 @@ const CustomBreadcrumb = ({ pageName }: BreadcrumbProps) => {
           </li>
           <li className='text-airt-secondary'>{pageName}</li>
         </ol>
-      </nav>
+      </nav> */}
     </div>
   );
 };

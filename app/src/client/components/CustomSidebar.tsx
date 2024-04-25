@@ -204,9 +204,11 @@ export const navLinkItems: NavLinkItem[] = [
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
+  onSideNavItemClick: (selectedItem: string) => void;
+  sideNavSelectedItem: string;
 }
 
-const CustomSidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
+const CustomSidebar = ({ sidebarOpen, setSidebarOpen, onSideNavItemClick, sideNavSelectedItem }: SidebarProps) => {
   const location = useLocation();
   const { pathname } = location;
 
@@ -247,6 +249,10 @@ const CustomSidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       document.querySelector('body')?.classList.remove('sidebar-expanded');
     }
   }, [sidebarExpanded]);
+
+  const handleClick = (selectedItemLable: string) => {
+    onSideNavItemClick(selectedItemLable);
+  };
 
   return (
     <aside
@@ -301,15 +307,17 @@ const CustomSidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 <li key={item.label}>
                   <NavLink
                     to={item.to}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleClick(item.label);
+                    }}
                     isActive={(_match, location) => location.pathname === item.to}
-                    className={(isActive) =>
-                      cn(
-                        'group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-airt-secondary dark:hover:bg-meta-4',
-                        {
-                          'bg-airt-secondary dark:bg-meta-4': isActive,
-                        }
-                      )
-                    }
+                    className={cn(
+                      'group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-airt-secondary dark:hover:bg-meta-4',
+                      {
+                        'bg-airt-secondary dark:bg-meta-4': item.label === sideNavSelectedItem,
+                      }
+                    )}
                   >
                     {item.label}
                   </NavLink>

@@ -2,10 +2,11 @@ from typing import Annotated
 
 from pydantic import Field
 
-from ._base import AgentBaseModel, register
+from ..registry import register
+from ._base import AgentBaseModel
 
 
-@register
+@register("agent")
 class AssistantAgent(AgentBaseModel):
     system_message: Annotated[
         str,

@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.models.registry.get_reference_model
+::: fastagency.models.base.Model

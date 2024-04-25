@@ -14,6 +14,7 @@ import Teams from '../components/buildPage/Teams';
 import ToolBoxes from '../components/buildPage/ToolBoxes';
 import LoadingComponent from '../components/LoadingComponent';
 import { useBuildPage } from '../hooks/useBuildPage';
+import { ApiResponse } from '../interfaces/BuildPageInterfaces';
 
 interface BuildPageProps {
   user: User;
@@ -24,11 +25,11 @@ interface componentsMapType {
 }
 
 const componentsMap: componentsMapType = {
-  secrets: Secrets,
-  llms: LLMs,
-  agents: Agents,
-  teams: Teams,
-  toolboxes: ToolBoxes,
+  secret: Secrets,
+  llm: LLMs,
+  agent: Agents,
+  team: Teams,
+  toolbox: ToolBoxes,
 };
 
 interface HeaderProps {
@@ -106,10 +107,14 @@ const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) => {
   );
 };
 
+const filerOutComponentData = (data: ApiResponse, componentName: string) => {
+  return data.list_of_schemas.filter((schema: any) => schema.name === componentName);
+};
+
 const BuildPage = ({ user }: BuildPageProps) => {
   const { data, loading, error } = useBuildPage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sideNavSelectedItem, setSideNavSelectedItem] = useState('Secrets');
+  const [sideNavSelectedItem, setSideNavSelectedItem] = useState('secret');
 
   const wrapperClass = document.body.classList.contains('server-error')
     ? 'h-[calc(100vh-165px)]'
@@ -119,11 +124,11 @@ const BuildPage = ({ user }: BuildPageProps) => {
     return <LoadingComponent />;
   }
 
-  const handleSideNavItemClick = (itemLabel: string) => {
-    setSideNavSelectedItem(itemLabel);
+  const handleSideNavItemClick = (selectedComponentName: string) => {
+    setSideNavSelectedItem(selectedComponentName);
   };
 
-  const ComponentToRender = componentsMap[sideNavSelectedItem.toLocaleLowerCase()];
+  const ComponentToRender = data && componentsMap[sideNavSelectedItem];
 
   return (
     <div className='dark:bg-boxdark-2 dark:text-bodydark bg-captn-light-blue'>
@@ -155,7 +160,7 @@ const BuildPage = ({ user }: BuildPageProps) => {
                   Oops! Something went wrong. Our server is currently unavailable. Please try again later.
                 </p>
               ) : ComponentToRender ? (
-                <ComponentToRender data={data} />
+                <ComponentToRender data={filerOutComponentData(data, sideNavSelectedItem)} />
               ) : (
                 <p
                   className='absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl md:text-6xl text-airt-font-base'

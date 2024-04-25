@@ -1,5 +1,13 @@
 import CustomBreadcrumb from '../CustomBreadcrumb';
-const Secrets = () => {
+
+import { SchemaCategory } from '../../interfaces/BuildPageInterfaces';
+
+interface SecretsProps {
+  data: SchemaCategory;
+}
+
+const Secrets = (data: SecretsProps) => {
+  console.log('from secrets.tsx: ', data);
   return (
     <>
       <CustomBreadcrumb pageName='Secrets' />

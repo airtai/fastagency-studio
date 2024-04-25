@@ -16,7 +16,16 @@ jobs:
         with:
           # NOTE: at now only orgs is supported
           owner: airtai
-          name: captn-backend
+          name: fastagency
+
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # Keep latest N untagged images
+          untagged-keep-latest: 1
+      - uses: bots-house/ghcr-delete-image-action@v1.1.0 # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
+        with:
+          # NOTE: at now only orgs is supported
+          owner: airtai
+          name: fastagency-node
 
           token: ${{ secrets.GITHUB_TOKEN }}
           # Keep latest N untagged images

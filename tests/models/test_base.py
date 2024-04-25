@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from fastagency.models.base import (
     Model,
+    ObjectWrapper,
     _get_annotations,
     create_reference_model,
     create_wrapper_model,
@@ -81,7 +82,13 @@ def test__get_annotations() -> None:
     assert annotations == expected
 
 
-def test_create_wrapper_model() -> None:
+def test_create_wrapper_model(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        ObjectWrapper._model_type_finder,
+        "get_model_type",
+        lambda *args, **kwargs: MyModel,
+    )
+
     class MySecret(Model):
         key: str
 

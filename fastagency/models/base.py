@@ -1,6 +1,6 @@
 import inspect
 from abc import ABC
-from typing import Annotated, Any, Literal, Optional, Type, TypeVar
+from typing import Annotated, Any, Dict, Literal, Optional, Protocol, Type, TypeVar
 from uuid import UUID
 
 from pydantic import BaseModel, Field, create_model, model_validator
@@ -19,12 +19,30 @@ __all__ = [
 ]
 
 
+# abstract class
+class Model(BaseModel, ABC):
+    _reference_model: "Optional[Type[ObjectReference]]" = None
+    _wrapper_model: "Optional[Type[ObjectWrapper]]" = None
+
+    @classmethod
+    def get_reference_model(cls) -> "Type[ObjectReference]":
+        if cls._reference_model is None:
+            raise ValueError("reference model not set")
+        return cls._reference_model
+
+    @classmethod
+    def get_wrapper_model(cls) -> "Type[ObjectWrapper]":
+        if cls._wrapper_model is None:
+            raise ValueError("wrapper model not set")
+        return cls._wrapper_model
+
+
 class ObjectReference(BaseModel):
     type: Annotated[str, Field(description="The name of the type of the data")] = ""
     name: Annotated[str, Field(description="The name of the data")] = ""
     uuid: Annotated[UUID, Field(description="The unique identifier")]
 
-    _data_class: Optional[Type[BaseModel]] = None
+    _data_class: Optional[Type[Model]] = None
     _wrapper_class: "Optional[Type[ObjectWrapper]]" = None
 
     @model_validator(mode="after")
@@ -52,7 +70,7 @@ class ObjectReference(BaseModel):
         return cls._wrapper_class
 
     @classmethod
-    def get_data_model(cls) -> Type[BaseModel]:
+    def get_data_model(cls) -> Type[Model]:
         """Get the data class for the reference.
 
         This method returns the data class that is associated with the reference class.
@@ -130,14 +148,23 @@ def create_reference_model(
     return reference_model  # type: ignore[return-value]
 
 
-class ObjectWrapper(ObjectReference):
-    data: BaseModel
+class ModelTypeFinder(Protocol):
+    def get_model_type(self, type: str, name: str) -> Type[Model]: ...
 
-    _data_class: Type[BaseModel]
-    _reference_class: Type[ObjectReference]
+
+class ObjectWrapper(ObjectReference):
+    data: Model
+
+    _data_class: Optional[Type[Model]] = None
+    _reference_class: Optional[Type[ObjectReference]] = None
+    _model_type_finder: Optional[ModelTypeFinder] = None
 
     @classmethod
-    def get_data_model(cls) -> Type[BaseModel]:
+    def set_model_type_finder(cls, model_type_finder: ModelTypeFinder) -> None:
+        cls._model_type_finder = model_type_finder
+
+    @classmethod
+    def get_data_model(cls) -> Type[Model]:
         """Get the data class for the wrapper.
 
         This method returns the data class that is associated with the wrapper class.
@@ -146,6 +173,8 @@ class ObjectWrapper(ObjectReference):
             Type[BM]: The data class for the wrapper
 
         """
+        if cls._data_class is None:
+            raise RuntimeError("data class not set")
         return cls._data_class
 
     @classmethod
@@ -158,11 +187,43 @@ class ObjectWrapper(ObjectReference):
             Type[ObjectReference]: The reference class for the wrapper
 
         """
+        if cls._reference_class is None:
+            raise ValueError("reference class not set")
         return cls._reference_class
 
     @classmethod
-    def create(cls, uuid: UUID, data: BaseModel) -> "ObjectWrapper":  # type: ignore[override]
+    def create(cls, uuid: UUID, data: Model) -> "ObjectWrapper":  # type: ignore[override]
         return cls(uuid=uuid, data=data)  # type: ignore[call-arg]
+
+    @staticmethod
+    def _get_value(param: inspect.Parameter, raw: Dict[str, Any]) -> Any:
+        if param.name in raw:
+            return raw[param.name]
+        if param.default is not inspect.Parameter.empty:
+            return param.default
+        raise ValueError(f"{param.name} is required")
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_data(cls, raw: Any) -> Any:
+        if cls._model_type_finder is None:
+            raise ValueError("model type finder not set")
+
+        param = inspect.signature(cls).parameters
+        model_type = cls._model_type_finder.get_model_type(
+            type=cls._get_value(param["type"], raw),
+            name=cls._get_value(param["name"], raw),
+        )
+
+        data = raw["data"]
+        if isinstance(data, BaseModel):
+            data = model_type(**data.model_dump())
+        else:
+            data = model_type(**data)
+
+        raw["data"] = data
+
+        return raw
 
 
 def _get_annotations(model: Type[BaseModel]) -> dict[str, Any]:
@@ -226,21 +287,3 @@ def get_reference_model(model: Type[BaseModel]) -> Type[ObjectReference]:
     elif hasattr(model, "_reference_model"):
         return model._reference_model  # type: ignore[attr-defined,no-any-return]
     raise ValueError(f"Class '{model.__name__}' is not and does not have a reference")
-
-
-# abstract class
-class Model(BaseModel, ABC):
-    _reference_model: Optional[Type[ObjectReference]] = None
-    _wrapper_model: Optional[Type[ObjectWrapper]] = None
-
-    @classmethod
-    def get_reference_model(cls) -> Type[ObjectReference]:
-        if cls._reference_model is None:
-            raise ValueError("reference model not set")
-        return cls._reference_model
-
-    @classmethod
-    def get_wrapper_model(cls) -> Type[ObjectWrapper]:
-        if cls._wrapper_model is None:
-            raise ValueError("wrapper model not set")
-        return cls._wrapper_model

@@ -48,7 +48,7 @@ dependencies = [
     "faststream[nats]>=0.5.0,<0.6",
     "typing-extensions>=4.8.0,<5",
     "pydantic>=2.3,<3",
-    "fastapi==0.110.1",
+    "fastapi==0.110.2",
 ]
 
 [project.optional-dependencies]
@@ -60,8 +60,8 @@ server = [
 
 # dev dependencies
 devdocs = [
-    "mkdocs-material==9.5.17",
-    "mkdocs-static-i18n==1.2.0",
+    "mkdocs-material==9.5.18",
+    "mkdocs-static-i18n==1.2.2",
     "mdx-include==1.4.2",
     "mkdocstrings[python]==0.24.3",
     "mkdocs-literate-nav==0.6.1",
@@ -82,10 +82,10 @@ lint = [
     "types-Pygments",
     "types-docutils",
     "mypy==1.9.0",
-    "ruff==0.3.7",
+    "ruff==0.4.1",
     "pyupgrade-directories==0.3.0",
     "bandit==1.7.8",
-    "semgrep==1.67.0",
+    "semgrep==1.69.0",
     "pytest-mypy-plugins==3.1.2",
 ]
 

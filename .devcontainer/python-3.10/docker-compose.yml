@@ -9,7 +9,7 @@ services:
     command: sleep infinity
     env_file:
       - ../devcontainer.env
-    platform: linux/x86_64
+    platform: linux/amd64
     networks:
       - fastagency-network
   nats-fastagency:  # nosemgrep

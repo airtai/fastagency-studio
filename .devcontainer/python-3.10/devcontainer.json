@@ -5,9 +5,14 @@
         "./docker-compose.yml"
     ],
     "service": "python-3.10",
-    "forwardPorts": [
-        "${CONTAINER_PREFIX}-nats-py310-fastagency:9222"
-    ],
+    // "forwardPorts": [
+    //     "${CONTAINER_PREFIX}-nats-py310-fastagency:9222"
+    // ],
+    "build": {
+        "args": {
+            "BUILDKIT_INLINE_CACHE": "0"
+        }
+    },
     "shutdownAction": "stopCompose",
     "workspaceFolder": "/workspaces/fastagency",
     // "runArgs": [],

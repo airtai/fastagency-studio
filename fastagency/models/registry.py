@@ -15,6 +15,7 @@ from .base import (
     M,
     Model,
     ObjectReference,
+    ObjectWrapper,
     create_reference_model,
     create_wrapper_model,
     get_wrapper_model,
@@ -91,6 +92,20 @@ class Registry:
 
         return _inner
 
+    def get_model_type(self, type: str, name: str) -> Type[Model]:
+        if type not in self._store:
+            raise ValueError(f"No models registered under '{type}'")
+
+        models = self._store[type]
+        if name not in models:
+            raise ValueError(f"No model '{name}' registered under '{type}'")
+
+        model, _ = models[name]
+        if model is None:
+            raise ValueError(f"Model '{name}' not found in '{type}'")
+
+        return model
+
     def create_reference(
         self, type_name: str, model_name: str
     ) -> Type[ObjectReference]:
@@ -159,14 +174,29 @@ class Registry:
 
         return Schemas(list_of_schemas=list_of_schemas)
 
-    def validate(self, model_json: Dict[str, Any]) -> None:
-        type_name = model_json["type"]
-        model_name = model_json["name"]
-        Model = self._store[type_name][model_name][0]  # noqa: N806
-        if Model is None:
-            raise ValueError(f"Model '{model_name}' not found in '{type_name}'")
-        data_json = model_json["data"]
-        Model(**data_json)
+    # def validate(self, wrapper: ObjectWrapper) -> None:
+    #     data = wrapper.data
+    #     Model = wrapper.get_data_model()
+    #     print(f"validate({data=}): {type(data)=}")
+    # if "type" not in model_json:
+    #     raise ValueError("Model type not found in the JSON")
+    # if "name" not in model_json:
+    #     raise ValueError("Model name not found in the JSON")
+    # if "data" not in model_json:
+    #     raise ValueError("Model data not found in the JSON")
+
+    # type_name = model_json["type"]
+    # model_name = model_json["name"]
+    # data_json = model_json["data"]
+
+    # Model = self._store[type_name][model_name][0]
+    # if Model is None:
+    #     raise ValueError(f"Model '{model_name}' not found in '{type_name}'")
+    # Model(**data_json)
+
+
+# set the default registry
+ObjectWrapper.set_model_type_finder(Registry.get_default())
 
 
 def register(type_name: str) -> Callable[[Type[M]], Type[M]]:

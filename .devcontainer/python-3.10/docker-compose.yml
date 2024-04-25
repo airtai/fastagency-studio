@@ -2,11 +2,14 @@ version: '3'
 
 services:
   python-3.10:  # nosemgrep
-    image: mcr.microsoft.com/devcontainers/typescript-node:20
+    image: mcr.microsoft.com/devcontainers/python:3.10
     container_name: $USER-python-3.10-fastagency
     volumes:
       - ../../:/workspaces/fastagency:cached
     command: sleep infinity
+    env_file:
+      - ../devcontainer.env
+    platform: linux/x86_64
     networks:
       - fastagency-network
   nats-fastagency:  # nosemgrep

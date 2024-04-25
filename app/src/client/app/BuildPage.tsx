@@ -2,7 +2,14 @@ import { type User } from 'wasp/entities';
 import CustomAuthRequiredLayout from './layout/CustomAuthRequiredLayout';
 import TypesManagerLayout from './layout/TypesManagerLayout';
 
-const BuildPage = ({ user }: { user: User }) => {
+interface BuildPageProps {
+  user: User;
+  activeComponent: string; // This is the new prop coming from the parent
+}
+
+const BuildPage = ({ user, activeComponent }: BuildPageProps) => {
+  console.log('From build page: ', user);
+  console.log('From build page: ', activeComponent);
   return (
     <TypesManagerLayout>
       <p

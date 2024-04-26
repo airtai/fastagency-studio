@@ -19,7 +19,7 @@ class OpenAIAPIKey(Model):
         str,
         Field(
             description="The API Key from OpenAI",
-            pattern=r"sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}",
+            pattern=r"^sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}$",
         ),
     ]
 

@@ -40,9 +40,9 @@ class TestValidateOpenAIKey:
         msg_dict.pop("input")
         msg_dict.pop("url")
         expected = {
-            "ctx": {"pattern": "sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}"},
+            "ctx": {"pattern": "^sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}$"},
             "loc": ["api_key"],
-            "msg": "String should match pattern 'sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}'",
+            "msg": "String should match pattern '^sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}$'",
             "type": "string_pattern_mismatch",
         }
         print(msg_dict["ctx"])

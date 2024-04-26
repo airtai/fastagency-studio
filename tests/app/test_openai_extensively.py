@@ -45,7 +45,6 @@ class TestValidateOpenAIKey:
             "msg": "String should match pattern '^sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}$'",
             "type": "string_pattern_mismatch",
         }
-        print(msg_dict["ctx"])
         assert msg_dict == expected
 
 

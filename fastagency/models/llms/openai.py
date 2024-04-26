@@ -1,6 +1,6 @@
 from typing import Annotated, Literal
 
-from pydantic import Field, HttpUrl, field_validator
+from pydantic import Field, HttpUrl
 from typing_extensions import TypeAlias
 
 from ...constants import OPENAI_MODELS_LITERAL
@@ -22,14 +22,6 @@ class OpenAIAPIKey(Model):
             pattern=r"^sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}$",
         ),
     ]
-
-    @field_validator("api_key")
-    @classmethod
-    def check_api_key(cls, v: str) -> str:
-        if not v.startswith("sk-"):
-            raise ValueError("API Key must start with 'sk-'")
-
-        return v
 
 
 OpenAIAPIKeyRef: TypeAlias = OpenAIAPIKey.get_reference_model()  # type: ignore[valid-type]

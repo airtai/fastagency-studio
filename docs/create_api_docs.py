@@ -72,7 +72,6 @@ def _import_functions_and_classes(
             obj = getattr(m, t)
             if isfunction(obj) or isclass(obj):
                 funcs_and_classes.append((t, m.__name__ + "." + t))
-
     return funcs_and_classes
 
 

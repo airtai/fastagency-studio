@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-bash scripts/test.sh -m "all" "$@"
+bash scripts/test.sh "$@"
 
 coverage combine
-coverage report --show-missing --skip-covered --sort=cover --precision=2
+coverage report
+
 
 rm .coverage*

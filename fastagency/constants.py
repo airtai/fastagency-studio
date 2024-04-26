@@ -1,8 +1,13 @@
 from typing import Literal
 
-__all__ = ["OPENAI_MODELS_LITERAL", "AZURE_API_VERSIONS_LITERAL"]
+__all__ = [
+    "OPENAI_MODELS_LITERAL",
+    "AZURE_API_VERSIONS_LITERAL",
+    # "REGISTRED_MODEL_TYPES",
+]
 
 
+# REGISTRED_MODEL_TYPES = Literal["secret", "llm", "agent", "team"]
 ## LLMS
 
 ### OpenAI

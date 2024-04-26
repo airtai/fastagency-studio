@@ -3,7 +3,7 @@ set -e
 
 echo "Running mypy..."
 # mkdir -p .
-mypy fastagency tests
+mypy
 
 echo "Running bandit..."
 bandit -c pyproject.toml -r fastagency

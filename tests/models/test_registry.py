@@ -105,46 +105,11 @@ class TestRegistry:
         expected = ModelSchema(
             name="MyModel",
             json_schema={
-                "$defs": {
-                    "MyModel": {
-                        "properties": {
-                            "i": {"title": "I", "type": "integer"},
-                            "s": {"title": "S", "type": "string"},
-                        },
-                        "required": ["i", "s"],
-                        "title": "MyModel",
-                        "type": "object",
-                    }
-                },
                 "properties": {
-                    "type": {
-                        "const": "my_type",
-                        "default": "my_type",
-                        "description": "The name of the type of the data",
-                        "enum": ["my_type"],
-                        "title": "Type",
-                        "type": "string",
-                    },
-                    "name": {
-                        "const": "MyModel",
-                        "default": "MyModel",
-                        "description": "The name of the data",
-                        "enum": ["MyModel"],
-                        "title": "Name",
-                        "type": "string",
-                    },
-                    "uuid": {
-                        "description": "The unique identifier",
-                        "format": "uuid",
-                        "title": "UUID",
-                        "type": "string",
-                    },
-                    "data": {
-                        "allOf": [{"$ref": "#/$defs/MyModel"}],
-                        "description": "The data",
-                    },
+                    "i": {"title": "I", "type": "integer"},
+                    "s": {"title": "S", "type": "string"},
                 },
-                "required": ["uuid", "data"],
+                "required": ["i", "s"],
                 "title": "MyModel",
                 "type": "object",
             },
@@ -171,16 +136,6 @@ class TestRegistry:
             name="MyModel",
             json_schema={
                 "$defs": {
-                    "MyModel": {
-                        "properties": {
-                            "i": {"title": "I", "type": "integer"},
-                            "s": {"title": "S", "type": "string"},
-                            "secret": {"$ref": "#/$defs/MySecretRef"},
-                        },
-                        "required": ["i", "s", "secret"],
-                        "title": "MyModel",
-                        "type": "object",
-                    },
                     "MySecretRef": {
                         "properties": {
                             "type": {
@@ -209,37 +164,14 @@ class TestRegistry:
                         "required": ["uuid"],
                         "title": "MySecretRef",
                         "type": "object",
-                    },
+                    }
                 },
                 "properties": {
-                    "type": {
-                        "const": "my_type",
-                        "default": "my_type",
-                        "description": "The name of the type of the data",
-                        "enum": ["my_type"],
-                        "title": "Type",
-                        "type": "string",
-                    },
-                    "name": {
-                        "const": "MyModel",
-                        "default": "MyModel",
-                        "description": "The name of the data",
-                        "enum": ["MyModel"],
-                        "title": "Name",
-                        "type": "string",
-                    },
-                    "uuid": {
-                        "description": "The unique identifier",
-                        "format": "uuid",
-                        "title": "UUID",
-                        "type": "string",
-                    },
-                    "data": {
-                        "allOf": [{"$ref": "#/$defs/MyModel"}],
-                        "description": "The data",
-                    },
+                    "i": {"title": "I", "type": "integer"},
+                    "s": {"title": "S", "type": "string"},
+                    "secret": {"$ref": "#/$defs/MySecretRef"},
                 },
-                "required": ["uuid", "data"],
+                "required": ["i", "s", "secret"],
                 "title": "MyModel",
                 "type": "object",
             },

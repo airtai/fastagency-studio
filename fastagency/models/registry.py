@@ -18,7 +18,6 @@ from .base import (
     ObjectWrapper,
     create_reference_model,
     create_wrapper_model,
-    get_wrapper_model,
 )
 
 __all__ = [
@@ -144,10 +143,10 @@ class Registry:
 
     def get_model_schema(self, model: Type[Model]) -> ModelSchema:
         """Return the schema for the given model."""
-        wrapper_model = get_wrapper_model(model)
+        # wrapper_model = get_wrapper_model(model)
         return ModelSchema(
-            name=wrapper_model.__name__,
-            json_schema=wrapper_model.model_json_schema(),
+            name=model.__name__,
+            json_schema=model.model_json_schema(),
         )
 
     def get_model_schemas(self, type_name: str) -> ModelSchemas:

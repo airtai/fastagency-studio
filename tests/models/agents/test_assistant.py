@@ -8,7 +8,6 @@ from fastagency.models.llms.openai import OpenAI
 
 class TestAssistantAgent:
     def test_assistant_constructor(self) -> None:
-        pass
         llm_uuid = uuid.uuid4()
         llm = OpenAI.get_reference_model()(uuid=llm_uuid)
 

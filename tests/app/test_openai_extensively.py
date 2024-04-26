@@ -15,7 +15,9 @@ client = TestClient(app)
 class TestValidateOpenAIKey:
     @pytest.fixture()
     def model_dict(self) -> Dict[str, Any]:
-        model = OpenAIAPIKey(api_key="sk-123456789012345678901234")
+        model = OpenAIAPIKey(
+            api_key="sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest"  # pragma: allowlist secret
+        )
 
         return json.loads(model.model_dump_json())  # type: ignore[no-any-return]
 
@@ -34,16 +36,16 @@ class TestValidateOpenAIKey:
             json=model_dict,
         )
         assert response.status_code == 422
-        msg_json = response.json()["detail"]
-        msg_dict = json.loads(msg_json)[0]
+        msg_dict = response.json()["detail"][0]
         msg_dict.pop("input")
         msg_dict.pop("url")
         expected = {
-            "ctx": {"error": "API Key must start with 'sk-'"},
-            "loc": [],
-            "msg": "Value error, API Key must start with 'sk-'",
-            "type": "value_error",
+            "ctx": {"pattern": "sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}"},
+            "loc": ["api_key"],
+            "msg": "String should match pattern 'sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}'",
+            "type": "string_pattern_mismatch",
         }
+        print(msg_dict["ctx"])
         assert msg_dict == expected
 
 
@@ -89,8 +91,7 @@ class TestValidateOpenAI:
             json=model_dict,
         )
         assert response.status_code == 422
-        msg_json = response.json()["detail"]
-        msg_dict = json.loads(msg_json)[0]
+        msg_dict = response.json()["detail"][0]
         msg_dict.pop("input")
         msg_dict.pop("url")
         expected = {
@@ -108,8 +109,7 @@ class TestValidateOpenAI:
             json=model_dict,
         )
         assert response.status_code == 422
-        msg_json = response.json()["detail"]
-        msg_dict = json.loads(msg_json)[0]
+        msg_dict = response.json()["detail"][0]
         msg_dict.pop("input")
         msg_dict.pop("url")
         expected = {
@@ -128,8 +128,7 @@ class TestValidateOpenAI:
             json=model_dict,
         )
         assert response.status_code == 422
-        msg_json = response.json()["detail"]
-        msg_dict = json.loads(msg_json)[0]
+        msg_dict = response.json()["detail"][0]
         msg_dict.pop("input")
         msg_dict.pop("url")
         expected = {

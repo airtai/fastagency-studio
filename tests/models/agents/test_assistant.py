@@ -23,7 +23,7 @@ class TestAssistantAgent:
 
         assert agent.system_message == "test system message"
 
-    def test_agent_model_schema(self) -> None:
+    def test_assistant_model_schema(self) -> None:
         schema = AssistantAgent.model_json_schema()
         expected = {
             "$defs": {

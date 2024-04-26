@@ -12,6 +12,41 @@ from fastagency.models.registry import Schemas
 client = TestClient(app)
 
 
+class TestValidateOpenAIKey:
+    @pytest.fixture()
+    def model_dict(self) -> Dict[str, Any]:
+        model = OpenAIAPIKey(api_key="sk-123456789012345678901234")
+
+        return json.loads(model.model_dump_json())  # type: ignore[no-any-return]
+
+    def test_validate_success(self, model_dict: Dict[str, Any]) -> None:
+        response = client.post(
+            "/models/secret/OpenAIAPIKey/validate",
+            json=model_dict,
+        )
+        assert response.status_code == 200
+
+    def test_validate_incorrect_api_key(self, model_dict: Dict[str, Any]) -> None:
+        model_dict["api_key"] = "whatever"  # pragma: allowlist secret
+
+        response = client.post(
+            "/models/secret/OpenAIAPIKey/validate",
+            json=model_dict,
+        )
+        assert response.status_code == 422
+        msg_json = response.json()["detail"]
+        msg_dict = json.loads(msg_json)[0]
+        msg_dict.pop("input")
+        msg_dict.pop("url")
+        expected = {
+            "ctx": {"error": "API Key must start with 'sk-'"},
+            "loc": [],
+            "msg": "Value error, API Key must start with 'sk-'",
+            "type": "value_error",
+        }
+        assert msg_dict == expected
+
+
 # we will do this for OpenAI only, the rest should be the same
 class TestValidateOpenAI:
     @pytest.fixture()
@@ -54,7 +89,8 @@ class TestValidateOpenAI:
             json=model_dict,
         )
         assert response.status_code == 422
-        msg_dict = response.json()["detail"][0]
+        msg_json = response.json()["detail"]
+        msg_dict = json.loads(msg_json)[0]
         msg_dict.pop("input")
         msg_dict.pop("url")
         expected = {
@@ -72,7 +108,8 @@ class TestValidateOpenAI:
             json=model_dict,
         )
         assert response.status_code == 422
-        msg_dict = response.json()["detail"][0]
+        msg_json = response.json()["detail"]
+        msg_dict = json.loads(msg_json)[0]
         msg_dict.pop("input")
         msg_dict.pop("url")
         expected = {
@@ -91,7 +128,8 @@ class TestValidateOpenAI:
             json=model_dict,
         )
         assert response.status_code == 422
-        msg_dict = response.json()["detail"][0]
+        msg_json = response.json()["detail"]
+        msg_dict = json.loads(msg_json)[0]
         msg_dict.pop("input")
         msg_dict.pop("url")
         expected = {

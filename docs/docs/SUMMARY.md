@@ -23,6 +23,7 @@ search:
                 - assistant
                     - [AssistantAgent](api/fastagency/models/agents/assistant/AssistantAgent.md)
                 - web_surfer
+                    - [BingAPIKey](api/fastagency/models/agents/web_surfer/BingAPIKey.md)
                     - [WebSurferAgent](api/fastagency/models/agents/web_surfer/WebSurferAgent.md)
             - base
                 - [Model](api/fastagency/models/base/Model.md)

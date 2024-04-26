@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException
@@ -19,7 +20,7 @@ async def validate_model(type: str, name: str, model: Dict[str, Any]) -> None:
     try:
         Registry.get_default().validate(type, name, model)
     except ValidationError as e:
-        raise HTTPException(status_code=422, detail=e.errors()) from e
+        raise HTTPException(status_code=422, detail=json.loads(e.json())) from e
 
 
 # new routes by Harish

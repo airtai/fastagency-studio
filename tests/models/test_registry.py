@@ -202,3 +202,17 @@ class TestRegistry:
         assert len(schemas.list_of_schemas) == 1
         assert len(schemas.list_of_schemas[0].schemas) == 1
         assert schemas.list_of_schemas[0].schemas[0].name == "MyModel"
+
+    def test_get_models_refs_by_type(self) -> None:
+        registry = Registry()
+
+        @registry.register("my_secret")
+        class MySecretOne(Model):
+            key: str
+
+        MySecretTwoRef = registry.create_reference(  # noqa: N806
+            type_name="my_secret", model_name="MySecretTwo"
+        )
+
+        refs = registry.get_models_refs_by_type("my_secret")
+        assert set(refs) == {MySecretOne.get_reference_model(), MySecretTwoRef}

@@ -103,6 +103,14 @@ class Registry:
 
         return model
 
+    def get_models_refs_by_type(self, type: str) -> List[Type[ObjectReference]]:
+        if type not in self._store:
+            raise ValueError(f"No models registered under '{type}'")
+
+        models = self._store[type]
+
+        return [ref for _, ref in models.values()]
+
     def create_reference(
         self, type_name: str, model_name: str
     ) -> Type[ObjectReference]:

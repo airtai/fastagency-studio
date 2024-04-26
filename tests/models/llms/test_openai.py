@@ -99,15 +99,15 @@ class TestOpenAI:
 class TestOpenAIAPIKey:
     def test_constructor_success(self) -> None:
         api_key = OpenAIAPIKey(
-            api_key="sk-1234567890abcdef1234567890abcdef"  # pragma: allowlist secret
+            api_key="sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest"  # pragma: allowlist secret
         )  # pragma: allowlist secret
         assert (
             api_key.api_key
-            == "sk-1234567890abcdef1234567890abcdef"  # pragma: allowlist secret
+            == "sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest"  # pragma: allowlist secret
         )  # pragma: allowlist secret
 
     def test_constructor_failure(self) -> None:
-        with pytest.raises(ValueError, match="API Key must start with 'sk-'"):
+        with pytest.raises(ValueError, match="String should match pattern"):
             OpenAIAPIKey(
-                api_key="1234567890abcdef1234567890abcdef"  # pragma: allowlist secret
+                api_key="_sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest"  # pragma: allowlist secret
             )  # pragma: allowlist secret

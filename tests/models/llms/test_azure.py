@@ -2,17 +2,15 @@ import uuid
 
 from pydantic_core import Url
 
-from fastagency.models.llms._azure import (
-    AzureOAI,
-    AzureOAIAPIKeyRef,
-    AzureOAIWrapper,
-)
+from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 
 
 class TestAzureOAI:
     def test_azure_constructor(self) -> None:
         # create reference to key
         api_key_uuid = uuid.uuid4()
+
+        AzureOAIAPIKeyRef = AzureOAIAPIKey.get_reference_model()  # noqa: N806
         api_key_ref = AzureOAIAPIKeyRef(uuid=api_key_uuid)
 
         # create data
@@ -22,6 +20,7 @@ class TestAzureOAI:
         )
 
         # create uuid and wrap it up
+        AzureOAIWrapper = AzureOAI.get_wrapper_model()  # noqa: N806
         llm_uuid = uuid.uuid4()
         wrapper = AzureOAIWrapper(
             uuid=llm_uuid,

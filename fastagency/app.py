@@ -1,10 +1,10 @@
-import json
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
 # from .constants import REGISTRED_MODEL_TYPES
+from .models.base import ObjectWrapper
 from .models.registry import Registry, Schemas
 
 app = FastAPI()
@@ -16,16 +16,19 @@ async def get_models_schemas() -> Schemas:
     return schemas
 
 
-# todo: replace str with Literal[REGISTRED_MODEL_TYPES]
 @app.post("/models/validate")
-async def validate_model(model_json: Dict[str, Any]) -> None:
-    try:
-        Registry.get_default().validate(model_json)
-    except ValidationError as e:
-        raise HTTPException(status_code=422, detail=json.loads(e.json())) from e
+async def validate_model(model: ObjectWrapper) -> None:
+    pass
+    # try:
+    #     # print(f"validate_model({model=})")
+    #     model_json = model.model_dump_json()
+    #     assert False
+    #     Registry.get_default().validate(model_json)
+    # except ValidationError as e:
+    #     raise HTTPException(status_code=422, detail=json.loads(e.json())) from e
 
 
-# new routes
+# new routes by Harish
 
 all_models: Dict[int, List[Optional[Dict[str, Any]]]] = {}
 

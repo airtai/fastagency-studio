@@ -3,12 +3,13 @@ import uuid
 import pytest
 from pydantic_core import Url
 
-from fastagency.models.llms._openai import OpenAI, OpenAIAPIKey, OpenAIAPIKeyRef
+from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 
 
 class TestOpenAI:
     def test_openai_model(self) -> None:
         api_key_uuid = uuid.uuid4()
+        OpenAIAPIKeyRef = OpenAIAPIKey.get_reference_model()  # noqa: N806
         api_key = OpenAIAPIKeyRef(uuid=api_key_uuid)
 
         model = OpenAI(

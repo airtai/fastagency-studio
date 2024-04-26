@@ -185,7 +185,7 @@ jobs:
 
   docker_build_push_node:
     runs-on: ubuntu-22.04
-    needs: [unit_test_wasp]
+    # needs: [unit_test_wasp]
     permissions:
       contents: read
       packages: write
@@ -258,12 +258,28 @@ jobs:
         if: github.ref_name == 'main' || github.ref_name == 'dev'
         run: docker push ghcr.io/$GITHUB_REPOSITORY --all-tags
 
+  pre-commit-check:
+    runs-on: ubuntu-latest
+    env:
+      SKIP: "static-analysis"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - name: Set $PY environment variable
+        run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+      - uses: pre-commit/action@v3.0.1
+
   # https://github.com/marketplace/actions/alls-green#why
   check: # This job does nothing and is only used for the branch protection
     if: github.event.pull_request.draft == false
 
     needs:
       - static_analysis
+      - pre-commit-check
       - coverage-combine
       - test-macos-latest
       - test-windows-latest

@@ -1,7 +1,1 @@
-from ._azure import AzureOAI
-from ._openai import OpenAI
-
-__all__ = (
-    "AzureOAI",
-    "OpenAI",
-)
+from . import azure, openai  # noqa: F401

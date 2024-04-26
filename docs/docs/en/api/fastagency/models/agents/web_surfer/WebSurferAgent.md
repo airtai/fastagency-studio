@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.models.registry.ObjectReference
+::: fastagency.models.agents.web_surfer.WebSurferAgent

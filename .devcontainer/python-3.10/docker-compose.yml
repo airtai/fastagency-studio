@@ -15,9 +15,9 @@ services:
   nats-fastagency:  # nosemgrep
     image: nats:latest
     container_name: $USER-nats-py310-fastagency
-    # ports:
-    #   - "${PORT_PREFIX}4222:4222"
-    #   - "${PORT_PREFIX}9222:9222"
+    ports:
+      # - "${PORT_PREFIX}4222:4222"
+      - "${PORT_PREFIX}9222:9222"
     volumes:
       - ../../examples/nats/server.conf:/etc/nats/server.conf
     command: [ "--config", "/etc/nats/server.conf" ]

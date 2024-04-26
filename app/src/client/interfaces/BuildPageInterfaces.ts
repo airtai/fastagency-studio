@@ -1,4 +1,4 @@
-interface JsonSchema {
+export interface JsonSchema {
   $defs?: { [key: string]: SchemaDefinition };
   properties: { [key: string]: SchemaProperty };
   required?: string[];
@@ -16,7 +16,7 @@ interface SchemaDefinition {
 interface SchemaProperty {
   description?: string;
   title?: string;
-  type: string;
+  type?: string;
   format?: string;
   const?: string;
   default?: string | number;

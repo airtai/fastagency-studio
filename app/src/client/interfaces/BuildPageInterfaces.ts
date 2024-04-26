@@ -6,7 +6,7 @@ export interface JsonSchema {
   type: string;
 }
 
-interface SchemaDefinition {
+export interface SchemaDefinition {
   properties: { [key: string]: SchemaProperty };
   required?: string[];
   title: string;
@@ -19,15 +19,21 @@ interface SchemaProperty {
   type?: string;
   format?: string;
   const?: string;
-  default?: string | number;
+  default?: any;
   enum?: string[];
   allOf?: Array<{ $ref: string }>;
   maxLength?: number;
   minLength?: number;
-  anyOf?: Array<{ type: string }>;
+  anyOf?: SchemaReference[];
+  $ref?: string;
 }
 
-interface ApiSchema {
+interface SchemaReference {
+  $ref?: string;
+  type?: string;
+}
+
+export interface ApiSchema {
   name: string;
   json_schema: JsonSchema;
 }

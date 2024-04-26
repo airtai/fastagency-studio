@@ -1,36 +1,39 @@
 import React, { useState } from 'react';
 import { useForm } from '../hooks/useForm';
-import { JsonSchema } from '../interfaces/ModelInterfaces';
+import { JsonSchema } from '../interfaces/BuildPageInterfaces';
 import { TextInput } from './form/TextInput';
 import { SelectInput } from './form/SelectInput';
 import { validateForm } from '../services/commonService';
 import { parseValidationErrors } from '../app/utils/formHelpers';
 import Loader from '../admin/common/Loader';
+import NotificationBox from './NotificationBox';
 
 import { Model } from '../interfaces/ModelInterfaces';
+import { set } from 'zod';
 
 interface DynamicFormBuilderProps {
   jsonSchema: JsonSchema;
   validationURL: string;
-  updateExistingModel: Model | null;
+  // updateExistingModel: Model | null;
   onSuccessCallback: (data: any) => void;
   onCancelCallback: (data: any) => void;
-  onDeleteCallback: (data: any) => void;
+  // onDeleteCallback: (data: any) => void;
 }
 
 const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   jsonSchema,
   validationURL,
-  updateExistingModel,
+  // updateExistingModel,
   onSuccessCallback,
   onCancelCallback,
-  onDeleteCallback,
+  // onDeleteCallback,
 }) => {
   const { formData, handleChange, formErrors, setFormErrors } = useForm({
     jsonSchema,
-    defaultValues: updateExistingModel,
+    defaultValues: null, //updateExistingModel,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -39,11 +42,22 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
       const response = await validateForm(formData, validationURL);
       onSuccessCallback(response);
     } catch (error: any) {
-      const errorMsgObj = JSON.parse(error.message);
-      const errors = parseValidationErrors(errorMsgObj);
-      setFormErrors(errors);
+      try {
+        const errorMsgObj = JSON.parse(error.message);
+        const errors = parseValidationErrors(errorMsgObj);
+        setFormErrors(errors);
+      } catch (e) {
+        setShowNotification(true);
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
+  };
+
+  const notificationMsg = 'Oops. Something went wrong. Please try again later.';
+
+  const notificationOnClick = () => {
+    setShowNotification(false);
   };
   return (
     <>
@@ -94,7 +108,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             Cancel
           </button>
 
-          {updateExistingModel && (
+          {/* {updateExistingModel && (
             <button
               className='float-right ml-3 rounded-md px-3.5 py-2.5 text-sm border bg-airt-error text-airt-font-base hover:bg-opacity-80 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
               disabled={isLoading}
@@ -103,14 +117,15 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             >
               Delete model
             </button>
-          )}
+          )} */}
         </div>
       </form>
       {isLoading && (
-        <div className='absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
+        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
           <Loader />
         </div>
       )}
+      {showNotification && <NotificationBox type='error' onClick={notificationOnClick} message={notificationMsg} />}
     </>
   );
 };

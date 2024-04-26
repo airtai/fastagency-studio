@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { JsonSchema, Model } from '../interfaces/ModelInterfaces';
+import { Model } from '../interfaces/ModelInterfaces';
+import { JsonSchema } from '../interfaces/BuildPageInterfaces';
 
 interface UseFormProps {
   jsonSchema: JsonSchema;

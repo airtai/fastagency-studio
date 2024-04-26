@@ -120,15 +120,21 @@ export const getAvailableModels: GetAvailableModels<void, any> = async (user, co
 };
 
 type AddModelsValues = {
-  userId: number;
-  model: string;
-  base_url: string;
-  api_type: string;
+  uuid: string;
+  userId?: number;
+  model?: string;
+  base_url?: string;
+  api_type?: string;
   api_version?: string;
+  api_key?: string;
+  property_type?: string;
+  property_name?: string;
 };
 
 type AddUserModelsPayload = {
   data: AddModelsValues;
+  property_type: string;
+  property_name: string;
 };
 
 export const addUserModels: AddUserModels<AddUserModelsPayload, void> = async (args, context) => {
@@ -139,7 +145,7 @@ export const addUserModels: AddUserModels<AddUserModelsPayload, void> = async (a
     const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: context.user.id, ...args.data }),
+      body: JSON.stringify({ user_id: context.user.id, ...args }),
     });
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 

@@ -14,7 +14,7 @@ import Teams from '../components/buildPage/Teams';
 import ToolBoxes from '../components/buildPage/ToolBoxes';
 import LoadingComponent from '../components/LoadingComponent';
 import { useBuildPage } from '../hooks/useBuildPage';
-import { ApiResponse } from '../interfaces/BuildPageInterfaces';
+import { filerOutComponentData } from '../utils/buildPageUtils';
 
 interface BuildPageProps {
   user: User;
@@ -105,10 +105,6 @@ const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) => {
       </div>
     </header>
   );
-};
-
-const filerOutComponentData = (data: ApiResponse, componentName: string) => {
-  return data.list_of_schemas.filter((schema: any) => schema.name === componentName);
 };
 
 const BuildPage = ({ user }: BuildPageProps) => {

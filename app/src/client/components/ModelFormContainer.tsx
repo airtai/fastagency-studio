@@ -1,10 +1,11 @@
 // components/ModelFormContainer.tsx
 import React from 'react';
 import { ModelSchemas } from '../interfaces/ModelInterfaces';
+import { ApiSchema } from '../interfaces/BuildPageInterfaces';
 
 interface ModelFormContainerProps {
-  selectedModel: string | null;
-  modelSchemas: ModelSchemas;
+  selectedModel: string;
+  modelSchemas: ApiSchema[];
   onModelChange: (selectedModel: string) => void;
 }
 
@@ -18,11 +19,9 @@ const ModelFormContainer: React.FC<ModelFormContainerProps> = ({ selectedModel, 
           <select
             className='w-full rounded border bg-transparent py-3 px-12 outline-none focus:border-primary'
             onChange={(e) => onModelChange(e.target.value)}
-            defaultValue={
-              selectedModel ? (selectedModel === 'openai' ? 'OpenAI' : 'AzureOAI') : modelSchemas.schemas[0].name
-            }
+            defaultValue={selectedModel}
           >
-            {modelSchemas.schemas.map((schema) => (
+            {modelSchemas.map((schema) => (
               <option key={schema.name} value={schema.name}>
                 {schema.name}
               </option>

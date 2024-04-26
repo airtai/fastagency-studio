@@ -1,47 +1,54 @@
 // src/components/ModelForm.tsx
 import React from 'react';
 import { JsonSchema, Model, ModelSchemas } from '../interfaces/ModelInterfaces';
+import { ApiSchema, SchemaDefinition } from '../interfaces/BuildPageInterfaces';
 
 import ModelFormContainer from './ModelFormContainer';
 import DynamicFormBuilder from './DynamicFormBuilder';
 
 interface ModelFormProps {
-  modelSchemas: ModelSchemas;
-  initialModelSchema: JsonSchema | null;
+  modelSchemas: ApiSchema[];
+  initialModelSchema: SchemaDefinition | null;
   selectedModel: string;
-  updateExistingModel: Model | null;
+  validationURL: string;
+  // updateExistingModel: Model | null;
   onModelChange: (model: string) => void;
   onSuccessCallback: (data: any) => void;
   onCancelCallback: () => void;
-  onDeleteCallback: (data: any) => void;
+  // onDeleteCallback: (data: any) => void;
 }
 
 const ModelForm: React.FC<ModelFormProps> = ({
   modelSchemas,
   initialModelSchema,
   selectedModel,
-  updateExistingModel,
+  validationURL,
+  // updateExistingModel,
   onModelChange,
   onSuccessCallback,
   onCancelCallback,
-  onDeleteCallback,
+  // onDeleteCallback,
 }) => {
   return (
     <div>
       {modelSchemas && (
         <>
-          {updateExistingModel && <h2 className='sm:mt-6 text-lg font-semibold text-airt-primary'>Update model</h2>}
-          {!updateExistingModel && (
-            <ModelFormContainer selectedModel={null} modelSchemas={modelSchemas} onModelChange={onModelChange} />
-          )}
+          {<h2 className='sm:mt-6 text-lg font-semibold text-airt-primary'>Update model</h2>}
+          {
+            <ModelFormContainer
+              selectedModel={selectedModel}
+              modelSchemas={modelSchemas}
+              onModelChange={onModelChange}
+            />
+          }
           {initialModelSchema && (
             <DynamicFormBuilder
               jsonSchema={initialModelSchema}
-              validationURL={`models/${selectedModel}/validate`}
-              updateExistingModel={updateExistingModel ?? null}
+              validationURL={validationURL}
+              // updateExistingModel={updateExistingModel ?? null}
               onSuccessCallback={onSuccessCallback}
               onCancelCallback={onCancelCallback}
-              onDeleteCallback={onDeleteCallback}
+              // onDeleteCallback={onDeleteCallback}
             />
           )}
         </>

@@ -106,6 +106,9 @@ export const getPaginatedUsers: GetPaginatedUsers<GetPaginatedUsersInput, GetPag
   };
 };
 
+type GetModelsInput = {
+  property_type: string;
+};
 type GetModelsValues = {
   model: string;
   base_url: string;
@@ -114,9 +117,9 @@ type GetModelsValues = {
   uuid: string;
 };
 
-export const getModels: GetModels<void, GetModelsValues[]> = async (_args, context) => {
+export const getModels: GetModels<GetModelsInput, GetModelsValues[]> = async (_args, context) => {
   try {
-    const data = { user_id: context.user.id };
+    const data = { user_id: context.user.id, property_type: _args.property_type };
     const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -14,37 +14,23 @@ class TestAzureOAI:
         api_key_ref = AzureOAIAPIKeyRef(uuid=api_key_uuid)
 
         # create data
-        data = AzureOAI(
+        model = AzureOAI(
             api_key=api_key_ref,
             base_url="https://my-model.openai.azure.com/",
         )
 
-        # create uuid and wrap it up
-        AzureOAIWrapper = AzureOAI.get_wrapper_model()  # noqa: N806
-        llm_uuid = uuid.uuid4()
-        wrapper = AzureOAIWrapper(
-            uuid=llm_uuid,
-            data=data,
-        )
-
         expected = {
-            "type": "llm",
-            "name": "AzureOAI",
-            "uuid": llm_uuid,
-            "data": {
-                "model": "gpt-3.5-turbo",
-                "api_key": {
-                    "type": "secret",
-                    "name": "AzureOAIAPIKey",
-                    "uuid": api_key_uuid,
-                },
-                "base_url": Url("https://my-model.openai.azure.com/"),
-                "api_type": "azure",
-                "api_version": "latest",
+            "model": "gpt-3.5-turbo",
+            "api_key": {
+                "type": "secret",
+                "name": "AzureOAIAPIKey",
+                "uuid": api_key_uuid,
             },
+            "base_url": Url("https://my-model.openai.azure.com/"),
+            "api_type": "azure",
+            "api_version": "latest",
         }
-        # print(wrapper.model_dump())
-        assert wrapper.model_dump() == expected
+        assert model.model_dump() == expected
 
     def test_azure_model_schema(self) -> None:
         schema = AzureOAI.model_json_schema()

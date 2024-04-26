@@ -203,35 +203,16 @@ class TestRegistry:
         assert len(schemas.list_of_schemas[0].schemas) == 1
         assert schemas.list_of_schemas[0].schemas[0].name == "MyModel"
 
-    # @pytest.mark.skip(reason="Not implemented")
-    # def test_validate_complex_success(self) -> None:
-    #     registry = Registry()
+    def test_get_models_refs_by_type(self) -> None:
+        registry = Registry()
 
-    #     @registry.register("my_secret")
-    #     class MySecret(Model):
-    #         key: str
+        @registry.register("my_secret")
+        class MySecretOne(Model):
+            key: str
 
-    #     MySecretRef = MySecret.get_reference_model()
+        MySecretTwoRef = registry.create_reference(  # noqa: N806
+            type_name="my_secret", model_name="MySecretTwo"
+        )
 
-    #     @registry.register("my_type")
-    #     class MyModel(Model):
-    #         i: int
-    #         s: str
-    #         secret: MySecretRef  # type: ignore[valid-type]
-
-    #     secret = MySecretRef.create(uuid=uuid.uuid4())
-    #     model = MyModel(i=1, s="a", secret=secret)
-
-    #     wrapper = MyModel.get_wrapper_model().create(uuid=uuid.uuid4(), data=model)
-    #     registry.validate(wrapper)
-
-    #     wrapper_from_json = ObjectWrapper.model_validate_json(wrapper.model_dump_json())
-    # data = wrapper_from_json.data
-    # print()
-    # print(f"test_validate_complex_success({data=}): {type(data)=}")
-    # print()
-    # registry.validate(wrapper)
-
-    # model_json = json.loads(wrapper.model_dump_json())
-
-    # registry.validate(model_json)
+        refs = registry.get_models_refs_by_type("my_secret")
+        assert set(refs) == {MySecretOne.get_reference_model(), MySecretTwoRef}

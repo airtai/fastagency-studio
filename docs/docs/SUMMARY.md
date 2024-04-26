@@ -23,16 +23,14 @@ search:
                 - assistant
                     - [AssistantAgent](api/fastagency/models/agents/assistant/AssistantAgent.md)
                 - web_surfer
+                    - [BingAPIKey](api/fastagency/models/agents/web_surfer/BingAPIKey.md)
                     - [WebSurferAgent](api/fastagency/models/agents/web_surfer/WebSurferAgent.md)
             - base
                 - [Model](api/fastagency/models/base/Model.md)
                 - [ModelTypeFinder](api/fastagency/models/base/ModelTypeFinder.md)
                 - [ObjectReference](api/fastagency/models/base/ObjectReference.md)
-                - [ObjectWrapper](api/fastagency/models/base/ObjectWrapper.md)
                 - [create_reference_model](api/fastagency/models/base/create_reference_model.md)
-                - [create_wrapper_model](api/fastagency/models/base/create_wrapper_model.md)
                 - [get_reference_model](api/fastagency/models/base/get_reference_model.md)
-                - [get_wrapper_model](api/fastagency/models/base/get_wrapper_model.md)
             - llms
                 - azure
                     - [AzureOAI](api/fastagency/models/llms/azure/AzureOAI.md)

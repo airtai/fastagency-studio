@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.models.base.ObjectWrapper
+::: fastagency.models.agents.web_surfer.BingAPIKey

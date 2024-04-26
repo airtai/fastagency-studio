@@ -3,8 +3,6 @@ from typing import Any, Dict, List, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, ValidationError
 
-# from .constants import REGISTRED_MODEL_TYPES
-# from .models.base import ObjectWrapper
 from .models.registry import Registry, Schemas
 
 app = FastAPI()
@@ -19,11 +17,9 @@ async def get_models_schemas() -> Schemas:
 @app.post("/models/{type}/{name}/validate")
 async def validate_model(type: str, name: str, model: Dict[str, Any]) -> None:
     try:
-        registry = Registry.get_default()
-        model_type = registry.get_model_type(type=type, name=name)
-        model_type.model_validate(model)
+        Registry.get_default().validate(type, name, model)
     except ValidationError as e:
-        raise HTTPException(status_code=422, detail=e.errors()) from e
+        raise HTTPException(status_code=422, detail=e.json()) from e
 
 
 # new routes by Harish

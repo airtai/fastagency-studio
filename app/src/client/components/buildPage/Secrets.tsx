@@ -6,6 +6,7 @@ import { SchemaCategory } from '../../interfaces/BuildPageInterfaces';
 import Button from '../Button';
 import ModelForm from '../ModelForm';
 import { capitalizeFirstLetter } from '../../utils/buildPageUtils';
+import ModelsList from '../ModelsList';
 
 import { getModels, useQuery, updateUserModels, addUserModels, deleteUserModels } from 'wasp/client/operations';
 
@@ -48,6 +49,10 @@ const Secrets = ({ data }: SecretsProps) => {
     setShowAddModel(false);
   };
 
+  const updateSelectedModel = (index: number) => {
+    console.log('Selected model: ', index);
+  };
+
   console.log('modelsList: ', modelsList);
   return (
     <>
@@ -60,7 +65,9 @@ const Secrets = ({ data }: SecretsProps) => {
                 <Button onClick={handleClick} label={`Add ${capitalizeFirstLetter(data.name)}`} />
               </div>
               <div className='flex-col flex w-full'>
-                {showAddModel && (
+                {!showAddModel ? (
+                  <ModelsList models={modelsList} onSelectModel={updateSelectedModel} />
+                ) : (
                   <ModelForm
                     modelSchemas={data.schemas}
                     initialModelSchema={data.schemas[0].json_schema}

@@ -1,6 +1,6 @@
 import { test, expect, describe } from 'vitest';
 
-import { filerOutComponentData, capitalizeFirstLetter } from '../utils/buildPageUtils';
+import { filerOutComponentData, capitalizeFirstLetter, formatApiKey } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
 describe('buildPageUtils', () => {
@@ -449,6 +449,24 @@ describe('buildPageUtils', () => {
     const input = 'hello';
     const expected = 'Hello';
     const actual = capitalizeFirstLetter(input);
+    expect(actual).toEqual(expected);
+  });
+  test('formatApiKey with input less that 7 characters', () => {
+    const input = 'hello';
+    const expected = 'he***';
+    const actual = formatApiKey(input);
+    expect(actual).toEqual(expected);
+  });
+  test('formatApiKey with input more that 7 characters', () => {
+    const input = 'this-is-a-strong-secret-key';
+    const expected = 'thi...-key';
+    const actual = formatApiKey(input);
+    expect(actual).toEqual(expected);
+  });
+  test('formatApiKey with empty input', () => {
+    const input = '';
+    const expected = '';
+    const actual = formatApiKey(input);
     expect(actual).toEqual(expected);
   });
 });

@@ -1,13 +1,13 @@
 import React from 'react';
-import ModelItem from './ModelItem';
-import { Model } from '../interfaces/ModelInterfaces';
+import ModelItem, { ItemProps } from './ModelItem';
 
 interface ModelListProps {
-  models: Model[] | undefined;
+  models: ItemProps[] | undefined;
   onSelectModel: (index: number) => void;
 }
 
 const ModelList: React.FC<ModelListProps> = ({ models, onSelectModel }) => {
+  console.log('models: ', models);
   if (!models || models.length === 0) {
     return (
       <div className='flex flex-col gap-3'>

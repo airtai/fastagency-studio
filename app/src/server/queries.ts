@@ -110,10 +110,10 @@ type GetModelsInput = {
   property_type: string;
 };
 type GetModelsValues = {
-  model: string;
-  base_url: string;
-  api_type: string;
-  api_version?: string;
+  api_key: string;
+  property_name: string;
+  property_type: string;
+  user_id: number;
   uuid: string;
 };
 

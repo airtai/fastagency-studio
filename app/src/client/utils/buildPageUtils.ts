@@ -8,6 +8,14 @@ export function capitalizeFirstLetter(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-// export function getInitialFormElements(schema: SchemaCategory): {
-
-// }
+export function formatApiKey(apiKey: string) {
+  if (apiKey.length) {
+    if (apiKey.length > 7) {
+      return `${apiKey.slice(0, 3)}...${apiKey.slice(-4)}`;
+    } else {
+      return `${apiKey.slice(0, 2)}${'*'.repeat(apiKey.length - 2)}`;
+    }
+  } else {
+    return '';
+  }
+}

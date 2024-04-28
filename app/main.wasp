@@ -20,6 +20,8 @@ app OpenSaaS {
         // google analytics only needs one script and will automatically detect if you are in dev mode
         //"<!-- Google tag (gtag.js) --><script>...</script>"
         "<script type='text/javascript'> (function(l) { if (l.search[1] === '/' ) { var decoded = l.search.slice(1).split('&').map(function(s) { return s.replace(/~and~/g, '&') }).join('?'); window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash ); } }(window.location)) </script>",
+        "<script async src='https://www.googletagmanager.com/gtag/js?id=G-E2XNSDG1H1'></script>",
+        "<script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-E2XNSDG1H1');</script>"
   ],
   // 🔐 Auth out of the box! https://wasp-lang.dev/docs/auth/overview
   auth: {
@@ -158,6 +160,10 @@ page TocPage {
 route PrivacyRoute { path: "/privacy", to: PrivacyPage }
 page PrivacyPage {
   component: import PrivacyPage from "@src/client/app/PrivacyPage",
+}
+route ExamplesRoute { path: "/examples", to: ExamplesPage }
+page ExamplesPage {
+  component: import ExamplesPage from "@src/client/app/ExamplesPage",
 }
 
 route AdminRoute { path: "/admin", to: DashboardPage }

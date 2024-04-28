@@ -6,6 +6,7 @@ export const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Chat', href: '/chat' },
   { name: 'Pricing', href: '/pricing' },
+  { name: 'Examples', href: '/examples' },
 ];
 export const features = [
   {

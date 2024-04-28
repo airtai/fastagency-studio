@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import FreeTrialButton from './FreeTrialButton';
 
+export type Theme = 'dark' | 'light';
+
 interface UserActionButtonProps {
   user: any;
   renderGoToChat: boolean;
-  theme?: string;
+  theme?: Theme;
 }
-
-export type Theme = 'dark' | 'light';
 
 const UserActionButton: React.FC<UserActionButtonProps> = ({ user, renderGoToChat, theme = 'dark' }) => {
   const themeClass = theme === 'dark' ? 'bg-airt-primary text-airt-font-base' : 'bg-airt-secondary text-airt-font-base';
@@ -23,7 +23,7 @@ const UserActionButton: React.FC<UserActionButtonProps> = ({ user, renderGoToCha
   }
 
   if (!user.hasPaid) {
-    return <FreeTrialButton />;
+    return <FreeTrialButton theme={theme} />;
   }
 
   return renderGoToChat ? (

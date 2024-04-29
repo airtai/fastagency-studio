@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import CustomBreadcrumb from '../CustomBreadcrumb';
 
-import { useModels, ModelsActionType } from '../../hooks/useModels';
 import { SchemaCategory, SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
 import Button from '../Button';
 import ModelForm from '../ModelForm';
@@ -16,7 +15,6 @@ interface SecretsProps {
 }
 
 const Secrets = ({ data }: SecretsProps) => {
-  // const { state, dispatch, fetchData } = useModels();
   const [showAddModel, setShowAddModel] = useState(false);
   const [selectedModel, setSelectedModel] = useState(data.schemas[0].name);
   const [updateExistingModel, setUpdateExistingModel] = useState<SelectedModelSchema | null>(null);

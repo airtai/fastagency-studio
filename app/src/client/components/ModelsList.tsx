@@ -12,7 +12,7 @@ const ModelsList: React.FC<ModelListProps> = ({ models, onSelectModel, property_
     return (
       <div className='flex flex-col gap-3'>
         {/* <h2 className='text-lg font-semibold text-airt-primary'>Available Models</h2> */}
-        <p className='text-airt-primary mt-3 text-lg opacity-50'>{`No ${property_type} available. Please add one.`}</p>
+        <p className='text-airt-primary mt-1 -mt-3 opacity-50'>{`No ${property_type} available. Please add one.`}</p>
       </div>
     );
   }

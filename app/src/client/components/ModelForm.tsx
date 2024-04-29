@@ -1,6 +1,5 @@
 // src/components/ModelForm.tsx
 import React from 'react';
-import { JsonSchema, Model, ModelSchemas } from '../interfaces/ModelInterfaces';
 import { ApiSchema, SchemaDefinition, SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
 import ModelFormContainer from './ModelFormContainer';

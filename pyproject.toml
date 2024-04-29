@@ -161,7 +161,7 @@ fix = true
 line-length = 88
 # target-version = 'py39'
 include = ["fastagency/**/*.py", "fastagency/**/*.pyi", "tests/**/*.py", "docs/**/*.py", "pyproject.toml"]
-exclude = ["docs/docs_src"]
+exclude = ["docs/docs_src", "examples/openapi/**/*.py"]
 
 [tool.ruff.lint]
 select = [

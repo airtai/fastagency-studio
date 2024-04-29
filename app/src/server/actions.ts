@@ -160,12 +160,15 @@ export const addUserModels: AddUserModels<AddUserModelsPayload, void> = async (a
 };
 
 type UpdateUserModelsValues = {
-  userId: number;
-  model: string;
-  base_url: string;
-  api_type: string;
-  api_version?: string;
   uuid: string;
+  userId?: number;
+  model?: string;
+  base_url?: string;
+  api_type?: string;
+  api_version?: string;
+  api_key?: string;
+  property_type?: string;
+  property_name?: string;
 };
 
 type UpdateUserModelsPayload = {
@@ -198,6 +201,7 @@ export const updateUserModels: UpdateUserModels<UpdateUserModelsPayload, void> =
 
 type DeleteUserModelsPayload = {
   uuid: string;
+  property_type: string;
 };
 
 export const deleteUserModels: DeleteUserModels<DeleteUserModelsPayload, void> = async (args, context) => {
@@ -209,7 +213,7 @@ export const deleteUserModels: DeleteUserModels<DeleteUserModelsPayload, void> =
     const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models/delete`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: context.user.id, uuid: args.uuid }),
+      body: JSON.stringify({ user_id: context.user.id, uuid: args.uuid, property_type: args.property_type }),
     });
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 

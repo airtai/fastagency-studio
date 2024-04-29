@@ -8,29 +8,29 @@ import { parseValidationErrors } from '../app/utils/formHelpers';
 import Loader from '../admin/common/Loader';
 import NotificationBox from './NotificationBox';
 
-import { Model } from '../interfaces/ModelInterfaces';
+import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 import { set } from 'zod';
 
 interface DynamicFormBuilderProps {
   jsonSchema: JsonSchema;
   validationURL: string;
-  // updateExistingModel: Model | null;
+  updateExistingModel: SelectedModelSchema | null;
   onSuccessCallback: (data: any) => void;
   onCancelCallback: (data: any) => void;
-  // onDeleteCallback: (data: any) => void;
+  onDeleteCallback: (data: any) => void;
 }
 
 const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   jsonSchema,
   validationURL,
-  // updateExistingModel,
+  updateExistingModel,
   onSuccessCallback,
   onCancelCallback,
-  // onDeleteCallback,
+  onDeleteCallback,
 }) => {
   const { formData, handleChange, formErrors, setFormErrors } = useForm({
     jsonSchema,
-    defaultValues: null, //updateExistingModel,
+    defaultValues: updateExistingModel,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
@@ -108,16 +108,17 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             Cancel
           </button>
 
-          {/* {updateExistingModel && (
+          {updateExistingModel && (
             <button
+              type='button'
               className='float-right ml-3 rounded-md px-3.5 py-2.5 text-sm border bg-airt-error text-airt-font-base hover:bg-opacity-80 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
               disabled={isLoading}
               data-testid='form-cancel-button'
               onClick={onDeleteCallback}
             >
-              Delete model
+              Delete
             </button>
-          )} */}
+          )}
         </div>
       </form>
       {isLoading && (

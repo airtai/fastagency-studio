@@ -28,10 +28,10 @@ async def validate_model(type: str, name: str, model: Dict[str, Any]) -> None:
 all_models: Dict[int, Dict[str, List[Optional[Dict[str, Any]]]]] = {}
 
 
-def find_model(user_id: int, uuid: str) -> Dict[str, Any]:
-    if user_id not in all_models:
-        raise HTTPException(status_code=404, detail="User not found")
-    for model in all_models[user_id]:
+def find_model(user_id: int, property_type: str, uuid: str) -> Dict[str, Any]:
+    if user_id not in all_models or property_type not in all_models[user_id]:
+        raise HTTPException(status_code=404, detail="User or property type not found")
+    for model in all_models[user_id][property_type]:
         if model and model["uuid"] == uuid:  # type: ignore
             return model  # type: ignore
     raise HTTPException(status_code=404, detail="Model not found")
@@ -67,29 +67,33 @@ def models_add(model: Model) -> Dict[str, Any]:
 class ModelUpdate(BaseModel):
     user_id: int
     uuid: str
-    model: Optional[str]
-    base_url: Optional[str]
-    api_type: Optional[str]
-    api_version: Optional[str] = None
+    api_key: str
+    property_type: str
+    property_name: str
 
 
 @app.put("/user/models/update")
 def models_update(model_update: ModelUpdate) -> Dict[str, Any]:
-    model = find_model(model_update.user_id, model_update.uuid)
+    model = find_model(
+        model_update.user_id, model_update.property_type, model_update.uuid
+    )
     updated_model = model_update.model_dump()
     updated_model["uuid"] = model["uuid"]
-    all_models[model_update.user_id].remove(model)  # type: ignore
-    all_models[model_update.user_id].append(updated_model)  # type: ignore
+    all_models[model_update.user_id][model_update.property_type].remove(model)  # type: ignore
+    all_models[model_update.user_id][model_update.property_type].append(updated_model)  # type: ignore
     return updated_model
 
 
 class ModelDelete(BaseModel):
     user_id: int
     uuid: str
+    property_type: str
 
 
 @app.delete("/user/models/delete")
 def models_delete(model_delete: ModelDelete) -> Dict[str, str]:
-    model = find_model(model_delete.user_id, model_delete.uuid)
-    all_models[model_delete.user_id].remove(model)  # type: ignore
+    model = find_model(
+        model_delete.user_id, model_delete.property_type, model_delete.uuid
+    )
+    all_models[model_delete.user_id][model_delete.property_type].remove(model)  # type: ignore
     return {"detail": "Model deleted successfully"}

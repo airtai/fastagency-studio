@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Model } from '../interfaces/ModelInterfaces';
-import { JsonSchema } from '../interfaces/BuildPageInterfaces';
+import { JsonSchema, SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
 interface UseFormProps {
   jsonSchema: JsonSchema;
-  defaultValues?: Model | null;
+  defaultValues?: SelectedModelSchema | null;
 }
 interface FormData {
   [key: string]: any;
 }
 
-function getValueFromModel(model: Model, key: keyof Model): string | undefined {
-  return model[key];
+function getValueFromModel(model: SelectedModelSchema, key: keyof SelectedModelSchema): string | undefined {
+  return model[key].toString();
 }
 
 export const useForm = ({ jsonSchema, defaultValues }: UseFormProps) => {
@@ -24,7 +24,7 @@ export const useForm = ({ jsonSchema, defaultValues }: UseFormProps) => {
       const property = jsonSchema.properties[key];
       if (defaultValues) {
         initialFormData[key] = defaultValues.hasOwnProperty(key)
-          ? getValueFromModel(defaultValues, key as keyof Model)
+          ? getValueFromModel(defaultValues, key as keyof SelectedModelSchema)
           : '';
       } else {
         if (property.enum && property.enum.length === 1) {

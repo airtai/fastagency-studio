@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import CustomBreadcrumb from '../CustomBreadcrumb';
 
 import { useModels, ModelsActionType } from '../../hooks/useModels';
-import { SchemaCategory } from '../../interfaces/BuildPageInterfaces';
+import { SchemaCategory, SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
 import Button from '../Button';
 import ModelForm from '../ModelForm';
 import { capitalizeFirstLetter } from '../../utils/buildPageUtils';
 import ModelsList from '../ModelsList';
 
 import { getModels, useQuery, updateUserModels, addUserModels, deleteUserModels } from 'wasp/client/operations';
+import { set } from 'zod';
 
 interface SecretsProps {
   data: SchemaCategory;
@@ -18,6 +19,7 @@ const Secrets = ({ data }: SecretsProps) => {
   // const { state, dispatch, fetchData } = useModels();
   const [showAddModel, setShowAddModel] = useState(false);
   const [selectedModel, setSelectedModel] = useState(data.schemas[0].name);
+  const [updateExistingModel, setUpdateExistingModel] = useState<SelectedModelSchema | null>(null);
   const {
     data: modelsList,
     refetch: refetchModels,
@@ -40,7 +42,12 @@ const Secrets = ({ data }: SecretsProps) => {
 
   const onSuccessCallback = async (payload: any) => {
     const mergedData = { ...payload, property_type: data.name, property_name: selectedModel };
-    await addUserModels(mergedData);
+    if (updateExistingModel) {
+      await updateUserModels({ data: mergedData, uuid: updateExistingModel.uuid });
+      setUpdateExistingModel(null);
+    } else {
+      await addUserModels(mergedData);
+    }
     refetchModels();
     setShowAddModel(false);
   };
@@ -49,11 +56,23 @@ const Secrets = ({ data }: SecretsProps) => {
     setShowAddModel(false);
   };
 
-  const updateSelectedModel = (index: number) => {
-    console.log('Selected model: ', index);
+  const onDeleteCallback = async () => {
+    if (updateExistingModel) {
+      await deleteUserModels({ uuid: updateExistingModel.uuid, property_type: updateExistingModel.property_type });
+      await refetchModels();
+      setUpdateExistingModel(null);
+      setShowAddModel(false);
+    }
   };
 
-  console.log('modelsList: ', modelsList);
+  const updateSelectedModel = (index: number) => {
+    if (modelsList) {
+      const selectedModel = modelsList[index];
+      setSelectedModel(selectedModel.property_name);
+      setUpdateExistingModel(selectedModel);
+      setShowAddModel(true);
+    }
+  };
   return (
     <>
       <CustomBreadcrumb pageName='Secrets' />
@@ -61,23 +80,23 @@ const Secrets = ({ data }: SecretsProps) => {
         <div className='flex flex-col gap-4'>
           <div className='rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[600px]'>
             <div className='flex-col flex items-start p-6 gap-3 w-full'>
-              <div className={`${showAddModel ? 'hidden' : ''} flex justify-end w-full px-6.5 py-3`}>
-                <Button onClick={handleClick} label={`Add ${capitalizeFirstLetter(data.name)}`} />
+              <div className={`${showAddModel ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
+                <Button onClick={handleClick} label={`Add new ${capitalizeFirstLetter(data.name)}`} />
               </div>
               <div className='flex-col flex w-full'>
                 {!showAddModel ? (
-                  <ModelsList models={modelsList} onSelectModel={updateSelectedModel} />
+                  <ModelsList models={modelsList} onSelectModel={updateSelectedModel} property_type='secret' />
                 ) : (
                   <ModelForm
                     modelSchemas={data.schemas}
                     initialModelSchema={data.schemas[0].json_schema}
                     selectedModel={selectedModel}
                     validationURL={`models/${data.name}/${selectedModel}/validate`}
-                    // updateExistingModel={updateExistingModel}
+                    updateExistingModel={updateExistingModel}
                     onModelChange={handleModelChange}
                     onSuccessCallback={onSuccessCallback}
                     onCancelCallback={onCancelCallback}
-                    // onDeleteCallback={onDeleteCallback}
+                    onDeleteCallback={onDeleteCallback}
                   />
                 )}
               </div>

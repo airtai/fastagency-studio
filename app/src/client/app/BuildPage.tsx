@@ -147,7 +147,7 @@ const BuildPage = ({ user }: BuildPageProps) => {
 
           {/* <!-- ===== Main Content Start ===== --> */}
           <main className='lg:mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10'>
-            <div className='w-full lg:min-w-[700px] 2xl:min-w-[1000px]'>
+            <div className='w-full lg:min-w-[700px] 2xl:min-w-[1200px]'>
               {error ? (
                 <p
                   className='absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl md:text-xl text-airt-font-base'

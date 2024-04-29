@@ -46,3 +46,11 @@ export interface SchemaCategory {
 export interface ApiResponse {
   list_of_schemas: SchemaCategory[];
 }
+
+export interface SelectedModelSchema {
+  api_key: string;
+  property_name: string;
+  property_type: string;
+  user_id: number;
+  uuid: string;
+}

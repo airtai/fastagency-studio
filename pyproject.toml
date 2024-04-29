@@ -85,7 +85,7 @@ lint = [
     "ruff==0.4.1",
     "pyupgrade-directories==0.3.0",
     "bandit==1.7.8",
-    "semgrep==1.69.0",
+    "semgrep==1.70.0",
     "pytest-mypy-plugins==3.1.2",
 ]
 

@@ -7,6 +7,7 @@ export const navigation = [
   { name: 'Build', href: '/build' },
   { name: 'Playground', href: '/playground' },
   { name: 'Pricing', href: '/pricing' },
+  { name: 'Examples', href: '/examples' },
 ];
 export const features = [
   {

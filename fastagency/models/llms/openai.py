@@ -1,7 +1,7 @@
 from typing import Annotated, Literal
 
-from pydantic import Field, HttpUrl, model_validator
-from typing_extensions import Self, TypeAlias
+from pydantic import Field, HttpUrl
+from typing_extensions import TypeAlias
 
 from ...constants import OPENAI_MODELS_LITERAL
 from ..base import Model
@@ -15,14 +15,13 @@ __all__ = [
 
 @register("secret")
 class OpenAIAPIKey(Model):
-    api_key: Annotated[str, Field(description="The API Key from OpenAI")]
-
-    @model_validator(mode="after")
-    def check(self) -> Self:
-        if not self.api_key.startswith("sk-"):
-            raise ValueError("API Key must start with 'sk-'")
-
-        return self
+    api_key: Annotated[
+        str,
+        Field(
+            description="The API Key from OpenAI",
+            pattern=r"^sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}$",
+        ),
+    ]
 
 
 OpenAIAPIKeyRef: TypeAlias = OpenAIAPIKey.get_reference_model()  # type: ignore[valid-type]

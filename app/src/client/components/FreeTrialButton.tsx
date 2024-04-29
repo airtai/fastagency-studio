@@ -6,7 +6,11 @@ import { useHistory } from 'react-router-dom';
 import { TierIds } from '../../shared/constants';
 import Button from './Button';
 
-export default function FreeTrialButton() {
+interface FreeTrialButtonProps {
+  theme?: 'light' | 'dark';
+}
+
+export default function FreeTrialButton({ theme = 'dark' }: FreeTrialButtonProps) {
   const history = useHistory();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { data: user } = useAuth();
@@ -39,6 +43,7 @@ export default function FreeTrialButton() {
         handleClick(TierIds.PRO);
       }}
       label={!isLoading ? 'Free Trial' : 'Loading...'}
+      theme={theme}
     />
   );
 }

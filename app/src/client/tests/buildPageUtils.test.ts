@@ -1,6 +1,7 @@
 import { test, expect, describe } from 'vitest';
+import _ from 'lodash';
 
-import { filerOutComponentData, capitalizeFirstLetter, formatApiKey } from '../utils/buildPageUtils';
+import { filerOutComponentData, capitalizeFirstLetter, formatApiKey, getSchemaByName } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
 describe('buildPageUtils', () => {
@@ -468,5 +469,91 @@ describe('buildPageUtils', () => {
     const expected = '';
     const actual = formatApiKey(input);
     expect(actual).toEqual(expected);
+  });
+  test('getSchemaByName', () => {
+    const schemaData = {
+      schemas: [
+        {
+          name: 'AzureOAIAPIKey',
+          json_schema: {
+            properties: {
+              api_key: {
+                description: 'The API Key from OpenAI',
+                title: 'Api Key',
+                type: 'string',
+                pattern: '',
+              },
+            },
+            required: ['api_key'],
+            title: 'AzureOAIAPIKey',
+            type: 'object',
+          },
+        },
+        {
+          name: 'OpenAIAPIKey',
+          json_schema: {
+            properties: {
+              api_key: {
+                description: 'The API Key from OpenAI',
+                pattern: '^sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}$',
+                title: 'Api Key',
+                type: 'string',
+              },
+            },
+            required: ['api_key'],
+            title: 'OpenAIAPIKey',
+            type: 'object',
+          },
+        },
+        {
+          name: 'BingAPIKey',
+          json_schema: {
+            properties: {
+              api_key: {
+                description: 'The API Key from OpenAI',
+                title: 'Api Key',
+                type: 'string',
+              },
+            },
+            required: ['api_key'],
+            title: 'BingAPIKey',
+            type: 'object',
+          },
+        },
+      ],
+    };
+    let schemaName = 'OpenAIAPIKey';
+    let actual = getSchemaByName(schemaData.schemas, schemaName);
+    let expected = {
+      properties: {
+        api_key: {
+          description: 'The API Key from OpenAI',
+          pattern: '^sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}$',
+          title: 'Api Key',
+          type: 'string',
+        },
+      },
+      required: ['api_key'],
+      title: 'OpenAIAPIKey',
+      type: 'object',
+    };
+    expect(_.isEqual(actual, expected)).toBe(true);
+
+    schemaName = 'some invalid schema';
+    actual = getSchemaByName(schemaData.schemas, schemaName);
+    expected = {
+      properties: {
+        api_key: {
+          description: 'The API Key from OpenAI',
+          title: 'Api Key',
+          type: 'string',
+          pattern: '',
+        },
+      },
+      required: ['api_key'],
+      title: 'AzureOAIAPIKey',
+      type: 'object',
+    };
+    expect(_.isEqual(actual, expected)).toBe(true);
   });
 });

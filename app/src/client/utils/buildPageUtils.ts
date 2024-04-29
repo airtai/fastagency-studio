@@ -1,4 +1,4 @@
-import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
+import { SchemaCategory, ApiResponse, ApiSchema, JsonSchema } from '../interfaces/BuildPageInterfaces';
 
 export const filerOutComponentData = (data: ApiResponse, componentName: string): SchemaCategory => {
   return data.list_of_schemas.filter((schema: any) => schema.name === componentName)[0];
@@ -19,3 +19,8 @@ export function formatApiKey(apiKey: string) {
     return '';
   }
 }
+
+export const getSchemaByName = (schemas: ApiSchema[], schemaName: string): JsonSchema => {
+  const apiSchema: ApiSchema | undefined = schemas.find((s) => s.name === schemaName);
+  return apiSchema ? apiSchema.json_schema : schemas[0].json_schema;
+};

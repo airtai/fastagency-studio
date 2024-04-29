@@ -54,3 +54,7 @@ export interface SelectedModelSchema {
   user_id: number;
   uuid: string;
 }
+
+export interface SecretsProps {
+  data: SchemaCategory;
+}

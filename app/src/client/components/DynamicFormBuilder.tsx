@@ -81,7 +81,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
               ) : (
                 <TextInput
                   id={key}
-                  value={inputValue}
+                  value={key === 'api_key' ? inputValue.replace(/./g, '*') : inputValue}
                   placeholder={property.description || ''}
                   onChange={(value) => handleChange(key, value)}
                 />

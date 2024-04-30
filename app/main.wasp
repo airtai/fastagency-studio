@@ -318,6 +318,11 @@ query getModels {
   entities: [User]
 }
 
+query propertyDependencies {
+  fn: import { propertyDependencies } from "@src/server/queries.js",
+  entities: [User]
+}
+
 /*
  * 📡 These are custom Wasp API Endpoints. Use them for callbacks, webhooks, etc.
  * https://wasp-lang.dev/docs/advanced/apis

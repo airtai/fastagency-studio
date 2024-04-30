@@ -58,3 +58,7 @@ export interface SelectedModelSchema {
 export interface SecretsProps {
   data: SchemaCategory;
 }
+
+export interface PropertyDependencyMap {
+  [key: string]: string[];
+}

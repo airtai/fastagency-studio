@@ -9,6 +9,7 @@ import {
   getPropertyReferenceValues,
   constructHTMLSchema,
   getFormSubmitValues,
+  isDependencyAvailable,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -797,7 +798,6 @@ describe('buildPageUtils', () => {
       api_version: 'latest',
     };
     const actual = getFormSubmitValues(refValues, formData);
-    console.log(actual);
     expect(actual).toEqual(expected);
   });
 
@@ -874,5 +874,35 @@ describe('buildPageUtils', () => {
     };
     const actual = getFormSubmitValues(refValues, formData);
     expect(actual).toEqual(expected);
+  });
+
+  test('isDependencyNotCreated - positive case - without dependencies', () => {
+    const input = {};
+    const actual = isDependencyAvailable(input);
+    expect(actual).toBe(true);
+  });
+
+  test('isDependencyNotCreated - positive case - with dependencies', () => {
+    const input = { secret: 1 };
+    const actual = isDependencyAvailable(input);
+    expect(actual).toBe(true);
+  });
+
+  test('isDependencyNotCreated - positive case - with multiple dependencies', () => {
+    const input = { secret: 5, llm: 10 };
+    const actual = isDependencyAvailable(input);
+    expect(actual).toBe(true);
+  });
+
+  test('isDependencyNotCreated - negative case - with dependencies', () => {
+    const input = { secret: 0 };
+    const actual = isDependencyAvailable(input);
+    expect(actual).toBe(false);
+  });
+
+  test('isDependencyNotCreated - negative case - with multiple dependencies', () => {
+    const input = { secret: 5, llm: 0 };
+    const actual = isDependencyAvailable(input);
+    expect(actual).toBe(false);
   });
 });

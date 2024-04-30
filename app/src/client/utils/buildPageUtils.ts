@@ -3,6 +3,8 @@ import _ from 'lodash';
 import { getModels } from 'wasp/client/operations';
 import { SchemaCategory, ApiResponse, ApiSchema, JsonSchema } from '../interfaces/BuildPageInterfaces';
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
+import { propertyDependencyMap } from './constants';
+import { tr } from '@faker-js/faker';
 
 export const filerOutComponentData = (data: ApiResponse, componentName: string): SchemaCategory => {
   return data.list_of_schemas.filter((schema: any) => schema.name === componentName)[0];
@@ -27,15 +29,6 @@ export function formatApiKey(apiKey: string) {
 export const getSchemaByName = (schemas: ApiSchema[], schemaName: string): JsonSchema => {
   const apiSchema: ApiSchema | undefined = schemas.find((s) => s.name === schemaName);
   return apiSchema ? apiSchema.json_schema : schemas[0].json_schema;
-};
-
-interface PropertyDependencyMap {
-  [key: string]: string[];
-}
-
-const propertyDependencyMap: PropertyDependencyMap = {
-  secret: [''],
-  llm: ['secret'],
 };
 
 export const getDependenciesCreatedByUser = async (property_type: string): Promise<SelectedModelSchema[]> => {
@@ -112,4 +105,20 @@ export const getFormSubmitValues = (refValues: any, formData: any) => {
     }
   });
   return newFormData;
+};
+
+export const isDependencyAvailable = (dependencyObj: any): boolean => {
+  if (_.keys(dependencyObj).length === 0) {
+    return true;
+  }
+  const retVal = _.reduce(
+    dependencyObj,
+    function (result: boolean, value: number) {
+      result = result && value > 0;
+      return result;
+    },
+    true
+  );
+
+  return retVal;
 };

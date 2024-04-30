@@ -3,11 +3,21 @@ import React, { useState } from 'react';
 import Button from '../Button';
 import ModelForm from '../ModelForm';
 import ModelsList from '../ModelsList';
+import NotificationBox from '../NotificationBox';
 
 import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
 import { SecretsProps } from '../../interfaces/BuildPageInterfaces';
 
-import { getModels, useQuery, updateUserModels, addUserModels, deleteUserModels } from 'wasp/client/operations';
+import {
+  getModels,
+  useQuery,
+  updateUserModels,
+  addUserModels,
+  deleteUserModels,
+  propertyDependencies,
+} from 'wasp/client/operations';
+import { propertyDependencyMap } from '../../utils/constants';
+import { isDependencyAvailable } from '../../utils/buildPageUtils';
 
 const UserPropertyHandler = ({ data }: SecretsProps) => {
   const [showAddModel, setShowAddModel] = useState(false);
@@ -19,8 +29,18 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     isLoading: getModelsIsLoading,
   } = useQuery(getModels, { property_type: data.name });
 
+  const { data: propertyDependency } = useQuery(propertyDependencies, {
+    properties: propertyDependencyMap[data.name],
+  });
+
+  const [showNotification, setShowNotification] = useState(false);
+
   const handleClick = () => {
-    setShowAddModel(true);
+    if (isDependencyAvailable(propertyDependency)) {
+      setShowAddModel(true);
+    } else {
+      setShowNotification(true);
+    }
   };
   const handleModelChange = (newModel: string) => {
     setSelectedModel(newModel);
@@ -60,6 +80,13 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     }
   };
 
+  const onClick = () => {
+    setShowNotification(false);
+  };
+
+  const dependentProperties = propertyDependencyMap[data.name].join(', ');
+  const dependencyErrorMessage = `Please add atleast one ${dependentProperties} before adding a ${data.name}`;
+
   return (
     <div className='flex-col flex items-start p-6 gap-3 w-full'>
       <div className={`${showAddModel ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
@@ -80,6 +107,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
           />
         )}
       </div>
+      {showNotification && <NotificationBox type='error' onClick={onClick} message={dependencyErrorMessage} />}
     </div>
   );
 };

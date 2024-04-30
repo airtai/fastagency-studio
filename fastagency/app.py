@@ -50,10 +50,14 @@ def models(user: User) -> List[Optional[Dict[str, Any]]]:
 
 class Model(BaseModel):
     uuid: str
-    api_key: Union[str, Dict[str, Union[str, int]]]
+    api_key: Union[str, Dict[str, Union[Union[Optional[str], None], int]]]
     property_type: str
     property_name: str
     user_id: int
+    base_url: Optional[str] = None
+    model: Optional[str] = None
+    api_type: Optional[str] = None
+    api_version: Optional[str] = None
 
 
 @app.post("/user/models/add")
@@ -64,16 +68,8 @@ def models_add(model: Model) -> Dict[str, Any]:
     return user_models
 
 
-class ModelUpdate(BaseModel):
-    user_id: int
-    uuid: str
-    api_key: str
-    property_type: str
-    property_name: str
-
-
 @app.put("/user/models/update")
-def models_update(model_update: ModelUpdate) -> Dict[str, Any]:
+def models_update(model_update: Model) -> Dict[str, Any]:
     model = find_model(
         model_update.user_id, model_update.property_type, model_update.uuid
     )

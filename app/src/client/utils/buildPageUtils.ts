@@ -102,7 +102,11 @@ export const getFormSubmitValues = (refValues: any, formData: any) => {
   }
   _.forEach(refKeys, function (key: string) {
     if (_.has(formData, key)) {
-      const selectedKey = formData[key] ? formData[key] : refValues[key].htmlSchema.default;
+      const selectedKey = formData[key]
+        ? formData[key] && typeof formData[key] === 'string'
+          ? formData[key]
+          : formData[key].property_name
+        : refValues[key].htmlSchema.default;
       const selectedData = refValues[key].userPropertyData.find((data: any) => data.property_name === selectedKey);
       newFormData[key] = selectedData;
     }

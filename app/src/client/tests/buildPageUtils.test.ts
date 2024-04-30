@@ -797,6 +797,82 @@ describe('buildPageUtils', () => {
       api_version: 'latest',
     };
     const actual = getFormSubmitValues(refValues, formData);
+    console.log(actual);
+    expect(actual).toEqual(expected);
+  });
+
+  test('getFormSubmitValues - update existing record', () => {
+    const refValues = {
+      api_key: {
+        htmlSchema: {
+          default: 'AzureOAIAPIKey',
+          description: '',
+          enum: ['AzureOAIAPIKey', 'BingAPIKey'],
+          title: 'Api Key',
+          type: 'string',
+        },
+        userPropertyData: [
+          {
+            uuid: 'c45c06d1-bb0e-4481-9c32-7ade1b90fa18',
+            api_key: '',
+            property_type: 'secret',
+            property_name: 'AzureOAIAPIKey',
+            user_id: 1,
+            base_url: null,
+            model: null,
+            api_type: null,
+            api_version: null,
+          },
+          {
+            uuid: '7fd88128-6846-4d28-a251-2cd7957cfe14',
+            api_key: '',
+            property_type: 'secret',
+            property_name: 'BingAPIKey',
+            user_id: 1,
+            base_url: null,
+            model: null,
+            api_type: null,
+            api_version: null,
+          },
+        ],
+      },
+    };
+    const formData = {
+      model: 'gpt-3.5-turbo',
+      api_key: {
+        uuid: '7fd88128-6846-4d28-a251-2cd7957cfe14',
+        api_key: '',
+        property_type: 'secret',
+        property_name: 'BingAPIKey',
+        user_id: 1,
+        base_url: null,
+        model: null,
+        api_type: null,
+        api_version: null,
+      },
+      base_url: 'https://api.openai.com/v200',
+      api_type: 'azure',
+      api_version: 'latest',
+    };
+
+    const expected = {
+      model: 'gpt-3.5-turbo',
+      api_key: {
+        uuid: '7fd88128-6846-4d28-a251-2cd7957cfe14',
+        api_key: '',
+        property_type: 'secret',
+        property_name: 'BingAPIKey',
+        user_id: 1,
+        base_url: null,
+        model: null,
+        api_type: null,
+        api_version: null,
+      },
+      base_url: 'https://api.openai.com/v200',
+      api_type: 'azure',
+      api_version: 'latest',
+    };
+    const actual = getFormSubmitValues(refValues, formData);
     expect(actual).toEqual(expected);
   });
 });

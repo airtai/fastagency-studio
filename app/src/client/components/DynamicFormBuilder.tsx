@@ -70,19 +70,6 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   useEffect(() => {
     async function fetchPropertyReferenceValues() {
       if (jsonSchema) {
-        // const refKeys = _.filter(_.map(jsonSchema.properties, '$ref'));
-        // console.log(refKeys);
-        // if (refKeys.length > 0) {
-        //   // @ts-ignore
-        //   const { htmlSchema, userProperties } = await getPropertyReferenceValues(
-        //     refKeys[0],
-        //     jsonSchema.$defs,
-        //     'api_key',
-        //     property_type
-        //   );
-        //   console.log('htmlSchema', htmlSchema);
-        //   console.log('userProperties', userProperties);
-        // }
         setIsLoading(true);
         for (const [key, property] of Object.entries(jsonSchema.properties)) {
           if (_.has(property, '$ref') && property['$ref']) {
@@ -110,30 +97,17 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     <>
       <form onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 gap-9 p-6.5'>
         {Object.entries(jsonSchema.properties).map(([key, property]) => {
-          // if (_.has(property, '$ref')) {
-          //   console.log('property[$ref]', property['$ref']);
-          //   // @ts-ignore
-          //   const { htmlSchema, userProperties } = getPropertyReferenceValues(
-          //     // @ts-ignore
-          //     property['$ref'],
-          //     jsonSchema.$defs,
-          //     key,
-          //     property_type
-          //   );
-          //   console.log('htmlSchema', htmlSchema);
-          //   console.log('userProperties', userProperties);
-          // }
           if (key === 'uuid') {
             return null;
           }
           const inputValue = formData[key] || '';
 
-          const formElementsObject = _.has(property, '$ref')
-            ? refValues[key]
-              ? refValues[key].htmlSchema
-              : property
-            : property;
-          // console.log('formElementsObject', formElementsObject);
+          let formElementsObject = property;
+          if (_.has(property, '$ref')) {
+            if (refValues[key]) {
+              formElementsObject = refValues[key].htmlSchema;
+            }
+          }
 
           // return formElementsObject?.enum?.length === 1 ? null : (
           return (
@@ -149,7 +123,9 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
               ) : (
                 <TextInput
                   id={key}
-                  value={key === 'api_key' ? inputValue.replace(/./g, '*') : inputValue}
+                  value={
+                    key === 'api_key' && typeof inputValue === 'string' ? inputValue.replace(/./g, '*') : inputValue
+                  }
                   placeholder={formElementsObject.description || ''}
                   onChange={(value) => handleChange(key, value)}
                 />

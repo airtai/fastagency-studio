@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, ValidationError
@@ -50,7 +50,7 @@ def models(user: User) -> List[Optional[Dict[str, Any]]]:
 
 class Model(BaseModel):
     uuid: str
-    api_key: str
+    api_key: Union[str, Dict[str, Union[str, int]]]
     property_type: str
     property_name: str
     user_id: int

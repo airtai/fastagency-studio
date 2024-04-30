@@ -8,6 +8,7 @@ import {
   getSchemaByName,
   getPropertyReferenceValues,
   constructHTMLSchema,
+  getFormSubmitValues,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -684,6 +685,118 @@ describe('buildPageUtils', () => {
     };
     const title = 'Api Key';
     const actual = constructHTMLSchema(input, title);
+    expect(actual).toEqual(expected);
+  });
+  test('getFormSubmitValues - without refs', () => {
+    const refValues = {};
+    const formData = { api_key: '' };
+    const actual = getFormSubmitValues(refValues, formData);
+    expect(actual).toEqual(formData);
+  });
+
+  test('getFormSubmitValues - with refs and default value', () => {
+    const refValues = {
+      api_key: {
+        htmlSchema: {
+          default: 'AzureOAIAPIKey',
+          description: '',
+          enum: ['AzureOAIAPIKey', 'BingAPIKey'],
+          title: 'Api Key',
+          type: 'string',
+        },
+        userPropertyData: [
+          {
+            uuid: 'debaa689-a3f8-4d91-9a18-a43916835384',
+            api_key: '',
+            property_type: 'secret',
+            property_name: 'AzureOAIAPIKey',
+            user_id: 1,
+          },
+          {
+            uuid: 'b771441b-b216-491e-af32-33232b42ab7f',
+            api_key: '',
+            property_type: 'secret',
+            property_name: 'BingAPIKey',
+            user_id: 1,
+          },
+        ],
+      },
+    };
+    const formData = {
+      model: 'gpt-3.5-turbo',
+      api_key: '',
+      base_url: 'https://api.openai.com/v1',
+      api_type: 'azure',
+      api_version: 'latest',
+    };
+
+    const expected = {
+      model: 'gpt-3.5-turbo',
+      api_key: {
+        uuid: 'debaa689-a3f8-4d91-9a18-a43916835384',
+        api_key: '',
+        property_type: 'secret',
+        property_name: 'AzureOAIAPIKey',
+        user_id: 1,
+      },
+      base_url: 'https://api.openai.com/v1',
+      api_type: 'azure',
+      api_version: 'latest',
+    };
+    const actual = getFormSubmitValues(refValues, formData);
+    expect(actual).toEqual(expected);
+  });
+
+  test('getFormSubmitValues - with refs and non-default value', () => {
+    const refValues = {
+      api_key: {
+        htmlSchema: {
+          default: 'AzureOAIAPIKey',
+          description: '',
+          enum: ['AzureOAIAPIKey', 'BingAPIKey'],
+          title: 'Api Key',
+          type: 'string',
+        },
+        userPropertyData: [
+          {
+            uuid: 'debaa689-a3f8-4d91-9a18-a43916835384',
+            api_key: '',
+            property_type: 'secret',
+            property_name: 'AzureOAIAPIKey',
+            user_id: 1,
+          },
+          {
+            uuid: 'b771441b-b216-491e-af32-33232b42ab7f',
+            api_key: '',
+            property_type: 'secret',
+            property_name: 'BingAPIKey',
+            user_id: 1,
+          },
+        ],
+      },
+    };
+    const formData = {
+      model: 'gpt-3.5-turbo',
+      api_key: 'BingAPIKey', // pragma: allowlist secret
+      base_url: 'https://api.openai.com/v1',
+      api_type: 'azure',
+      api_version: 'latest',
+    };
+
+    const expected = {
+      model: 'gpt-3.5-turbo',
+      api_key: {
+        uuid: 'b771441b-b216-491e-af32-33232b42ab7f',
+        api_key: '',
+        property_type: 'secret',
+        property_name: 'BingAPIKey',
+        user_id: 1,
+      },
+      base_url: 'https://api.openai.com/v1',
+      api_type: 'azure',
+      api_version: 'latest',
+    };
+    const actual = getFormSubmitValues(refValues, formData);
     expect(actual).toEqual(expected);
   });
 });

@@ -93,3 +93,19 @@ export const getPropertyReferenceValues = async (
   };
   return retVal;
 };
+
+export const getFormSubmitValues = (refValues: any, formData: any) => {
+  const newFormData = _.cloneDeep(formData);
+  const refKeys = _.keys(refValues);
+  if (refKeys.length === 0) {
+    return formData;
+  }
+  _.forEach(refKeys, function (key: string) {
+    if (_.has(formData, key)) {
+      const selectedKey = formData[key] ? formData[key] : refValues[key].htmlSchema.default;
+      const selectedData = refValues[key].userPropertyData.find((data: any) => data.property_name === selectedKey);
+      newFormData[key] = selectedData;
+    }
+  });
+  return newFormData;
+};

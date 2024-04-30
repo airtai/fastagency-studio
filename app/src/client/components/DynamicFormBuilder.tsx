@@ -11,7 +11,7 @@ import Loader from '../admin/common/Loader';
 import NotificationBox from './NotificationBox';
 
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
-import { getPropertyReferenceValues } from '../utils/buildPageUtils';
+import { getPropertyReferenceValues, getFormSubmitValues } from '../utils/buildPageUtils';
 import { set } from 'zod';
 
 interface DynamicFormBuilderProps {
@@ -44,8 +44,9 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
+    const formDataToSubmit = getFormSubmitValues(refValues, formData);
     try {
-      const response = await validateForm(formData, validationURL);
+      const response = await validateForm(formDataToSubmit, validationURL);
       onSuccessCallback(response);
     } catch (error: any) {
       try {
@@ -126,10 +127,6 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             return null;
           }
           const inputValue = formData[key] || '';
-          if (_.has(property, '$ref')) {
-            console.log('refValues[key] && refValues[key].htmlSchema: ', refValues[key] && refValues[key]);
-          } else {
-          }
 
           const formElementsObject = _.has(property, '$ref')
             ? refValues[key]

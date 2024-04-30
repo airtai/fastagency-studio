@@ -89,7 +89,7 @@ describe('DynamicFormBuilder', () => {
     expect(screen.getByLabelText('Model')).toBeInTheDocument();
     expect(screen.getByLabelText('API Key')).toBeInTheDocument();
     expect(screen.getByLabelText('Base Url')).toBeInTheDocument();
-    expect(screen.queryByLabelText('API Type')).toBe(null);
+    expect(screen.queryByLabelText('API Type')).toBeInTheDocument();
   });
   test('handles form submission successfully', async () => {
     const onSuccessCallback = vi.fn();

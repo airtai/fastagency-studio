@@ -8,7 +8,6 @@ search:
         - app
             - [Model](api/fastagency/app/Model.md)
             - [ModelDelete](api/fastagency/app/ModelDelete.md)
-            - [ModelUpdate](api/fastagency/app/ModelUpdate.md)
             - [User](api/fastagency/app/User.md)
             - [find_model](api/fastagency/app/find_model.md)
             - [get_models_schemas](api/fastagency/app/get_models_schemas.md)

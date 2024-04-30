@@ -77,6 +77,7 @@ describe('DynamicFormBuilder', () => {
   test('renders form fields correctly', () => {
     renderInContext(
       <DynamicFormBuilder
+        property_type='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'
         updateExistingModel={updateExistingModel}
@@ -94,6 +95,7 @@ describe('DynamicFormBuilder', () => {
     const onSuccessCallback = vi.fn();
     renderInContext(
       <DynamicFormBuilder
+        property_type='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'
         updateExistingModel={updateExistingModel}
@@ -131,6 +133,7 @@ describe('DynamicFormBuilder', () => {
     const onSuccessCallback = vi.fn();
     renderInContext(
       <DynamicFormBuilder
+        property_type='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'
         updateExistingModel={updateExistingModel}
@@ -152,6 +155,7 @@ describe('DynamicFormBuilder', () => {
   test('handles field changes', async () => {
     renderInContext(
       <DynamicFormBuilder
+        property_type='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'
         updateExistingModel={updateExistingModel}

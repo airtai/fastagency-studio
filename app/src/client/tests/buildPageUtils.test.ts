@@ -1,7 +1,14 @@
 import { test, expect, describe } from 'vitest';
 import _ from 'lodash';
 
-import { filerOutComponentData, capitalizeFirstLetter, formatApiKey, getSchemaByName } from '../utils/buildPageUtils';
+import {
+  filerOutComponentData,
+  capitalizeFirstLetter,
+  formatApiKey,
+  getSchemaByName,
+  getPropertyReferenceValues,
+  constructHTMLSchema,
+} from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
 describe('buildPageUtils', () => {
@@ -555,5 +562,128 @@ describe('buildPageUtils', () => {
       type: 'object',
     };
     expect(_.isEqual(actual, expected)).toBe(true);
+  });
+  test('getPropertyReferenceValues with invalid defs', async () => {
+    const ref = '#/$defs/AzureOAIAPIKeyRef';
+    const definitions = {
+      inValidRef: {
+        properties: {
+          type: {
+            const: 'secret',
+            default: 'secret',
+            description: 'The name of the type of the data',
+            enum: ['secret'],
+            title: 'Type',
+            type: 'string',
+          },
+          name: {
+            const: 'AzureOAIAPIKey',
+            default: 'AzureOAIAPIKey',
+            description: 'The name of the data',
+            enum: ['AzureOAIAPIKey'],
+            title: 'Name',
+            type: 'string',
+          },
+          uuid: {
+            description: 'The unique identifier',
+            format: 'uuid',
+            title: 'UUID',
+            type: 'string',
+          },
+        },
+        required: ['uuid'],
+        title: 'AzureOAIAPIKeyRef',
+        type: 'object',
+      },
+    };
+    const expected = {};
+    const key = 'api_key';
+    const property_type = 'secret';
+    const actual = await getPropertyReferenceValues(ref, definitions, key, property_type);
+    expect(actual).toEqual(expected);
+  });
+  // mock the below function
+  // test('getPropertyReferenceValues with valid defs', async () => {
+  //   const ref = '#/$defs/AzureOAIAPIKeyRef';
+  //   const definitions = {
+  //     AzureOAIAPIKeyRef: {
+  //       properties: {
+  //         type: {
+  //           const: 'secret',
+  //           default: 'secret',
+  //           description: 'The name of the type of the data',
+  //           enum: ['secret'],
+  //           title: 'Type',
+  //           type: 'string',
+  //         },
+  //         name: {
+  //           const: 'AzureOAIAPIKey',
+  //           default: 'AzureOAIAPIKey',
+  //           description: 'The name of the data',
+  //           enum: ['AzureOAIAPIKey'],
+  //           title: 'Name',
+  //           type: 'string',
+  //         },
+  //         uuid: {
+  //           description: 'The unique identifier',
+  //           format: 'uuid',
+  //           title: 'UUID',
+  //           type: 'string',
+  //         },
+  //       },
+  //       required: ['uuid'],
+  //       title: 'AzureOAIAPIKeyRef',
+  //       type: 'object',
+  //     },
+  //   };
+  //   const expected = {
+  //     default: '', //num[0]
+  //     description: '',
+  //     enum: [
+  //       '2024-02-15-preview', // response from the API call
+  //       'latest',
+  //     ],
+  //     title: 'Api Key',
+  //     type: 'string',
+  //   };
+  //   const key = 'api_key';
+  //   const property_type = 'secret';
+  //   const actual = await getPropertyReferenceValues(ref, definitions, key, property_type);
+  //   expect(actual).toEqual(expected);
+  // });
+  test('constructHTMLSchema', () => {
+    const input = [
+      {
+        uuid: '9e55de08-ad69-4acc-b9d2-5da9d4ae0bf1',
+        api_key: '',
+        property_type: 'secret',
+        property_name: 'AzureOAIAPIKey',
+        user_id: 1,
+      },
+      {
+        uuid: '62922092-e7ab-4339-8ded-2e671826edae',
+        api_key: '',
+        property_type: 'secret',
+        property_name: 'BingAPIKey',
+        user_id: 1,
+      },
+      {
+        uuid: '286027aa-35ae-4d2d-ad47-62adbbe86d43',
+        api_key: '12321321321',
+        property_type: 'secret',
+        property_name: 'OpenAIAPIKey',
+        user_id: 1,
+      },
+    ];
+    const expected = {
+      default: 'AzureOAIAPIKey',
+      description: '',
+      enum: ['AzureOAIAPIKey', 'BingAPIKey', 'OpenAIAPIKey'],
+      title: 'Api Key',
+      type: 'string',
+    };
+    const title = 'Api Key';
+    const actual = constructHTMLSchema(input, title);
+    expect(actual).toEqual(expected);
   });
 });

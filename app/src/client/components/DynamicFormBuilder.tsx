@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import _ from 'lodash';
+
 import { useForm } from '../hooks/useForm';
 import { JsonSchema } from '../interfaces/BuildPageInterfaces';
 import { TextInput } from './form/TextInput';
@@ -9,9 +11,11 @@ import Loader from '../admin/common/Loader';
 import NotificationBox from './NotificationBox';
 
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
+import { getPropertyReferenceValues } from '../utils/buildPageUtils';
 import { set } from 'zod';
 
 interface DynamicFormBuilderProps {
+  property_type: string;
   jsonSchema: JsonSchema;
   validationURL: string;
   updateExistingModel: SelectedModelSchema | null;
@@ -21,6 +25,7 @@ interface DynamicFormBuilderProps {
 }
 
 const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
+  property_type,
   jsonSchema,
   validationURL,
   updateExistingModel,
@@ -34,6 +39,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
+  const [refValues, setRefValues] = useState<Record<string, any>>({});
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -59,30 +65,95 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const notificationOnClick = () => {
     setShowNotification(false);
   };
+
+  useEffect(() => {
+    async function fetchPropertyReferenceValues() {
+      if (jsonSchema) {
+        // const refKeys = _.filter(_.map(jsonSchema.properties, '$ref'));
+        // console.log(refKeys);
+        // if (refKeys.length > 0) {
+        //   // @ts-ignore
+        //   const { htmlSchema, userProperties } = await getPropertyReferenceValues(
+        //     refKeys[0],
+        //     jsonSchema.$defs,
+        //     'api_key',
+        //     property_type
+        //   );
+        //   console.log('htmlSchema', htmlSchema);
+        //   console.log('userProperties', userProperties);
+        // }
+        setIsLoading(true);
+        for (const [key, property] of Object.entries(jsonSchema.properties)) {
+          if (_.has(property, '$ref') && property['$ref']) {
+            // @ts-ignore
+            const { htmlSchema, userPropertyData } = await getPropertyReferenceValues(
+              property['$ref'],
+              jsonSchema.$defs,
+              key,
+              property_type
+            );
+            setRefValues((prev) => ({
+              ...prev,
+              [key]: { htmlSchema: htmlSchema, userPropertyData: userPropertyData },
+            }));
+          }
+        }
+        setIsLoading(false);
+      }
+    }
+
+    fetchPropertyReferenceValues();
+  }, [jsonSchema]);
+
   return (
     <>
       <form onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 gap-9 p-6.5'>
         {Object.entries(jsonSchema.properties).map(([key, property]) => {
+          // if (_.has(property, '$ref')) {
+          //   console.log('property[$ref]', property['$ref']);
+          //   // @ts-ignore
+          //   const { htmlSchema, userProperties } = getPropertyReferenceValues(
+          //     // @ts-ignore
+          //     property['$ref'],
+          //     jsonSchema.$defs,
+          //     key,
+          //     property_type
+          //   );
+          //   console.log('htmlSchema', htmlSchema);
+          //   console.log('userProperties', userProperties);
+          // }
           if (key === 'uuid') {
             return null;
           }
           const inputValue = formData[key] || '';
+          if (_.has(property, '$ref')) {
+            console.log('refValues[key] && refValues[key].htmlSchema: ', refValues[key] && refValues[key]);
+          } else {
+          }
 
-          return property?.enum?.length === 1 ? null : (
+          const formElementsObject = _.has(property, '$ref')
+            ? refValues[key]
+              ? refValues[key].htmlSchema
+              : property
+            : property;
+          // console.log('formElementsObject', formElementsObject);
+
+          // return formElementsObject?.enum?.length === 1 ? null : (
+          return (
             <div key={key} className='w-full'>
-              <label htmlFor={key}>{property.title}</label>
-              {property.enum ? (
+              <label htmlFor={key}>{formElementsObject.title}</label>
+              {formElementsObject.enum ? (
                 <SelectInput
                   id={key}
                   value={inputValue}
-                  options={property.enum}
+                  options={formElementsObject.enum}
                   onChange={(value) => handleChange(key, value)}
                 />
               ) : (
                 <TextInput
                   id={key}
                   value={key === 'api_key' ? inputValue.replace(/./g, '*') : inputValue}
-                  placeholder={property.description || ''}
+                  placeholder={formElementsObject.description || ''}
                   onChange={(value) => handleChange(key, value)}
                 />
               )}

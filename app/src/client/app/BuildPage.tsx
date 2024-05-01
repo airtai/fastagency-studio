@@ -116,12 +116,20 @@ const BuildPage = ({ user }: BuildPageProps) => {
     ? 'h-[calc(100vh-165px)]'
     : 'h-[calc(100vh-80px)]';
 
+  useEffect(() => {
+    const selectedTab = sessionStorage.getItem('selectedBuildPageTab');
+    if (selectedTab) {
+      setSideNavSelectedItem(selectedTab);
+    }
+  }, []);
+
   if (loading) {
     return <LoadingComponent />;
   }
 
   const handleSideNavItemClick = (selectedComponentName: string) => {
     setSideNavSelectedItem(selectedComponentName);
+    sessionStorage.setItem('selectedBuildPageTab', selectedComponentName);
   };
 
   const ComponentToRender = data && componentsMap[sideNavSelectedItem];

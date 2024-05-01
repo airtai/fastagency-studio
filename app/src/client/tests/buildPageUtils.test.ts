@@ -10,6 +10,7 @@ import {
   constructHTMLSchema,
   getFormSubmitValues,
   isDependencyAvailable,
+  formatDependencyErrorMessage,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -904,5 +905,34 @@ describe('buildPageUtils', () => {
     const input = { secret: 5, llm: 0 };
     const actual = isDependencyAvailable(input);
     expect(actual).toBe(false);
+  });
+
+  test('formatDependencyErrorMessage - empty list', () => {
+    const input = [''];
+    const actual = formatDependencyErrorMessage(input);
+    expect(actual).toBe('');
+  });
+
+  test('formatDependencyErrorMessage - with one dependency', () => {
+    const input = ['one'];
+    const actual = formatDependencyErrorMessage(input);
+    expect(actual).toBe('one');
+  });
+
+  test('formatDependencyErrorMessage - with two dependencies', () => {
+    const input = ['one', 'two'];
+    const actual = formatDependencyErrorMessage(input);
+    expect(actual).toBe('one and two');
+  });
+  test('formatDependencyErrorMessage - with three dependencies', () => {
+    const input = ['one', 'two', 'three'];
+    const actual = formatDependencyErrorMessage(input);
+    expect(actual).toBe('one, two and three');
+  });
+
+  test('formatDependencyErrorMessage - with four dependencies', () => {
+    const input = ['one', 'two', 'three', 'four'];
+    const actual = formatDependencyErrorMessage(input);
+    expect(actual).toBe('one, two, three and four');
   });
 });

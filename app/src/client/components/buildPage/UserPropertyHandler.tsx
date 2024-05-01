@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import _ from 'lodash';
 
 import Button from '../Button';
 import ModelForm from '../ModelForm';
@@ -17,7 +18,7 @@ import {
   propertyDependencies,
 } from 'wasp/client/operations';
 import { propertyDependencyMap } from '../../utils/constants';
-import { isDependencyAvailable } from '../../utils/buildPageUtils';
+import { isDependencyAvailable, formatDependencyErrorMessage } from '../../utils/buildPageUtils';
 
 const UserPropertyHandler = ({ data }: SecretsProps) => {
   const [showAddModel, setShowAddModel] = useState(false);
@@ -30,7 +31,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
   } = useQuery(getModels, { property_type: data.name });
 
   const { data: propertyDependency } = useQuery(propertyDependencies, {
-    properties: propertyDependencyMap[data.name],
+    properties: _.get(propertyDependencyMap, data.name),
   });
 
   const [showNotification, setShowNotification] = useState(false);
@@ -84,8 +85,10 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     setShowNotification(false);
   };
 
-  const dependentProperties = propertyDependencyMap[data.name].join(', ');
-  const dependencyErrorMessage = `Please add atleast one ${dependentProperties} before adding a ${data.name}`;
+  const dependentProperties = formatDependencyErrorMessage(_.get(propertyDependencyMap, data.name));
+  const dependencyErrorMessage = `To create ${data.name === 'agent' ? 'an' : 'a'} ${
+    data.name
+  }, first add at least one ${dependentProperties}.`;
 
   return (
     <div className='flex-col flex items-start p-6 gap-3 w-full'>

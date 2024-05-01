@@ -35,7 +35,7 @@ export const getDependenciesCreatedByUser = async (property_type: string): Promi
   const getProperty = async (property: string) => {
     return await getModels([''], { property_type: property });
   };
-  const propertyDependencies = propertyDependencyMap[property_type];
+  const propertyDependencies = _.get(propertyDependencyMap, property_type);
   const userPropertyDataPromises = _.map(propertyDependencies, getProperty);
   const userPropertyData = await Promise.all(userPropertyDataPromises);
   return _.flatten(userPropertyData);
@@ -122,3 +122,17 @@ export const isDependencyAvailable = (dependencyObj: any): boolean => {
 
   return retVal;
 };
+
+export function formatDependencyErrorMessage(dependencyList: string[]): string {
+  // Create a copy of the dependencyList
+  let dependencyListCopy = [...dependencyList];
+
+  if (dependencyListCopy.length === 0) {
+    return '';
+  } else if (dependencyListCopy.length === 1) {
+    return dependencyListCopy[0];
+  } else {
+    let last = dependencyListCopy.pop();
+    return `${dependencyListCopy.join(', ')} and ${last}`;
+  }
+}

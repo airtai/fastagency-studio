@@ -59,6 +59,6 @@ export interface SecretsProps {
   data: SchemaCategory;
 }
 
-export interface PropertyDependencyMap {
+export interface PropertyDependencyMapProps {
   [key: string]: string[];
 }

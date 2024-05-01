@@ -11,7 +11,7 @@ import Loader from '../admin/common/Loader';
 import NotificationBox from './NotificationBox';
 
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
-import { getPropertyReferenceValues, getFormSubmitValues } from '../utils/buildPageUtils';
+import { getPropertyReferenceValues, getFormSubmitValues, getRefValues } from '../utils/buildPageUtils';
 import { set } from 'zod';
 
 interface DynamicFormBuilderProps {
@@ -85,6 +85,20 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
               [key]: { htmlSchema: htmlSchema, userPropertyData: userPropertyData },
             }));
           }
+          if (_.has(property, 'anyOf') && _.has(jsonSchema, '$defs') && property['anyOf']) {
+            const refs = getRefValues(_.get(property, 'anyOf'));
+            // @ts-ignore
+            const { htmlSchema, userPropertyData } = await getPropertyReferenceValues(
+              refs[0],
+              jsonSchema.$defs,
+              key,
+              property_type
+            );
+            setRefValues((prev) => ({
+              ...prev,
+              [key]: { htmlSchema: htmlSchema, userPropertyData: userPropertyData },
+            }));
+          }
         }
         setIsLoading(false);
       }
@@ -103,7 +117,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
           const inputValue = formData[key] || '';
 
           let formElementsObject = property;
-          if (_.has(property, '$ref')) {
+          if (_.has(property, '$ref') || _.has(property, 'anyOf')) {
             if (refValues[key]) {
               formElementsObject = refValues[key].htmlSchema;
             }

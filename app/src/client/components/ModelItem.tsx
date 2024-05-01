@@ -36,20 +36,7 @@ export const svgIcons: SvgIcons = {
     </svg>
   ),
   agent: (
-    <svg
-      fill='#FFFFFF'
-      stroke='#FFFFFF'
-      stroke-width='0.5'
-      version='1.1'
-      id='Layer_1'
-      xmlns='http://www.w3.org/2000/svg'
-      xmlnsXlink='http://www.w3.org/1999/xlink'
-      viewBox='0 0 32 32'
-      xmlSpace='preserve'
-      width='18'
-      height='18'
-      className='-mt-1'
-    >
+    <svg className='fill-current ml-1' width='24' height='24' viewBox='0 0 34 34' xmlns='http://www.w3.org/2000/svg'>
       <path
         id='machine--learning--04_1_'
         d='M23,30.36H9c-2.404,0-4.36-1.956-4.36-4.36V15c0-2.404,1.956-4.36,4.36-4.36h3.659
@@ -99,9 +86,11 @@ const ModelItem: React.FC<ModelItemProps> = ({ model, onClick }) => (
         </div>
         <h2 className='text-white dark:text-white text-lg font-medium'>{model.property_name}</h2>
       </div>
-      <div className='flex flex-col gap-2 text-white py-4 sm:max-w-sm sm:rounded-lg'>
-        <p>{formatApiKey(model.api_key)}</p>
-      </div>
+      {model.api_key && (
+        <div className='flex flex-col gap-2 text-white py-4 sm:max-w-sm sm:rounded-lg'>
+          <p>{formatApiKey(model.api_key)}</p>
+        </div>
+      )}
     </div>
   </div>
 );

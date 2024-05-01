@@ -7,10 +7,12 @@ import {
   formatApiKey,
   getSchemaByName,
   getPropertyReferenceValues,
+  getRefValues,
   constructHTMLSchema,
   getFormSubmitValues,
   isDependencyAvailable,
   formatDependencyErrorMessage,
+  getKeyType,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -914,25 +916,176 @@ describe('buildPageUtils', () => {
   });
 
   test('formatDependencyErrorMessage - with one dependency', () => {
-    const input = ['one'];
+    const input = ['secret'];
     const actual = formatDependencyErrorMessage(input);
-    expect(actual).toBe('one');
+    expect(actual).toBe('secret');
   });
 
   test('formatDependencyErrorMessage - with two dependencies', () => {
-    const input = ['one', 'two'];
+    const input = ['secret', 'agent'];
     const actual = formatDependencyErrorMessage(input);
-    expect(actual).toBe('one and two');
+    expect(actual).toBe('secret and one agent');
   });
   test('formatDependencyErrorMessage - with three dependencies', () => {
-    const input = ['one', 'two', 'three'];
+    const input = ['secret', 'agent', 'llm'];
     const actual = formatDependencyErrorMessage(input);
-    expect(actual).toBe('one, two and three');
+    expect(actual).toBe('secret, one agent and one llm');
   });
 
   test('formatDependencyErrorMessage - with four dependencies', () => {
-    const input = ['one', 'two', 'three', 'four'];
+    const input = ['secret', 'agent', 'llm', 'team'];
     const actual = formatDependencyErrorMessage(input);
-    expect(actual).toBe('one, two, three and four');
+    expect(actual).toBe('secret, one agent, one llm and one team');
+  });
+
+  test('getRefValues', () => {
+    const input = [{ $ref: '#/$defs/AzureOAIRef' }, { $ref: '#/$defs/OpenAIRef' }];
+    const expected = ['#/$defs/AzureOAIRef', '#/$defs/OpenAIRef'];
+    const actual = getRefValues(input);
+    expect(actual).toEqual(expected);
+  });
+  test('getKeyType - llm', () => {
+    const refName = 'AzureOAIRef';
+    const definitions = {
+      AzureOAIRef: {
+        properties: {
+          type: {
+            const: 'llm',
+            default: 'llm',
+            description: 'The name of the type of the data',
+            enum: ['llm'],
+            title: 'Type',
+            type: 'string',
+          },
+          name: {
+            const: 'AzureOAI',
+            default: 'AzureOAI',
+            description: 'The name of the data',
+            enum: ['AzureOAI'],
+            title: 'Name',
+            type: 'string',
+          },
+          uuid: {
+            description: 'The unique identifier',
+            format: 'uuid',
+            title: 'UUID',
+            type: 'string',
+          },
+        },
+        required: ['uuid'],
+        title: 'AzureOAIRef',
+        type: 'object',
+      },
+      OpenAIRef: {
+        properties: {
+          type: {
+            const: 'llm',
+            default: 'llm',
+            description: 'The name of the type of the data',
+            enum: ['llm'],
+            title: 'Type',
+            type: 'string',
+          },
+          name: {
+            const: 'OpenAI',
+            default: 'OpenAI',
+            description: 'The name of the data',
+            enum: ['OpenAI'],
+            title: 'Name',
+            type: 'string',
+          },
+          uuid: {
+            description: 'The unique identifier',
+            format: 'uuid',
+            title: 'UUID',
+            type: 'string',
+          },
+        },
+        required: ['uuid'],
+        title: 'OpenAIRef',
+        type: 'object',
+      },
+    };
+    const expected = 'llm';
+    const actual = getKeyType(refName, definitions);
+    expect(actual).toEqual(expected);
+  });
+  test('getKeyType - secret', () => {
+    const refName = 'BingAPIKey';
+    const definitions = {
+      AzureOAIRef: {
+        properties: {
+          type: {
+            const: 'llm',
+            default: 'llm',
+            description: 'The name of the type of the data',
+            enum: ['llm'],
+            title: 'Type',
+            type: 'string',
+          },
+          name: {
+            const: 'AzureOAI',
+            default: 'AzureOAI',
+            description: 'The name of the data',
+            enum: ['AzureOAI'],
+            title: 'Name',
+            type: 'string',
+          },
+          uuid: {
+            description: 'The unique identifier',
+            format: 'uuid',
+            title: 'UUID',
+            type: 'string',
+          },
+        },
+        required: ['uuid'],
+        title: 'AzureOAIRef',
+        type: 'object',
+      },
+      BingAPIKey: {
+        properties: {
+          api_key: {
+            description: 'The API Key from OpenAI',
+            title: 'Api Key',
+            type: 'string',
+          },
+        },
+        required: ['api_key'],
+        title: 'BingAPIKey',
+        type: 'object',
+      },
+      OpenAIRef: {
+        properties: {
+          type: {
+            const: 'llm',
+            default: 'llm',
+            description: 'The name of the type of the data',
+            enum: ['llm'],
+            title: 'Type',
+            type: 'string',
+          },
+          name: {
+            const: 'OpenAI',
+            default: 'OpenAI',
+            description: 'The name of the data',
+            enum: ['OpenAI'],
+            title: 'Name',
+            type: 'string',
+          },
+          uuid: {
+            description: 'The unique identifier',
+            format: 'uuid',
+            title: 'UUID',
+            type: 'string',
+          },
+        },
+        required: ['uuid'],
+        title: 'OpenAIRef',
+        type: 'object',
+      },
+    };
+    const expected = 'secret';
+    const actual = getKeyType(refName, definitions);
+    expect(actual).toEqual(expected);
   });
 });

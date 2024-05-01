@@ -129,6 +129,11 @@ type AddModelsValues = {
   api_key?: string;
   property_type?: string;
   property_name?: string;
+  llm?: any;
+  summarizer_llm?: any;
+  bing_api_key?: any;
+  system_message?: string;
+  viewport_size?: number;
 };
 
 type AddUserModelsPayload = {

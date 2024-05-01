@@ -36,6 +36,7 @@ export const getDependenciesCreatedByUser = async (property_type: string): Promi
     return await getModels([''], { property_type: property });
   };
   const propertyDependencies = _.get(propertyDependencyMap, property_type);
+  // const immediateDependency = _.castArray(_.last(propertyDependencies));
   const userPropertyDataPromises = _.map(propertyDependencies, getProperty);
   const userPropertyData = await Promise.all(userPropertyDataPromises);
   return _.flatten(userPropertyData);
@@ -59,6 +60,14 @@ export const constructHTMLSchema = (
   };
 };
 
+export const getKeyType = (refName: string, definitions: any): string => {
+  const refObj = _.get(definitions, refName);
+  if (_.has(refObj, 'properties.type')) {
+    return refObj.properties.type.enum[0];
+  }
+  return 'secret';
+};
+
 interface PropertyReferenceValues {
   htmlSchema: constructHTMLSchemaValues;
   userPropertyData: SelectedModelSchema[];
@@ -75,10 +84,14 @@ export const getPropertyReferenceValues = async (
   if (!_.has(definitions, refName)) {
     return {}; // show error???
   }
-
+  const keyType = getKeyType(refName, definitions);
   const title = _.map(key.split('_'), capitalizeFirstLetter).join(' ');
 
-  const propertyDependencies = await getDependenciesCreatedByUser(property_type);
+  const allPropertyDependencies = await getDependenciesCreatedByUser(property_type);
+  const propertyDependencies = _.filter(allPropertyDependencies, function (o: any) {
+    return o.property_type === keyType;
+  });
+
   const htmlSchema = constructHTMLSchema(propertyDependencies, title);
   const retVal: PropertyReferenceValues = {
     htmlSchema: htmlSchema,
@@ -133,6 +146,10 @@ export function formatDependencyErrorMessage(dependencyList: string[]): string {
     return dependencyListCopy[0];
   } else {
     let last = dependencyListCopy.pop();
-    return `${dependencyListCopy.join(', ')} and ${last}`;
+    return `${dependencyListCopy.join(', one ')} and one ${last}`;
   }
+}
+
+export function getRefValues(input: Array<{ $ref: string }>): string[] {
+  return input.map((item) => item.$ref);
 }

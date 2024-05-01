@@ -50,7 +50,9 @@ def models(user: User) -> List[Optional[Dict[str, Any]]]:
 
 class Model(BaseModel):
     uuid: str
-    api_key: Union[str, Dict[str, Union[Union[Optional[str], None], int]]]
+    api_key: Optional[Union[str, Dict[str, Union[Union[Optional[str], None], int]]]] = (
+        None
+    )
     property_type: str
     property_name: str
     user_id: int
@@ -58,6 +60,17 @@ class Model(BaseModel):
     model: Optional[str] = None
     api_type: Optional[str] = None
     api_version: Optional[str] = None
+    llm: Optional[
+        Dict[str, Union[str, None, int, Dict[str, Union[str, int, None]]]]
+    ] = None
+    summarizer_llm: Optional[
+        Dict[str, Union[str, None, int, Dict[str, Union[str, int, None]]]]
+    ] = None
+    bing_api_key: Optional[
+        Union[str, Dict[str, Union[Union[Optional[str], None], int]]]
+    ] = None
+    system_message: Optional[str] = None
+    viewport_size: Optional[int] = None
 
 
 @app.post("/user/models/add")

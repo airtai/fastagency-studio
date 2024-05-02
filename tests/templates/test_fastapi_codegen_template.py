@@ -40,6 +40,11 @@ def test_fastapi_codegen_template():
         # sys.path.append(str(td))
         # from main import update_item_items__item_id__ships__ship__put
         print(locals())
+
+        # This works
+        locals()["update_item_items__item_id__ships__ship__put"](item_id=1, ship="Marry Jane", q1="q1", q2=2, body=Item(name="name", description="description", price=1.0, tax=2.0))
+
+        # This does not work
         update_item_items__item_id__ships__ship__put(item_id=1, ship="Marry Jane", q1="q1", q2=2, body=Item(name="name", description="description", price=1.0, tax=2.0))
 
         

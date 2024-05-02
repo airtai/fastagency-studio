@@ -86,8 +86,9 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
               [key]: { htmlSchema: htmlSchema, userPropertyData: userPropertyData },
             }));
           }
-          if (_.has(property, 'anyOf') && _.has(jsonSchema, '$defs') && property['anyOf']) {
+          if (_.has(property, 'anyOf') && _.has(jsonSchema, '$defs')) {
             const refs = getRefValues(_.get(property, 'anyOf'));
+            console.log('refs: ', refs);
             // @ts-ignore
             const { htmlSchema, userPropertyData } = await getPropertyReferenceValues(
               refs[0],

@@ -55,8 +55,9 @@ export interface SelectedModelSchema {
   uuid: string;
 }
 
-export interface SecretsProps {
-  data: SchemaCategory;
+export interface PropertyTypesComponentProps {
+  allSchema: ApiResponse;
+  propertySchema: SchemaCategory;
 }
 
 export interface PropertyDependencyMapProps {

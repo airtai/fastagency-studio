@@ -7,7 +7,7 @@ import ModelsList from '../ModelsList';
 import NotificationBox from '../NotificationBox';
 
 import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
-import { SecretsProps } from '../../interfaces/BuildPageInterfaces';
+import { PropertyTypesComponentProps } from '../../interfaces/BuildPageInterfaces';
 
 import {
   getModels,
@@ -20,25 +20,27 @@ import {
 import { propertyDependencyMap } from '../../utils/constants';
 import { isDependencyAvailable, formatDependencyErrorMessage } from '../../utils/buildPageUtils';
 
-const UserPropertyHandler = ({ data }: SecretsProps) => {
+const UserPropertyHandler = ({ allSchema, propertySchema }: PropertyTypesComponentProps) => {
+  const propertyName = propertySchema.name;
+  const defaultSchemaName = propertySchema.schemas[0].name;
   const [showAddModel, setShowAddModel] = useState(false);
-  const [selectedModel, setSelectedModel] = useState(data.schemas[0].name);
+  const [selectedModel, setSelectedModel] = useState(defaultSchemaName);
   const [updateExistingModel, setUpdateExistingModel] = useState<SelectedModelSchema | null>(null);
   const {
     data: modelsList,
     refetch: refetchModels,
     isLoading: getModelsIsLoading,
-  } = useQuery(getModels, { property_type: data.name });
+  } = useQuery(getModels, { property_type: propertyName });
 
   const { data: propertyDependency } = useQuery(propertyDependencies, {
-    properties: _.get(propertyDependencyMap, data.name),
+    properties: _.get(propertyDependencyMap, propertyName),
   });
 
   const [showNotification, setShowNotification] = useState(false);
 
   const handleClick = () => {
     if (isDependencyAvailable(propertyDependency)) {
-      setSelectedModel(data.schemas[0].name);
+      setSelectedModel(defaultSchemaName);
       setShowAddModel(true);
     } else {
       setShowNotification(true);
@@ -49,7 +51,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
   };
 
   const onSuccessCallback = async (payload: any) => {
-    const mergedData = { ...payload, property_type: data.name, property_name: selectedModel };
+    const mergedData = { ...payload, property_type: propertyName, property_name: selectedModel };
     if (updateExistingModel) {
       await updateUserModels({ data: mergedData, uuid: updateExistingModel.uuid });
       setUpdateExistingModel(null);
@@ -86,22 +88,22 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     setShowNotification(false);
   };
 
-  const dependentProperties = formatDependencyErrorMessage(_.get(propertyDependencyMap, data.name));
-  const dependencyErrorMessage = `To create ${data.name === 'agent' ? 'an' : 'a'} ${
-    data.name
-  }, first add at least one ${dependentProperties}.`;
+  const dependentProperties = formatDependencyErrorMessage(_.get(propertyDependencyMap, propertyName));
+  const dependencyErrorMessage = `To create ${
+    propertyName === 'agent' ? 'an' : 'a'
+  } ${propertyName}, first add at least one ${dependentProperties}.`;
 
   return (
     <div className='flex-col flex items-start p-6 gap-3 w-full'>
       <div className={`${showAddModel ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
-        <Button onClick={handleClick} label={`Add ${data.name}`} />
+        <Button onClick={handleClick} label={`Add ${propertyName}`} />
       </div>
       <div className='flex-col flex w-full'>
         {!showAddModel ? (
-          <ModelsList models={modelsList} onSelectModel={updateSelectedModel} property_type={data.name} />
+          <ModelsList models={modelsList} onSelectModel={updateSelectedModel} property_type={propertyName} />
         ) : (
           <ModelForm
-            data={data}
+            data={propertySchema}
             selectedModel={selectedModel}
             updateExistingModel={updateExistingModel}
             onModelChange={handleModelChange}

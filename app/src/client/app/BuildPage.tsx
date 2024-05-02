@@ -164,7 +164,7 @@ const BuildPage = ({ user }: BuildPageProps) => {
                   Oops! Something went wrong. Our server is currently unavailable. Please try again later.
                 </p>
               ) : ComponentToRender ? (
-                <ComponentToRender data={filerOutComponentData(data, sideNavSelectedItem)} />
+                <ComponentToRender allSchema={data} propertySchema={filerOutComponentData(data, sideNavSelectedItem)} />
               ) : (
                 <p
                   className='absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl md:text-6xl text-airt-font-base'

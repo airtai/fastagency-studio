@@ -5,6 +5,7 @@ import { useForm } from '../hooks/useForm';
 import { JsonSchema } from '../interfaces/BuildPageInterfaces';
 import { TextInput } from './form/TextInput';
 import { SelectInput } from './form/SelectInput';
+import { TextArea } from './form/TextArea';
 import { validateForm } from '../services/commonService';
 import { parseValidationErrors } from '../app/utils/formHelpers';
 import Loader from '../admin/common/Loader';
@@ -109,7 +110,8 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
   return (
     <>
-      <form onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 gap-9 p-6.5'>
+      {/* <form onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 gap-9 px-6.5 py-2'> */}
+      <form onSubmit={handleSubmit} className='px-6.5 py-2'>
         {Object.entries(jsonSchema.properties).map(([key, property]) => {
           if (key === 'uuid') {
             return null;
@@ -125,13 +127,20 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
           // return formElementsObject?.enum?.length === 1 ? null : (
           return (
-            <div key={key} className='w-full'>
+            <div key={key} className='w-full mt-2'>
               <label htmlFor={key}>{formElementsObject.title}</label>
               {formElementsObject.enum ? (
                 <SelectInput
                   id={key}
                   value={inputValue}
                   options={formElementsObject.enum}
+                  onChange={(value) => handleChange(key, value)}
+                />
+              ) : key === 'system_message' ? (
+                <TextArea
+                  id={key}
+                  value={inputValue}
+                  placeholder={formElementsObject.description || ''}
                   onChange={(value) => handleChange(key, value)}
                 />
               ) : (
@@ -148,7 +157,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             </div>
           );
         })}
-        <div className='col-span-full'>
+        <div className='col-span-full mt-7'>
           <button
             type='submit'
             className='rounded-md px-3.5 py-2.5 text-sm bg-airt-primary text-airt-font-base hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'

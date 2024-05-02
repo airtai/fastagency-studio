@@ -38,6 +38,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
 
   const handleClick = () => {
     if (isDependencyAvailable(propertyDependency)) {
+      setSelectedModel(data.schemas[0].name);
       setShowAddModel(true);
     } else {
       setShowNotification(true);

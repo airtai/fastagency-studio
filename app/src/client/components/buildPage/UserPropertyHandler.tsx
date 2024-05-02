@@ -26,7 +26,6 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
   const [updateExistingModel, setUpdateExistingModel] = useState<SelectedModelSchema | null>(null);
   const propertyName = data.name;
   const { data: allUserProperties, refetch: refetchModels, isLoading: getModelsIsLoading } = useQuery(getModels);
-  console.log('allUserProperties', allUserProperties);
 
   const { data: propertyDependency } = useQuery(propertyDependencies, {
     properties: _.get(propertyDependencyMap, propertyName),
@@ -103,6 +102,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
           />
         ) : (
           <ModelForm
+            allUserProperties={allUserProperties}
             data={data}
             selectedModel={selectedModel}
             updateExistingModel={updateExistingModel}

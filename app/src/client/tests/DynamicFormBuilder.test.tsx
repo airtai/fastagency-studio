@@ -77,6 +77,7 @@ describe('DynamicFormBuilder', () => {
   test('renders form fields correctly', () => {
     renderInContext(
       <DynamicFormBuilder
+        allUserProperties={{}}
         property_type='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'
@@ -95,6 +96,7 @@ describe('DynamicFormBuilder', () => {
     const onSuccessCallback = vi.fn();
     renderInContext(
       <DynamicFormBuilder
+        allUserProperties={{}}
         property_type='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'
@@ -133,6 +135,7 @@ describe('DynamicFormBuilder', () => {
     const onSuccessCallback = vi.fn();
     renderInContext(
       <DynamicFormBuilder
+        allUserProperties={{}}
         property_type='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'
@@ -155,6 +158,7 @@ describe('DynamicFormBuilder', () => {
   test('handles field changes', async () => {
     renderInContext(
       <DynamicFormBuilder
+        allUserProperties={{}}
         property_type='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'

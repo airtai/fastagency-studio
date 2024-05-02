@@ -13,6 +13,8 @@ import {
   isDependencyAvailable,
   formatDependencyErrorMessage,
   getKeyType,
+  getMatchedUserProperties,
+  removeRefSuffix,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -1104,5 +1106,83 @@ describe('buildPageUtils', () => {
     const expected = 'secret';
     const actual = getKeyType(refName, definitions);
     expect(actual).toEqual(expected);
+  });
+
+  describe('removeRefSuffix', () => {
+    test('removeRefSuffix with ref', () => {
+      const ref = '#/$defs/AzureOAIAPIKeyRef';
+      const expected = 'AzureOAIAPIKey';
+      const actual = removeRefSuffix(ref);
+      expect(actual).toEqual(expected);
+    });
+    test('removeRefSuffix without ref', () => {
+      const ref = '#/$defs/hello';
+      const expected = 'hello';
+      const actual = removeRefSuffix(ref);
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('getMatchedUserProperties', () => {
+    test('getMatchedUserProperties with one ref', () => {
+      const allUserProperties = {
+        secret: [
+          {
+            uuid: '9ef4fcec-fa6f-4cc7-b1a5-48f82e09336c',
+            api_key: '',
+            property_type: 'secret',
+            property_name: 'AzureOAIAPIKey',
+            user_id: 1,
+            base_url: null,
+            model: null,
+            api_type: null,
+            api_version: null,
+            llm: null,
+            summarizer_llm: null,
+            bing_api_key: null,
+            system_message: null,
+            viewport_size: null,
+          },
+          {
+            uuid: '25b055d2-732c-45eb-adc2-3406461ba422',
+            api_key: '',
+            property_type: 'secret',
+            property_name: 'OpenAIAPIKey',
+            user_id: 1,
+            base_url: null,
+            model: null,
+            api_type: null,
+            api_version: null,
+            llm: null,
+            summarizer_llm: null,
+            bing_api_key: null,
+            system_message: null,
+            viewport_size: null,
+          },
+        ],
+      };
+      const refName = '#/$defs/AzureOAIAPIKeyRef';
+      const expected = [
+        {
+          uuid: '9ef4fcec-fa6f-4cc7-b1a5-48f82e09336c',
+          api_key: '',
+          property_type: 'secret',
+          property_name: 'AzureOAIAPIKey',
+          user_id: 1,
+          base_url: null,
+          model: null,
+          api_type: null,
+          api_version: null,
+          llm: null,
+          summarizer_llm: null,
+          bing_api_key: null,
+          system_message: null,
+          viewport_size: null,
+        },
+      ];
+
+      const actual = getMatchedUserProperties(allUserProperties, refName);
+      expect(actual).toEqual(expected);
+    });
   });
 });

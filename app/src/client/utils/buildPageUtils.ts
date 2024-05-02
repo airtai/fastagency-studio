@@ -150,3 +150,20 @@ export function formatDependencyErrorMessage(dependencyList: string[]): string {
 export function getRefValues(input: Array<{ $ref: string }>): string[] {
   return input.map((item) => item.$ref);
 }
+
+export const removeRefSuffix = (ref: string): string => {
+  const refArray = ref.split('/');
+  let refName = refArray[refArray.length - 1];
+  if (refName.endsWith('Ref')) {
+    return refName.slice(0, -3);
+  }
+  return refName;
+};
+
+export function getMatchedUserProperties(allUserProperties: any, ref: string) {
+  const refName = removeRefSuffix(ref);
+  const retVal = _(allUserProperties)
+    .flatMap((property: any) => _.filter(property, { property_name: refName }))
+    .value();
+  return _.compact(retVal);
+}

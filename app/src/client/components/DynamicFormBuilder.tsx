@@ -12,10 +12,17 @@ import Loader from '../admin/common/Loader';
 import NotificationBox from './NotificationBox';
 
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
-import { getPropertyReferenceValues, getFormSubmitValues, getRefValues } from '../utils/buildPageUtils';
+import {
+  getPropertyReferenceValues,
+  getFormSubmitValues,
+  getRefValues,
+  getMatchedUserProperties,
+  constructHTMLSchema,
+} from '../utils/buildPageUtils';
 import { set } from 'zod';
 
 interface DynamicFormBuilderProps {
+  allUserProperties: any;
   property_type: string;
   jsonSchema: JsonSchema;
   validationURL: string;
@@ -26,6 +33,7 @@ interface DynamicFormBuilderProps {
 }
 
 const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
+  allUserProperties,
   property_type,
   jsonSchema,
   validationURL,
@@ -67,20 +75,14 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const notificationOnClick = () => {
     setShowNotification(false);
   };
-
   useEffect(() => {
     async function fetchPropertyReferenceValues() {
       if (jsonSchema) {
         setIsLoading(true);
         for (const [key, property] of Object.entries(jsonSchema.properties)) {
           if (_.has(property, '$ref') && property['$ref']) {
-            // @ts-ignore
-            const { htmlSchema, userPropertyData } = await getPropertyReferenceValues(
-              property['$ref'],
-              jsonSchema.$defs,
-              key,
-              property_type
-            );
+            const userPropertyData = getMatchedUserProperties(allUserProperties, property['$ref']);
+            const htmlSchema = constructHTMLSchema(userPropertyData, key);
             setRefValues((prev) => ({
               ...prev,
               [key]: { htmlSchema: htmlSchema, userPropertyData: userPropertyData },

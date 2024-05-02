@@ -7,6 +7,7 @@ import DynamicFormBuilder from './DynamicFormBuilder';
 import { getSchemaByName } from '../utils/buildPageUtils';
 
 interface ModelFormProps {
+  allUserProperties: any;
   data: SchemaCategory;
   selectedModel: string;
   updateExistingModel: SelectedModelSchema | null;
@@ -17,6 +18,7 @@ interface ModelFormProps {
 }
 
 const ModelForm: React.FC<ModelFormProps> = ({
+  allUserProperties,
   data,
   selectedModel,
   updateExistingModel,
@@ -43,6 +45,7 @@ const ModelForm: React.FC<ModelFormProps> = ({
           }
           {initialModelSchema && (
             <DynamicFormBuilder
+              allUserProperties={allUserProperties}
               property_type={data.name}
               jsonSchema={initialModelSchema}
               validationURL={validationURL}

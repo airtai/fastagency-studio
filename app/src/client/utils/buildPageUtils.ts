@@ -48,14 +48,30 @@ interface constructHTMLSchemaValues {
 
 export const constructHTMLSchema = (
   propertyDependencies: SelectedModelSchema[],
-  title: string
+  title: string,
+  property: any
 ): constructHTMLSchemaValues => {
-  const properties = _.map(propertyDependencies, 'property_name');
-  return {
-    default: properties[0],
+  const capitalizeTitle = _.map(title.split('_'), capitalizeFirstLetter).join(' ');
+  let properties = _.map(propertyDependencies, 'property_name');
+  const defaultValue = _.has(property, 'default') ? (property.default === null ? '' : property.default) : properties[0];
+  if (properties.includes(defaultValue)) {
+    properties = properties.filter((item: string) => item !== defaultValue);
+    properties.unshift(defaultValue);
+  } else {
+    properties.unshift('');
+  }
+  console.log({
+    default: defaultValue,
     description: '',
     enum: properties,
-    title: title,
+    title: capitalizeTitle,
+    type: 'string',
+  });
+  return {
+    default: defaultValue,
+    description: '',
+    enum: properties,
+    title: capitalizeTitle,
     type: 'string',
   };
 };
@@ -70,32 +86,32 @@ interface PropertyReferenceValues {
   userPropertyData: SelectedModelSchema[];
 }
 
-export const getPropertyReferenceValues = async (
-  ref: string,
-  definitions: any,
-  key: string,
-  property_type: string
-): Promise<{} | PropertyReferenceValues> => {
-  const refArray = ref.split('/');
-  const refName = refArray[refArray.length - 1];
-  if (!_.has(definitions, refName)) {
-    return {}; // show error???
-  }
-  const keyType = getKeyType(refName, definitions);
-  const title = _.map(key.split('_'), capitalizeFirstLetter).join(' ');
+// export const getPropertyReferenceValues = async (
+//   ref: string,
+//   definitions: any,
+//   key: string,
+//   property_type: string
+// ): Promise<{} | PropertyReferenceValues> => {
+//   const refArray = ref.split('/');
+//   const refName = refArray[refArray.length - 1];
+//   if (!_.has(definitions, refName)) {
+//     return {}; // show error???
+//   }
+//   const keyType = getKeyType(refName, definitions);
+//   const title = _.map(key.split('_'), capitalizeFirstLetter).join(' ');
 
-  const allPropertyDependencies = await getDependenciesCreatedByUser(property_type);
-  const propertyDependencies = _.filter(allPropertyDependencies, function (o: any) {
-    return o.property_type === keyType;
-  });
+//   const allPropertyDependencies = await getDependenciesCreatedByUser(property_type);
+//   const propertyDependencies = _.filter(allPropertyDependencies, function (o: any) {
+//     return o.property_type === keyType;
+//   });
 
-  const htmlSchema = constructHTMLSchema(propertyDependencies, title);
-  const retVal: PropertyReferenceValues = {
-    htmlSchema: htmlSchema,
-    userPropertyData: propertyDependencies,
-  };
-  return retVal;
-};
+//   const htmlSchema = constructHTMLSchema(propertyDependencies, title);
+//   const retVal: PropertyReferenceValues = {
+//     htmlSchema: htmlSchema,
+//     userPropertyData: propertyDependencies,
+//   };
+//   return retVal;
+// };
 
 export const getFormSubmitValues = (refValues: any, formData: any) => {
   const newFormData = _.cloneDeep(formData);
@@ -160,10 +176,20 @@ export const removeRefSuffix = (ref: string): string => {
   return refName;
 };
 
-export function getMatchedUserProperties(allUserProperties: any, ref: string) {
-  const refName = removeRefSuffix(ref);
-  const retVal = _(allUserProperties)
-    .flatMap((property: any) => _.filter(property, { property_name: refName }))
-    .value();
-  return _.compact(retVal);
+export function getMatchedUserProperties(allUserProperties: any, ref: string[]) {
+  const refList = _.flatten(ref);
+  const retVal = _.map(refList, function (ref: any) {
+    const refName = removeRefSuffix(ref);
+    return _.compact(
+      _(allUserProperties)
+        .flatMap((property: any) => _.filter(property, { property_name: refName }))
+        .value()
+    );
+  });
+  console.log(_.flatten(retVal));
+  return _.flatten(retVal);
+}
+
+export function getAllRefs(property: any): any[] {
+  return _.map(_.get(property, 'anyOf'), (o: any) => o['$ref'] || o['type']);
 }

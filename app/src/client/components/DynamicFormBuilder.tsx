@@ -13,11 +13,12 @@ import NotificationBox from './NotificationBox';
 
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 import {
-  getPropertyReferenceValues,
+  // getPropertyReferenceValues,
   getFormSubmitValues,
   getRefValues,
   getMatchedUserProperties,
   constructHTMLSchema,
+  getAllRefs,
 } from '../utils/buildPageUtils';
 import { set } from 'zod';
 
@@ -80,24 +81,12 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
       if (jsonSchema) {
         setIsLoading(true);
         for (const [key, property] of Object.entries(jsonSchema.properties)) {
-          if (_.has(property, '$ref') && property['$ref']) {
-            const userPropertyData = getMatchedUserProperties(allUserProperties, property['$ref']);
-            const htmlSchema = constructHTMLSchema(userPropertyData, key);
-            setRefValues((prev) => ({
-              ...prev,
-              [key]: { htmlSchema: htmlSchema, userPropertyData: userPropertyData },
-            }));
-          }
-          if (_.has(property, 'anyOf') && _.has(jsonSchema, '$defs')) {
-            const refs = getRefValues(_.get(property, 'anyOf'));
-            console.log('refs: ', refs);
-            // @ts-ignore
-            const { htmlSchema, userPropertyData } = await getPropertyReferenceValues(
-              refs[0],
-              jsonSchema.$defs,
-              key,
-              property_type
-            );
+          const propertyHasRef = _.has(property, '$ref') && property['$ref'];
+          const propertyHasAnyOf = _.has(property, 'anyOf') && _.has(jsonSchema, '$defs');
+          if (propertyHasRef || propertyHasAnyOf) {
+            const allRefList = propertyHasRef ? [property['$ref']] : getAllRefs(property);
+            const userPropertyData = getMatchedUserProperties(allUserProperties, allRefList);
+            const htmlSchema = constructHTMLSchema(userPropertyData, key, property);
             setRefValues((prev) => ({
               ...prev,
               [key]: { htmlSchema: htmlSchema, userPropertyData: userPropertyData },

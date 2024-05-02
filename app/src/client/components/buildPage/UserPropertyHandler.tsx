@@ -7,7 +7,7 @@ import ModelsList from '../ModelsList';
 import NotificationBox from '../NotificationBox';
 
 import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
-import { PropertyTypesComponentProps } from '../../interfaces/BuildPageInterfaces';
+import { SecretsProps } from '../../interfaces/BuildPageInterfaces';
 
 import {
   getModels,
@@ -20,17 +20,13 @@ import {
 import { propertyDependencyMap } from '../../utils/constants';
 import { isDependencyAvailable, formatDependencyErrorMessage } from '../../utils/buildPageUtils';
 
-const UserPropertyHandler = ({ allSchema, propertySchema }: PropertyTypesComponentProps) => {
-  const propertyName = propertySchema.name;
-  const defaultSchemaName = propertySchema.schemas[0].name;
+const UserPropertyHandler = ({ data }: SecretsProps) => {
   const [showAddModel, setShowAddModel] = useState(false);
-  const [selectedModel, setSelectedModel] = useState(defaultSchemaName);
+  const [selectedModel, setSelectedModel] = useState(data.schemas[0].name);
   const [updateExistingModel, setUpdateExistingModel] = useState<SelectedModelSchema | null>(null);
-  const {
-    data: modelsList,
-    refetch: refetchModels,
-    isLoading: getModelsIsLoading,
-  } = useQuery(getModels, { property_type: propertyName });
+  const propertyName = data.name;
+  const { data: allUserProperties, refetch: refetchModels, isLoading: getModelsIsLoading } = useQuery(getModels);
+  console.log('allUserProperties', allUserProperties);
 
   const { data: propertyDependency } = useQuery(propertyDependencies, {
     properties: _.get(propertyDependencyMap, propertyName),
@@ -40,7 +36,7 @@ const UserPropertyHandler = ({ allSchema, propertySchema }: PropertyTypesCompone
 
   const handleClick = () => {
     if (isDependencyAvailable(propertyDependency)) {
-      setSelectedModel(defaultSchemaName);
+      setSelectedModel(data.schemas[0].name);
       setShowAddModel(true);
     } else {
       setShowNotification(true);
@@ -76,8 +72,8 @@ const UserPropertyHandler = ({ allSchema, propertySchema }: PropertyTypesCompone
   };
 
   const updateSelectedModel = (index: number) => {
-    if (modelsList) {
-      const selectedModel = modelsList[index];
+    if (allUserProperties?.[propertyName]) {
+      const selectedModel = allUserProperties[propertyName][index];
       setSelectedModel(selectedModel.property_name);
       setUpdateExistingModel(selectedModel);
       setShowAddModel(true);
@@ -100,10 +96,14 @@ const UserPropertyHandler = ({ allSchema, propertySchema }: PropertyTypesCompone
       </div>
       <div className='flex-col flex w-full'>
         {!showAddModel ? (
-          <ModelsList models={modelsList} onSelectModel={updateSelectedModel} property_type={propertyName} />
+          <ModelsList
+            models={allUserProperties?.[propertyName] || []}
+            onSelectModel={updateSelectedModel}
+            property_type={propertyName}
+          />
         ) : (
           <ModelForm
-            data={propertySchema}
+            data={data}
             selectedModel={selectedModel}
             updateExistingModel={updateExistingModel}
             onModelChange={handleModelChange}

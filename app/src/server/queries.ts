@@ -113,9 +113,9 @@ export const getPaginatedUsers: GetPaginatedUsers<GetPaginatedUsersInput, GetPag
 };
 
 type GetModelsInput = {
-  property_type: string;
+  property_type?: string;
 };
-type GetModelsValues = {
+type PropertyValues = {
   api_key: string;
   property_name: string;
   property_type: string;
@@ -123,9 +123,18 @@ type GetModelsValues = {
   uuid: string;
 };
 
-export const getModels: GetModels<GetModelsInput, GetModelsValues[]> = async (_args, context) => {
+type GetModelsValues = {
+  secret?: PropertyValues[];
+  llm?: PropertyValues[];
+  agent?: PropertyValues[];
+};
+
+export const getModels: GetModels<GetModelsInput, GetModelsValues | PropertyValues[]> = async (_args, context) => {
   try {
-    const data = { user_id: context.user.id, property_type: _args.property_type };
+    let data: { user_id: any; property_type?: string } = { user_id: context.user.id };
+    if (_.has(_args, 'property_type')) {
+      data.property_type = _args.property_type;
+    }
     const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

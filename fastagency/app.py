@@ -39,12 +39,16 @@ def find_model(user_id: int, property_type: str, uuid: str) -> Dict[str, Any]:
 
 class User(BaseModel):
     user_id: int
-    property_type: str
+    property_type: Optional[str] = None
 
 
 @app.post("/user/models")
-def models(user: User) -> List[Optional[Dict[str, Any]]]:
+def models(
+    user: User,
+) -> Union[List[Optional[Dict[str, Any]]], Dict[str, List[Optional[Dict[str, Any]]]]]:
     user_models = all_models.get(user.user_id, {})
+    if not user.property_type:
+        return user_models
     return user_models.get(user.property_type, [])
 
 

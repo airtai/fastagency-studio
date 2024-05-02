@@ -49,6 +49,7 @@ dependencies = [
     "typing-extensions>=4.8.0,<5",
     "pydantic>=2.3,<3",
     "fastapi==0.110.2",
+    "fastapi-code-generator @ git+https://github.com/airtai/fastapi-code-generator.git",
 ]
 
 [project.optional-dependencies]
@@ -130,6 +131,9 @@ exclude = [
     "/tests",
     "/docs",
 ]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.mypy]
 

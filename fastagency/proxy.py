@@ -29,6 +29,7 @@ class Proxy:
         """Proxy class to generate client from OpenAPI schema."""
         self.servers = servers
         self.kwargs = kwargs
+        self.registered_funcs: List[Callable[..., Any]] = []
 
     def _process_params(
         self, path: str, func: Callable[[Any], Any], **kwargs: Any
@@ -58,6 +59,8 @@ class Proxy:
         self, method: str, path: str, **kwargs: Any
     ) -> Callable[..., Dict[str, Any]]:
         def decorator(func: Callable[..., Any]) -> Callable[..., Dict[str, Any]]:
+            self.registered_funcs.append(func)
+
             @wraps(func)
             def wrapper(*args: Any, **kwargs: Any) -> Dict[str, Any]:
                 url, params, body_dict = self._process_params(path, func, **kwargs)

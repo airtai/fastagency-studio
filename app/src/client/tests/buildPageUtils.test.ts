@@ -1011,7 +1011,7 @@ describe('buildPageUtils', () => {
     expect(actual).toEqual(expected);
   });
   test('getKeyType - secret', () => {
-    const refName = 'BingAPIKey';
+    const refName = 'BingAPIKeyRef';
     const definitions = {
       AzureOAIRef: {
         properties: {
@@ -1042,16 +1042,33 @@ describe('buildPageUtils', () => {
         title: 'AzureOAIRef',
         type: 'object',
       },
-      BingAPIKey: {
+      BingAPIKeyRef: {
         properties: {
-          api_key: {
-            description: 'The API Key from OpenAI',
-            title: 'Api Key',
+          type: {
+            const: 'secret',
+            default: 'secret',
+            description: 'The name of the type of the data',
+            enum: ['secret'],
+            title: 'Type',
+            type: 'string',
+          },
+          name: {
+            const: 'BingAPIKey',
+            default: 'BingAPIKey',
+            description: 'The name of the data',
+            enum: ['BingAPIKey'],
+            title: 'Name',
+            type: 'string',
+          },
+          uuid: {
+            description: 'The unique identifier',
+            format: 'uuid',
+            title: 'UUID',
             type: 'string',
           },
         },
-        required: ['api_key'],
-        title: 'BingAPIKey',
+        required: ['uuid'],
+        title: 'BingAPIKeyRef',
         type: 'object',
       },
       OpenAIRef: {

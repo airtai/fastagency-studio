@@ -62,10 +62,7 @@ export const constructHTMLSchema = (
 
 export const getKeyType = (refName: string, definitions: any): string => {
   const refObj = _.get(definitions, refName);
-  if (_.has(refObj, 'properties.type')) {
-    return refObj.properties.type.enum[0];
-  }
-  return 'secret';
+  return refObj.properties.type.enum[0];
 };
 
 interface PropertyReferenceValues {

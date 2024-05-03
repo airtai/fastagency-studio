@@ -37,7 +37,7 @@ const ModelForm: React.FC<ModelFormProps> = ({
           {/* {<h2 className='sm:mt-6 text-lg font-semibold text-airt-primary'>Update model</h2>} */}
           {
             <ModelFormContainer
-              property_type={data.name}
+              type_name={data.name}
               selectedModel={selectedModel}
               modelSchemas={modelSchemas}
               onModelChange={onModelChange}
@@ -46,7 +46,7 @@ const ModelForm: React.FC<ModelFormProps> = ({
           {initialModelSchema && (
             <DynamicFormBuilder
               allUserProperties={allUserProperties}
-              property_type={data.name}
+              type_name={data.name}
               jsonSchema={initialModelSchema}
               validationURL={validationURL}
               updateExistingModel={updateExistingModel ?? null}

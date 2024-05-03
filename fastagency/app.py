@@ -1,8 +1,8 @@
 import json
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, TypeAdapter, ValidationError
 
 from .models.registry import Registry, Schemas
 
@@ -25,88 +25,87 @@ async def validate_model(type: str, name: str, model: Dict[str, Any]) -> None:
 
 # new routes by Harish
 
-all_models: Dict[int, Dict[str, List[Optional[Dict[str, Any]]]]] = {}
 
-
-def find_model(user_id: int, property_type: str, uuid: str) -> Dict[str, Any]:
-    if user_id not in all_models or property_type not in all_models[user_id]:
-        raise HTTPException(status_code=404, detail="User or property type not found")
-    for model in all_models[user_id][property_type]:
-        if model and model["uuid"] == uuid:  # type: ignore
-            return model  # type: ignore
-    raise HTTPException(status_code=404, detail="Model not found")
-
-
-class User(BaseModel):
-    user_id: int
-    property_type: Optional[str] = None
-
-
-@app.post("/user/models")
-def models(
-    user: User,
-) -> Union[List[Optional[Dict[str, Any]]], Dict[str, List[Optional[Dict[str, Any]]]]]:
-    user_models = all_models.get(user.user_id, {})
-    if not user.property_type:
-        return user_models
-    return user_models.get(user.property_type, [])
-
-
-class Model(BaseModel):
+# all_models: Dict[int, Dict[str, List[Optional[Dict[str, BaseModel]]]]] = {}
+class ModelResponse(BaseModel):
     uuid: str
-    api_key: Optional[Union[str, Dict[str, Union[Union[Optional[str], None], int]]]] = (
-        None
-    )
-    property_type: str
-    property_name: str
+    model: BaseModel
+    type_name: str
+    model_name: str
     user_id: int
-    base_url: Optional[str] = None
-    model: Optional[str] = None
-    api_type: Optional[str] = None
-    api_version: Optional[str] = None
-    llm: Optional[
-        Dict[str, Union[str, None, int, Dict[str, Union[str, int, None]]]]
-    ] = None
-    summarizer_llm: Optional[
-        Dict[str, Union[str, None, int, Dict[str, Union[str, int, None]]]]
-    ] = None
-    bing_api_key: Optional[
-        Union[str, Dict[str, Union[Union[Optional[str], None], int]]]
-    ] = None
-    system_message: Optional[str] = None
-    viewport_size: Optional[int] = None
 
 
-@app.post("/user/models/add")
-def models_add(model: Model) -> Dict[str, Any]:
-    user_models = all_models.setdefault(model.user_id, {})
-    model_dict = model.model_dump()
-    user_models.setdefault(model.property_type, []).append(model_dict)
-    return user_models
+all_models: List[ModelResponse] = []
 
 
-@app.put("/user/models/update")
-def models_update(model_update: Model) -> Dict[str, Any]:
-    model = find_model(
-        model_update.user_id, model_update.property_type, model_update.uuid
+def find_model(user_id: int, uuid: str) -> ModelResponse:
+    return [  # noqa: RUF015
+        model for model in all_models if model.user_id == user_id and model.uuid == uuid
+    ][0]
+
+
+@app.get("/user/{user_id}/models")
+def get_all_models(
+    user_id: int,
+    type_name: Optional[str] = None,
+) -> List[Any]:
+    models = [
+        model
+        for model in all_models
+        if model.user_id == user_id
+        and [model.type_name == type_name or type_name is None]
+    ]
+    ta = TypeAdapter(List[ModelResponse])
+    ret_val = ta.dump_python(models, serialize_as_any=True)  # type: ignore[call-arg]
+    return ret_val  # type: ignore[no-any-return]
+
+
+@app.post("/user/{user_id}/models/{type_name}/{model_name}/{uuid}")
+def add_model(
+    user_id: int, type_name: str, model_name: str, uuid: str, model: Dict[str, Any]
+) -> Dict[str, Any]:
+    registry = Registry.get_default()
+    validated_model = registry.validate(type_name, model_name, model)
+    all_models.append(
+        ModelResponse(
+            uuid=uuid,
+            model=validated_model,
+            type_name=type_name,
+            model_name=model_name,
+            user_id=user_id,
+        )
     )
-    updated_model = model_update.model_dump()
-    updated_model["uuid"] = model["uuid"]
-    all_models[model_update.user_id][model_update.property_type].remove(model)  # type: ignore
-    all_models[model_update.user_id][model_update.property_type].append(updated_model)  # type: ignore
-    return updated_model
+    return validated_model.model_dump()
 
 
-class ModelDelete(BaseModel):
-    user_id: int
-    uuid: str
-    property_type: str
+@app.put("/user/{user_id}/models/{type_name}/{model_name}/{uuid}")
+def update_model(
+    user_id: int, type_name: str, model_name: str, uuid: str, model: Dict[str, Any]
+) -> Dict[str, Any]:
+    registry = Registry.get_default()
+    validated_model = registry.validate(type_name, model_name, model)
 
-
-@app.delete("/user/models/delete")
-def models_delete(model_delete: ModelDelete) -> Dict[str, str]:
-    model = find_model(
-        model_delete.user_id, model_delete.property_type, model_delete.uuid
+    ix = [i for i, model in enumerate(all_models) if model.uuid == uuid]
+    if ix == []:
+        raise HTTPException(status_code=404, detail="Model not found")
+    i = ix[0]
+    all_models[i] = ModelResponse(
+        uuid=uuid,
+        model=validated_model,
+        type_name=type_name,
+        model_name=model_name,
+        user_id=user_id,
     )
-    all_models[model_delete.user_id][model_delete.property_type].remove(model)  # type: ignore
-    return {"detail": "Model deleted successfully"}
+
+    return validated_model.model_dump()
+
+
+@app.delete("/user/{user_id}/models/{type_name}/{uuid}")
+def models_delete(user_id: int, type_name: str, uuid: str) -> Dict[str, Any]:
+    ix = [i for i, model in enumerate(all_models) if model.uuid == uuid]
+    if ix == []:
+        raise HTTPException(status_code=404, detail="Model not found")
+    i = ix[0]
+    response = all_models[i]
+    del all_models[i]
+    return response.model.model_dump()

@@ -31,11 +31,11 @@ export const getSchemaByName = (schemas: ApiSchema[], schemaName: string): JsonS
   return apiSchema ? apiSchema.json_schema : schemas[0].json_schema;
 };
 
-export const getDependenciesCreatedByUser = async (property_type: string): Promise<SelectedModelSchema[]> => {
+export const getDependenciesCreatedByUser = async (type_name: string): Promise<SelectedModelSchema[]> => {
   const getProperty = async (property: string) => {
-    return await getModels([''], { property_type: property });
+    return await getModels([''], { type_name: property });
   };
-  const propertyDependencies = _.get(propertyDependencyMap, property_type);
+  const propertyDependencies = _.get(propertyDependencyMap, type_name);
   // const immediateDependency = _.castArray(_.last(propertyDependencies));
   const userPropertyDataPromises = _.map(propertyDependencies, getProperty);
   const userPropertyData = await Promise.all(userPropertyDataPromises);
@@ -52,7 +52,7 @@ export const constructHTMLSchema = (
   property: any
 ): constructHTMLSchemaValues => {
   const capitalizeTitle = _.map(title.split('_'), capitalizeFirstLetter).join(' ');
-  let properties = _.map(propertyDependencies, 'property_name');
+  let properties = _.map(propertyDependencies, 'model_name');
   const defaultValue = _.has(property, 'default') ? (property.default === null ? '' : property.default) : properties[0];
   if (properties.includes(defaultValue)) {
     properties = properties.filter((item: string) => item !== defaultValue);
@@ -83,7 +83,7 @@ interface PropertyReferenceValues {
 //   ref: string,
 //   definitions: any,
 //   key: string,
-//   property_type: string
+//   type_name: string
 // ): Promise<{} | PropertyReferenceValues> => {
 //   const refArray = ref.split('/');
 //   const refName = refArray[refArray.length - 1];
@@ -93,9 +93,9 @@ interface PropertyReferenceValues {
 //   const keyType = getKeyType(refName, definitions);
 //   const title = _.map(key.split('_'), capitalizeFirstLetter).join(' ');
 
-//   const allPropertyDependencies = await getDependenciesCreatedByUser(property_type);
+//   const allPropertyDependencies = await getDependenciesCreatedByUser(type_name);
 //   const propertyDependencies = _.filter(allPropertyDependencies, function (o: any) {
-//     return o.property_type === keyType;
+//     return o.type_name === keyType;
 //   });
 
 //   const htmlSchema = constructHTMLSchema(propertyDependencies, title);
@@ -117,9 +117,9 @@ export const getFormSubmitValues = (refValues: any, formData: any) => {
       const selectedKey = formData[key]
         ? formData[key] && typeof formData[key] === 'string'
           ? formData[key]
-          : formData[key].property_name
+          : formData[key].model_name
         : refValues[key].htmlSchema.default;
-      const selectedData = refValues[key].userPropertyData.find((data: any) => data.property_name === selectedKey);
+      const selectedData = refValues[key].userPropertyData.find((data: any) => data.model_name === selectedKey);
       newFormData[key] = selectedData;
     }
   });
@@ -175,7 +175,7 @@ export function getMatchedUserProperties(allUserProperties: any, ref: string[]) 
     const refName = removeRefSuffix(ref);
     return _.compact(
       _(allUserProperties)
-        .flatMap((property: any) => _.filter(property, { property_name: refName }))
+        .flatMap((property: any) => _.filter(property, { model_name: refName }))
         .value()
     );
   });

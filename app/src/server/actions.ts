@@ -127,8 +127,8 @@ type AddModelsValues = {
   api_type?: string;
   api_version?: string;
   api_key?: string;
-  property_type?: string;
-  property_name?: string;
+  type_name?: string;
+  model_name?: string;
   llm?: any;
   summarizer_llm?: any;
   bing_api_key?: any;
@@ -138,8 +138,8 @@ type AddModelsValues = {
 
 type AddUserModelsPayload = {
   data: AddModelsValues;
-  property_type: string;
-  property_name: string;
+  type_name: string;
+  model_name: string;
 };
 
 export const addUserModels: AddUserModels<AddUserModelsPayload, void> = async (args, context) => {
@@ -172,8 +172,8 @@ type UpdateUserModelsValues = {
   api_type?: string;
   api_version?: string;
   api_key?: string;
-  property_type?: string;
-  property_name?: string;
+  type_name?: string;
+  model_name?: string;
 };
 
 type UpdateUserModelsPayload = {
@@ -206,7 +206,7 @@ export const updateUserModels: UpdateUserModels<UpdateUserModelsPayload, void> =
 
 type DeleteUserModelsPayload = {
   uuid: string;
-  property_type: string;
+  type_name: string;
 };
 
 export const deleteUserModels: DeleteUserModels<DeleteUserModelsPayload, void> = async (args, context) => {
@@ -218,7 +218,7 @@ export const deleteUserModels: DeleteUserModels<DeleteUserModelsPayload, void> =
     const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models/delete`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: context.user.id, uuid: args.uuid, property_type: args.property_type }),
+      body: JSON.stringify({ user_id: context.user.id, uuid: args.uuid, type_name: args.type_name }),
     });
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 

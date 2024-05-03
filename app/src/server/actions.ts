@@ -140,6 +140,7 @@ type AddUserModelsPayload = {
   data: AddModelsValues;
   type_name: string;
   model_name: string;
+  uuid: string;
 };
 
 export const addUserModels: AddUserModels<AddUserModelsPayload, void> = async (args, context) => {
@@ -147,10 +148,11 @@ export const addUserModels: AddUserModels<AddUserModelsPayload, void> = async (a
     throw new HttpError(401);
   }
   try {
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models/add`, {
+    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.id}/models/${args.type_name}/${args.model_name}/${args.uuid}`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: context.user.id, ...args }),
+      body: JSON.stringify({ ...args }),
     });
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 
@@ -185,12 +187,12 @@ export const updateUserModels: UpdateUserModels<UpdateUserModelsPayload, void> =
   if (!context.user) {
     throw new HttpError(401);
   }
-
   try {
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models/update`, {
+    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.id}/models/${args.data.type_name}/${args.data.model_name}/${args.uuid}`;
+    const response = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: context.user.id, ...args.data, uuid: args.uuid }),
+      body: JSON.stringify({ ...args.data }),
     });
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 
@@ -215,10 +217,10 @@ export const deleteUserModels: DeleteUserModels<DeleteUserModelsPayload, void> =
   }
 
   try {
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models/delete`, {
+    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.id}/models/${args.type_name}/${args.uuid}`;
+    const response = await fetch(url, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: context.user.id, uuid: args.uuid, type_name: args.type_name }),
     });
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 

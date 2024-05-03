@@ -46,7 +46,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
   };
 
   const onSuccessCallback = async (payload: any) => {
-    const mergedData = { ...payload, type_name: propertyName, model_name: selectedModel };
+    const mergedData = { ...payload, type_name: propertyName, model_name: selectedModel, uuid: payload.uuid };
     if (updateExistingModel) {
       await updateUserModels({ data: mergedData, uuid: updateExistingModel.uuid });
       setUpdateExistingModel(null);
@@ -70,12 +70,21 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     }
   };
 
+  const getFilteredProperties = () => {
+    if (allUserProperties) {
+      return _.filter(allUserProperties, ['type_name', propertyName]);
+    }
+  };
+
   const updateSelectedModel = (index: number) => {
-    if (allUserProperties?.[propertyName]) {
-      const selectedModel = allUserProperties[propertyName][index];
-      setSelectedModel(selectedModel.model_name);
-      setUpdateExistingModel(selectedModel);
-      setShowAddModel(true);
+    if (allUserProperties) {
+      const filteredProperties = getFilteredProperties();
+      if (filteredProperties) {
+        const selectedModel = filteredProperties[index];
+        setSelectedModel(selectedModel.model_name);
+        setUpdateExistingModel({ ...selectedModel.model, ...{ uuid: selectedModel.uuid } });
+        setShowAddModel(true);
+      }
     }
   };
 
@@ -96,7 +105,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
       <div className='flex-col flex w-full'>
         {!showAddModel ? (
           <ModelsList
-            models={allUserProperties?.[propertyName] || []}
+            models={(allUserProperties && getFilteredProperties()) || []}
             onSelectModel={updateSelectedModel}
             type_name={propertyName}
           />

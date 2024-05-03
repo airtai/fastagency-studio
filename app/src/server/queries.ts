@@ -123,22 +123,15 @@ type PropertyValues = {
   uuid: string;
 };
 
-type GetModelsValues = {
-  secret?: PropertyValues[];
-  llm?: PropertyValues[];
-  agent?: PropertyValues[];
-};
-
-export const getModels: GetModels<GetModelsInput, GetModelsValues | PropertyValues[]> = async (_args, context) => {
+export const getModels: GetModels<GetModelsInput, PropertyValues[]> = async (_args, context) => {
   try {
-    let data: { user_id: any; type_name?: string } = { user_id: context.user.id };
+    let url = `${FASTAGENCY_SERVER_URL}/user/${context.user.id}/models`;
     if (_.has(_args, 'type_name')) {
-      data.type_name = _args.type_name;
+      url = `${url}?type_name=${_args.type_name}`;
     }
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models`, {
-      method: 'POST',
+    const response = await fetch(url, {
+      method: 'GET',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
     });
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 
@@ -170,11 +163,10 @@ export const propertyDependencies: PropertyDependencies<
     let retVal: any = {};
     const promises = _args.properties.map(async function (property: string) {
       if (!property) return;
-      const data = { user_id: context.user.id, type_name: property };
-      const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models`, {
-        method: 'POST',
+      const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.id}/models?type_name=${property}`;
+      const response = await fetch(url, {
+        method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
       });
       const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 

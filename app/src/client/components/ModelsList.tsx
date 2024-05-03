@@ -4,15 +4,15 @@ import ModelItem, { ItemProps } from './ModelItem';
 interface ModelListProps {
   models: ItemProps[] | undefined;
   onSelectModel: (index: number) => void;
-  property_type: string;
+  type_name: string;
 }
 
-const ModelsList: React.FC<ModelListProps> = ({ models, onSelectModel, property_type }) => {
+const ModelsList: React.FC<ModelListProps> = ({ models, onSelectModel, type_name }) => {
   if (!models || models.length === 0) {
     return (
       <div className='flex flex-col gap-3'>
         {/* <h2 className='text-lg font-semibold text-airt-primary'>Available Models</h2> */}
-        <p className='text-airt-primary mt-1 -mt-3 opacity-50'>{`No ${property_type}s found. Please add one.`}</p>
+        <p className='text-airt-primary mt-1 -mt-3 opacity-50'>{`No ${type_name}s found. Please add one.`}</p>
       </div>
     );
   }

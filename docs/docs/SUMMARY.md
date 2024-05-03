@@ -6,15 +6,13 @@ search:
 - Reference
     - fastagency
         - app
-            - [Model](api/fastagency/app/Model.md)
-            - [ModelDelete](api/fastagency/app/ModelDelete.md)
-            - [User](api/fastagency/app/User.md)
+            - [ModelResponse](api/fastagency/app/ModelResponse.md)
+            - [add_model](api/fastagency/app/add_model.md)
             - [find_model](api/fastagency/app/find_model.md)
+            - [get_all_models](api/fastagency/app/get_all_models.md)
             - [get_models_schemas](api/fastagency/app/get_models_schemas.md)
-            - [models](api/fastagency/app/models.md)
-            - [models_add](api/fastagency/app/models_add.md)
             - [models_delete](api/fastagency/app/models_delete.md)
-            - [models_update](api/fastagency/app/models_update.md)
+            - [update_model](api/fastagency/app/update_model.md)
             - [validate_model](api/fastagency/app/validate_model.md)
         - models
             - [Registry](api/fastagency/models/Registry.md)

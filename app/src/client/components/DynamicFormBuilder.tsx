@@ -25,7 +25,7 @@ import { set } from 'zod';
 
 interface DynamicFormBuilderProps {
   allUserProperties: any;
-  property_type: string;
+  type_name: string;
   jsonSchema: JsonSchema;
   validationURL: string;
   updateExistingModel: SelectedModelSchema | null;
@@ -36,7 +36,7 @@ interface DynamicFormBuilderProps {
 
 const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   allUserProperties,
-  property_type,
+  type_name,
   jsonSchema,
   validationURL,
   updateExistingModel,

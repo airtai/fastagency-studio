@@ -46,7 +46,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
   };
 
   const onSuccessCallback = async (payload: any) => {
-    const mergedData = { ...payload, property_type: propertyName, property_name: selectedModel };
+    const mergedData = { ...payload, type_name: propertyName, model_name: selectedModel };
     if (updateExistingModel) {
       await updateUserModels({ data: mergedData, uuid: updateExistingModel.uuid });
       setUpdateExistingModel(null);
@@ -63,7 +63,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
 
   const onDeleteCallback = async () => {
     if (updateExistingModel) {
-      await deleteUserModels({ uuid: updateExistingModel.uuid, property_type: updateExistingModel.property_type });
+      await deleteUserModels({ uuid: updateExistingModel.uuid, type_name: updateExistingModel.type_name });
       await refetchModels();
       setUpdateExistingModel(null);
       setShowAddModel(false);
@@ -73,7 +73,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
   const updateSelectedModel = (index: number) => {
     if (allUserProperties?.[propertyName]) {
       const selectedModel = allUserProperties[propertyName][index];
-      setSelectedModel(selectedModel.property_name);
+      setSelectedModel(selectedModel.model_name);
       setUpdateExistingModel(selectedModel);
       setShowAddModel(true);
     }
@@ -98,7 +98,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
           <ModelsList
             models={allUserProperties?.[propertyName] || []}
             onSelectModel={updateSelectedModel}
-            property_type={propertyName}
+            type_name={propertyName}
           />
         ) : (
           <ModelForm

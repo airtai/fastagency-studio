@@ -67,8 +67,8 @@ const jsonSchema: JsonSchema = {
 
 const updateExistingModel: SelectedModelSchema = {
   api_key: '',
-  property_name: '',
-  property_type: '',
+  model_name: '',
+  type_name: '',
   user_id: 1,
   uuid: '',
 };
@@ -78,7 +78,7 @@ describe('DynamicFormBuilder', () => {
     renderInContext(
       <DynamicFormBuilder
         allUserProperties={{}}
-        property_type='secret'
+        type_name='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'
         updateExistingModel={updateExistingModel}
@@ -97,7 +97,7 @@ describe('DynamicFormBuilder', () => {
     renderInContext(
       <DynamicFormBuilder
         allUserProperties={{}}
-        property_type='secret'
+        type_name='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'
         updateExistingModel={updateExistingModel}
@@ -136,7 +136,7 @@ describe('DynamicFormBuilder', () => {
     renderInContext(
       <DynamicFormBuilder
         allUserProperties={{}}
-        property_type='secret'
+        type_name='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'
         updateExistingModel={updateExistingModel}
@@ -159,7 +159,7 @@ describe('DynamicFormBuilder', () => {
     renderInContext(
       <DynamicFormBuilder
         allUserProperties={{}}
-        property_type='secret'
+        type_name='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'
         updateExistingModel={updateExistingModel}

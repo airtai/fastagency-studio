@@ -62,8 +62,8 @@ export const svgIcons: SvgIcons = {
 
 export interface ItemProps {
   api_key: string;
-  property_name: string;
-  property_type: string;
+  model_name: string;
+  type_name: string;
   user_id: number;
   uuid: string;
 }
@@ -82,9 +82,9 @@ const ModelItem: React.FC<ModelItemProps> = ({ model, onClick }) => (
     <div className='relative z-10 mx-auto max-w-md'>
       <div className='flex items-center mb-3'>
         <div className='w-8 h-8 mr-3 inline-flex items-center justify-center rounded-full dark:bg-indigo-500 bg-airt-hero-gradient-start text-white flex-shrink-0'>
-          {svgIcons[model.property_type]}
+          {svgIcons[model.type_name]}
         </div>
-        <h2 className='text-white dark:text-white text-lg font-medium'>{model.property_name}</h2>
+        <h2 className='text-white dark:text-white text-lg font-medium'>{model.model_name}</h2>
       </div>
       {model.api_key && (
         <div className='flex flex-col gap-2 text-white py-4 sm:max-w-sm sm:rounded-lg'>

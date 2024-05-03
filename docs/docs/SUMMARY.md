@@ -22,6 +22,10 @@ search:
             - agents
                 - assistant
                     - [AssistantAgent](api/fastagency/models/agents/assistant/AssistantAgent.md)
+                - base
+                    - [AgentBaseModel](api/fastagency/models/agents/base/AgentBaseModel.md)
+                - user_proxy
+                    - [UserProxyAgent](api/fastagency/models/agents/user_proxy/UserProxyAgent.md)
                 - web_surfer
                     - [BingAPIKey](api/fastagency/models/agents/web_surfer/BingAPIKey.md)
                     - [WebSurferAgent](api/fastagency/models/agents/web_surfer/WebSurferAgent.md)
@@ -44,6 +48,13 @@ search:
                 - [Registry](api/fastagency/models/registry/Registry.md)
                 - [Schemas](api/fastagency/models/registry/Schemas.md)
                 - [register](api/fastagency/models/registry/register.md)
+            - teams
+                - base
+                    - [TeamBaseModel](api/fastagency/models/teams/base/TeamBaseModel.md)
+                - multi_agent_team
+                    - [MultiAgentTeam](api/fastagency/models/teams/multi_agent_team/MultiAgentTeam.md)
+                - two_agent_teams
+                    - [TwoAgentTeam](api/fastagency/models/teams/two_agent_teams/TwoAgentTeam.md)
 - Contributing
     - [Development](getting-started/contributing/CONTRIBUTING.md)
     - [Documentation](getting-started/contributing/docs.md)

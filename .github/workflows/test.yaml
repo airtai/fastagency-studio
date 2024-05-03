@@ -347,7 +347,7 @@ jobs:
       GOOGLE_CLIENT_SECRET: ${{ github.ref_name == 'main' && secrets.PROD_GOOGLE_CLIENT_SECRET || secrets.STAGING_GOOGLE_CLIENT_SECRET }}
       ADMIN_EMAILS: ${{ vars.ADMIN_EMAILS }}
       WASP_SERVER_URL: ${{ github.ref_name == 'main' && vars.PROD_WASP_SERVER_URL || vars.STAGING_WASP_SERVER_URL }}
-      ADS_SERVER_URL: ${{ github.ref_name == 'main' && vars.PROD_ADS_SERVER_URL || vars.STAGING_ADS_SERVER_URL }}
+      FASTAGENCY_SERVER_URL: ${{ github.ref_name == 'main' && vars.PROD_FASTAGENCY_SERVER_URL || vars.STAGING_FASTAGENCY_SERVER_URL }}
       NODE_DOMAIN: ${{ github.ref_name == 'main' && vars.PROD_NODE_DOMAIN || vars.STAGING_NODE_DOMAIN }}
       WASP_WEB_CLIENT_URL: ${{ github.ref_name == 'main' && vars.PROD_WASP_WEB_CLIENT_URL || vars.STAGING_WASP_WEB_CLIENT_URL }}
       DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}

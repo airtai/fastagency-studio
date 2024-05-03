@@ -15,7 +15,7 @@ __all__ = [
 
 @register("secret")
 class AzureOAIAPIKey(Model):
-    api_key: Annotated[str, Field(description="The API Key from OpenAI")]
+    api_key: Annotated[str, Field(description="The API Key from Azure OpenAI")]
 
 
 AzureOAIAPIKeyRef: TypeAlias = AzureOAIAPIKey.get_reference_model()  # type: ignore[valid-type]

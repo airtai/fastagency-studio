@@ -60,13 +60,6 @@ export const constructHTMLSchema = (
   } else {
     properties.unshift('');
   }
-  console.log({
-    default: defaultValue,
-    description: '',
-    enum: properties,
-    title: capitalizeTitle,
-    type: 'string',
-  });
   return {
     default: defaultValue,
     description: '',
@@ -186,10 +179,18 @@ export function getMatchedUserProperties(allUserProperties: any, ref: string[]) 
         .value()
     );
   });
-  console.log(_.flatten(retVal));
   return _.flatten(retVal);
 }
 
 export function getAllRefs(property: any): any[] {
   return _.map(_.get(property, 'anyOf'), (o: any) => o['$ref'] || o['type']);
+}
+
+export function checkForDependency(userPropertyData: object[], allRefList: string[]): string[] {
+  if (userPropertyData.length === 0) {
+    if (!_.includes(allRefList, 'null')) {
+      return _.map(allRefList, removeRefSuffix);
+    }
+  }
+  return [];
 }

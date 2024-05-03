@@ -19,6 +19,7 @@ import {
   getMatchedUserProperties,
   constructHTMLSchema,
   getAllRefs,
+  checkForDependency,
 } from '../utils/buildPageUtils';
 import { set } from 'zod';
 
@@ -50,6 +51,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [refValues, setRefValues] = useState<Record<string, any>>({});
+  const [missingDependency, setMissingDependency] = useState<string[]>([]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -72,6 +74,9 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   };
 
   const notificationMsg = 'Oops. Something went wrong. Please try again later.';
+  const missingDependencyNotificationMsg = `Please create atleast one item of type "${missingDependency.join(
+    ', '
+  )}" to proceed.`;
 
   const notificationOnClick = () => {
     setShowNotification(false);
@@ -86,7 +91,11 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
           if (propertyHasRef || propertyHasAnyOf) {
             const allRefList = propertyHasRef ? [property['$ref']] : getAllRefs(property);
             const userPropertyData = getMatchedUserProperties(allUserProperties, allRefList);
+            const missingDependencyList = checkForDependency(userPropertyData, allRefList);
             const htmlSchema = constructHTMLSchema(userPropertyData, key, property);
+            if (missingDependencyList.length > 0) {
+              setMissingDependency((prev) => prev.concat(missingDependencyList));
+            }
             setRefValues((prev) => ({
               ...prev,
               [key]: { htmlSchema: htmlSchema, userPropertyData: userPropertyData },
@@ -99,6 +108,14 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
     fetchPropertyReferenceValues();
   }, [jsonSchema]);
+
+  useEffect(() => {
+    if (missingDependency) {
+      if (missingDependency.length > 0) {
+        setShowNotification(true);
+      }
+    }
+  }, [missingDependency?.length]);
 
   return (
     <>
@@ -185,7 +202,13 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
           <Loader />
         </div>
       )}
-      {showNotification && <NotificationBox type='error' onClick={notificationOnClick} message={notificationMsg} />}
+      {showNotification && (
+        <NotificationBox
+          type='error'
+          onClick={notificationOnClick}
+          message={missingDependency.length > 0 ? missingDependencyNotificationMsg : notificationMsg}
+        />
+      )}
     </>
   );
 };

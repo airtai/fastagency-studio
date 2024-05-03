@@ -15,6 +15,7 @@ import {
   getMatchedUserProperties,
   removeRefSuffix,
   getAllRefs,
+  checkForDependency,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -1328,6 +1329,61 @@ describe('buildPageUtils', () => {
       const expected = ['#/$defs/BingAPIKeyRef', 'null'];
       const actual = getAllRefs(input);
       expect(actual).toEqual(expected);
+    });
+  });
+  describe('checkForDependency', () => {
+    test('checkForDependency - with empty userPropertyData', () => {
+      const userPropertyData: object[] = [];
+      const allRefList = ['#/$defs/AzureOAIAPIKeyRef', '#/$defs/OpenAIAPIKeyRef'];
+      const actual = checkForDependency(userPropertyData, allRefList);
+      const expected = ['AzureOAIAPIKey', 'OpenAIAPIKey'];
+      expect(_.isEqual(actual, expected)).toBe(true);
+    });
+    test('checkForDependency - with empty userPropertyData and null in allRefList', () => {
+      const userPropertyData: object[] = [];
+      const allRefList = ['#/$defs/AzureOAIAPIKeyRef', 'null'];
+      const actual = checkForDependency(userPropertyData, allRefList);
+      const expected: string[] = [];
+      expect(_.isEqual(actual, expected)).toBe(true);
+    });
+    test('checkForDependency - with non-empty userPropertyData', () => {
+      const userPropertyData: object[] = [
+        {
+          uuid: 'd01b841a-2b64-47c8-82a6-8855202e8062',
+          api_key: {
+            uuid: '9c6735e9-cc23-4831-9688-6bc277da9e40',
+            api_key: '',
+            property_type: 'secret',
+            property_name: 'AzureOAIAPIKey',
+            user_id: 1,
+            base_url: null,
+            model: null,
+            api_type: null,
+            api_version: null,
+            llm: null,
+            summarizer_llm: null,
+            bing_api_key: null,
+            system_message: null,
+            viewport_size: null,
+          },
+          property_type: 'llm',
+          property_name: 'AzureOAI',
+          user_id: 1,
+          base_url: 'https://api.openai.com/v1',
+          model: 'gpt-3.5-turbo',
+          api_type: 'azure',
+          api_version: 'latest',
+          llm: null,
+          summarizer_llm: null,
+          bing_api_key: null,
+          system_message: null,
+          viewport_size: null,
+        },
+      ];
+      const allRefList = ['#/$defs/AzureOAIAPIKeyRef', '#/$defs/OpenAIAPIKeyRef'];
+      const actual = checkForDependency(userPropertyData, allRefList);
+      const expected: string[] = [];
+      expect(_.isEqual(actual, expected)).toBe(true);
     });
   });
 });

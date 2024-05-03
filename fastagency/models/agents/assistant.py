@@ -3,7 +3,7 @@ from typing import Annotated
 from pydantic import Field
 
 from ..registry import register
-from ._base import AgentBaseModel
+from .base import AgentBaseModel
 
 
 @register("agent")

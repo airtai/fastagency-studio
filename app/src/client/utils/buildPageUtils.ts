@@ -173,11 +173,9 @@ export function getMatchedUserProperties(allUserProperties: any, ref: string[]) 
   const refList = _.flatten(ref);
   const retVal = _.map(refList, function (ref: any) {
     const refName = removeRefSuffix(ref);
-    return _.compact(
-      _(allUserProperties)
-        .flatMap((property: any) => _.filter(property, { model_name: refName }))
-        .value()
-    );
+    return _(allUserProperties)
+      .filter((property: any) => property.model_name === refName)
+      .value();
   });
   return _.flatten(retVal);
 }

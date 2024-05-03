@@ -80,6 +80,7 @@ entity User {=psl
   sendEmail                 Boolean         @default(false)
   datePaid                  DateTime?
   credits                   Int             @default(3)
+  user_models               UserModel[]
 psl=}
 
 entity DailyStats {=psl
@@ -110,6 +111,18 @@ entity Logs {=psl
   createdAt                DateTime        @default(now())
   message                  String
   level                    String
+psl=}
+
+entity UserModel {=psl
+  id          String   @id @default(uuid())
+  userId      Int?           @unique
+  user        User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type_name   String
+  model_name  String
+  model_uuid  String
+  json_string Json
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 psl=}
 
 /* 📡 These are the Wasp Routes (You can protect them easily w/ 'authRequired: true');

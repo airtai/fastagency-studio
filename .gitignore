@@ -19,3 +19,4 @@ token
 
 docs/site/
 docs/site_build/
+schema.prisma

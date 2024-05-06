@@ -92,7 +92,8 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             const allRefList = propertyHasRef ? [property['$ref']] : getAllRefs(property);
             const userPropertyData = getMatchedUserProperties(allUserProperties, allRefList);
             const missingDependencyList = checkForDependency(userPropertyData, allRefList);
-            const htmlSchema = constructHTMLSchema(userPropertyData, key, property);
+            const title: string = property.hasOwnProperty('title') ? property.title || '' : key;
+            const htmlSchema = constructHTMLSchema(userPropertyData, title, property);
             if (missingDependencyList.length > 0) {
               setMissingDependency((prev) => {
                 const newMissingDependencies = missingDependencyList.filter((item) => !prev.includes(item));

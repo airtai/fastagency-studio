@@ -244,7 +244,8 @@ export const validateForm: ValidateForm<{ data: any; validationURL: string }, an
   }
   try {
     if (!data.uuid) data.uuid = uuidv4();
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/${validationURL}`, {
+    const url = `${FASTAGENCY_SERVER_URL}/${validationURL}`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

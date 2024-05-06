@@ -11,7 +11,7 @@ generator pyclient {
 }
 
 model Model {
-  id String @id @default(uuid())
+  uuid String @id @default(uuid())
   user_uuid String @db.Uuid
   type_name String
   model_name String

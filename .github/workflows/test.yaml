@@ -46,7 +46,28 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
         pydantic-version: ["pydantic-v2"]
       fail-fast: false
-
+    services:
+      postgres-wasp:
+        image: postgres:13
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: fastagency
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      postgres-py:
+        image: postgres:13
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: pyfastagency
+        ports:
+          - 5433:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency
+      PYFASTAGENCY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -60,6 +81,15 @@ jobs:
         with:
           path: ${{ env.pythonLocation }}
           key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}-test-v03
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install wasp
+        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
+      - name: Run wasp migration
+        run: cd app && wasp db migrate-dev && cd ..
+
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
@@ -87,6 +117,28 @@ jobs:
   test-macos-latest:
     if: github.event.pull_request.draft == false
     runs-on: macos-latest
+    services:
+      postgres-wasp:
+        image: postgres:13
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: fastagency
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      postgres-py:
+        image: postgres:13
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: pyfastagency
+        ports:
+          - 5433:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency
+      PYFASTAGENCY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -95,6 +147,15 @@ jobs:
           python-version: "3.12"
           cache: "pip"
           cache-dependency-path: pyproject.toml
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install wasp
+        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
+      - name: Run wasp migration
+        run: cd app && wasp db migrate-dev && cd ..
+
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
@@ -106,6 +167,28 @@ jobs:
   test-windows-latest:
     if: github.event.pull_request.draft == false
     runs-on: windows-latest
+    services:
+      postgres-wasp:
+        image: postgres:13
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: fastagency
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      postgres-py:
+        image: postgres:13
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: pyfastagency
+        ports:
+          - 5433:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency
+      PYFASTAGENCY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -114,6 +197,15 @@ jobs:
           python-version: "3.12"
           cache: "pip"
           cache-dependency-path: pyproject.toml
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install wasp
+        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
+      - name: Run wasp migration
+        run: cd app && wasp db migrate-dev && cd ..
+
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]

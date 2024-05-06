@@ -28,23 +28,6 @@ async def validate_model(type: str, name: str, model: Dict[str, Any]) -> None:
 # new routes by Harish
 
 
-# class ModelResponse(BaseModel):
-#     uuid: str
-#     model: BaseModel
-#     type_name: str
-#     model_name: str
-#     user_uuid: str
-
-
-# all_models: List[ModelResponse] = []
-
-
-# def find_model(user_uuid: str, uuid: str) -> ModelResponse:
-#     return [
-#         model for model in all_models if model.user_uuid == user_uuid and model.uuid == uuid
-#     ][0]
-
-
 async def get_user(user_uuid: Union[int, str]) -> Any:
     wasp_db_url = await get_wasp_db_url()
     async with get_db_connection(db_url=wasp_db_url) as db:
@@ -55,6 +38,21 @@ async def get_user(user_uuid: Union[int, str]) -> Any:
     if not user:
         raise HTTPException(status_code=404, detail=f"user_uuid {user_uuid} not found")
     return user
+
+
+async def find_model_using_raw(model_uuid: str, user_uuid: str) -> Dict[str, Any]:
+    async with get_db_connection() as db:
+        model: Optional[Dict[str, Any]] = await db.query_first(
+            'SELECT * from "Model" where model_uuid='
+            + f"'{model_uuid}' and user_uuid='{user_uuid}'"
+        )
+
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail=f"model_uuid {model_uuid} and user_uuid {user_uuid} not found",
+        )
+    return model
 
 
 @app.get("/user/{user_uuid}/models")
@@ -93,21 +91,6 @@ async def add_model(
             }
         )
     return validated_model.model_dump()
-
-
-async def find_model_using_raw(model_uuid: str, user_uuid: str) -> Dict[str, Any]:
-    async with get_db_connection() as db:
-        model: Optional[Dict[str, Any]] = await db.query_first(
-            'SELECT * from "Model" where model_uuid='
-            + f"'{model_uuid}' and user_uuid='{user_uuid}'"
-        )
-
-    if not model:
-        raise HTTPException(
-            status_code=404,
-            detail=f"model_uuid {model_uuid} and user_uuid {user_uuid} not found",
-        )
-    return model
 
 
 @app.put("/user/{user_uuid}/models/{type_name}/{model_name}/{uuid}")

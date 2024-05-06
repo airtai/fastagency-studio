@@ -31,9 +31,10 @@ async def validate_model(type: str, name: str, model: Dict[str, Any]) -> None:
 async def get_user(user_uuid: Union[int, str]) -> Any:
     wasp_db_url = await get_wasp_db_url()
     async with get_db_connection(db_url=wasp_db_url) as db:
-        select_query = 'SELECT * from "User" where uuid=' + f"'{user_uuid}'"  # nosec: [B608]
+        select_query = 'SELECT * from "User" where uuid=:user_uuid'
         user = await db.query_first(
-            select_query  # nosec: [B608]
+            select_query,  # nosec: [B608]
+            values={"user_uuid": user_uuid},
         )
     if not user:
         raise HTTPException(status_code=404, detail=f"user_uuid {user_uuid} not found")
@@ -43,8 +44,8 @@ async def get_user(user_uuid: Union[int, str]) -> Any:
 async def find_model_using_raw(model_uuid: str, user_uuid: str) -> Dict[str, Any]:
     async with get_db_connection() as db:
         model: Optional[Dict[str, Any]] = await db.query_first(
-            'SELECT * from "Model" where model_uuid='  # nosec: [B608]
-            + f"'{model_uuid}' and user_uuid='{user_uuid}'"
+            'SELECT * from "Model" where model_uuid=:model_uuid and user_uuid=:user_uuid',
+            values={"model_uuid": model_uuid, "user_uuid": user_uuid},
         )
 
     if not model:
@@ -72,9 +73,13 @@ async def get_all_models(
     return ret_val  # type: ignore[no-any-return]
 
 
-@app.post("/user/{user_uuid}/models/{type_name}/{model_name}/{uuid}")
+@app.post("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")
 async def add_model(
-    user_uuid: str, type_name: str, model_name: str, uuid: str, model: Dict[str, Any]
+    user_uuid: str,
+    type_name: str,
+    model_name: str,
+    model_uuid: str,
+    model: Dict[str, Any],
 ) -> Dict[str, Any]:
     registry = Registry.get_default()
     validated_model = registry.validate(type_name, model_name, model)
@@ -86,27 +91,33 @@ async def add_model(
                 "user_uuid": user_uuid,
                 "type_name": type_name,
                 "model_name": model_name,
-                "model_uuid": uuid,
+                "model_uuid": model_uuid,
                 "json_str": validated_model.model_dump_json(),  # type: ignore[typeddict-item]
             }
         )
     return validated_model.model_dump()
 
 
-@app.put("/user/{user_uuid}/models/{type_name}/{model_name}/{uuid}")
+@app.put("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")
 async def update_model(
-    user_uuid: str, type_name: str, model_name: str, uuid: str, model: Dict[str, Any]
+    user_uuid: str,
+    type_name: str,
+    model_name: str,
+    model_uuid: str,
+    model: Dict[str, Any],
 ) -> Dict[str, Any]:
     registry = Registry.get_default()
     validated_model = registry.validate(type_name, model_name, model)
 
     async with get_db_connection() as db:
-        found_model = await find_model_using_raw(model_uuid=uuid, user_uuid=user_uuid)
+        found_model = await find_model_using_raw(
+            model_uuid=model_uuid, user_uuid=user_uuid
+        )
 
         await db.model.update(
             where={"id": found_model["id"]},  # type: ignore[arg-type]
             data={  # type: ignore[typeddict-unknown-key]
-                "model_uuid": uuid,
+                "model_uuid": model_uuid,
                 "type_name": type_name,
                 "model_name": model_name,
                 "json_str": validated_model.model_dump_json(),  # type: ignore[typeddict-item]
@@ -117,10 +128,14 @@ async def update_model(
     return validated_model.model_dump()
 
 
-@app.delete("/user/{user_uuid}/models/{type_name}/{uuid}")
-async def models_delete(user_uuid: str, type_name: str, uuid: str) -> Dict[str, Any]:
+@app.delete("/user/{user_uuid}/models/{type_name}/{model_uuid}")
+async def models_delete(
+    user_uuid: str, type_name: str, model_uuid: str
+) -> Dict[str, Any]:
     async with get_db_connection() as db:
-        found_model = await find_model_using_raw(model_uuid=uuid, user_uuid=user_uuid)
+        found_model = await find_model_using_raw(
+            model_uuid=model_uuid, user_uuid=user_uuid
+        )
         model = await db.model.delete(
             where={"id": found_model["id"]}  # type: ignore[arg-type]
         )

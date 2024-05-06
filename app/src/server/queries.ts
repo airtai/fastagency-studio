@@ -125,7 +125,7 @@ type PropertyValues = {
 
 export const getModels: GetModels<GetModelsInput, PropertyValues[]> = async (_args, context) => {
   try {
-    let url = `${FASTAGENCY_SERVER_URL}/user/${context.user.id}/models`;
+    let url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models`;
     if (_.has(_args, 'type_name')) {
       url = `${url}?type_name=${_args.type_name}`;
     }
@@ -163,7 +163,7 @@ export const propertyDependencies: PropertyDependencies<
     let retVal: any = {};
     const promises = _args.properties.map(async function (property: string) {
       if (!property) return;
-      const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.id}/models?type_name=${property}`;
+      const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models?type_name=${property}`;
       const response = await fetch(url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },

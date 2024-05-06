@@ -148,7 +148,7 @@ export const addUserModels: AddUserModels<AddUserModelsPayload, void> = async (a
     throw new HttpError(401);
   }
   try {
-    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.id}/models/${args.type_name}/${args.model_name}/${args.uuid}`;
+    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models/${args.type_name}/${args.model_name}/${args.uuid}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -188,7 +188,8 @@ export const updateUserModels: UpdateUserModels<UpdateUserModelsPayload, void> =
     throw new HttpError(401);
   }
   try {
-    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.id}/models/${args.data.type_name}/${args.data.model_name}/${args.uuid}`;
+    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models/${args.data.type_name}/${args.data.model_name}/${args.uuid}`;
+    console.log(JSON.stringify({ ...args.data }));
     const response = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -217,7 +218,7 @@ export const deleteUserModels: DeleteUserModels<DeleteUserModelsPayload, void> =
   }
 
   try {
-    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.id}/models/${args.type_name}/${args.uuid}`;
+    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models/${args.type_name}/${args.uuid}`;
     const response = await fetch(url, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },

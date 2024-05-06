@@ -100,8 +100,8 @@ jobs:
         if: matrix.pydantic-version == 'pydantic-v2'
         run: pip install --pre "pydantic>=2,<3"
       - run: mkdir coverage
-      - name: Prisma generate
-        run: prisma generate
+      - name: Prisma
+        run: prisma migrate deploy && prisma generate
       - name: Test
         run: bash scripts/test.sh
         env:
@@ -159,8 +159,8 @@ jobs:
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
-      - name: Prisma generate
-        run: prisma generate
+      - name: Prisma
+        run: prisma migrate deploy && prisma generate
       - name: Test
         run: bash scripts/test.sh
 
@@ -209,8 +209,8 @@ jobs:
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
-      - name: Prisma generate
-        run: prisma generate
+      - name: Prisma
+        run: prisma migrate deploy && prisma generate
       - name: Test
         run: bash scripts/test.sh
 

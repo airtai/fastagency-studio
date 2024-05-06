@@ -605,9 +605,9 @@ describe('buildPageUtils', () => {
         },
       ];
       const expected = {
-        default: '',
+        default: 'None',
         description: '',
-        enum: ['', 'AzureOAIAPIKey', 'BingAPIKey', 'OpenAIAPIKey'],
+        enum: ['None', 'AzureOAIAPIKey', 'BingAPIKey', 'OpenAIAPIKey'],
         title: 'Api Key',
         type: 'string',
       };

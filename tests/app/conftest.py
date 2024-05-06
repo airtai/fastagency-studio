@@ -7,7 +7,7 @@ import pytest_asyncio
 from fastagency.helpers import get_db_connection, get_wasp_db_url
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture  # type: ignore
 async def user_uuid() -> AsyncIterator[str]:
     try:
         random_id = random.randint(1, 1_000_000)

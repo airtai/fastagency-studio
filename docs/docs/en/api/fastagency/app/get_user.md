@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.app.ModelResponse
+::: fastagency.app.get_user

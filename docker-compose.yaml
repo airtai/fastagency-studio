@@ -19,4 +19,5 @@ services:
       - "8000:8000"
     environment:
       - DOMAIN=${DOMAIN}
+      - PY_DATABASE_URL=${PY_DATABASE_URL}
     logging: *default-logging

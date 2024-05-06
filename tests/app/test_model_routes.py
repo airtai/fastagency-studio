@@ -9,6 +9,7 @@ from fastagency.models.llms.azure import AzureOAIAPIKey
 client = TestClient(app)
 
 
+@pytest.mark.db()
 class TestModelRoutes:
     @pytest.mark.asyncio()
     async def test_get_all_models(

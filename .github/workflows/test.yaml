@@ -162,7 +162,7 @@ jobs:
       - name: Prisma
         run: prisma migrate deploy && prisma generate
       - name: Test
-        run: bash scripts/test.sh
+        run: bash scripts/test.sh -m "not db"
 
   test-windows-latest:
     if: github.event.pull_request.draft == false
@@ -212,7 +212,7 @@ jobs:
       - name: Prisma
         run: prisma migrate deploy && prisma generate
       - name: Test
-        run: bash scripts/test.sh
+        run: bash scripts/test.sh -m "not db"
 
   coverage-combine:
     if: github.event.pull_request.draft == false

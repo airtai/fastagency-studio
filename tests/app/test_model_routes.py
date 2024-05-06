@@ -12,30 +12,30 @@ client = TestClient(app)
 class TestModelRoutes:
     @pytest.mark.asyncio()
     async def test_get_all_models(
-        self, user_id: int, monkeypatch: pytest.MonkeyPatch
+        self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        key_uuid = uuid.uuid4().hex
+        key_uuid = str(uuid.uuid4())
         azure_oai_api_key = AzureOAIAPIKey(api_key="whatever")
         type_name = "secret"
         model_name = "AzureOAIAPIKey"
 
         # Create model
         response = client.post(
-            f"/user/{user_id}/models/{type_name}/{model_name}/{key_uuid}",
+            f"/user/{user_uuid}/models/{type_name}/{model_name}/{key_uuid}",
             json=azure_oai_api_key.model_dump(),
         )
         assert response.status_code == 200
 
-        response = client.get(f"/user/{user_id}/models")
+        response = client.get(f"/user/{user_uuid}/models")
         assert response.status_code == 200
 
         expected = [
             {
-                "json_string": {"api_key": "whatever"},  # pragma: allowlist secret
+                "json_str": {"api_key": "whatever"},  # pragma: allowlist secret
                 "model_uuid": key_uuid,
                 "type_name": "secret",
                 "model_name": "AzureOAIAPIKey",
-                "userId": user_id,
+                "user_uuid": user_uuid,
             }
         ]
         actual = response.json()
@@ -45,11 +45,11 @@ class TestModelRoutes:
                 assert actual[i][key] == expected[i][key]
 
     @pytest.mark.asyncio()
-    async def test_add_model(self, user_id: int) -> None:
-        model_uuid = uuid.uuid4().hex
+    async def test_add_model(self, user_uuid: str) -> None:
+        model_uuid = str(uuid.uuid4())
         azure_oai_api_key = AzureOAIAPIKey(api_key="whatever")
         response = client.post(
-            f"/user/{user_id}/models/secret/AzureOAIAPIKey/{model_uuid}",
+            f"/user/{user_uuid}/models/secret/AzureOAIAPIKey/{model_uuid}",
             json=azure_oai_api_key.model_dump(),
         )
 
@@ -60,22 +60,22 @@ class TestModelRoutes:
 
     @pytest.mark.asyncio()
     async def test_update_model(
-        self, user_id: int, monkeypatch: pytest.MonkeyPatch
+        self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        key_uuid = uuid.uuid4().hex
+        key_uuid = str(uuid.uuid4())
         azure_oai_api_key = AzureOAIAPIKey(api_key="who cares")
         type_name = "secret"
         model_name = "AzureOAIAPIKey"
 
         # Create model
         response = client.post(
-            f"/user/{user_id}/models/{type_name}/{model_name}/{key_uuid}",
+            f"/user/{user_uuid}/models/{type_name}/{model_name}/{key_uuid}",
             json=azure_oai_api_key.model_dump(),
         )
         assert response.status_code == 200
 
         response = client.put(
-            f"/user/{user_id}/models/secret/AzureOAIAPIKey/{key_uuid}",
+            f"/user/{user_uuid}/models/secret/AzureOAIAPIKey/{key_uuid}",
             json=azure_oai_api_key.model_dump(),
         )
 
@@ -86,21 +86,21 @@ class TestModelRoutes:
 
     @pytest.mark.asyncio()
     async def test_delete_model(
-        self, user_id: int, monkeypatch: pytest.MonkeyPatch
+        self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        key_uuid = uuid.uuid4().hex
+        key_uuid = str(uuid.uuid4())
         azure_oai_api_key = AzureOAIAPIKey(api_key="whatever")
         type_name = "secret"
         model_name = "AzureOAIAPIKey"
 
         # Create model
         response = client.post(
-            f"/user/{user_id}/models/{type_name}/{model_name}/{key_uuid}",
+            f"/user/{user_uuid}/models/{type_name}/{model_name}/{key_uuid}",
             json=azure_oai_api_key.model_dump(),
         )
         assert response.status_code == 200
 
-        response = client.delete(f"/user/{user_id}/models/secret/{key_uuid}")
+        response = client.delete(f"/user/{user_uuid}/models/secret/{key_uuid}")
 
         assert response.status_code == 200
         expected = {"api_key": "whatever"}  # pragma: allowlist secret

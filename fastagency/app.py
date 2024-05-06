@@ -31,7 +31,7 @@ async def validate_model(type: str, name: str, model: Dict[str, Any]) -> None:
 async def get_user(user_uuid: Union[int, str]) -> Any:
     wasp_db_url = await get_wasp_db_url()
     async with get_db_connection(db_url=wasp_db_url) as db:
-        select_query = 'SELECT * from "User" where uuid=' + f"'{user_uuid}'"
+        select_query = 'SELECT * from "User" where uuid=' + f"'{user_uuid}'"  # nosec: [B608]
         user = await db.query_first(
             select_query  # nosec: [B608]
         )
@@ -43,7 +43,7 @@ async def get_user(user_uuid: Union[int, str]) -> Any:
 async def find_model_using_raw(model_uuid: str, user_uuid: str) -> Dict[str, Any]:
     async with get_db_connection() as db:
         model: Optional[Dict[str, Any]] = await db.query_first(
-            'SELECT * from "Model" where model_uuid='
+            'SELECT * from "Model" where model_uuid='  # nosec: [B608]
             + f"'{model_uuid}' and user_uuid='{user_uuid}'"
         )
 

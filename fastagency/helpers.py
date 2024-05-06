@@ -13,7 +13,7 @@ async def get_db_connection(
         db_url = environ.get("PY_DATABASE_URL", None)
         if not db_url:
             raise ValueError(
-                "No database URL provided nor set as environment variable 'DATABASE_URL'"
+                "No database URL provided nor set as environment variable 'PY_DATABASE_URL'"
             )  # pragma: no cover
     if "connect_timeout" not in db_url:
         db_url += "?connect_timeout=60"

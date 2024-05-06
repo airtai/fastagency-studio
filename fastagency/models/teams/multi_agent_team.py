@@ -1,4 +1,4 @@
-from typing import Annotated, List
+from typing import Annotated, Optional
 
 from pydantic import Field
 
@@ -12,10 +12,38 @@ registry = Registry.get_default()
 
 @registry.register("team")
 class MultiAgentTeam(TeamBaseModel):
-    agents: Annotated[
-        List[agent_type_refs],
+    agent_1: Annotated[
+        agent_type_refs,
         Field(
             title="Agents",
-            description="List of agents in the team",
+            description="An agent in the team",
         ),
     ]
+    agent_2: Annotated[
+        agent_type_refs,
+        Field(
+            title="Agents",
+            description="An agent in the team",
+        ),
+    ]
+    agent_3: Annotated[
+        Optional[agent_type_refs],
+        Field(
+            title="Agents",
+            description="An agent in the team",
+        ),
+    ] = None
+    agent_4: Annotated[
+        Optional[agent_type_refs],
+        Field(
+            title="Agents",
+            description="An agent in the team",
+        ),
+    ] = None
+    agent_5: Annotated[
+        Optional[agent_type_refs],
+        Field(
+            title="Agents",
+            description="An agent in the team",
+        ),
+    ] = None

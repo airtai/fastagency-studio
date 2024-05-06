@@ -64,6 +64,7 @@ app FastAgency {
 
 entity User {=psl
   id                        Int             @id @default(autoincrement())
+  uuid                      String?         @default(uuid())
   email                     String?         @unique
   username                  String?         @unique
   createdAt                 DateTime        @default(now())

@@ -21,8 +21,9 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 
 RUN python3 -m pip install --upgrade pip
 
+COPY migrations ./migrations
 COPY fastagency ./fastagency
-COPY scripts/* pyproject.toml README.md ./
+COPY scripts/* schema.prisma pyproject.toml README.md ./
 RUN pip install -e ".[dev]"
 
 EXPOSE ${PORT}

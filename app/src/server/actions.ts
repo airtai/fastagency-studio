@@ -127,8 +127,8 @@ type AddModelsValues = {
   api_type?: string;
   api_version?: string;
   api_key?: string;
-  property_type?: string;
-  property_name?: string;
+  type_name?: string;
+  model_name?: string;
   llm?: any;
   summarizer_llm?: any;
   bing_api_key?: any;
@@ -138,8 +138,9 @@ type AddModelsValues = {
 
 type AddUserModelsPayload = {
   data: AddModelsValues;
-  property_type: string;
-  property_name: string;
+  type_name: string;
+  model_name: string;
+  uuid: string;
 };
 
 export const addUserModels: AddUserModels<AddUserModelsPayload, void> = async (args, context) => {
@@ -147,10 +148,11 @@ export const addUserModels: AddUserModels<AddUserModelsPayload, void> = async (a
     throw new HttpError(401);
   }
   try {
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models/add`, {
+    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models/${args.type_name}/${args.model_name}/${args.uuid}`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: context.user.id, ...args }),
+      body: JSON.stringify({ ...args }),
     });
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 
@@ -172,8 +174,8 @@ type UpdateUserModelsValues = {
   api_type?: string;
   api_version?: string;
   api_key?: string;
-  property_type?: string;
-  property_name?: string;
+  type_name?: string;
+  model_name?: string;
 };
 
 type UpdateUserModelsPayload = {
@@ -185,12 +187,13 @@ export const updateUserModels: UpdateUserModels<UpdateUserModelsPayload, void> =
   if (!context.user) {
     throw new HttpError(401);
   }
-
   try {
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models/update`, {
+    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models/${args.data.type_name}/${args.data.model_name}/${args.uuid}`;
+    console.log(JSON.stringify({ ...args.data }));
+    const response = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: context.user.id, ...args.data, uuid: args.uuid }),
+      body: JSON.stringify({ ...args.data }),
     });
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 
@@ -206,7 +209,7 @@ export const updateUserModels: UpdateUserModels<UpdateUserModelsPayload, void> =
 
 type DeleteUserModelsPayload = {
   uuid: string;
-  property_type: string;
+  type_name: string;
 };
 
 export const deleteUserModels: DeleteUserModels<DeleteUserModelsPayload, void> = async (args, context) => {
@@ -215,10 +218,10 @@ export const deleteUserModels: DeleteUserModels<DeleteUserModelsPayload, void> =
   }
 
   try {
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/models/delete`, {
+    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models/${args.type_name}/${args.uuid}`;
+    const response = await fetch(url, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: context.user.id, uuid: args.uuid, property_type: args.property_type }),
     });
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 
@@ -241,7 +244,8 @@ export const validateForm: ValidateForm<{ data: any; validationURL: string }, an
   }
   try {
     if (!data.uuid) data.uuid = uuidv4();
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/${validationURL}`, {
+    const url = `${FASTAGENCY_SERVER_URL}/${validationURL}`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

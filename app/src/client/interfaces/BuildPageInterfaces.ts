@@ -49,8 +49,8 @@ export interface ApiResponse {
 
 export interface SelectedModelSchema {
   api_key: string;
-  property_name: string;
-  property_type: string;
+  model_name: string;
+  type_name: string;
   user_id: number;
   uuid: string;
 }

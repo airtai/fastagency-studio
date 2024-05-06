@@ -25,7 +25,7 @@ import { set } from 'zod';
 
 interface DynamicFormBuilderProps {
   allUserProperties: any;
-  property_type: string;
+  type_name: string;
   jsonSchema: JsonSchema;
   validationURL: string;
   updateExistingModel: SelectedModelSchema | null;
@@ -36,7 +36,7 @@ interface DynamicFormBuilderProps {
 
 const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   allUserProperties,
-  property_type,
+  type_name,
   jsonSchema,
   validationURL,
   updateExistingModel,
@@ -94,7 +94,10 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             const missingDependencyList = checkForDependency(userPropertyData, allRefList);
             const htmlSchema = constructHTMLSchema(userPropertyData, key, property);
             if (missingDependencyList.length > 0) {
-              setMissingDependency((prev) => prev.concat(missingDependencyList));
+              setMissingDependency((prev) => {
+                const newMissingDependencies = missingDependencyList.filter((item) => !prev.includes(item));
+                return prev.concat(newMissingDependencies);
+              });
             }
             setRefValues((prev) => ({
               ...prev,

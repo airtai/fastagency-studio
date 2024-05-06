@@ -58,12 +58,56 @@ export const svgIcons: SvgIcons = {
       ></path>
     </svg>
   ),
+  team: (
+    <svg
+      className='fill-current ml-3 mt-3'
+      width='48'
+      height='48'
+      viewBox='0 0 34 34'
+      xmlns='http://www.w3.org/2000/svg'
+      transform='scale(1.5)'
+    >
+      <g id='_24x24_user--dark' data-name='24x24/user--dark'>
+        <rect id='Rectangle' width='58' height='58' fill='none' />
+      </g>
+      <path
+        id='Combined_Shape'
+        data-name='Combined Shape'
+        d='M0,12.106C0,8.323,4.5,9.08,4.5,7.567a2.237,2.237,0,0,0-.41-1.513A3.5,3.5,0,0,1,3,3.4,3.222,3.222,0,0,1,6,0,3.222,3.222,0,0,1,9,3.4,3.44,3.44,0,0,1,7.895,6.053,2.333,2.333,0,0,0,7.5,7.567c0,1.513,4.5.757,4.5,4.54,0,0-1.195.894-6,.894S0,12.106,0,12.106Z'
+        transform='translate(6 8)'
+        fill='none'
+        stroke='#FFFFFF'
+        strokeMiterlimit='10'
+        strokeWidth='1.5'
+      />
+      <path
+        id='Combined_Shape-2'
+        data-name='Combined Shape'
+        d='M4.486,12.967c-.569-.026-1.071-.065-1.512-.114A6.835,6.835,0,0,1,0,12.106C0,8.323,4.5,9.08,4.5,7.567a2.237,2.237,0,0,0-.41-1.513A3.5,3.5,0,0,1,3,3.4,3.222,3.222,0,0,1,6,0,3.222,3.222,0,0,1,9,3.4'
+        transform='translate(1 3)'
+        fill='none'
+        stroke='#FFFFFF'
+        strokeMiterlimit='10'
+        strokeWidth='1.5'
+      />
+      <path
+        id='Combined_Shape-3'
+        data-name='Combined Shape'
+        d='M-4.486,12.967c.569-.026,1.071-.065,1.512-.114A6.835,6.835,0,0,0,0,12.106C0,8.323-4.5,9.08-4.5,7.567a2.237,2.237,0,0,1,.41-1.513A3.5,3.5,0,0,0-3,3.4,3.222,3.222,0,0,0-6,0,3.222,3.222,0,0,0-9,3.4'
+        transform='translate(23 3)'
+        fill='none'
+        stroke='#FFFFFF'
+        strokeMiterlimit='10'
+        strokeWidth='1.5'
+      />
+    </svg>
+  ),
 };
 
 export interface ItemProps {
   api_key: string;
-  property_name: string;
-  property_type: string;
+  model_name: string;
+  type_name: string;
   user_id: number;
   uuid: string;
 }
@@ -82,9 +126,9 @@ const ModelItem: React.FC<ModelItemProps> = ({ model, onClick }) => (
     <div className='relative z-10 mx-auto max-w-md'>
       <div className='flex items-center mb-3'>
         <div className='w-8 h-8 mr-3 inline-flex items-center justify-center rounded-full dark:bg-indigo-500 bg-airt-hero-gradient-start text-white flex-shrink-0'>
-          {svgIcons[model.property_type]}
+          {svgIcons[model.type_name]}
         </div>
-        <h2 className='text-white dark:text-white text-lg font-medium'>{model.property_name}</h2>
+        <h2 className='text-white dark:text-white text-lg font-medium'>{model.model_name}</h2>
       </div>
       {model.api_key && (
         <div className='flex flex-col gap-2 text-white py-4 sm:max-w-sm sm:rounded-lg'>

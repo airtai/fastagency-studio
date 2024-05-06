@@ -46,7 +46,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
   };
 
   const onSuccessCallback = async (payload: any) => {
-    const mergedData = { ...payload, property_type: propertyName, property_name: selectedModel };
+    const mergedData = { ...payload, type_name: propertyName, model_name: selectedModel, uuid: payload.uuid };
     if (updateExistingModel) {
       await updateUserModels({ data: mergedData, uuid: updateExistingModel.uuid });
       setUpdateExistingModel(null);
@@ -63,19 +63,28 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
 
   const onDeleteCallback = async () => {
     if (updateExistingModel) {
-      await deleteUserModels({ uuid: updateExistingModel.uuid, property_type: updateExistingModel.property_type });
+      await deleteUserModels({ uuid: updateExistingModel.uuid, type_name: updateExistingModel.type_name });
       await refetchModels();
       setUpdateExistingModel(null);
       setShowAddModel(false);
     }
   };
 
+  const getFilteredProperties = () => {
+    if (allUserProperties) {
+      return _.filter(allUserProperties, ['type_name', propertyName]);
+    }
+  };
+
   const updateSelectedModel = (index: number) => {
-    if (allUserProperties?.[propertyName]) {
-      const selectedModel = allUserProperties[propertyName][index];
-      setSelectedModel(selectedModel.property_name);
-      setUpdateExistingModel(selectedModel);
-      setShowAddModel(true);
+    if (allUserProperties) {
+      const filteredProperties = getFilteredProperties();
+      if (filteredProperties) {
+        const selectedModel = filteredProperties[index];
+        setSelectedModel(selectedModel.model_name);
+        setUpdateExistingModel({ ...selectedModel.json_str, ...{ uuid: selectedModel.model_uuid } });
+        setShowAddModel(true);
+      }
     }
   };
 
@@ -96,9 +105,9 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
       <div className='flex-col flex w-full'>
         {!showAddModel ? (
           <ModelsList
-            models={allUserProperties?.[propertyName] || []}
+            models={(allUserProperties && getFilteredProperties()) || []}
             onSelectModel={updateSelectedModel}
-            property_type={propertyName}
+            type_name={propertyName}
           />
         ) : (
           <ModelForm

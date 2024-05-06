@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.app.models_add
+::: fastagency.app.get_all_models

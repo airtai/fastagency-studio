@@ -10,8 +10,12 @@ interface FormData {
 }
 
 function getValueFromModel(model: SelectedModelSchema, key: keyof SelectedModelSchema): string | number | undefined {
-  // @ts-ignore
-  return typeof model[key] === 'string' ? model[key] : model[key] ? model[key].property_name : '';
+  return typeof model[key] === 'string' || typeof model[key] === 'number'
+    ? model[key]
+    : model[key]
+      ? // @ts-ignore
+        model[key].model_name
+      : '';
 }
 
 export const useForm = ({ jsonSchema, defaultValues }: UseFormProps) => {

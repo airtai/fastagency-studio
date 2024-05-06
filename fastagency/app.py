@@ -2,8 +2,10 @@ import json
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, ValidationError
+from prisma.models import Model
+from pydantic import TypeAdapter, ValidationError
 
+from .helpers import get_db_connection, get_wasp_db_url
 from .models.registry import Registry, Schemas
 
 app = FastAPI()
@@ -25,88 +27,116 @@ async def validate_model(type: str, name: str, model: Dict[str, Any]) -> None:
 
 # new routes by Harish
 
-all_models: Dict[int, Dict[str, List[Optional[Dict[str, Any]]]]] = {}
+
+async def get_user(user_uuid: Union[int, str]) -> Any:
+    wasp_db_url = await get_wasp_db_url()
+    async with get_db_connection(db_url=wasp_db_url) as db:
+        select_query = 'SELECT * from "User" where uuid=' + f"'{user_uuid}'"  # nosec: [B608]
+        user = await db.query_first(
+            select_query  # nosec: [B608]
+        )
+    if not user:
+        raise HTTPException(status_code=404, detail=f"user_uuid {user_uuid} not found")
+    return user
 
 
-def find_model(user_id: int, property_type: str, uuid: str) -> Dict[str, Any]:
-    if user_id not in all_models or property_type not in all_models[user_id]:
-        raise HTTPException(status_code=404, detail="User or property type not found")
-    for model in all_models[user_id][property_type]:
-        if model and model["uuid"] == uuid:  # type: ignore
-            return model  # type: ignore
-    raise HTTPException(status_code=404, detail="Model not found")
+async def find_model_using_raw(model_uuid: str, user_uuid: str) -> Dict[str, Any]:
+    async with get_db_connection() as db:
+        model: Optional[Dict[str, Any]] = await db.query_first(
+            'SELECT * from "Model" where model_uuid='  # nosec: [B608]
+            + f"'{model_uuid}' and user_uuid='{user_uuid}'"
+        )
+
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail=f"model_uuid {model_uuid} and user_uuid {user_uuid} not found",
+        )
+    return model
 
 
-class User(BaseModel):
-    user_id: int
-    property_type: Optional[str] = None
+@app.get("/user/{user_uuid}/models")
+async def get_all_models(
+    user_uuid: str,
+    type_name: Optional[str] = None,
+) -> List[Any]:
+    filters: Dict[str, Any] = {"user_uuid": user_uuid}
+    if type_name:
+        filters["type_name"] = type_name
+
+    async with get_db_connection() as db:
+        models = await db.model.find_many(where=filters)  # type: ignore[arg-type]
+
+    ta = TypeAdapter(List[Model])
+    ret_val = ta.dump_python(models, serialize_as_any=True)  # type: ignore[call-arg]
+    return ret_val  # type: ignore[no-any-return]
 
 
-@app.post("/user/models")
-def models(
-    user: User,
-) -> Union[List[Optional[Dict[str, Any]]], Dict[str, List[Optional[Dict[str, Any]]]]]:
-    user_models = all_models.get(user.user_id, {})
-    if not user.property_type:
-        return user_models
-    return user_models.get(user.property_type, [])
+@app.post("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")
+async def add_model(
+    user_uuid: str,
+    type_name: str,
+    model_name: str,
+    model_uuid: str,
+    model: Dict[str, Any],
+) -> Dict[str, Any]:
+    registry = Registry.get_default()
+    validated_model = registry.validate(type_name, model_name, model)
+
+    await get_user(user_uuid=user_uuid)
+    async with get_db_connection() as db:
+        await db.model.create(
+            data={
+                "user_uuid": user_uuid,
+                "type_name": type_name,
+                "model_name": model_name,
+                "model_uuid": model_uuid,
+                "json_str": validated_model.model_dump_json(),  # type: ignore[typeddict-item]
+            }
+        )
+    return validated_model.model_dump()
 
 
-class Model(BaseModel):
-    uuid: str
-    api_key: Optional[Union[str, Dict[str, Union[Union[Optional[str], None], int]]]] = (
-        None
-    )
-    property_type: str
-    property_name: str
-    user_id: int
-    base_url: Optional[str] = None
-    model: Optional[str] = None
-    api_type: Optional[str] = None
-    api_version: Optional[str] = None
-    llm: Optional[
-        Dict[str, Union[str, None, int, Dict[str, Union[str, int, None]]]]
-    ] = None
-    summarizer_llm: Optional[
-        Dict[str, Union[str, None, int, Dict[str, Union[str, int, None]]]]
-    ] = None
-    bing_api_key: Optional[
-        Union[str, Dict[str, Union[Union[Optional[str], None], int]]]
-    ] = None
-    system_message: Optional[str] = None
-    viewport_size: Optional[int] = None
+@app.put("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")
+async def update_model(
+    user_uuid: str,
+    type_name: str,
+    model_name: str,
+    model_uuid: str,
+    model: Dict[str, Any],
+) -> Dict[str, Any]:
+    registry = Registry.get_default()
+    validated_model = registry.validate(type_name, model_name, model)
+
+    async with get_db_connection() as db:
+        found_model = await find_model_using_raw(
+            model_uuid=model_uuid, user_uuid=user_uuid
+        )
+
+        await db.model.update(
+            where={"uuid": found_model["uuid"]},  # type: ignore[arg-type]
+            data={  # type: ignore[typeddict-unknown-key]
+                "model_uuid": model_uuid,
+                "type_name": type_name,
+                "model_name": model_name,
+                "json_str": validated_model.model_dump_json(),  # type: ignore[typeddict-item]
+                "user_uuid": user_uuid,
+            },
+        )
+
+    return validated_model.model_dump()
 
 
-@app.post("/user/models/add")
-def models_add(model: Model) -> Dict[str, Any]:
-    user_models = all_models.setdefault(model.user_id, {})
-    model_dict = model.model_dump()
-    user_models.setdefault(model.property_type, []).append(model_dict)
-    return user_models
+@app.delete("/user/{user_uuid}/models/{type_name}/{model_uuid}")
+async def models_delete(
+    user_uuid: str, type_name: str, model_uuid: str
+) -> Dict[str, Any]:
+    async with get_db_connection() as db:
+        found_model = await find_model_using_raw(
+            model_uuid=model_uuid, user_uuid=user_uuid
+        )
+        model = await db.model.delete(
+            where={"uuid": found_model["uuid"]}  # type: ignore[arg-type]
+        )
 
-
-@app.put("/user/models/update")
-def models_update(model_update: Model) -> Dict[str, Any]:
-    model = find_model(
-        model_update.user_id, model_update.property_type, model_update.uuid
-    )
-    updated_model = model_update.model_dump()
-    updated_model["uuid"] = model["uuid"]
-    all_models[model_update.user_id][model_update.property_type].remove(model)  # type: ignore
-    all_models[model_update.user_id][model_update.property_type].append(updated_model)  # type: ignore
-    return updated_model
-
-
-class ModelDelete(BaseModel):
-    user_id: int
-    uuid: str
-    property_type: str
-
-
-@app.delete("/user/models/delete")
-def models_delete(model_delete: ModelDelete) -> Dict[str, str]:
-    model = find_model(
-        model_delete.user_id, model_delete.property_type, model_delete.uuid
-    )
-    all_models[model_delete.user_id][model_delete.property_type].remove(model)  # type: ignore
-    return {"detail": "Model deleted successfully"}
+    return model.json_str  # type: ignore

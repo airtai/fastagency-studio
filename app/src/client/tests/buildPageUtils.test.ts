@@ -585,22 +585,22 @@ describe('buildPageUtils', () => {
         {
           uuid: '9e55de08-ad69-4acc-b9d2-5da9d4ae0bf1',
           api_key: '',
-          property_type: 'secret',
-          property_name: 'AzureOAIAPIKey',
+          type_name: 'secret',
+          model_name: 'AzureOAIAPIKey',
           user_id: 1,
         },
         {
           uuid: '62922092-e7ab-4339-8ded-2e671826edae',
           api_key: '',
-          property_type: 'secret',
-          property_name: 'BingAPIKey',
+          type_name: 'secret',
+          model_name: 'BingAPIKey',
           user_id: 1,
         },
         {
           uuid: '286027aa-35ae-4d2d-ad47-62adbbe86d43',
           api_key: '12321321321',
-          property_type: 'secret',
-          property_name: 'OpenAIAPIKey',
+          type_name: 'secret',
+          model_name: 'OpenAIAPIKey',
           user_id: 1,
         },
       ];
@@ -632,22 +632,22 @@ describe('buildPageUtils', () => {
         {
           uuid: '9e55de08-ad69-4acc-b9d2-5da9d4ae0bf1',
           api_key: '',
-          property_type: 'secret',
-          property_name: 'AzureOAIAPIKey',
+          type_name: 'secret',
+          model_name: 'AzureOAIAPIKey',
           user_id: 1,
         },
         {
           uuid: '62922092-e7ab-4339-8ded-2e671826edae',
           api_key: '',
-          property_type: 'secret',
-          property_name: 'BingAPIKey',
+          type_name: 'secret',
+          model_name: 'BingAPIKey',
           user_id: 1,
         },
         {
           uuid: '286027aa-35ae-4d2d-ad47-62adbbe86d43',
           api_key: '12321321321',
-          property_type: 'secret',
-          property_name: 'OpenAIAPIKey',
+          type_name: 'secret',
+          model_name: 'OpenAIAPIKey',
           user_id: 1,
         },
       ];
@@ -680,22 +680,22 @@ describe('buildPageUtils', () => {
         {
           uuid: '9e55de08-ad69-4acc-b9d2-5da9d4ae0bf1',
           api_key: '',
-          property_type: 'secret',
-          property_name: 'AzureOAIAPIKey',
+          type_name: 'secret',
+          model_name: 'AzureOAIAPIKey',
           user_id: 1,
         },
         {
           uuid: '62922092-e7ab-4339-8ded-2e671826edae',
           api_key: '',
-          property_type: 'secret',
-          property_name: 'BingAPIKey',
+          type_name: 'secret',
+          model_name: 'BingAPIKey',
           user_id: 1,
         },
         {
           uuid: '286027aa-35ae-4d2d-ad47-62adbbe86d43',
           api_key: '12321321321',
-          property_type: 'secret',
-          property_name: 'OpenAIAPIKey',
+          type_name: 'secret',
+          model_name: 'OpenAIAPIKey',
           user_id: 1,
         },
       ];
@@ -745,15 +745,15 @@ describe('buildPageUtils', () => {
             {
               uuid: 'debaa689-a3f8-4d91-9a18-a43916835384',
               api_key: '',
-              property_type: 'secret',
-              property_name: 'AzureOAIAPIKey',
+              type_name: 'secret',
+              model_name: 'AzureOAIAPIKey',
               user_id: 1,
             },
             {
               uuid: 'b771441b-b216-491e-af32-33232b42ab7f',
               api_key: '',
-              property_type: 'secret',
-              property_name: 'BingAPIKey',
+              type_name: 'secret',
+              model_name: 'BingAPIKey',
               user_id: 1,
             },
           ],
@@ -772,8 +772,8 @@ describe('buildPageUtils', () => {
         api_key: {
           uuid: 'debaa689-a3f8-4d91-9a18-a43916835384',
           api_key: '',
-          property_type: 'secret',
-          property_name: 'AzureOAIAPIKey',
+          type_name: 'secret',
+          model_name: 'AzureOAIAPIKey',
           user_id: 1,
         },
         base_url: 'https://api.openai.com/v1',
@@ -798,15 +798,15 @@ describe('buildPageUtils', () => {
             {
               uuid: 'debaa689-a3f8-4d91-9a18-a43916835384',
               api_key: '',
-              property_type: 'secret',
-              property_name: 'AzureOAIAPIKey',
+              type_name: 'secret',
+              model_name: 'AzureOAIAPIKey',
               user_id: 1,
             },
             {
               uuid: 'b771441b-b216-491e-af32-33232b42ab7f',
               api_key: '',
-              property_type: 'secret',
-              property_name: 'BingAPIKey',
+              type_name: 'secret',
+              model_name: 'BingAPIKey',
               user_id: 1,
             },
           ],
@@ -825,8 +825,8 @@ describe('buildPageUtils', () => {
         api_key: {
           uuid: 'b771441b-b216-491e-af32-33232b42ab7f',
           api_key: '',
-          property_type: 'secret',
-          property_name: 'BingAPIKey',
+          type_name: 'secret',
+          model_name: 'BingAPIKey',
           user_id: 1,
         },
         base_url: 'https://api.openai.com/v1',
@@ -851,8 +851,8 @@ describe('buildPageUtils', () => {
             {
               uuid: 'c45c06d1-bb0e-4481-9c32-7ade1b90fa18',
               api_key: '',
-              property_type: 'secret',
-              property_name: 'AzureOAIAPIKey',
+              type_name: 'secret',
+              model_name: 'AzureOAIAPIKey',
               user_id: 1,
               base_url: null,
               model: null,
@@ -862,8 +862,8 @@ describe('buildPageUtils', () => {
             {
               uuid: '7fd88128-6846-4d28-a251-2cd7957cfe14',
               api_key: '',
-              property_type: 'secret',
-              property_name: 'BingAPIKey',
+              type_name: 'secret',
+              model_name: 'BingAPIKey',
               user_id: 1,
               base_url: null,
               model: null,
@@ -878,8 +878,8 @@ describe('buildPageUtils', () => {
         api_key: {
           uuid: '7fd88128-6846-4d28-a251-2cd7957cfe14',
           api_key: '',
-          property_type: 'secret',
-          property_name: 'BingAPIKey',
+          type_name: 'secret',
+          model_name: 'BingAPIKey',
           user_id: 1,
           base_url: null,
           model: null,
@@ -896,8 +896,8 @@ describe('buildPageUtils', () => {
         api_key: {
           uuid: '7fd88128-6846-4d28-a251-2cd7957cfe14',
           api_key: '',
-          property_type: 'secret',
-          property_name: 'BingAPIKey',
+          type_name: 'secret',
+          model_name: 'BingAPIKey',
           user_id: 1,
           base_url: null,
           model: null,
@@ -1160,59 +1160,36 @@ describe('buildPageUtils', () => {
   });
   describe('getMatchedUserProperties', () => {
     test('getMatchedUserProperties with one ref', () => {
-      const allUserProperties = {
-        secret: [
-          {
-            uuid: '9ef4fcec-fa6f-4cc7-b1a5-48f82e09336c',
+      const allUserProperties = [
+        {
+          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
+          model: {
             api_key: '',
-            property_type: 'secret',
-            property_name: 'AzureOAIAPIKey',
-            user_id: 1,
-            base_url: null,
-            model: null,
-            api_type: null,
-            api_version: null,
-            llm: null,
-            summarizer_llm: null,
-            bing_api_key: null,
-            system_message: null,
-            viewport_size: null,
           },
-          {
-            uuid: '25b055d2-732c-45eb-adc2-3406461ba422',
+          type_name: 'secret',
+          model_name: 'AzureOAIAPIKey',
+          user_id: 1,
+        },
+        {
+          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
+          model: {
             api_key: '',
-            property_type: 'secret',
-            property_name: 'OpenAIAPIKey',
-            user_id: 1,
-            base_url: null,
-            model: null,
-            api_type: null,
-            api_version: null,
-            llm: null,
-            summarizer_llm: null,
-            bing_api_key: null,
-            system_message: null,
-            viewport_size: null,
           },
-        ],
-      };
-      const refName = ['#/$defs/AzureOAIAPIKeyRef'];
+          type_name: 'secret',
+          model_name: 'OpenAIAPIKey',
+          user_id: 1,
+        },
+      ];
+      const refName = ['#/$defs/AzureOAIAPIKey'];
       const expected = [
         {
-          uuid: '9ef4fcec-fa6f-4cc7-b1a5-48f82e09336c',
-          api_key: '',
-          property_type: 'secret',
-          property_name: 'AzureOAIAPIKey',
+          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
+          model: {
+            api_key: '',
+          },
+          type_name: 'secret',
+          model_name: 'AzureOAIAPIKey',
           user_id: 1,
-          base_url: null,
-          model: null,
-          api_type: null,
-          api_version: null,
-          llm: null,
-          summarizer_llm: null,
-          bing_api_key: null,
-          system_message: null,
-          viewport_size: null,
         },
       ];
 
@@ -1220,75 +1197,45 @@ describe('buildPageUtils', () => {
       expect(actual).toEqual(expected);
     });
     test('getMatchedUserProperties with two refs', () => {
-      const allUserProperties = {
-        secret: [
-          {
-            uuid: '9ef4fcec-fa6f-4cc7-b1a5-48f82e09336c',
+      const allUserProperties = [
+        {
+          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
+          model: {
             api_key: '',
-            property_type: 'secret',
-            property_name: 'AzureOAIAPIKey',
-            user_id: 1,
-            base_url: null,
-            model: null,
-            api_type: null,
-            api_version: null,
-            llm: null,
-            summarizer_llm: null,
-            bing_api_key: null,
-            system_message: null,
-            viewport_size: null,
           },
-          {
-            uuid: '25b055d2-732c-45eb-adc2-3406461ba422',
+          type_name: 'secret',
+          model_name: 'AzureOAIAPIKey',
+          user_id: 1,
+        },
+        {
+          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
+          model: {
             api_key: '',
-            property_type: 'secret',
-            property_name: 'OpenAIAPIKey',
-            user_id: 1,
-            base_url: null,
-            model: null,
-            api_type: null,
-            api_version: null,
-            llm: null,
-            summarizer_llm: null,
-            bing_api_key: null,
-            system_message: null,
-            viewport_size: null,
           },
-        ],
-      };
+          type_name: 'secret',
+          model_name: 'OpenAIAPIKey',
+          user_id: 1,
+        },
+      ];
       const refName = ['#/$defs/AzureOAIAPIKeyRef', '#/$defs/OpenAIAPIKeyRef'];
       const expected = [
         {
-          uuid: '9ef4fcec-fa6f-4cc7-b1a5-48f82e09336c',
-          api_key: '',
-          property_type: 'secret',
-          property_name: 'AzureOAIAPIKey',
+          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
+          model: {
+            api_key: '',
+          },
+          type_name: 'secret',
+          model_name: 'AzureOAIAPIKey',
           user_id: 1,
-          base_url: null,
-          model: null,
-          api_type: null,
-          api_version: null,
-          llm: null,
-          summarizer_llm: null,
-          bing_api_key: null,
-          system_message: null,
-          viewport_size: null,
         },
         {
-          uuid: '25b055d2-732c-45eb-adc2-3406461ba422',
-          api_key: '',
-          property_type: 'secret',
-          property_name: 'OpenAIAPIKey',
+          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
+          model: {
+            api_key: '',
+          },
+          type_name: 'secret',
+          model_name: 'OpenAIAPIKey',
           user_id: 1,
-          base_url: null,
-          model: null,
-          api_type: null,
-          api_version: null,
-          llm: null,
-          summarizer_llm: null,
-          bing_api_key: null,
-          system_message: null,
-          viewport_size: null,
         },
       ];
       const actual = getMatchedUserProperties(allUserProperties, refName);
@@ -1353,8 +1300,8 @@ describe('buildPageUtils', () => {
           api_key: {
             uuid: '9c6735e9-cc23-4831-9688-6bc277da9e40',
             api_key: '',
-            property_type: 'secret',
-            property_name: 'AzureOAIAPIKey',
+            type_name: 'secret',
+            model_name: 'AzureOAIAPIKey',
             user_id: 1,
             base_url: null,
             model: null,
@@ -1366,8 +1313,8 @@ describe('buildPageUtils', () => {
             system_message: null,
             viewport_size: null,
           },
-          property_type: 'llm',
-          property_name: 'AzureOAI',
+          type_name: 'llm',
+          model_name: 'AzureOAI',
           user_id: 1,
           base_url: 'https://api.openai.com/v1',
           model: 'gpt-3.5-turbo',

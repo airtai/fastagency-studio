@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.app.models
+::: fastagency.app.find_model_using_raw

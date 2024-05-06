@@ -178,9 +178,9 @@ class Registry:
 
         return Schemas(list_of_schemas=list_of_schemas)
 
-    def validate(self, type: str, name: str, model: Dict[str, Any]) -> None:
+    def validate(self, type: str, name: str, model: Dict[str, Any]) -> BaseModel:
         model_type = self.get_model_type(type, name)
-        model_type(**model)
+        return model_type(**model)
 
 
 def register(type_name: str) -> Callable[[Type[M]], Type[M]]:

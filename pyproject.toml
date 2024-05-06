@@ -49,6 +49,7 @@ dependencies = [
     "typing-extensions>=4.8.0,<5",
     "pydantic>=2.3,<3",
     "fastapi==0.110.2",
+    "prisma>=0.13.1,<0.14",
 ]
 
 [project.optional-dependencies]

@@ -58,7 +58,7 @@ export const constructHTMLSchema = (
     ? property.default === null
       ? 'None'
       : _.find(propertyDependencies, ['model_name', removeRefSuffix(property.default)]).json_str.name
-    : propertyDependencies[0].json_str.name;
+    : propertyDependencies[0]?.json_str.name;
   if (properties.includes(defaultValue)) {
     properties = properties.filter((item: string) => item !== defaultValue);
     properties.unshift(defaultValue);

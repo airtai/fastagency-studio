@@ -140,6 +140,11 @@ const ModelItem: React.FC<ModelItemProps> = ({ model, onClick }) => {
           </div>
           <h2 className='text-white dark:text-white text-lg font-medium'>{propertyName}</h2>
         </div>
+        {model.json_str.name && (
+          <div className='flex flex-col gap-2 text-white py-4 sm:max-w-sm sm:rounded-lg opacity-80'>
+            <p>{model.model_name}</p>
+          </div>
+        )}
         {model.json_str.api_key && (
           <div className='flex flex-col gap-2 text-white py-4 sm:max-w-sm sm:rounded-lg'>
             <p>{formatApiKey(model.json_str.api_key)}</p>

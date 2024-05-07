@@ -8,7 +8,9 @@ services:
       - ../../:/workspaces/fastagency:cached
     command: sleep infinity
     environment:
-      - NATS_URL="nats://${USER}-nats-py310-fastagency:4222"
+      - DATABASE_URL=postgresql://admin:password@${USER}-postgres-py310-fastagency:5432/fastagency
+      - PY_DATABASE_URL=postgresql://admin:password@${USER}-postgres-py310-fastagency:5432/pyfastagency
+      - NATS_URL=nats://${USER}-nats-py310-fastagency:4222
     env_file:
       - ../devcontainer.env
     platform: linux/amd64

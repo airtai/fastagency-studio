@@ -125,5 +125,5 @@ class Client:
             finally:
                 sys.path.remove(str(td))
 
-            client: Client = main.Client  # type: ignore [attr-defined]
+            client: Client = main.app  # type: ignore [attr-defined]
             return client

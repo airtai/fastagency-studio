@@ -12,6 +12,7 @@ class TestClient:
         client = Client.create(openapi_json)
 
         assert client is not None
+        assert isinstance(client, Client)
 
         assert len(client.registered_funcs) == 1
         assert (

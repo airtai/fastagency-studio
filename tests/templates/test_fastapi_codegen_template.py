@@ -38,6 +38,33 @@ def test_fastapi_codegen_template(monkeypatch: MonkeyPatch) -> None:
         ldict: Dict[str, Any] = {}
 
         models = open(td / "models.py").read()  # noqa
+        models = """from __future__ import annotations
+
+from typing import List, Optional, Union
+
+from pydantic import BaseModel, Field
+
+
+class Item(BaseModel):
+    name: str = Field(..., description='Name of the item', title='Name')
+#     description: str = Field(
+#         ..., description='Description of the item', title='Description'
+#     )
+#     price: float = Field(..., description='Price of the item', title='Price')
+#     tax: float = Field(..., description='Tax of the item', title='Tax')
+
+
+# class ValidationError(BaseModel):
+#     loc: List[Union[str, int]] = Field(..., title='Location')
+#     msg: str = Field(..., title='Message')
+#     type: str = Field(..., title='Error Type')
+
+
+# class HTTPValidationError(BaseModel):
+#     detail: Optional[List[ValidationError]] = Field(None, title='Detail')
+"""
+
+        print(models)
         exec(models, globals(), ldict)
 
         main_content = open(td / "main.py").read()  # noqa

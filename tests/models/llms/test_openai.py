@@ -14,10 +14,10 @@ class TestOpenAI:
 
         model = OpenAI(
             api_key=api_key,
-            name="",
+            name="Hello World!",
         )
         expected = {
-            "name": "",
+            "name": "Hello World!",
             "model": "gpt-3.5-turbo",
             "api_key": {
                 "type": "secret",
@@ -66,8 +66,8 @@ class TestOpenAI:
             },
             "properties": {
                 "name": {
-                    "default": "",
                     "description": "The name of the model",
+                    "pattern": "^.+$",
                     "title": "Name",
                     "type": "string",
                 },
@@ -97,7 +97,7 @@ class TestOpenAI:
                     "type": "string",
                 },
             },
-            "required": ["api_key"],
+            "required": ["name", "api_key"],
             "title": "OpenAI",
             "type": "object",
         }
@@ -108,7 +108,7 @@ class TestOpenAIAPIKey:
     def test_constructor_success(self) -> None:
         api_key = OpenAIAPIKey(
             api_key="sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest",  # pragma: allowlist secret
-            name="",
+            name="Hello World!",
         )  # pragma: allowlist secret
         assert (
             api_key.api_key
@@ -119,5 +119,5 @@ class TestOpenAIAPIKey:
         with pytest.raises(ValueError, match="String should match pattern"):
             OpenAIAPIKey(
                 api_key="_sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest",  # pragma: allowlist secret
-                name="",
+                name="Hello World!",
             )  # pragma: allowlist secret

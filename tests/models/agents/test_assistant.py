@@ -15,7 +15,7 @@ class TestAssistantAgent:
             agent = AssistantAgent(
                 llm=llm,
                 system_message="test system message",
-                name="",
+                name="Hello World!",
             )
         except ValidationError:
             # print(f"{e.errors()=}")
@@ -88,8 +88,8 @@ class TestAssistantAgent:
             },
             "properties": {
                 "name": {
-                    "default": "",
                     "description": "The name of the model",
+                    "pattern": "^.+$",
                     "title": "Name",
                     "type": "string",
                 },
@@ -107,7 +107,7 @@ class TestAssistantAgent:
                     "type": "string",
                 },
             },
-            "required": ["llm", "system_message"],
+            "required": ["name", "llm", "system_message"],
             "title": "AssistantAgent",
             "type": "object",
         }

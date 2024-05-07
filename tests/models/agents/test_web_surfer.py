@@ -16,7 +16,7 @@ class TestWebSurferAgent:
 
         try:
             web_surfer = WebSurferAgent(
-                name="",
+                name="WebSurferAgent",
                 llm=llm,
                 summarizer_llm=summarizer_llm,
             )
@@ -119,8 +119,8 @@ class TestWebSurferAgent:
             },
             "properties": {
                 "name": {
-                    "default": "",
                     "description": "The name of the model",
+                    "pattern": "^.+$",
                     "title": "Name",
                     "type": "string",
                 },
@@ -152,7 +152,7 @@ class TestWebSurferAgent:
                     "description": "The Bing API key for the browser",
                 },
             },
-            "required": ["llm", "summarizer_llm"],
+            "required": ["name", "llm", "summarizer_llm"],
             "title": "WebSurferAgent",
             "type": "object",
         }

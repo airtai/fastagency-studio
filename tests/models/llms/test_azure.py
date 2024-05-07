@@ -70,8 +70,8 @@ class TestAzureOAI:
             },
             "properties": {
                 "name": {
-                    "default": "",
                     "description": "The name of the model",
+                    "pattern": "^.+$",
                     "title": "Name",
                     "type": "string",
                 },
@@ -107,7 +107,7 @@ class TestAzureOAI:
                     "type": "string",
                 },
             },
-            "required": ["api_key"],
+            "required": ["name", "api_key"],
             "title": "AzureOAI",
             "type": "object",
         }

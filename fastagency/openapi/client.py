@@ -1,9 +1,14 @@
+import importlib
 import inspect
 import re
+import sys
+import tempfile
 from functools import wraps
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
 
 import requests
+from fastapi_code_generator.__main__ import generate_code
 
 __all__ = ["Client"]
 
@@ -87,3 +92,38 @@ class Client:
 
     def delete(self, path: str, **kwargs: Any) -> Callable[..., Dict[str, Any]]:
         return self._request("delete", path, **kwargs)
+
+    @classmethod
+    def _get_template_dir(cls) -> Path:
+        path = Path(__file__).parents[2] / "templates"
+        if not path.exists():
+            raise RuntimeError(f"Template directory {path.resolve()} not found.")
+        return path
+
+    @classmethod
+    def create(cls, openapi_json: str, *, name: Optional[str] = None) -> "Client":
+        if name is None:
+            name = "openapi.json"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            td = Path(temp_dir)
+
+            generate_code(
+                input_name=name,
+                input_text=openapi_json,
+                encoding="utf-8",
+                output_dir=td,
+                template_dir=cls._get_template_dir(),
+            )
+            with (td / "__init__.py").open(mode="w") as f:
+                f.write("")
+
+            # add td to sys.path
+            try:
+                sys.path.append(str(td))
+                main = importlib.import_module("main", package=td.name)
+            finally:
+                sys.path.remove(str(td))
+
+            client: Client = main.Client  # type: ignore [attr-defined]
+            return client

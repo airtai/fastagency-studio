@@ -14,7 +14,7 @@ interface ModelFormProps {
   propertyHeader: string;
   onModelChange: (model: string) => void;
   onSuccessCallback: (data: any) => void;
-  onCancelCallback: () => void;
+  onCancelCallback: (event: React.FormEvent) => void;
   onDeleteCallback: (data: any) => void;
 }
 

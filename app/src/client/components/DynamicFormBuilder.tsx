@@ -30,7 +30,7 @@ interface DynamicFormBuilderProps {
   validationURL: string;
   updateExistingModel: SelectedModelSchema | null;
   onSuccessCallback: (data: any) => void;
-  onCancelCallback: (data: any) => void;
+  onCancelCallback: (event: React.FormEvent) => void;
   onDeleteCallback: (data: any) => void;
 }
 

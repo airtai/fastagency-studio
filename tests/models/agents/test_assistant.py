@@ -116,4 +116,5 @@ class TestAssistantAgent:
         )
 
         agent_json = agent.model_dump_json()
-        print(f"{agent_json=}")
+        assert agent_json is not None
+        # print(f"{agent_json=}")

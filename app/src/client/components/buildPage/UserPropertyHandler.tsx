@@ -65,8 +65,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
       refetchModels();
       setShowAddModel(false);
     } catch (error) {
-      setNotificationErrorMessage('Error adding/updating model. Please try again later.');
-      console.log('Error adding/updating model', error);
+      setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
     } finally {
       setIsLoading(false);
     }
@@ -87,8 +86,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
         setShowAddModel(false);
       }
     } catch (error) {
-      setNotificationErrorMessage('Error deleting model. Please try again later.');
-      console.log('Error deleting model', error);
+      setNotificationErrorMessage(`Error deleting ${propertyName}. Please try again later.`);
     } finally {
       setIsLoading(false);
     }

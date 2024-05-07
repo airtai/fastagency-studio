@@ -86,6 +86,12 @@ class TestAssistantAgent:
                 },
             },
             "properties": {
+                "name": {
+                    "default": "",
+                    "description": "The name of the model",
+                    "title": "Name",
+                    "type": "string",
+                },
                 "llm": {
                     "anyOf": [
                         {"$ref": "#/$defs/AzureOAIRef"},

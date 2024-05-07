@@ -20,6 +20,7 @@ class TestAzureOAI:
         )
 
         expected = {
+            "name": "",
             "model": "gpt-3.5-turbo",
             "api_key": {
                 "type": "secret",
@@ -67,6 +68,12 @@ class TestAzureOAI:
                 }
             },
             "properties": {
+                "name": {
+                    "default": "",
+                    "description": "The name of the model",
+                    "title": "Name",
+                    "type": "string",
+                },
                 "model": {
                     "default": "gpt-3.5-turbo",
                     "description": "The model to use for the Azure OpenAI API, e.g. 'gpt-3.5-turbo'",

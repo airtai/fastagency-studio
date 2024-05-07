@@ -106,6 +106,12 @@ class TestRegistry:
             name="MyModel",
             json_schema={
                 "properties": {
+                    "name": {
+                        "default": "",
+                        "description": "The name of the model",
+                        "title": "Name",
+                        "type": "string",
+                    },
                     "i": {"title": "I", "type": "integer"},
                     "s": {"title": "S", "type": "string"},
                 },
@@ -167,6 +173,12 @@ class TestRegistry:
                     }
                 },
                 "properties": {
+                    "name": {
+                        "default": "",
+                        "description": "The name of the model",
+                        "title": "Name",
+                        "type": "string",
+                    },
                     "i": {"title": "I", "type": "integer"},
                     "s": {"title": "S", "type": "string"},
                     "secret": {"$ref": "#/$defs/MySecretRef"},

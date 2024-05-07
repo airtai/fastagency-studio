@@ -16,6 +16,7 @@ class TestOpenAI:
             api_key=api_key,
         )
         expected = {
+            "name": "",
             "model": "gpt-3.5-turbo",
             "api_key": {
                 "type": "secret",
@@ -63,6 +64,12 @@ class TestOpenAI:
                 }
             },
             "properties": {
+                "name": {
+                    "default": "",
+                    "description": "The name of the model",
+                    "title": "Name",
+                    "type": "string",
+                },
                 "model": {
                     "default": "gpt-3.5-turbo",
                     "description": "The model to use for the OpenAI API, e.g. 'gpt-3.5-turbo'",

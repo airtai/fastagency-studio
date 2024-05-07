@@ -122,9 +122,9 @@ export const getFormSubmitValues = (refValues: any, formData: any) => {
       const selectedKey = formData[key]
         ? formData[key] && typeof formData[key] === 'string'
           ? formData[key]
-          : formData[key].model_name
+          : formData[key].json_str.name
         : refValues[key].htmlSchema.default;
-      const selectedData = refValues[key].userPropertyData.find((data: any) => data.model_name === selectedKey);
+      const selectedData = refValues[key].userPropertyData.find((data: any) => data.json_str.name === selectedKey);
       newFormData[key] = selectedData;
     }
   });

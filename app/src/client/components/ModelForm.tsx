@@ -11,6 +11,7 @@ interface ModelFormProps {
   data: SchemaCategory;
   selectedModel: string;
   updateExistingModel: SelectedModelSchema | null;
+  propertyHeader: string;
   onModelChange: (model: string) => void;
   onSuccessCallback: (data: any) => void;
   onCancelCallback: () => void;
@@ -22,6 +23,7 @@ const ModelForm: React.FC<ModelFormProps> = ({
   data,
   selectedModel,
   updateExistingModel,
+  propertyHeader,
   onModelChange,
   onSuccessCallback,
   onCancelCallback,
@@ -37,10 +39,11 @@ const ModelForm: React.FC<ModelFormProps> = ({
           {/* {<h2 className='sm:mt-6 text-lg font-semibold text-airt-primary'>Update model</h2>} */}
           {
             <ModelFormContainer
-              type_name={data.name}
+              propertyHeader={propertyHeader}
               selectedModel={selectedModel}
               modelSchemas={modelSchemas}
               onModelChange={onModelChange}
+              updateExistingModel={updateExistingModel ?? null}
             />
           }
           {initialModelSchema && (

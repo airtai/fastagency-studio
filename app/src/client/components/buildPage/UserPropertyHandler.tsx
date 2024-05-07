@@ -18,7 +18,7 @@ import {
   propertyDependencies,
 } from 'wasp/client/operations';
 import { propertyDependencyMap } from '../../utils/constants';
-import { isDependencyAvailable, formatDependencyErrorMessage } from '../../utils/buildPageUtils';
+import { isDependencyAvailable, formatDependencyErrorMessage, capitalizeFirstLetter } from '../../utils/buildPageUtils';
 
 const UserPropertyHandler = ({ data }: SecretsProps) => {
   const [showAddModel, setShowAddModel] = useState(false);
@@ -34,6 +34,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
   const [showNotification, setShowNotification] = useState(false);
 
   const handleClick = () => {
+    setUpdateExistingModel(null);
     if (isDependencyAvailable(propertyDependency)) {
       setSelectedModel(data.schemas[0].name);
       setShowAddModel(true);
@@ -97,10 +98,12 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     propertyName === 'agent' ? 'an' : 'a'
   } ${propertyName}, first add at least one ${dependentProperties}.`;
 
+  const propertyHeader = propertyName === 'llm' ? 'LLM' : capitalizeFirstLetter(propertyName);
+
   return (
     <div className='flex-col flex items-start p-6 gap-3 w-full'>
       <div className={`${showAddModel ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
-        <Button onClick={handleClick} label={`Add ${propertyName}`} />
+        <Button onClick={handleClick} label={`Add ${propertyHeader}`} />
       </div>
       <div className='flex-col flex w-full'>
         {!showAddModel ? (
@@ -115,6 +118,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
             data={data}
             selectedModel={selectedModel}
             updateExistingModel={updateExistingModel}
+            propertyHeader={propertyHeader}
             onModelChange={handleModelChange}
             onSuccessCallback={onSuccessCallback}
             onCancelCallback={onCancelCallback}

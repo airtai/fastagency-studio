@@ -105,3 +105,15 @@ class TestAssistantAgent:
             "type": "object",
         }
         assert schema == expected
+
+    def test_assistant_model_validation(self) -> None:
+        llm_uuid = uuid.uuid4()
+        llm = OpenAI.get_reference_model()(uuid=llm_uuid)
+
+        agent = AssistantAgent(
+            llm=llm,
+            system_message="test system message",
+        )
+
+        agent_json = agent.model_dump_json()
+        print(f"{agent_json=}")

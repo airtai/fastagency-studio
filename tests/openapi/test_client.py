@@ -4,7 +4,7 @@ import requests
 from _pytest.monkeypatch import MonkeyPatch
 from pydantic import BaseModel, Field
 
-from fastagency.proxy import Proxy
+from fastagency.openapi.client import Client
 
 
 class Item(BaseModel):
@@ -26,7 +26,7 @@ class HTTPValidationError(BaseModel):
     detail: Optional[List[ValidationError]] = Field(None, title="Detail")
 
 
-app = Proxy(
+app = Client(
     title="FastAPI",
     version="0.1.0",
     servers=[{"url": "http://localhost:8080", "description": "Local environment"}],
@@ -164,7 +164,7 @@ def test_process_params_with_no_query_params_or_path_params() -> None:
     assert body_dict == {"headers": {"Content-Type": "application/json"}}
 
 
-def test_proxy_put(monkeypatch: MonkeyPatch) -> None:
+def test_client_put(monkeypatch: MonkeyPatch) -> None:
     @app.put(
         "/items/{item_id}/ships/{ship}",
         response_model=Item,
@@ -207,7 +207,7 @@ def test_proxy_put(monkeypatch: MonkeyPatch) -> None:
     }
 
 
-def test_proxy_post(monkeypatch: MonkeyPatch) -> None:
+def test_client_post(monkeypatch: MonkeyPatch) -> None:
     @app.post(
         "/items/{item_id}/ships/{ship}",
         response_model=Item,
@@ -248,7 +248,7 @@ def test_proxy_post(monkeypatch: MonkeyPatch) -> None:
     }
 
 
-def test_proxy_get(monkeypatch: MonkeyPatch) -> None:
+def test_client_get(monkeypatch: MonkeyPatch) -> None:
     @app.get(
         "/items",
         response_model=List[Item],
@@ -295,7 +295,7 @@ def test_proxy_get(monkeypatch: MonkeyPatch) -> None:
     ]
 
 
-def test_proxy_delete(monkeypatch: MonkeyPatch) -> None:
+def test_client_delete(monkeypatch: MonkeyPatch) -> None:
     @app.delete(
         "/item",
         response_model=None,

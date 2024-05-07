@@ -43,9 +43,9 @@ search:
                     - [MultiAgentTeam](api/fastagency/models/teams/multi_agent_team/MultiAgentTeam.md)
                 - two_agent_teams
                     - [TwoAgentTeam](api/fastagency/models/teams/two_agent_teams/TwoAgentTeam.md)
-        - proxy
-            - [Proxy](api/fastagency/proxy/Proxy.md)
-            - [get_params](api/fastagency/proxy/get_params.md)
+        - openapi
+            - client
+                - [Client](api/fastagency/openapi/client/Client.md)
 - Contributing
     - [Development](getting-started/contributing/CONTRIBUTING.md)
     - [Documentation](getting-started/contributing/docs.md)

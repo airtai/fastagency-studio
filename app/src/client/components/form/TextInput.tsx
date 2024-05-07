@@ -2,14 +2,15 @@ import React from 'react';
 
 interface TextInputProps {
   id: string;
+  type: string;
   value: string;
   placeholder: string;
   onChange: (value: string) => void;
 }
 
-export const TextInput: React.FC<TextInputProps> = ({ id, value, placeholder, onChange }) => (
+export const TextInput: React.FC<TextInputProps> = ({ id, type, value, placeholder, onChange }) => (
   <input
-    type='text'
+    type={type}
     value={value}
     placeholder={placeholder}
     onChange={(e) => onChange(e.target.value)}

@@ -30,7 +30,7 @@ interface DynamicFormBuilderProps {
   validationURL: string;
   updateExistingModel: SelectedModelSchema | null;
   onSuccessCallback: (data: any) => void;
-  onCancelCallback: (data: any) => void;
+  onCancelCallback: (event: React.FormEvent) => void;
   onDeleteCallback: (data: any) => void;
 }
 
@@ -92,7 +92,8 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             const allRefList = propertyHasRef ? [property['$ref']] : getAllRefs(property);
             const userPropertyData = getMatchedUserProperties(allUserProperties, allRefList);
             const missingDependencyList = checkForDependency(userPropertyData, allRefList);
-            const htmlSchema = constructHTMLSchema(userPropertyData, key, property);
+            const title: string = property.hasOwnProperty('title') ? property.title || '' : key;
+            const htmlSchema = constructHTMLSchema(userPropertyData, title, property);
             if (missingDependencyList.length > 0) {
               setMissingDependency((prev) => {
                 const newMissingDependencies = missingDependencyList.filter((item) => !prev.includes(item));
@@ -158,9 +159,8 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
               ) : (
                 <TextInput
                   id={key}
-                  value={
-                    key === 'api_key' && typeof inputValue === 'string' ? inputValue.replace(/./g, '*') : inputValue
-                  }
+                  type={key === 'api_key' && typeof inputValue === 'string' ? 'password' : 'text'}
+                  value={inputValue}
                   placeholder={formElementsObject.description || ''}
                   onChange={(value) => handleChange(key, value)}
                 />

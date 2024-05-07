@@ -62,10 +62,10 @@ server = [
 
 # dev dependencies
 devdocs = [
-    "mkdocs-material==9.5.18",
+    "mkdocs-material==9.5.21",
     "mkdocs-static-i18n==1.2.2",
     "mdx-include==1.4.2",
-    "mkdocstrings[python]==0.24.3",
+    "mkdocstrings[python]==0.25.1",
     "mkdocs-literate-nav==0.6.1",
     "mkdocs-git-revision-date-localized-plugin==1.2.4",
     "mike==2.0.0",  # versioning
@@ -83,16 +83,16 @@ lint = [
     "types-ujson",
     "types-Pygments",
     "types-docutils",
-    "mypy==1.9.0",
+    "mypy==1.10.0",
     "ruff==0.4.1",
     "pyupgrade-directories==0.3.0",
     "bandit==1.7.8",
-    "semgrep==1.69.0",
+    "semgrep==1.71.0",
     "pytest-mypy-plugins==3.1.2",
 ]
 
 test-core = [
-    "coverage[toml]==7.4.4",
+    "coverage[toml]==7.5.1",
     "pytest==8.1.1",
     "pytest-asyncio==0.23.6",
     "dirty-equals==0.7.1.post0",

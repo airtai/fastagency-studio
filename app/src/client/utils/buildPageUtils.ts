@@ -53,12 +53,16 @@ export const constructHTMLSchema = (
 ): constructHTMLSchemaValues => {
   const capitalizeTitle = _.map(title.split('_'), capitalizeFirstLetter).join(' ');
   let properties = _.map(propertyDependencies, 'model_name');
-  const defaultValue = _.has(property, 'default') ? (property.default === null ? '' : property.default) : properties[0];
+  const defaultValue = _.has(property, 'default')
+    ? property.default === null
+      ? 'None'
+      : property.default
+    : properties[0];
   if (properties.includes(defaultValue)) {
     properties = properties.filter((item: string) => item !== defaultValue);
     properties.unshift(defaultValue);
   } else {
-    properties.unshift('');
+    properties.unshift('None');
   }
   return {
     default: defaultValue,

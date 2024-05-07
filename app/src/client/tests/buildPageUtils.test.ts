@@ -605,9 +605,9 @@ describe('buildPageUtils', () => {
         },
       ];
       const expected = {
-        default: '',
+        default: 'None',
         description: '',
-        enum: ['', 'AzureOAIAPIKey', 'BingAPIKey', 'OpenAIAPIKey'],
+        enum: ['None', 'AzureOAIAPIKey', 'BingAPIKey', 'OpenAIAPIKey'],
         title: 'Api Key',
         type: 'string',
       };
@@ -623,8 +623,11 @@ describe('buildPageUtils', () => {
         default: null,
         description: 'The Bing API key for the browser',
       };
-      const title = 'api_key';
-      const actual = constructHTMLSchema(input, title, property);
+      let title = 'api_key';
+      let actual = constructHTMLSchema(input, title, property);
+      expect(actual).toEqual(expected);
+      title = 'Api Key';
+      actual = constructHTMLSchema(input, title, property);
       expect(actual).toEqual(expected);
     });
     test('constructHTMLSchema - with non-null as default value', () => {

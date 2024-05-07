@@ -18,9 +18,11 @@ import {
   propertyDependencies,
 } from 'wasp/client/operations';
 import { propertyDependencyMap } from '../../utils/constants';
-import { isDependencyAvailable, formatDependencyErrorMessage } from '../../utils/buildPageUtils';
+import { isDependencyAvailable, formatDependencyErrorMessage, capitalizeFirstLetter } from '../../utils/buildPageUtils';
+import Loader from '../../admin/common/Loader';
 
 const UserPropertyHandler = ({ data }: SecretsProps) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [showAddModel, setShowAddModel] = useState(false);
   const [selectedModel, setSelectedModel] = useState(data.schemas[0].name);
   const [updateExistingModel, setUpdateExistingModel] = useState<SelectedModelSchema | null>(null);
@@ -31,14 +33,19 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     properties: _.get(propertyDependencyMap, propertyName),
   });
 
-  const [showNotification, setShowNotification] = useState(false);
+  const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
+  const dependentProperties = formatDependencyErrorMessage(_.get(propertyDependencyMap, propertyName));
+  const dependencyErrorMessage = `To create ${
+    propertyName === 'agent' ? 'an' : 'a'
+  } ${propertyName}, first add at least one ${dependentProperties}.`;
 
   const handleClick = () => {
+    setUpdateExistingModel(null);
     if (isDependencyAvailable(propertyDependency)) {
       setSelectedModel(data.schemas[0].name);
       setShowAddModel(true);
     } else {
-      setShowNotification(true);
+      setNotificationErrorMessage(dependencyErrorMessage);
     }
   };
   const handleModelChange = (newModel: string) => {
@@ -46,27 +53,44 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
   };
 
   const onSuccessCallback = async (payload: any) => {
-    const mergedData = { ...payload, type_name: propertyName, model_name: selectedModel, uuid: payload.uuid };
-    if (updateExistingModel) {
-      await updateUserModels({ data: mergedData, uuid: updateExistingModel.uuid });
-      setUpdateExistingModel(null);
-    } else {
-      await addUserModels(mergedData);
+    try {
+      setIsLoading(true);
+      const mergedData = { ...payload, type_name: propertyName, model_name: selectedModel, uuid: payload.uuid };
+      if (updateExistingModel) {
+        await updateUserModels({ data: mergedData, uuid: updateExistingModel.uuid });
+        setUpdateExistingModel(null);
+      } else {
+        await addUserModels(mergedData);
+      }
+      refetchModels();
+      setShowAddModel(false);
+    } catch (error) {
+      setNotificationErrorMessage('Error adding/updating model. Please try again later.');
+      console.log('Error adding/updating model', error);
+    } finally {
+      setIsLoading(false);
     }
-    refetchModels();
-    setShowAddModel(false);
   };
 
-  const onCancelCallback = () => {
+  const onCancelCallback = (event: React.FormEvent) => {
+    event.preventDefault();
     setShowAddModel(false);
   };
 
   const onDeleteCallback = async () => {
-    if (updateExistingModel) {
-      await deleteUserModels({ uuid: updateExistingModel.uuid, type_name: updateExistingModel.type_name });
-      await refetchModels();
-      setUpdateExistingModel(null);
-      setShowAddModel(false);
+    try {
+      setIsLoading(true);
+      if (updateExistingModel) {
+        await deleteUserModels({ uuid: updateExistingModel.uuid, type_name: updateExistingModel.type_name });
+        await refetchModels();
+        setUpdateExistingModel(null);
+        setShowAddModel(false);
+      }
+    } catch (error) {
+      setNotificationErrorMessage('Error deleting model. Please try again later.');
+      console.log('Error deleting model', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -89,18 +113,15 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
   };
 
   const onClick = () => {
-    setShowNotification(false);
+    setNotificationErrorMessage(null);
   };
 
-  const dependentProperties = formatDependencyErrorMessage(_.get(propertyDependencyMap, propertyName));
-  const dependencyErrorMessage = `To create ${
-    propertyName === 'agent' ? 'an' : 'a'
-  } ${propertyName}, first add at least one ${dependentProperties}.`;
+  const propertyHeader = propertyName === 'llm' ? 'LLM' : capitalizeFirstLetter(propertyName);
 
   return (
     <div className='flex-col flex items-start p-6 gap-3 w-full'>
       <div className={`${showAddModel ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
-        <Button onClick={handleClick} label={`Add ${propertyName}`} />
+        <Button onClick={handleClick} label={`Add ${propertyHeader}`} />
       </div>
       <div className='flex-col flex w-full'>
         {!showAddModel ? (
@@ -115,6 +136,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
             data={data}
             selectedModel={selectedModel}
             updateExistingModel={updateExistingModel}
+            propertyHeader={propertyHeader}
             onModelChange={handleModelChange}
             onSuccessCallback={onSuccessCallback}
             onCancelCallback={onCancelCallback}
@@ -122,7 +144,14 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
           />
         )}
       </div>
-      {showNotification && <NotificationBox type='error' onClick={onClick} message={dependencyErrorMessage} />}
+      {notificationErrorMessage && (
+        <NotificationBox type='error' onClick={onClick} message={notificationErrorMessage} />
+      )}
+      {isLoading && (
+        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
+          <Loader />
+        </div>
+      )}
     </div>
   );
 };

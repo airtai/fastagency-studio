@@ -7,6 +7,10 @@ services:
     volumes:
       - ../../:/workspaces/fastagency:cached
     command: sleep infinity
+    environment:
+      - DATABASE_URL=postgresql://admin:password@${USER}-postgres-py312-fastagency:5432/fastagency
+      - PY_DATABASE_URL=postgresql://admin:password@${USER}-postgres-py312-fastagency:5432/pyfastagency
+      - NATS_URL=nats://${USER}-nats-py312-fastagency:4222
     networks:
       - fastagency-network
   nats-fastagency:  # nosemgrep

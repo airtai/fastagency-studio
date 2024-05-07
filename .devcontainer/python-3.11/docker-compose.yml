@@ -7,6 +7,8 @@ services:
     volumes:
       - ../../:/workspaces/fastagency:cached
     command: sleep infinity
+    environment:
+      - NATS_URL="nats://${USER}-nats-py311-fastagency:4222"
     networks:
       - fastagency-network
   nats-fastagency:  # nosemgrep

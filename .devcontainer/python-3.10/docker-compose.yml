@@ -7,6 +7,8 @@ services:
     volumes:
       - ../../:/workspaces/fastagency:cached
     command: sleep infinity
+    environment:
+      - NATS_URL="nats://${USER}-nats-py310-fastagency:4222"
     env_file:
       - ../devcontainer.env
     platform: linux/amd64

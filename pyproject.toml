@@ -136,6 +136,13 @@ exclude = [
 [tool.hatch.metadata]
 allow-direct-references = true
 
+[tool.hatch.build.targets.wheel]
+only-include = ["fastagency", "templates"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src" = ""
+"scripts" = "fastagency/templates"
+
 [tool.mypy]
 
 files = ["fastagency", "tests"]

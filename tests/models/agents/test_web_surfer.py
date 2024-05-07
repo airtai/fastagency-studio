@@ -16,6 +16,7 @@ class TestWebSurferAgent:
 
         try:
             web_surfer = WebSurferAgent(
+                name="",
                 llm=llm,
                 summarizer_llm=summarizer_llm,
             )

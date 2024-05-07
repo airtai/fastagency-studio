@@ -104,12 +104,20 @@ export const svgIcons: SvgIcons = {
   ),
 };
 
+interface JsonStr {
+  name: string;
+  api_key?: string;
+}
+
 export interface ItemProps {
-  api_key: string;
+  created_at: string;
   model_name: string;
+  model_uuid: string;
+  updated_at: string;
   type_name: string;
-  user_id: number;
+  user_uuid: string;
   uuid: string;
+  json_str: JsonStr;
 }
 
 interface ModelItemProps {
@@ -117,26 +125,29 @@ interface ModelItemProps {
   onClick: () => void;
 }
 
-const ModelItem: React.FC<ModelItemProps> = ({ model, onClick }) => (
-  <div
-    className='group relative cursor-pointer overflow-hidden bg-airt-primary text-airt-font-base px-6 pt-10 pb-8 transition-all duration-300 hover:-translate-y-1 sm:max-w-sm sm:rounded-lg sm:pl-8 sm:pr-24'
-    onClick={onClick}
-  >
-    <span className='absolute top-10 z-0 h-9 w-9 rounded-full bg-airt-hero-gradient-start transition-all duration-300 group-hover:scale-[30]'></span>
-    <div className='relative z-10 mx-auto max-w-md'>
-      <div className='flex items-center mb-3'>
-        <div className='w-8 h-8 mr-3 inline-flex items-center justify-center rounded-full dark:bg-indigo-500 bg-airt-hero-gradient-start text-white flex-shrink-0'>
-          {svgIcons[model.type_name]}
+const ModelItem: React.FC<ModelItemProps> = ({ model, onClick }) => {
+  const propertyName = model.json_str.name ? model.json_str.name : model.model_name;
+  return (
+    <div
+      className='group relative cursor-pointer overflow-hidden bg-airt-primary text-airt-font-base px-6 pt-10 pb-8 transition-all duration-300 hover:-translate-y-1 sm:max-w-sm sm:rounded-lg sm:pl-8 sm:pr-24'
+      onClick={onClick}
+    >
+      <span className='absolute top-10 z-0 h-9 w-9 rounded-full bg-airt-hero-gradient-start transition-all duration-300 group-hover:scale-[30]'></span>
+      <div className='relative z-10 mx-auto max-w-md'>
+        <div className='flex items-center mb-3'>
+          <div className='w-8 h-8 mr-3 inline-flex items-center justify-center rounded-full dark:bg-indigo-500 bg-airt-hero-gradient-start text-white flex-shrink-0'>
+            {svgIcons[model.type_name]}
+          </div>
+          <h2 className='text-white dark:text-white text-lg font-medium'>{propertyName}</h2>
         </div>
-        <h2 className='text-white dark:text-white text-lg font-medium'>{model.model_name}</h2>
+        {model.json_str.api_key && (
+          <div className='flex flex-col gap-2 text-white py-4 sm:max-w-sm sm:rounded-lg'>
+            <p>{formatApiKey(model.json_str.api_key)}</p>
+          </div>
+        )}
       </div>
-      {model.api_key && (
-        <div className='flex flex-col gap-2 text-white py-4 sm:max-w-sm sm:rounded-lg'>
-          <p>{formatApiKey(model.api_key)}</p>
-        </div>
-      )}
     </div>
-  </div>
-);
+  );
+};
 
 export default ModelItem;

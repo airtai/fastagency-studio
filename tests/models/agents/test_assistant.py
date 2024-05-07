@@ -15,6 +15,7 @@ class TestAssistantAgent:
             agent = AssistantAgent(
                 llm=llm,
                 system_message="test system message",
+                name="",
             )
         except ValidationError:
             # print(f"{e.errors()=}")

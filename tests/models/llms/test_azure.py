@@ -17,10 +17,11 @@ class TestAzureOAI:
         model = AzureOAI(
             api_key=api_key_ref,
             base_url="https://my-model.openai.azure.com/",
+            name="who cares?",
         )
 
         expected = {
-            "name": "",
+            "name": "who cares?",
             "model": "gpt-3.5-turbo",
             "api_key": {
                 "type": "secret",

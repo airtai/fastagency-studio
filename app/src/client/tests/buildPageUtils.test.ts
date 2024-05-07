@@ -583,25 +583,43 @@ describe('buildPageUtils', () => {
     test('constructHTMLSchema - with null as default value', () => {
       const input = [
         {
-          uuid: '9e55de08-ad69-4acc-b9d2-5da9d4ae0bf1',
-          api_key: '',
+          uuid: '36015a9d-b03a-404b-8a21-a86267e92931',
+          user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'AzureOAIAPIKey',
-          user_id: 1,
+          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
+          json_str: {
+            name: 'production azure key',
+            api_key: '',
+          },
+          created_at: '2024-05-07T13:53:43.150000Z',
+          updated_at: '2024-05-07T13:53:43.150000Z',
         },
         {
-          uuid: '62922092-e7ab-4339-8ded-2e671826edae',
-          api_key: '',
+          uuid: '36015a9d-b03a-404b-8a21-a86267e92931',
+          user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'BingAPIKey',
-          user_id: 1,
+          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
+          json_str: {
+            name: 'production azure key',
+            api_key: '',
+          },
+          created_at: '2024-05-07T13:53:43.150000Z',
+          updated_at: '2024-05-07T13:53:43.150000Z',
         },
         {
-          uuid: '286027aa-35ae-4d2d-ad47-62adbbe86d43',
-          api_key: '12321321321',
+          uuid: '36015a9d-b03a-404b-8a21-a86267e92931',
+          user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'OpenAIAPIKey',
-          user_id: 1,
+          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
+          json_str: {
+            name: 'production azure key',
+            api_key: '',
+          },
+          created_at: '2024-05-07T13:53:43.150000Z',
+          updated_at: '2024-05-07T13:53:43.150000Z',
         },
       ];
       const expected = {
@@ -633,25 +651,43 @@ describe('buildPageUtils', () => {
     test('constructHTMLSchema - with non-null as default value', () => {
       const input = [
         {
-          uuid: '9e55de08-ad69-4acc-b9d2-5da9d4ae0bf1',
-          api_key: '',
+          uuid: '36015a9d-b03a-404b-8a21-a86267e92931',
+          user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'AzureOAIAPIKey',
-          user_id: 1,
+          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
+          json_str: {
+            name: 'production azure key',
+            api_key: '',
+          },
+          created_at: '2024-05-07T13:53:43.150000Z',
+          updated_at: '2024-05-07T13:53:43.150000Z',
         },
         {
-          uuid: '62922092-e7ab-4339-8ded-2e671826edae',
-          api_key: '',
+          uuid: '36015a9d-b03a-404b-8a21-a86267e92931',
+          user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'BingAPIKey',
-          user_id: 1,
+          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
+          json_str: {
+            name: 'production azure key',
+            api_key: '',
+          },
+          created_at: '2024-05-07T13:53:43.150000Z',
+          updated_at: '2024-05-07T13:53:43.150000Z',
         },
         {
-          uuid: '286027aa-35ae-4d2d-ad47-62adbbe86d43',
-          api_key: '12321321321',
+          uuid: '36015a9d-b03a-404b-8a21-a86267e92931',
+          user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'OpenAIAPIKey',
-          user_id: 1,
+          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
+          json_str: {
+            name: 'production azure key',
+            api_key: '',
+          },
+          created_at: '2024-05-07T13:53:43.150000Z',
+          updated_at: '2024-05-07T13:53:43.150000Z',
         },
       ];
       const expected = {
@@ -664,10 +700,13 @@ describe('buildPageUtils', () => {
       const property = {
         anyOf: [
           {
-            $ref: '#/$defs/AzureOAIRef',
+            $ref: '#/$defs/AzureOAIAPIKeyRef',
           },
           {
-            $ref: '#/$defs/OpenAIRef',
+            $ref: '#/$defs/OpenAIAPIKeyRef',
+          },
+          {
+            $ref: '#/$defs/BingAPIKeyRef',
           },
         ],
         description: 'LLM used by the agent for producing responses',
@@ -681,25 +720,43 @@ describe('buildPageUtils', () => {
     test('constructHTMLSchema - with no default value', () => {
       const input = [
         {
-          uuid: '9e55de08-ad69-4acc-b9d2-5da9d4ae0bf1',
-          api_key: '',
+          uuid: '36015a9d-b03a-404b-8a21-a86267e92931',
+          user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'AzureOAIAPIKey',
-          user_id: 1,
+          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
+          json_str: {
+            name: 'production azure key',
+            api_key: '',
+          },
+          created_at: '2024-05-07T13:53:43.150000Z',
+          updated_at: '2024-05-07T13:53:43.150000Z',
         },
         {
-          uuid: '62922092-e7ab-4339-8ded-2e671826edae',
-          api_key: '',
+          uuid: '36015a9d-b03a-404b-8a21-a86267e92931',
+          user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'BingAPIKey',
-          user_id: 1,
+          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
+          json_str: {
+            name: 'production azure key',
+            api_key: '',
+          },
+          created_at: '2024-05-07T13:53:43.150000Z',
+          updated_at: '2024-05-07T13:53:43.150000Z',
         },
         {
-          uuid: '286027aa-35ae-4d2d-ad47-62adbbe86d43',
-          api_key: '12321321321',
+          uuid: '36015a9d-b03a-404b-8a21-a86267e92931',
+          user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'OpenAIAPIKey',
-          user_id: 1,
+          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
+          json_str: {
+            name: 'production azure key',
+            api_key: '',
+          },
+          created_at: '2024-05-07T13:53:43.150000Z',
+          updated_at: '2024-05-07T13:53:43.150000Z',
         },
       ];
       const expected = {
@@ -712,10 +769,13 @@ describe('buildPageUtils', () => {
       const property = {
         anyOf: [
           {
-            $ref: '#/$defs/AzureOAIRef',
+            $ref: '#/$defs/AzureOAIAPIKeyRef',
           },
           {
-            $ref: '#/$defs/OpenAIRef',
+            $ref: '#/$defs/OpenAIAPIKeyRef',
+          },
+          {
+            $ref: '#/$defs/BingAPIKeyRef',
           },
         ],
         description: 'LLM used by the agent for producing responses',

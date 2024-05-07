@@ -14,6 +14,7 @@ class TestOpenAI:
 
         model = OpenAI(
             api_key=api_key,
+            name="",
         )
         expected = {
             "name": "",
@@ -106,7 +107,8 @@ class TestOpenAI:
 class TestOpenAIAPIKey:
     def test_constructor_success(self) -> None:
         api_key = OpenAIAPIKey(
-            api_key="sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest"  # pragma: allowlist secret
+            api_key="sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest",  # pragma: allowlist secret
+            name="",
         )  # pragma: allowlist secret
         assert (
             api_key.api_key
@@ -116,5 +118,6 @@ class TestOpenAIAPIKey:
     def test_constructor_failure(self) -> None:
         with pytest.raises(ValueError, match="String should match pattern"):
             OpenAIAPIKey(
-                api_key="_sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest"  # pragma: allowlist secret
+                api_key="_sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest",  # pragma: allowlist secret
+                name="",
             )  # pragma: allowlist secret

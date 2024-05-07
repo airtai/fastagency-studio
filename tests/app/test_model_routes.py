@@ -51,14 +51,17 @@ class TestModelRoutes:
     @pytest.mark.asyncio()
     async def test_add_model(self, user_uuid: str) -> None:
         model_uuid = str(uuid.uuid4())
-        azure_oai_api_key = AzureOAIAPIKey(api_key="whatever")
+        azure_oai_api_key = AzureOAIAPIKey(api_key="whatever", name="who cares?")
         response = client.post(
             f"/user/{user_uuid}/models/secret/AzureOAIAPIKey/{model_uuid}",
             json=azure_oai_api_key.model_dump(),
         )
 
         assert response.status_code == 200
-        expected = {"api_key": "whatever", "name": ""}  # pragma: allowlist secret
+        expected = {
+            "api_key": "whatever",  # pragma: allowlist secret
+            "name": "who cares?",
+        }
         actual = response.json()
         assert actual == expected
 

@@ -602,7 +602,7 @@ describe('buildPageUtils', () => {
           model_name: 'BingAPIKey',
           model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
-            name: 'production azure key',
+            name: 'production bing key',
             api_key: '',
           },
           created_at: '2024-05-07T13:53:43.150000Z',
@@ -615,7 +615,7 @@ describe('buildPageUtils', () => {
           model_name: 'OpenAIAPIKey',
           model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
-            name: 'production azure key',
+            name: 'production openai key',
             api_key: '',
           },
           created_at: '2024-05-07T13:53:43.150000Z',
@@ -625,14 +625,20 @@ describe('buildPageUtils', () => {
       const expected = {
         default: 'None',
         description: '',
-        enum: ['None', 'AzureOAIAPIKey', 'BingAPIKey', 'OpenAIAPIKey'],
+        enum: ['None', 'production azure key', 'production bing key', 'production openai key'],
         title: 'Api Key',
         type: 'string',
       };
       const property = {
         anyOf: [
           {
+            $ref: '#/$defs/AzureOAIAPIKeyRef',
+          },
+          {
             $ref: '#/$defs/BingAPIKeyRef',
+          },
+          {
+            $ref: '#/$defs/OpenAIAPIKeyRef',
           },
           {
             type: 'null',
@@ -670,7 +676,7 @@ describe('buildPageUtils', () => {
           model_name: 'BingAPIKey',
           model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
-            name: 'production azure key',
+            name: 'production bing key',
             api_key: '',
           },
           created_at: '2024-05-07T13:53:43.150000Z',
@@ -683,7 +689,7 @@ describe('buildPageUtils', () => {
           model_name: 'OpenAIAPIKey',
           model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
-            name: 'production azure key',
+            name: 'production openai key',
             api_key: '',
           },
           created_at: '2024-05-07T13:53:43.150000Z',
@@ -691,9 +697,9 @@ describe('buildPageUtils', () => {
         },
       ];
       const expected = {
-        default: 'BingAPIKey',
+        default: 'production bing key',
         description: '',
-        enum: ['BingAPIKey', 'AzureOAIAPIKey', 'OpenAIAPIKey'],
+        enum: ['production bing key', 'production azure key', 'production openai key'],
         title: 'Api Key',
         type: 'string',
       };
@@ -711,11 +717,11 @@ describe('buildPageUtils', () => {
         ],
         description: 'LLM used by the agent for producing responses',
         title: 'LLM',
-        default: 'BingAPIKey',
+        default: 'BingAPIKeyRef',
       };
       const title = 'api_key';
       const actual = constructHTMLSchema(input, title, property);
-      expect(actual).toEqual(expected);
+      expect(_.isEqual(actual, expected)).toBe(true);
     });
     test('constructHTMLSchema - with no default value', () => {
       const input = [
@@ -739,7 +745,7 @@ describe('buildPageUtils', () => {
           model_name: 'BingAPIKey',
           model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
-            name: 'production azure key',
+            name: 'production bing key',
             api_key: '',
           },
           created_at: '2024-05-07T13:53:43.150000Z',
@@ -752,7 +758,7 @@ describe('buildPageUtils', () => {
           model_name: 'OpenAIAPIKey',
           model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
-            name: 'production azure key',
+            name: 'production openai key',
             api_key: '',
           },
           created_at: '2024-05-07T13:53:43.150000Z',
@@ -760,9 +766,9 @@ describe('buildPageUtils', () => {
         },
       ];
       const expected = {
-        default: 'AzureOAIAPIKey',
+        default: 'production azure key',
         description: '',
-        enum: ['AzureOAIAPIKey', 'BingAPIKey', 'OpenAIAPIKey'],
+        enum: ['production azure key', 'production bing key', 'production openai key'],
         title: 'Api Key',
         type: 'string',
       };
@@ -783,7 +789,7 @@ describe('buildPageUtils', () => {
       };
       const title = 'api_key';
       const actual = constructHTMLSchema(input, title, property);
-      expect(actual).toEqual(expected);
+      expect(_.isEqual(actual, expected)).toBe(true);
     });
   });
   describe('getFormSubmitValues', () => {

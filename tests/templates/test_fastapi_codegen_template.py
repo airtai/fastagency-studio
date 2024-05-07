@@ -43,10 +43,6 @@ def test_fastapi_codegen_template(monkeypatch: MonkeyPatch) -> None:
         main_content = open(td / "main.py").read()  # noqa
         exec(main_content, globals(), ldict)
 
-        # import sys
-        # sys.path.append(str(td))
-        # from main import update_item_items__item_id__ships__ship__put
-
         app = ldict["app"]  # noqa
         # print(app.registered_funcs)
 

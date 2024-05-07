@@ -21,3 +21,13 @@ services:
       - DOMAIN=${DOMAIN}
       - PY_DATABASE_URL=${PY_DATABASE_URL}
     logging: *default-logging
+  nats-fastagency:  # nosemgrep
+    image: nats:2.10.14
+    container_name: nats-fastagency
+    ports:
+      - "4222:4222"
+      - "9222:9222"
+    volumes:
+      - ../../examples/nats/server.conf:/etc/nats/server.conf
+      # Mount volume for storing NATS data
+    command: [ "--config", "/etc/nats/server.conf" ]

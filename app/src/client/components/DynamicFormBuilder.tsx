@@ -159,9 +159,8 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
               ) : (
                 <TextInput
                   id={key}
-                  value={
-                    key === 'api_key' && typeof inputValue === 'string' ? inputValue.replace(/./g, '*') : inputValue
-                  }
+                  type={key === 'api_key' && typeof inputValue === 'string' ? 'password' : 'text'}
+                  value={inputValue}
                   placeholder={formElementsObject.description || ''}
                   onChange={(value) => handleChange(key, value)}
                 />

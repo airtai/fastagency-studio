@@ -1,0 +1,22 @@
+datasource db {
+  // could be postgresql or mysql
+  provider = "postgresql"
+  url      = env("PY_DATABASE_URL")
+}
+
+generator pyclient {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+}
+
+model Model {
+  uuid String @id @default(uuid())
+  user_uuid String @db.Uuid
+  type_name String
+  model_name String
+  model_uuid String @db.Uuid
+  json_str Json
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}

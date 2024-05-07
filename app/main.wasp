@@ -1,4 +1,4 @@
-app OpenSaaS {
+app FastAgency {
   wasp: {
     version: "^0.13.0"
   },
@@ -33,7 +33,7 @@ app OpenSaaS {
       },
     },
     onAuthFailedRedirectTo: "/login",
-    onAuthSucceededRedirectTo: "/chat",
+    onAuthSucceededRedirectTo: "/build",
   },
   db: {
     system: PostgreSQL,
@@ -64,6 +64,7 @@ app OpenSaaS {
 
 entity User {=psl
   id                        Int             @id @default(autoincrement())
+  uuid                      String?         @default(uuid())
   email                     String?         @unique
   username                  String?         @unique
   createdAt                 DateTime        @default(now())
@@ -121,9 +122,39 @@ page LandingPage {
   component: import LandingPage from "@src/client/landing-page/LandingPage"
 }
 
-route ChatPageRoute { path: "/chat/:id?", to: ChatPage }
-page ChatPage {
-  component: import createAuthRequiredChatPage from "@src/client/app/ChatPage"
+route PlayGroundPageRoute { path: "/playground/:id?", to: PlayGroundPage }
+page PlayGroundPage {
+  component: import PlayGroundPageWithCustomAuth from "@src/client/app/PlayGroundPage"
+}
+
+route BuildRoute { path: "/build", to: BuildPage }
+page BuildPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
+}
+
+route SecretsRoute { path: "/build/secrets", to: SecretsPage }
+page SecretsPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
+}
+
+route ToolBoxRoute { path: "/build/toolboxes", to: ToolBoxPage }
+page ToolBoxPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
+}
+
+route LLMsRoute { path: "/build/llms", to: LLMsPage }
+page LLMsPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
+}
+
+route TeamsRoute { path: "/build/teams", to: TeamsPage }
+page TeamsPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
+}
+
+route AgentsRoute { path: "/build/agents", to: AgentsPage }
+page AgentsPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
 }
 
 route LoginRoute { path: "/login", to: LoginPage }
@@ -143,8 +174,7 @@ page PricingPage {
 
 route AccountRoute { path: "/account", to: AccountPage }
 page AccountPage {
-  authRequired: true,
-  component: import Account from "@src/client/app/AccountPage"
+  component: import AccountPageWithCustomAuth from "@src/client/app/AccountPage"
 }
 
 route CheckoutRoute { path: "/checkout", to: CheckoutPage }
@@ -247,6 +277,30 @@ action updateUserById {
   entities: [User]
 }
 
+action getAvailableModels {
+  fn: import { getAvailableModels } from "@src/server/actions.js",
+  entities: []
+}
+
+action updateUserModels {
+  fn: import { updateUserModels } from "@src/server/actions.js",
+  entities: []
+}
+
+action addUserModels {
+  fn: import { addUserModels } from "@src/server/actions.js",
+  entities: []
+}
+
+action deleteUserModels {
+  fn: import { deleteUserModels } from "@src/server/actions.js",
+  entities: []
+}
+
+action validateForm {
+  fn: import { validateForm } from "@src/server/actions.js",
+  entities: []
+}
 
 // 📚 Queries
 
@@ -257,6 +311,16 @@ query getDailyStats {
 
 query getPaginatedUsers {
   fn: import { getPaginatedUsers } from "@src/server/queries.js",
+  entities: [User]
+}
+
+query getModels {
+  fn: import { getModels } from "@src/server/queries.js",
+  entities: [User]
+}
+
+query propertyDependencies {
+  fn: import { propertyDependencies } from "@src/server/queries.js",
   entities: [User]
 }
 

@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 
-uvicorn fastagency.app:app --workers 8 --host 0.0.0.0 --proxy-headers
+prisma migrate deploy
+prisma generate --schema=schema.prisma --generator=pyclient
+
+uvicorn fastagency.app:app --workers 2 --host 0.0.0.0 --proxy-headers

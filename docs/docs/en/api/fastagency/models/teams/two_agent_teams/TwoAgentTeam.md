@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.app.ModelUpdate
+::: fastagency.models.teams.two_agent_teams.TwoAgentTeam

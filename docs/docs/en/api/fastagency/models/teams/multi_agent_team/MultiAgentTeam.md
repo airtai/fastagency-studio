@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.app.ModelDelete
+::: fastagency.models.teams.multi_agent_team.MultiAgentTeam

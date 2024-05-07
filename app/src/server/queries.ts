@@ -1,6 +1,13 @@
+import _ from 'lodash';
 import { type DailyStats, type User, type PageViewSource } from 'wasp/entities';
 import { HttpError } from 'wasp/server';
-import { type GetDailyStats, type GetPaginatedUsers } from 'wasp/server/operations';
+import {
+  type GetDailyStats,
+  type GetPaginatedUsers,
+  type GetModels,
+  type PropertyDependencies,
+} from 'wasp/server/operations';
+import { FASTAGENCY_SERVER_URL } from './common/constants';
 
 type DailyStatsWithSources = DailyStats & {
   sources: PageViewSource[];
@@ -103,4 +110,77 @@ export const getPaginatedUsers: GetPaginatedUsers<GetPaginatedUsersInput, GetPag
     users: queryResults,
     totalPages,
   };
+};
+
+type GetModelsInput = {
+  type_name?: string;
+};
+type PropertyValues = {
+  api_key: string;
+  model_name: string;
+  type_name: string;
+  user_id: number;
+  uuid: string;
+};
+
+export const getModels: GetModels<GetModelsInput, PropertyValues[]> = async (_args, context) => {
+  try {
+    let url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models`;
+    if (_.has(_args, 'type_name')) {
+      url = `${url}?type_name=${_args.type_name}`;
+    }
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
+
+    if (!response.ok) {
+      const errorMsg = json.detail || `HTTP error with status code ${response.status}`;
+      console.error('Server Error:', errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    return json;
+  } catch (error: any) {
+    throw new HttpError(500, error.message);
+  }
+};
+
+type PropertyDependenciesInput = {
+  properties: string[];
+};
+
+type PropertyDependenciesValues = {
+  [key: string]: number;
+};
+
+export const propertyDependencies: PropertyDependencies<
+  PropertyDependenciesInput,
+  PropertyDependenciesValues[]
+> = async (_args, context) => {
+  try {
+    let retVal: any = {};
+    const promises = _args.properties.map(async function (property: string) {
+      if (!property) return;
+      const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models?type_name=${property}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
+
+      if (!response.ok) {
+        const errorMsg = json.detail || `HTTP error with status code ${response.status}`;
+        console.error('Server Error:', errorMsg);
+        throw new Error(errorMsg);
+      }
+      retVal[property] = json.length;
+    });
+
+    await Promise.all(promises);
+    return retVal;
+  } catch (error: any) {
+    throw new HttpError(500, error.message);
+  }
 };

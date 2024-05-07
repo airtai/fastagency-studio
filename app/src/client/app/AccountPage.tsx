@@ -2,12 +2,12 @@ import { Link } from 'wasp/client/router';
 import { type User } from 'wasp/entities';
 import { logout } from 'wasp/client/auth';
 import { STRIPE_CUSTOMER_PORTAL_LINK } from '../../shared/constants';
-import { TierIds } from '../../shared/constants';
+import CustomAuthRequiredLayout from '../app/layout/CustomAuthRequiredLayout';
 import Button from '../components/Button';
 import FreeTrialButton from '../components/FreeTrialButton';
 import { MarketingEmailPreferenceSwitcher } from '../components/MarketingEmailPreferenceSwitcher';
 
-export default function AccountPage({ user }: { user: User }) {
+const AccountPage = ({ user }: { user: User }) => {
   return (
     <div className='mt-10 px-6'>
       <div className='overflow-hidden border border-airt-primary shadow-lg sm:rounded-lg lg:m-8 dark:border-gray-100/10'>
@@ -79,7 +79,7 @@ export default function AccountPage({ user }: { user: User }) {
       </div>
     </div>
   );
-}
+};
 
 function BuyMoreButton() {
   return (
@@ -107,3 +107,6 @@ function CustomerPortalButton() {
     </div>
   );
 }
+
+const AccountPageWithCustomAuth = CustomAuthRequiredLayout(AccountPage);
+export default AccountPageWithCustomAuth;

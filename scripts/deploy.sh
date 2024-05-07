@@ -12,6 +12,8 @@ check_variable "TAG"
 check_variable "GITHUB_USERNAME"
 check_variable "GITHUB_PASSWORD"
 check_variable "DOMAIN"
+check_variable "DATABASE_URL"
+check_variable "PY_DATABASE_URL"
 
 
 if [ ! -f key.pem ]; then
@@ -50,5 +52,5 @@ $ssh_command "docker system prune -f || echo 'No images to delete'"
 echo "INFO: starting docker containers"
 
 $ssh_command "export GITHUB_REPOSITORY='$GITHUB_REPOSITORY' TAG='$TAG' container_name='$container_name' \
-	DOMAIN='$DOMAIN' \
+	DOMAIN='$DOMAIN' PY_DATABASE_URL='$PY_DATABASE_URL' DATABASE_URL='$DATABASE_URL' \
 	&& docker compose up -d"

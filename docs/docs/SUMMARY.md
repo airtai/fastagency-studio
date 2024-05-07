@@ -5,23 +5,15 @@ search:
 - [Features](fastagency.md)
 - Reference
     - fastagency
-        - app
-            - [Model](api/fastagency/app/Model.md)
-            - [ModelDelete](api/fastagency/app/ModelDelete.md)
-            - [ModelUpdate](api/fastagency/app/ModelUpdate.md)
-            - [User](api/fastagency/app/User.md)
-            - [find_model](api/fastagency/app/find_model.md)
-            - [get_models_schemas](api/fastagency/app/get_models_schemas.md)
-            - [models](api/fastagency/app/models.md)
-            - [models_add](api/fastagency/app/models_add.md)
-            - [models_delete](api/fastagency/app/models_delete.md)
-            - [models_update](api/fastagency/app/models_update.md)
-            - [validate_model](api/fastagency/app/validate_model.md)
         - models
             - [Registry](api/fastagency/models/Registry.md)
             - agents
                 - assistant
                     - [AssistantAgent](api/fastagency/models/agents/assistant/AssistantAgent.md)
+                - base
+                    - [AgentBaseModel](api/fastagency/models/agents/base/AgentBaseModel.md)
+                - user_proxy
+                    - [UserProxyAgent](api/fastagency/models/agents/user_proxy/UserProxyAgent.md)
                 - web_surfer
                     - [BingAPIKey](api/fastagency/models/agents/web_surfer/BingAPIKey.md)
                     - [WebSurferAgent](api/fastagency/models/agents/web_surfer/WebSurferAgent.md)
@@ -44,6 +36,13 @@ search:
                 - [Registry](api/fastagency/models/registry/Registry.md)
                 - [Schemas](api/fastagency/models/registry/Schemas.md)
                 - [register](api/fastagency/models/registry/register.md)
+            - teams
+                - base
+                    - [TeamBaseModel](api/fastagency/models/teams/base/TeamBaseModel.md)
+                - multi_agent_team
+                    - [MultiAgentTeam](api/fastagency/models/teams/multi_agent_team/MultiAgentTeam.md)
+                - two_agent_teams
+                    - [TwoAgentTeam](api/fastagency/models/teams/two_agent_teams/TwoAgentTeam.md)
 - Contributing
     - [Development](getting-started/contributing/CONTRIBUTING.md)
     - [Documentation](getting-started/contributing/docs.md)

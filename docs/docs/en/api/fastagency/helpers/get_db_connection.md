@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.app.User
+::: fastagency.helpers.get_db_connection

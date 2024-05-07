@@ -5,7 +5,7 @@ from typing_extensions import TypeAlias
 
 from ..base import Model
 from ..registry import register
-from ._base import AgentBaseModel, llm_type_refs
+from .base import AgentBaseModel, llm_type_refs
 
 # todo: this should be a mixin
 

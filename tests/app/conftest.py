@@ -4,7 +4,7 @@ from typing import AsyncIterator
 
 import pytest_asyncio
 
-from fastagency.helpers import get_db_connection, get_wasp_db_url
+from fastagency.db.helpers import get_db_connection, get_wasp_db_url
 
 
 @pytest_asyncio.fixture  # type: ignore

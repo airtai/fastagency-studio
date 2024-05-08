@@ -16,7 +16,8 @@ class TestValidateOpenAIKey:
     @pytest.fixture()
     def model_dict(self) -> Dict[str, Any]:
         model = OpenAIAPIKey(
-            api_key="sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest"  # pragma: allowlist secret
+            api_key="sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest",  # pragma: allowlist secret
+            name="Hello World!",
         )
 
         return json.loads(model.model_dump_json())  # type: ignore[no-any-return]
@@ -56,7 +57,7 @@ class TestValidateOpenAI:
         OpenAIAPIKeyRef = OpenAIAPIKey.get_reference_model()  # noqa: N806
         api_key = OpenAIAPIKeyRef(uuid=key_uuid)
 
-        model = OpenAI(api_key=api_key)
+        model = OpenAI(api_key=api_key, name="Hello World!")
 
         return json.loads(model.model_dump_json())  # type: ignore[no-any-return]
 

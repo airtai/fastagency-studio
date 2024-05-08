@@ -16,7 +16,7 @@ class TestModelRoutes:
         self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         key_uuid = str(uuid.uuid4())
-        azure_oai_api_key = AzureOAIAPIKey(api_key="whatever")
+        azure_oai_api_key = AzureOAIAPIKey(api_key="whatever", name="whatever")
         type_name = "secret"
         model_name = "AzureOAIAPIKey"
 
@@ -32,7 +32,10 @@ class TestModelRoutes:
 
         expected = [
             {
-                "json_str": {"api_key": "whatever"},  # pragma: allowlist secret
+                "json_str": {
+                    "api_key": "whatever",  # pragma: allowlist secret
+                    "name": "whatever",
+                },
                 "model_uuid": key_uuid,
                 "type_name": "secret",
                 "model_name": "AzureOAIAPIKey",
@@ -48,14 +51,17 @@ class TestModelRoutes:
     @pytest.mark.asyncio()
     async def test_add_model(self, user_uuid: str) -> None:
         model_uuid = str(uuid.uuid4())
-        azure_oai_api_key = AzureOAIAPIKey(api_key="whatever")
+        azure_oai_api_key = AzureOAIAPIKey(api_key="whatever", name="who cares?")
         response = client.post(
             f"/user/{user_uuid}/models/secret/AzureOAIAPIKey/{model_uuid}",
             json=azure_oai_api_key.model_dump(),
         )
 
         assert response.status_code == 200
-        expected = {"api_key": "whatever"}  # pragma: allowlist secret
+        expected = {
+            "api_key": "whatever",  # pragma: allowlist secret
+            "name": "who cares?",
+        }
         actual = response.json()
         assert actual == expected
 
@@ -64,7 +70,7 @@ class TestModelRoutes:
         self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         key_uuid = str(uuid.uuid4())
-        azure_oai_api_key = AzureOAIAPIKey(api_key="who cares")
+        azure_oai_api_key = AzureOAIAPIKey(api_key="who cares", name="whatever")
         type_name = "secret"
         model_name = "AzureOAIAPIKey"
 
@@ -81,7 +87,10 @@ class TestModelRoutes:
         )
 
         assert response.status_code == 200
-        expected = {"api_key": "who cares"}  # pragma: allowlist secret
+        expected = {
+            "api_key": "who cares",  # pragma: allowlist secret
+            "name": "whatever",
+        }
         actual = response.json()
         assert actual == expected
 
@@ -90,7 +99,7 @@ class TestModelRoutes:
         self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         key_uuid = str(uuid.uuid4())
-        azure_oai_api_key = AzureOAIAPIKey(api_key="whatever")
+        azure_oai_api_key = AzureOAIAPIKey(api_key="whatever", name="whatever")
         type_name = "secret"
         model_name = "AzureOAIAPIKey"
 
@@ -104,6 +113,9 @@ class TestModelRoutes:
         response = client.delete(f"/user/{user_uuid}/models/secret/{key_uuid}")
 
         assert response.status_code == 200
-        expected = {"api_key": "whatever"}  # pragma: allowlist secret
+        expected = {
+            "api_key": "whatever",  # pragma: allowlist secret
+            "name": "whatever",
+        }
         actual = response.json()
         assert actual == expected

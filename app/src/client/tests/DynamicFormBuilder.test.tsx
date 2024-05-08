@@ -66,11 +66,17 @@ const jsonSchema: JsonSchema = {
 };
 
 const updateExistingModel: SelectedModelSchema = {
-  api_key: '',
-  model_name: '',
-  type_name: '',
-  user_id: 1,
-  uuid: '',
+  uuid: '36015a9d-b03a-404b-8a21-a86267e92931',
+  user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
+  type_name: 'secret',
+  model_name: 'OpenAIAPIKey',
+  model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
+  json_str: {
+    name: 'production azure key',
+    api_key: '',
+  },
+  created_at: '2024-05-07T13:53:43.150000Z',
+  updated_at: '2024-05-07T13:53:43.150000Z',
 };
 
 describe('DynamicFormBuilder', () => {

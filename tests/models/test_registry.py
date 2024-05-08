@@ -106,10 +106,16 @@ class TestRegistry:
             name="MyModel",
             json_schema={
                 "properties": {
+                    "name": {
+                        "description": "The name of the model",
+                        "minLength": 1,
+                        "title": "Name",
+                        "type": "string",
+                    },
                     "i": {"title": "I", "type": "integer"},
                     "s": {"title": "S", "type": "string"},
                 },
-                "required": ["i", "s"],
+                "required": ["name", "i", "s"],
                 "title": "MyModel",
                 "type": "object",
             },
@@ -167,11 +173,17 @@ class TestRegistry:
                     }
                 },
                 "properties": {
+                    "name": {
+                        "description": "The name of the model",
+                        "minLength": 1,
+                        "title": "Name",
+                        "type": "string",
+                    },
                     "i": {"title": "I", "type": "integer"},
                     "s": {"title": "S", "type": "string"},
                     "secret": {"$ref": "#/$defs/MySecretRef"},
                 },
-                "required": ["i", "s", "secret"],
+                "required": ["name", "i", "s", "secret"],
                 "title": "MyModel",
                 "type": "object",
             },

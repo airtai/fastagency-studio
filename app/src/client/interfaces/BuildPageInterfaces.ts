@@ -48,11 +48,17 @@ export interface ApiResponse {
 }
 
 export interface SelectedModelSchema {
-  api_key: string;
-  model_name: string;
-  type_name: string;
-  user_id: number;
   uuid: string;
+  user_uuid: string;
+  type_name: string;
+  model_name: string;
+  model_uuid: string;
+  json_str: {
+    name: string;
+    api_key: string;
+  };
+  created_at: string;
+  updated_at: string;
 }
 
 export interface SecretsProps {

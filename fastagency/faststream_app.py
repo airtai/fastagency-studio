@@ -1,14 +1,18 @@
 import json
 import random
 from os import environ
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from faststream import FastStream, Logger
 from faststream.nats import JStream, NatsBroker, NatsMessage
 
 process_id = random.randint(1, 1000)  # nosec B311
 
-nats_url: str = environ.get("NATS_URL")  # type: ignore[assignment]
+nats_url: Optional[str] = environ.get("NATS_URL", None)  # type: ignore[assignment]
+if nats_url is None:
+    domain: str = environ.get("DOMAIN")  # type: ignore[assignment]
+    nats_url = f"tls://{domain}:4222"
+
 broker = NatsBroker(nats_url)
 app = FastStream(broker)
 

@@ -15,6 +15,7 @@ class TestAssistantAgent:
             agent = AssistantAgent(
                 llm=llm,
                 system_message="test system message",
+                name="Hello World!",
             )
         except ValidationError:
             # print(f"{e.errors()=}")
@@ -86,6 +87,12 @@ class TestAssistantAgent:
                 },
             },
             "properties": {
+                "name": {
+                    "description": "The name of the model",
+                    "minLength": 1,
+                    "title": "Name",
+                    "type": "string",
+                },
                 "llm": {
                     "anyOf": [
                         {"$ref": "#/$defs/AzureOAIRef"},
@@ -100,8 +107,22 @@ class TestAssistantAgent:
                     "type": "string",
                 },
             },
-            "required": ["llm", "system_message"],
+            "required": ["name", "llm", "system_message"],
             "title": "AssistantAgent",
             "type": "object",
         }
         assert schema == expected
+
+    def test_assistant_model_validation(self) -> None:
+        llm_uuid = uuid.uuid4()
+        llm = OpenAI.get_reference_model()(uuid=llm_uuid)
+
+        agent = AssistantAgent(
+            llm=llm,
+            name="My Assistant",
+            system_message="test system message",
+        )
+
+        agent_json = agent.model_dump_json()
+        assert agent_json is not None
+        # print(f"{agent_json=}")

@@ -52,12 +52,13 @@ export const constructHTMLSchema = (
   property: any
 ): constructHTMLSchemaValues => {
   const capitalizeTitle = _.map(title.split('_'), capitalizeFirstLetter).join(' ');
-  let properties = _.map(propertyDependencies, 'model_name');
+  let properties = _.map(propertyDependencies, 'json_str.name');
+
   const defaultValue = _.has(property, 'default')
     ? property.default === null
       ? 'None'
-      : property.default
-    : properties[0];
+      : _.find(propertyDependencies, ['model_name', removeRefSuffix(property.default)]).json_str.name
+    : propertyDependencies[0]?.json_str.name;
   if (properties.includes(defaultValue)) {
     properties = properties.filter((item: string) => item !== defaultValue);
     properties.unshift(defaultValue);
@@ -121,9 +122,9 @@ export const getFormSubmitValues = (refValues: any, formData: any) => {
       const selectedKey = formData[key]
         ? formData[key] && typeof formData[key] === 'string'
           ? formData[key]
-          : formData[key].model_name
+          : formData[key].json_str.name
         : refValues[key].htmlSchema.default;
-      const selectedData = refValues[key].userPropertyData.find((data: any) => data.model_name === selectedKey);
+      const selectedData = refValues[key].userPropertyData.find((data: any) => data.json_str.name === selectedKey);
       newFormData[key] = selectedData;
     }
   });

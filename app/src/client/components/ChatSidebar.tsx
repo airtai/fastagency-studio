@@ -3,8 +3,6 @@ import { createNewChat, useQuery, getChats } from 'wasp/client/operations';
 import React, { useEffect, useRef, useState, MouseEventHandler } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { NavLink, useLocation } from 'react-router-dom';
-// import Logo from '../static/logo-for-dark-bg.png';
-import Logo from '../static/logo.svg';
 import EditableChatName from './EditableChatName';
 import { shouldRenderChat } from '../utils/chatUtils';
 import { updateCurrentChat } from 'wasp/client/operations';
@@ -82,7 +80,7 @@ const ChatSidebar = ({ sidebarOpen, setSidebarOpen, refetchAllChatDetails }: Cha
   const handleCreateNewChat: MouseEventHandler<HTMLAnchorElement> = async (event) => {
     try {
       const chat: Chat = await createNewChat();
-      history.push(`/chat/${chat.uuid}`);
+      history.push(`/playground/${chat.uuid}`);
     } catch (err: any) {
       console.log('Error: ' + err.message);
       if (err.message === 'No Subscription Found') {
@@ -96,27 +94,18 @@ const ChatSidebar = ({ sidebarOpen, setSidebarOpen, refetchAllChatDetails }: Cha
   return (
     <aside
       ref={sidebar}
-      className={`border-r-2 absolute left-0 top-0 z-9999 flex h-screen w-75 flex-col overflow-y-hidden bg-captn-dark-blue duration-300 ease-linear dark:bg-captn-dark-blue lg:static lg:translate-x-0 ${
+      className={` border-r border-airt-font-base absolute left-0 top-0 z-9999 flex h-screen w-75 flex-col overflow-y-hidden bg-airt-primary duration-300 ease-linear dark:bg-airt-primary lg:static lg:translate-x-0 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
     >
       {/* <!-- SIDEBAR HEADER --> */}
       <div className='flex items-center gap-2 px-6 py-5.5 lg:py-3.5'>
-        <>
-          <NavLink to='/'>
-            <img src={Logo} alt='Logo' className='h-10 w-auto mt-2' />
-          </NavLink>
-          <span className='mt-2 text-sm font-semibold leading-6 dark:text-captn-light-cream'>
-            <sup className='text-base text-captn-light-blue'>βeta</sup>
-          </span>
-        </>
-
         <button
           ref={trigger}
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-controls='sidebar'
           aria-expanded={sidebarOpen}
-          className='block lg:hidden text-captn-light-cream'
+          className='block lg:hidden text-airt-font-base'
         >
           <svg
             className='fill-current'
@@ -136,7 +125,7 @@ const ChatSidebar = ({ sidebarOpen, setSidebarOpen, refetchAllChatDetails }: Cha
       <div>
         <Link
           to='#'
-          className='no-underline mt-7 my-1 mx-4 mb-10 flex items-center justify-left gap-2.5 rounded-md bg-captn-cta-green py-4 px-4 text-center font-medium text-captn-light-cream hover:bg-opacity-90'
+          className='no-underline mt-7 my-1 mx-4 mb-10 flex items-center justify-left gap-2.5 rounded-md bg-airt-secondary py-4 px-4 text-center font-medium text-airt-font-base hover:bg-opacity-90'
           onClick={handleCreateNewChat}
         >
           <span>
@@ -178,13 +167,13 @@ const ChatSidebar = ({ sidebarOpen, setSidebarOpen, refetchAllChatDetails }: Cha
                       shouldRenderChat(chat) && (
                         <NavLink
                           key={chat.id}
-                          to={`/chat/${chat.uuid}?`}
-                          className={`chat-link relative no-underline group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out ${
+                          to={`/playground/${chat.uuid}?`}
+                          className={`chat-link relative no-underline group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium duration-300 ease-in-out ${
                             pathname === '/' && 'bg-gray-700 dark:bg-meta-4'
                           } ${
                             chat.uuid === activeChat
-                              ? 'bg-captn-light-cream text-captn-dark-blue hover:bg-captn-light-blue hover:text-captn-dark-blue'
-                              : 'text-captn-light-cream hover:bg-captn-light-blue hover:text-captn-dark-blue'
+                              ? 'bg-airt-font-base text-airt-primary hover:bg-airt-secondary hover:text-airt-font-base'
+                              : 'text-airt-font-base hover:bg-airt-secondary hover:text-airt-font-base'
                           }`}
                         >
                           <svg

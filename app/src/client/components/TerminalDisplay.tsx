@@ -6,11 +6,7 @@ interface TerminalDisplayProps {
   isOpenOnLoad?: boolean; // Whether the terminal is open on load
 }
 
-const TerminalDisplay: React.FC<TerminalDisplayProps> = ({
-  messages,
-  maxHeight,
-  isOpenOnLoad,
-}) => {
+const TerminalDisplay: React.FC<TerminalDisplayProps> = ({ messages, maxHeight, isOpenOnLoad }) => {
   const [isMinimized, setIsMinimized] = useState(isOpenOnLoad ? false : true); // Track if terminal is minimized
   const containerRef = useRef<HTMLDivElement | null>(null); // Reference to the scroll container
   const [isAutoScroll, setIsAutoScroll] = useState(true); // Track if auto-scroll is enabled
@@ -47,23 +43,15 @@ const TerminalDisplay: React.FC<TerminalDisplayProps> = ({
   }, [messages, isAutoScroll]);
 
   return (
-    <div
-      className={`accordion-wrapper terminal ${isMinimized ? 'minimized' : ''}`}
-    >
+    <div className={`accordion-wrapper terminal ${isMinimized ? 'minimized' : ''}`}>
       <div
         className={`relative terminal-header ${
           isMinimized ? 'rounded-lg' : 'rounded-t-lg'
-        } text-captn-light-cream p-1 text-right bg-captn-light-blue `}
+        } text-airt-font-base p-1 text-right bg-captn-light-blue `}
         onClick={() => setIsMinimized(!isMinimized)}
       >
-        <p className='accordion-title text-sm text-left text-captn-dark-blue'>
-          Agent conversations
-        </p>
-        <button
-          className={`absolute right-4 top-4 ${
-            isMinimized ? '' : 'open'
-          } text-sm text-captn-dark-blue `}
-        >
+        <p className='accordion-title text-sm text-left text-captn-dark-blue'>Agent conversations</p>
+        <button className={`absolute right-4 top-4 ${isMinimized ? '' : 'open'} text-sm text-captn-dark-blue `}>
           {isMinimized ? (
             <svg
               xmlns='http://www.w3.org/2000/svg'
@@ -93,11 +81,7 @@ const TerminalDisplay: React.FC<TerminalDisplayProps> = ({
           )}
         </button>
       </div>
-      <div
-        className={`accordion-item rounded-b-lg ${
-          isMinimized ? '' : 'collapsed'
-        }`}
-      >
+      <div className={`accordion-item rounded-b-lg ${isMinimized ? '' : 'collapsed'}`}>
         <div
           ref={containerRef}
           onScroll={handleUserScroll}

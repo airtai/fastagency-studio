@@ -7,11 +7,7 @@ interface ChatFormProps {
   triggerChatFormSubmitMsg?: string | null;
 }
 
-export default function ChatForm({
-  handleFormSubmit,
-  currentChatDetails,
-  triggerChatFormSubmitMsg,
-}: ChatFormProps) {
+export default function ChatForm({ handleFormSubmit, currentChatDetails, triggerChatFormSubmitMsg }: ChatFormProps) {
   const [formInputValue, setFormInputValue] = useState('');
 
   const formInputRef = useCallback(
@@ -44,7 +40,7 @@ export default function ChatForm({
       <form onSubmit={handleSubmit} className=''>
         <label
           htmlFor='search'
-          className='mb-2 text-sm font-medium text-captn-dark-blue sr-only dark:text-captn-light-cream'
+          className='mb-2 text-sm font-medium text-captn-dark-blue sr-only dark:text-airt-font-base'
         >
           Search
         </label>
@@ -53,8 +49,8 @@ export default function ChatForm({
             type='search'
             id='userQuery'
             name='search'
-            className='block rounded-lg w-full h-12 text-sm text-captn-light-cream bg-captn-dark-blue focus:outline-none focus:ring-0 focus:border-captn-light-blue'
-            placeholder='Message Capt’n...'
+            className='block rounded-lg w-full h-12 text-sm text-airt-font-base bg-captn-dark-blue focus:outline-none focus:ring-0 focus:border-captn-light-blue'
+            placeholder='Enter your message...'
             required
             ref={formInputRef}
             value={formInputValue}
@@ -62,16 +58,10 @@ export default function ChatForm({
           />
           <button
             type='submit'
-            className={`text-captn-light-cream bg-captn-cta-green hover:bg-captn-cta-green-hover absolute right-2 font-medium rounded-lg text-sm px-1.5 py-1.5`}
+            className={`text-airt-font-base bg-airt-primary hover:opacity-90 absolute right-2 font-medium rounded-lg text-sm px-1.5 py-1.5`}
           >
             <span className=''>
-              <svg
-                width='24'
-                height='24'
-                viewBox='0 0 24 24'
-                fill='none'
-                className='text-captn-light-cream'
-              >
+              <svg width='24' height='24' viewBox='0 0 24 24' fill='none' className='text-airt-font-base'>
                 <path
                   d='M7 11L12 6L17 11M12 18V7'
                   stroke='currentColor'

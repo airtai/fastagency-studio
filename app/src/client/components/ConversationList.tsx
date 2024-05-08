@@ -54,8 +54,8 @@ export default function ConversationsList({
     <div data-testid='conversations-wrapper' className='w-full'>
       {conversations.map((conversation, idx) => {
         const isUserConversation = conversation.role === 'user';
-        const conversationBgColor = isUserConversation ? 'captn-light-blue' : 'captn-dark-blue';
-        const conversationTextColor = isUserConversation ? 'captn-dark-blue' : 'captn-light-cream';
+        const conversationBgColor = isUserConversation ? 'airt-primary' : 'airt-font-base';
+        const conversationTextColor = isUserConversation ? 'airt-font-base' : 'airt-primary';
         const conversationLogo = isUserConversation ? (
           <div
             style={{
@@ -79,7 +79,17 @@ export default function ConversationsList({
             <div>You</div>
           </div>
         ) : (
-          <img alt='Capt’n.ai logo' src={logo} className='w-full h-full' style={{ borderRadius: '50%' }} />
+          <div
+            className='bg-airt-primary'
+            style={{ borderRadius: '50%', width: '93%', height: '93%', paddingTop: '3px' }}
+          >
+            <img
+              alt='FastAgency logo'
+              className='w-full h-full'
+              src={logo}
+              style={{ width: '78%', height: '78%', marginLeft: '4px' }}
+            />
+          </div>
         );
 
         return (
@@ -107,7 +117,7 @@ export default function ConversationsList({
                     className='absolute inline-block'
                     style={{
                       left: '-15px',
-                      top: '6px',
+                      top: '11px',
                       height: ' 45px',
                       width: '45px',
                     }}

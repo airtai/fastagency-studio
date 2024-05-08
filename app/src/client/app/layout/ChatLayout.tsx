@@ -2,7 +2,7 @@ import { type Chat } from 'wasp/entities';
 
 import { useAuth } from 'wasp/client/auth';
 import { useState, ReactNode, FC, useRef, useEffect } from 'react';
-import Header from '../../admin/components/Header';
+import { Header } from '../BuildPage';
 import ChatSidebar from '../../components/ChatSidebar';
 import ChatForm from '../../components/ChatForm';
 import { useHistory } from 'react-router-dom';
@@ -57,11 +57,11 @@ const ChatLayout: FC<Props> = ({
   // get response from openai and save it against the conversation
 
   const wrapperClass = document.body.classList.contains('server-error')
-    ? 'h-[calc(100vh-85px)]'
-    : 'h-screen';
+    ? 'h-[calc(100vh-173px)]'
+    : 'h-[calc(100vh-80px)]';
 
   return (
-    <div className='dark:bg-boxdark-2 dark:text-bodydark bg-captn-light-blue'>
+    <div className='dark:bg-boxdark-2 dark:text-bodydark bg-airt-secondary'>
       {/* <!-- ===== Page Wrapper Start ===== --> */}
       <div className={`flex ${wrapperClass} overflow-hidden`}>
         {/* <!-- ===== Sidebar Start ===== --> */}
@@ -75,11 +75,7 @@ const ChatLayout: FC<Props> = ({
         {/* <!-- ===== Content Area Start ===== --> */}
         <div className='relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden'>
           {/* <!-- ===== Header Start ===== --> */}
-          <Header
-            sidebarOpen={sidebarOpen}
-            setSidebarOpen={setSidebarOpen}
-            user={user}
-          />
+          <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
           {/* <!-- ===== Header End ===== --> */}
 
           {/* <!-- ===== Main Content Start ===== --> */}

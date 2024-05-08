@@ -223,6 +223,8 @@ testpaths = [
 markers = [
     "slow",
     "all",
+    "db",
+    "nats",
 ]
 
 [tool.coverage.run]

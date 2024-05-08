@@ -14,8 +14,10 @@ class TestOpenAI:
 
         model = OpenAI(
             api_key=api_key,
+            name="Hello World!",
         )
         expected = {
+            "name": "Hello World!",
             "model": "gpt-3.5-turbo",
             "api_key": {
                 "type": "secret",
@@ -63,6 +65,12 @@ class TestOpenAI:
                 }
             },
             "properties": {
+                "name": {
+                    "description": "The name of the model",
+                    "minLength": 1,
+                    "title": "Name",
+                    "type": "string",
+                },
                 "model": {
                     "default": "gpt-3.5-turbo",
                     "description": "The model to use for the OpenAI API, e.g. 'gpt-3.5-turbo'",
@@ -89,7 +97,7 @@ class TestOpenAI:
                     "type": "string",
                 },
             },
-            "required": ["api_key"],
+            "required": ["name", "api_key"],
             "title": "OpenAI",
             "type": "object",
         }
@@ -99,7 +107,8 @@ class TestOpenAI:
 class TestOpenAIAPIKey:
     def test_constructor_success(self) -> None:
         api_key = OpenAIAPIKey(
-            api_key="sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest"  # pragma: allowlist secret
+            api_key="sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest",  # pragma: allowlist secret
+            name="Hello World!",
         )  # pragma: allowlist secret
         assert (
             api_key.api_key
@@ -109,5 +118,6 @@ class TestOpenAIAPIKey:
     def test_constructor_failure(self) -> None:
         with pytest.raises(ValueError, match="String should match pattern"):
             OpenAIAPIKey(
-                api_key="_sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest"  # pragma: allowlist secret
+                api_key="_sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest",  # pragma: allowlist secret
+                name="Hello World!",
             )  # pragma: allowlist secret

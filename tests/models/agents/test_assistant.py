@@ -119,6 +119,7 @@ class TestAssistantAgent:
 
         agent = AssistantAgent(
             llm=llm,
+            name="My Assistant",
             system_message="test system message",
         )
 

@@ -1,0 +1,46 @@
+name: Deploy NATS
+
+on:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy_nats:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash
+    needs: [check]
+    if: github.ref_name == 'main' || github.ref_name == 'dev'
+    env:
+      GITHUB_USERNAME: ${{ github.actor }}
+      GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      DEVELOPER_TOKEN: ${{ secrets.DEVELOPER_TOKEN }}
+      DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
+      PY_DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_PY_DATABASE_URL || secrets.STAGING_PY_DATABASE_URL }}
+      DOMAIN: ${{ github.ref_name == 'main' && vars.PROD_DOMAIN || vars.STAGING_DOMAIN }}
+      SSH_KEY: ${{ github.ref_name == 'main' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
+    steps:
+      - uses: actions/checkout@v3 # Don't change it to cheackout@v4. V4 is not working with container image.
+      # This is to fix GIT not liking owner of the checkout dir - https://github.com/actions/runner/issues/2033#issuecomment-1204205989
+      - run: chown -R $(id -u):$(id -g) $PWD
+
+      - run: if [[ $GITHUB_REF_NAME == "main" ]]; then echo "TAG=latest" >> $GITHUB_ENV ; else echo "TAG=dev" >> $GITHUB_ENV ; fi;
+
+      - run: echo "PATH=$PATH:/github/home/.local/bin" >> $GITHUB_ENV
+      - run: "which ssh-agent || ( apt-get update -y && apt-get install openssh-client git gettext -y )"
+      - run: eval $(ssh-agent -s)
+      - run: mkdir -p ~/.ssh
+      - run: chmod 700 ~/.ssh
+      - run: ssh-keyscan "$DOMAIN" >> ~/.ssh/known_hosts
+      - run: chmod 644 ~/.ssh/known_hosts
+      - run: echo "$SSH_KEY" | base64 --decode > key.pem
+      - run: chmod 600 key.pem
+
+      - run: ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$DOMAIN" "docker images"
+      - run: bash scripts/deploy_nats.sh
+
+      - run: rm key.pem

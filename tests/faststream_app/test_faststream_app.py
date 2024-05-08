@@ -8,6 +8,7 @@ from faststream.nats import TestNatsBroker
 from fastagency.faststream_app import broker, register_handler, stream
 
 
+@pytest.mark.nats()
 @pytest.mark.asyncio()
 async def test_register_handler() -> None:
     client_id = random.randint(1, 1000)
@@ -24,6 +25,7 @@ async def test_register_handler() -> None:
         # Later I will send a message to "ping.*" and will await for "pong.*" message
 
 
+@pytest.mark.nats()
 @pytest.mark.asyncio()
 async def test_ping_handler() -> None:
     client_id = random.randint(1, 1000)
@@ -57,6 +59,7 @@ async def test_ping_handler() -> None:
         assert "process_id" in result
 
 
+@pytest.mark.nats()
 @pytest.mark.asyncio()
 async def test_ping_handler_with_wrong_message() -> None:
     client_id = random.randint(1, 1000)

@@ -47,6 +47,10 @@ jobs:
         pydantic-version: ["pydantic-v2"]
       fail-fast: false
     services:
+      nats:
+        image: diementros/nats:js
+        ports:
+          - 4222:4222
       postgres-wasp:
         image: postgres:13
         env:
@@ -132,7 +136,7 @@ jobs:
       - name: Prisma
         run: prisma generate
       - name: Test
-        run: bash scripts/test.sh -m "not db"
+        run: bash scripts/test.sh -m "not db and not nats"
 
   test-windows-latest:
     if: github.event.pull_request.draft == false
@@ -152,7 +156,7 @@ jobs:
       - name: Prisma
         run: prisma generate
       - name: Test
-        run: bash scripts/test.sh -m "not db"
+        run: bash scripts/test.sh -m "not db and not nats"
 
   coverage-combine:
     if: github.event.pull_request.draft == false

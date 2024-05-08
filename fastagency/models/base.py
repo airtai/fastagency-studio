@@ -17,9 +17,7 @@ __all__ = [
 
 # abstract class
 class Model(BaseModel, ABC):
-    name: Annotated[
-        str, Field(..., description="The name of the model", pattern="^.+$")
-    ]
+    name: Annotated[str, Field(..., description="The name of the model", min_length=1)]
     _reference_model: "Optional[Type[ObjectReference]]" = None
 
     @classmethod

@@ -67,7 +67,7 @@ class TestOpenAI:
             "properties": {
                 "name": {
                     "description": "The name of the model",
-                    "pattern": "^.+$",
+                    "minLength": 1,
                     "title": "Name",
                     "type": "string",
                 },

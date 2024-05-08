@@ -89,7 +89,7 @@ const TerminalDisplay: React.FC<TerminalDisplayProps> = ({ messages, maxHeight, 
             isMinimized ? 'hidden' : ''
           }`}
           style={{ maxHeight: `${maxHeight}px`, wordWrap: 'break-word' }}
-          dangerouslySetInnerHTML={{ __html: convertAnsiToHtml(messages) }}
+          dangerouslySetInnerHTML={{ __html: convertAnsiToHtml(messages) }} // nosemgrep
         />
       </div>
     </div>

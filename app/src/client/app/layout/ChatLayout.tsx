@@ -61,7 +61,7 @@ const ChatLayout: FC<Props> = ({
     : 'h-[calc(100vh-80px)]';
 
   return (
-    <div className='dark:bg-boxdark-2 dark:text-bodydark bg-airt-secondary'>
+    <div className='dark:bg-boxdark-2 dark:text-bodydark'>
       {/* <!-- ===== Page Wrapper Start ===== --> */}
       <div className={`flex ${wrapperClass} overflow-hidden`}>
         {/* <!-- ===== Sidebar Start ===== --> */}

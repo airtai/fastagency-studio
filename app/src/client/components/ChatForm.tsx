@@ -49,7 +49,7 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
             type='search'
             id='userQuery'
             name='search'
-            className='block rounded-lg w-full h-12 text-sm text-airt-font-base bg-captn-dark-blue focus:outline-none focus:ring-0 focus:border-captn-light-blue'
+            className='block rounded-lg w-full h-12 text-sm text-airt-font-base bg-airt-primary focus:outline-none focus:ring-0 focus:border-captn-light-blue'
             placeholder='Enter your message...'
             required
             ref={formInputRef}

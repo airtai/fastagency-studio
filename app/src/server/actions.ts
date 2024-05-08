@@ -287,25 +287,20 @@ export const createNewChat: CreateNewChat<void, Chat> = async (user, context) =>
       user: { connect: { id: context.user.id } },
       smartSuggestions: {
         type: 'manyOf',
-        suggestions: [
-          'Boost sales',
-          'Increase brand awareness',
-          'Drive website traffic',
-          'Promote a product or service',
-        ],
+        suggestions: [''],
       },
     },
   });
 
-  const conversation = await context.entities.Conversation.create({
-    data: {
-      chat: { connect: { id: chat.id } },
-      user: { connect: { id: context.user.id } },
-      message:
-        "Welcome aboard! I'm Capt’n, your digital marketing companion. Think of me as your expert sailor, ready to ensure your Google Ads journey is smooth sailing. Before we set sail, could you steer our course by sharing the business goal you'd like to improve?",
-      role: 'assistant',
-    },
-  });
+  // const conversation = await context.entities.Conversation.create({
+  //   data: {
+  //     chat: { connect: { id: chat.id } },
+  //     user: { connect: { id: context.user.id } },
+  //     message:
+  //       "Welcome aboard! I'm Capt’n, your digital marketing companion. Think of me as your expert sailor, ready to ensure your Google Ads journey is smooth sailing. Before we set sail, could you steer our course by sharing the business goal you'd like to improve?",
+  //     role: 'assistant',
+  //   },
+  // });
 
   return chat;
 };

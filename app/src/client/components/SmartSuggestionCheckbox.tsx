@@ -51,7 +51,7 @@ export default function SmartSuggestionCheckbox({
       >
         {chatType === 'daily_analysis' && <hr className=' bg-gray-200 border-1' />}
         {chatType === 'daily_analysis' && (
-          <p className='block text-bold text-airt-font-base' style={{ margin: '20px 0' }}>
+          <p className='block text-bold text-airt-primary' style={{ margin: '20px 0' }}>
             <b>
               If you've made a selection through email, the option is pre-selected but can be changed. You can opt for
               all or just a few options as desired, and then click the send button. Alternatively, you can type your own
@@ -70,7 +70,7 @@ export default function SmartSuggestionCheckbox({
                 checked={selectedItems.includes(suggestion)}
                 className='accent-pink-300 rounded-sm accent-airt-primary'
               />
-              <span className='ml-2 mt-1 text-airt-font-base'>{suggestion}</span>
+              <span className='ml-2 mt-1 text-airt-primary'>{suggestion}</span>
             </label>
           ))}
         </div>

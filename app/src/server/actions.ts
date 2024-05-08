@@ -273,7 +273,7 @@ export const validateForm: ValidateForm<{ data: any; validationURL: string }, an
   }
 };
 
-export const createNewChat: CreateNewChat<void, Chat> = async (user, context) => {
+export const createNewChat: CreateNewChat<any, Chat> = async (args, context) => {
   if (!context.user) {
     throw new HttpError(401);
   }
@@ -289,18 +289,20 @@ export const createNewChat: CreateNewChat<void, Chat> = async (user, context) =>
         type: 'manyOf',
         suggestions: [''],
       },
+      selectedTeam: args.teamName ? args.teamName : null,
     },
   });
 
-  // const conversation = await context.entities.Conversation.create({
-  //   data: {
-  //     chat: { connect: { id: chat.id } },
-  //     user: { connect: { id: context.user.id } },
-  //     message:
-  //       "Welcome aboard! I'm Capt’n, your digital marketing companion. Think of me as your expert sailor, ready to ensure your Google Ads journey is smooth sailing. Before we set sail, could you steer our course by sharing the business goal you'd like to improve?",
-  //     role: 'assistant',
-  //   },
-  // });
+  // if (args.teamName) {
+  //   await context.entities.Conversation.create({
+  //     data: {
+  //       chat: { connect: { id: chat.id } },
+  //       user: { connect: { id: context.user.id } },
+  //       message: `${args.task}`,
+  //       role: 'user',
+  //     },
+  //   });
+  // }
 
   return chat;
 };

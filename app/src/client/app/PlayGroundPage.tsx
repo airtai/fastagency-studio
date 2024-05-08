@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import _ from 'lodash';
 import { useSocket, useSocketListener } from 'wasp/client/webSocket';
 import { type User } from 'wasp/entities';
 
 import { updateCurrentChat, useQuery, getChat, getChatFromUUID, getConversations } from 'wasp/client/operations';
 
-import { useHistory, useLocation, Redirect } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import CustomAuthRequiredLayout from './layout/CustomAuthRequiredLayout';
 import ChatLayout from './layout/ChatLayout';
@@ -18,6 +19,7 @@ import {
   callOpenAiAgent,
   handleChatError,
 } from '../utils/chatUtils';
+import SelectTeamToChat from '../components/SelectTeamToChat';
 
 const PlayGroundPage = ({ user }: { user: User }) => {
   const [refetchAllChatDetails, setRefetchAllChatDetails] = useState(false);
@@ -137,7 +139,6 @@ const PlayGroundPage = ({ user }: { user: User }) => {
       }
     }
   }
-
   return (
     <ChatLayout
       handleFormSubmit={handleFormSubmit}
@@ -148,7 +149,7 @@ const PlayGroundPage = ({ user }: { user: User }) => {
       <div className='flex h-full flex-col'>
         {currentChatDetails ? (
           <div className='flex-1 overflow-hidden'>
-            {conversations && (
+            {conversations && conversations.length > 0 ? (
               <ConversationsList
                 conversations={conversations}
                 currentChatDetails={currentChatDetails}
@@ -156,10 +157,12 @@ const PlayGroundPage = ({ user }: { user: User }) => {
                 userSelectedActionMessage={userSelectedActionMessage}
                 onStreamAnimationComplete={onStreamAnimationComplete}
               />
+            ) : (
+              <SelectTeamToChat />
             )}
           </div>
         ) : (
-          <DefaultMessage />
+          <SelectTeamToChat />
         )}
       </div>
     </ChatLayout>
@@ -168,14 +171,3 @@ const PlayGroundPage = ({ user }: { user: User }) => {
 
 const PlayGroundPageWithCustomAuth = CustomAuthRequiredLayout(PlayGroundPage);
 export default PlayGroundPageWithCustomAuth;
-
-function DefaultMessage() {
-  return (
-    <p
-      className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl md:text-6xl text-airt-font-base opacity-70'
-      style={{ lineHeight: 'normal' }}
-    >
-      Please initiate a new chat or select existing chats to resume your conversation.
-    </p>
-  );
-}

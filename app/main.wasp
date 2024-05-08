@@ -141,6 +141,7 @@ entity Chat {=psl
     userId      Int?
     name        String?          @default("New chat")
     isChatNameUpdated Boolean         @default(false)
+    selectedTeam   String?
     conversations    Conversation[]
 psl=}
 

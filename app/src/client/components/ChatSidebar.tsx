@@ -6,6 +6,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import EditableChatName from './EditableChatName';
 import { shouldRenderChat } from '../utils/chatUtils';
 import { updateCurrentChat } from 'wasp/client/operations';
+import { CreateNewChatProps } from '../interfaces/PlaygroundPageInterface';
 
 interface ChatSidebarProps {
   sidebarOpen: boolean;
@@ -78,17 +79,21 @@ const ChatSidebar = ({ sidebarOpen, setSidebarOpen, refetchAllChatDetails }: Cha
   }, [sidebarExpanded]);
 
   const handleCreateNewChat: MouseEventHandler<HTMLAnchorElement> = async (event) => {
-    try {
-      const chat: Chat = await createNewChat();
-      history.push(`/playground/${chat.uuid}`);
-    } catch (err: any) {
-      console.log('Error: ' + err.message);
-      if (err.message === 'No Subscription Found') {
-        history.push('/pricing');
-      } else {
-        window.alert('Error: Something went wrong. Please try again later.');
-      }
-    }
+    history.push(`/playground`);
+    // try {
+    //   const props: CreateNewChatProps = {
+    //     teamName: null,
+    //   };
+    //   const chat: Chat = await createNewChat(props);
+    //   history.push(`/playground/${chat.uuid}`);
+    // } catch (err: any) {
+    //   console.log('Error: ' + err.message);
+    //   if (err.message === 'No Subscription Found') {
+    //     history.push('/pricing');
+    //   } else {
+    //     window.alert('Error: Something went wrong. Please try again later.');
+    //   }
+    // }
   };
 
   return (

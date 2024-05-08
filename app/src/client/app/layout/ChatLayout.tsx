@@ -83,7 +83,7 @@ const ChatLayout: FC<Props> = ({
             <div>{children}</div>
           </main>
           {/* <!-- ===== Main Content End ===== --> */}
-          {currentChatDetails ? (
+          {currentChatDetails && currentChatDetails.selectedTeam ? (
             <ChatForm
               handleFormSubmit={handleFormSubmit}
               currentChatDetails={currentChatDetails}

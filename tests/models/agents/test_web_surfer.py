@@ -16,6 +16,7 @@ class TestWebSurferAgent:
 
         try:
             web_surfer = WebSurferAgent(
+                name="WebSurferAgent",
                 llm=llm,
                 summarizer_llm=summarizer_llm,
             )
@@ -117,6 +118,12 @@ class TestWebSurferAgent:
                 },
             },
             "properties": {
+                "name": {
+                    "description": "The name of the model",
+                    "minLength": 1,
+                    "title": "Name",
+                    "type": "string",
+                },
                 "llm": {
                     "anyOf": [
                         {"$ref": "#/$defs/AzureOAIRef"},
@@ -145,7 +152,7 @@ class TestWebSurferAgent:
                     "description": "The Bing API key for the browser",
                 },
             },
-            "required": ["llm", "summarizer_llm"],
+            "required": ["name", "llm", "summarizer_llm"],
             "title": "WebSurferAgent",
             "type": "object",
         }

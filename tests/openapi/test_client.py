@@ -4,7 +4,7 @@ from fastagency.openapi.client import Client
 
 
 class TestClient:
-    def test_create(self) -> None:
+    def test_create_client(self) -> None:
         json_path = Path(__file__).parent / "templates" / "openapi.json"
         assert json_path.exists(), json_path.resolve()
 

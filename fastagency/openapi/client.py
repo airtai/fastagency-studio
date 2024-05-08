@@ -115,9 +115,6 @@ class Client:
                 output_dir=td,
                 template_dir=cls._get_template_dir(),
             )
-            with (td / "__init__.py").open(mode="w") as f:
-                f.write("")
-
             # add td to sys.path
             try:
                 sys.path.append(str(td))

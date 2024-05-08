@@ -122,6 +122,8 @@ jobs:
   test-macos-latest:
     if: github.event.pull_request.draft == false
     runs-on: macos-latest
+    env:
+      NATS_URL: nats://localhost:4222
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -142,6 +144,8 @@ jobs:
   test-windows-latest:
     if: github.event.pull_request.draft == false
     runs-on: windows-latest
+    env:
+      NATS_URL: nats://localhost:4222
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python

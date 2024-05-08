@@ -5,6 +5,8 @@ search:
 - [Features](fastagency.md)
 - Reference
     - fastagency
+        - faststream_app
+            - [ping_handler](api/fastagency/faststream_app/ping_handler.md)
         - models
             - [Registry](api/fastagency/models/Registry.md)
             - agents

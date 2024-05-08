@@ -54,15 +54,15 @@ export default function ConversationsList({
     <div data-testid='conversations-wrapper' className='w-full'>
       {conversations.map((conversation, idx) => {
         const isUserConversation = conversation.role === 'user';
-        const conversationBgColor = isUserConversation ? 'airt-primary' : 'airt-font-base';
-        const conversationTextColor = isUserConversation ? 'airt-font-base' : 'airt-primary';
+        const conversationBgColor = isUserConversation ? 'airt-secondary' : 'airt-primary';
+        const conversationTextColor = isUserConversation ? 'airt-primary' : 'airt-font-base';
         const conversationLogo = isUserConversation ? (
           <div
             style={{
               alignItems: 'center',
-              background: '#eae4d9',
+              background: '#fff',
               borderRadius: '50%',
-              color: '#444654',
+              color: '#003257',
               display: 'flex',
               flexBasis: '40px',
               flexGrow: '0',
@@ -80,7 +80,7 @@ export default function ConversationsList({
           </div>
         ) : (
           <div
-            className='bg-airt-primary'
+            className='bg-airt-font-base'
             style={{ borderRadius: '50%', width: '93%', height: '93%', paddingTop: '3px' }}
           >
             <img
@@ -117,7 +117,7 @@ export default function ConversationsList({
                     className='absolute inline-block'
                     style={{
                       left: '-15px',
-                      top: '11px',
+                      top: '8px',
                       height: ' 45px',
                       width: '45px',
                     }}

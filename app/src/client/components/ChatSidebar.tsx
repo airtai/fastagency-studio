@@ -125,7 +125,7 @@ const ChatSidebar = ({ sidebarOpen, setSidebarOpen, refetchAllChatDetails }: Cha
       <div>
         <Link
           to='#'
-          className='no-underline mt-7 my-1 mx-4 mb-10 flex items-center justify-left gap-2.5 rounded-md bg-airt-secondary py-4 px-4 text-center font-medium text-airt-font-base hover:bg-opacity-90'
+          className='no-underline mt-7 my-1 mx-4 mb-10 flex items-center justify-left gap-2.5 rounded-md bg-airt-secondary py-4 px-4 text-center font-medium text-airt-primary hover:bg-opacity-90'
           onClick={handleCreateNewChat}
         >
           <span>
@@ -172,8 +172,8 @@ const ChatSidebar = ({ sidebarOpen, setSidebarOpen, refetchAllChatDetails }: Cha
                             pathname === '/' && 'bg-gray-700 dark:bg-meta-4'
                           } ${
                             chat.uuid === activeChat
-                              ? 'bg-airt-font-base text-airt-primary hover:bg-airt-secondary hover:text-airt-font-base'
-                              : 'text-airt-font-base hover:bg-airt-secondary hover:text-airt-font-base'
+                              ? 'bg-airt-secondary text-airt-primary hover:bg-airt-font-base hover:text-airt-primary'
+                              : 'text-airt-font-base hover:bg-airt-secondary hover:text-airt-primary'
                           }`}
                         >
                           <svg

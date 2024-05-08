@@ -40,9 +40,6 @@ $ssh_command "docker container prune -f || echo 'No stopped containers to delete
 echo "INFO: SCPing docker-compose.yaml"
 scp -i key.pem ./docker-compose.yaml azureuser@$DOMAIN:/home/azureuser/docker-compose.yaml
 scp -i key.pem -r ./etc azureuser@$DOMAIN:/home/azureuser
-scp -i key.pem ./nats-docker-compose.yaml azureuser@$DOMAIN:/home/azureuser/nats-docker-compose.yaml
-envsubst '${DOMAIN}' < ./nats_server.conf > ./nat_server.conf.tmp && mv ./nats_server.conf.tmp ./nats_server.conf
-scp -i key.pem ./nats_server.conf azureuser@$DOMAIN:/home/azureuser/nats_server.conf
 
 echo "INFO: pulling docker image"
 $ssh_command "echo $GITHUB_PASSWORD | docker login -u '$GITHUB_USERNAME' --password-stdin '$REGISTRY'"

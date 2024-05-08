@@ -9,6 +9,7 @@ services:
       - "9222:9222"
     volumes:
       - ./nats_server.conf:/etc/nats/server.conf
-      - /etc/letsencrypt/live:/certs
+      - /etc/letsencrypt:/etc/letsencrypt
       # Mount volume for storing NATS data
+      - ./jetstream:/var/jetstream
     command: [ "--config", "/etc/nats/server.conf" ]

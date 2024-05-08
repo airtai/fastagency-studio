@@ -22,7 +22,7 @@ ssh_command="ssh -o StrictHostKeyChecking=no -i key.pem azureuser@$DOMAIN"
 
 
 echo "INFO: stopping already running NATS container"
-$ssh_command "export PORT='$PORT' && docker compose down -f nats-docker-compose.yaml || echo 'No NATS container available to stop'"
+$ssh_command "export PORT='$PORT' && docker compose -f nats-docker-compose.yaml down || echo 'No NATS container available to stop'"
 $ssh_command "docker container prune -f || echo 'No stopped containers to delete'"
 
 echo "INFO: SCPing nats-docker-compose.yaml and config files"
@@ -33,4 +33,4 @@ scp -i key.pem ./nats_server.conf azureuser@$DOMAIN:/home/azureuser/nats_server.
 echo "INFO: starting NATS container"
 
 $ssh_command "export DOMAIN='$DOMAIN' \
-	&& docker compose up -f nats-docker-compose.yaml -d"
+	&& docker compose -f nats-docker-compose.yaml up -d"

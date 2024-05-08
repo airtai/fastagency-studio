@@ -10,9 +10,10 @@ from fastagency.models.llms.openai import OpenAI
 
 
 class TestAssistantAgent:
-    def test_assistant_constructor(self) -> None:
+    @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])
+    def test_assistant_constructor(self, llm_model: Model) -> None:
         llm_uuid = uuid.uuid4()
-        llm = OpenAI.get_reference_model()(uuid=llm_uuid)
+        llm = llm_model.get_reference_model()(uuid=llm_uuid)
 
         try:
             agent = AssistantAgent(

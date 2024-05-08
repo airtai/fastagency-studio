@@ -1,18 +1,22 @@
 import uuid
 
+import pytest
 from pydantic import ValidationError
 
 from fastagency.models.agents.web_surfer import WebSurferAgent
+from fastagency.models.base import Model
+from fastagency.models.llms.azure import AzureOAI
 from fastagency.models.llms.openai import OpenAI
 
 
 class TestWebSurferAgent:
-    def test_assistant_constructor(self) -> None:
+    @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])
+    def test_assistant_constructor(self, llm_model: Model) -> None:
         llm_uuid = uuid.uuid4()
-        llm = OpenAI.get_reference_model()(uuid=llm_uuid)
+        llm = llm_model.get_reference_model()(uuid=llm_uuid)
 
         summarizer_llm_uuid = uuid.uuid4()
-        summarizer_llm = OpenAI.get_reference_model()(uuid=summarizer_llm_uuid)
+        summarizer_llm = llm_model.get_reference_model()(uuid=summarizer_llm_uuid)
 
         try:
             web_surfer = WebSurferAgent(
@@ -157,3 +161,26 @@ class TestWebSurferAgent:
             "type": "object",
         }
         assert schema == expected
+
+    @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])
+    def test_websurfer_model_validation(self, llm_model: Model) -> None:
+        llm_uuid = uuid.uuid4()
+        llm = llm_model.get_reference_model()(uuid=llm_uuid)
+
+        summarizer_llm_uuid = uuid.uuid4()
+        summarizer_llm = llm_model.get_reference_model()(uuid=summarizer_llm_uuid)
+
+        web_surfer = WebSurferAgent(
+            name="WebSurferAgent",
+            llm=llm,
+            summarizer_llm=summarizer_llm,
+        )
+
+        web_surfer_json = web_surfer.model_dump_json()
+        # print(f"{agent_json=}")
+        assert web_surfer_json is not None
+
+        validated_agent = WebSurferAgent.model_validate_json(web_surfer_json)
+        # print(f"{validated_agent=}")
+        assert validated_agent is not None
+        assert validated_agent == web_surfer

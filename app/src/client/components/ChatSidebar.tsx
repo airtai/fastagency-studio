@@ -3,7 +3,8 @@ import { createNewChat, useQuery, getChats } from 'wasp/client/operations';
 import React, { useEffect, useRef, useState, MouseEventHandler } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { NavLink, useLocation } from 'react-router-dom';
-import Logo from '../static/logo-for-dark-bg.png';
+// import Logo from '../static/logo-for-dark-bg.png';
+import Logo from '../static/logo.svg';
 import EditableChatName from './EditableChatName';
 import { shouldRenderChat } from '../utils/chatUtils';
 import { updateCurrentChat } from 'wasp/client/operations';
@@ -14,11 +15,7 @@ interface ChatSidebarProps {
   refetchAllChatDetails: boolean;
 }
 
-const ChatSidebar = ({
-  sidebarOpen,
-  setSidebarOpen,
-  refetchAllChatDetails,
-}: ChatSidebarProps) => {
+const ChatSidebar = ({ sidebarOpen, setSidebarOpen, refetchAllChatDetails }: ChatSidebarProps) => {
   const history = useHistory();
   const location = useLocation();
   const { pathname } = location;
@@ -46,11 +43,7 @@ const ChatSidebar = ({
     }
   };
 
-  const {
-    data: chats,
-    isLoading: isLoadingChats,
-    refetch: refetchChats,
-  } = useQuery(getChats);
+  const { data: chats, isLoading: isLoadingChats, refetch: refetchChats } = useQuery(getChats);
 
   useEffect(() => {
     refetchChats();
@@ -60,12 +53,7 @@ const ChatSidebar = ({
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
       if (!sidebar.current || !trigger.current) return;
-      if (
-        !sidebarOpen ||
-        sidebar.current.contains(target) ||
-        trigger.current.contains(target)
-      )
-        return;
+      if (!sidebarOpen || sidebar.current.contains(target) || trigger.current.contains(target)) return;
       setSidebarOpen(false);
     };
     document.addEventListener('click', clickHandler);
@@ -91,9 +79,7 @@ const ChatSidebar = ({
     }
   }, [sidebarExpanded]);
 
-  const handleCreateNewChat: MouseEventHandler<HTMLAnchorElement> = async (
-    event
-  ) => {
+  const handleCreateNewChat: MouseEventHandler<HTMLAnchorElement> = async (event) => {
     try {
       const chat: Chat = await createNewChat();
       history.push(`/chat/${chat.uuid}`);
@@ -181,9 +167,7 @@ const ChatSidebar = ({
         <nav className='mt-1 py-1 px-4 '>
           {/* <!-- Menu Group --> */}
           <div>
-            <h3 className='mb-4 ml-4 text-sm font-semibold text-bodydark2'>
-              CHATS
-            </h3>
+            <h3 className='mb-4 ml-4 text-sm font-semibold text-bodydark2'>CHATS</h3>
 
             <ul className='mb-6 flex flex-col gap-1.5'>
               {/* <!-- Menu Item Dashboard --> */}

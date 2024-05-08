@@ -37,9 +37,9 @@ app FastAgency {
   },
   db: {
     system: PostgreSQL,
-    seeds: [
-      import { devSeedUsers } from "@src/server/scripts/usersSeed.js",
-    ]
+    // seeds: [
+    //   import { devSeedUsers } from "@src/server/scripts/usersSeed.js",
+    // ]
   },
   client: {
     rootComponent: import App from "@src/client/App",
@@ -55,6 +55,9 @@ app FastAgency {
       // When using SendGrid, you must use the same email address that you configured your account to send out emails with!
       email: "me@example.com"
     },
+  },
+   webSocket: {
+    fn: import { socketFn } from "@src/server/websocket/webSocket.js"
   },
 }
 
@@ -81,6 +84,8 @@ entity User {=psl
   sendEmail                 Boolean         @default(false)
   datePaid                  DateTime?
   credits                   Int             @default(3)
+  chats    Chat[]
+  conversations    Conversation[]
 psl=}
 
 entity DailyStats {=psl
@@ -343,6 +348,51 @@ action validateForm {
   entities: []
 }
 
+action createNewChat {
+  fn: import { createNewChat } from "@src/server/actions.js",
+  entities: [Chat, Conversation]
+}
+
+action createNewDailyAnalysisChat {
+  fn: import { createNewDailyAnalysisChat } from "@src/server/actions.js",
+  entities: [Chat, Conversation]
+}
+
+action updateCurrentChat {
+  fn: import { updateCurrentChat } from "@src/server/actions.js",
+  entities: [Chat]
+}
+
+action updateCurrentConversation {
+  fn: import { updateCurrentConversation } from "@src/server/actions.js",
+  entities: [Conversation]
+}
+
+action deleteLastConversationInChat {
+  fn: import { deleteLastConversationInChat } from "@src/server/actions.js",
+  entities: [Conversation]
+}
+
+action retryTeamChat {
+  fn: import { retryTeamChat } from "@src/server/actions.js",
+  entities: [Chat, Conversation]
+}
+
+action createNewAndReturnAllConversations {
+  fn: import { createNewAndReturnAllConversations } from "@src/server/actions.js",
+  entities: [Conversation]
+}
+
+action createNewAndReturnLastConversation {
+  fn: import { createNewAndReturnLastConversation } from "@src/server/actions.js",
+  entities: [Conversation]
+}
+
+action getAgentResponse {
+  fn: import { getAgentResponse } from "@src/server/actions.js",
+  entities: [Chat, Conversation]
+}
+
 // 📚 Queries
 
 query getDailyStats {
@@ -365,6 +415,26 @@ query propertyDependencies {
   entities: [User]
 }
 
+query getChat {
+  fn: import { getChat } from "@src/server/queries.js",
+  entities: [Chat]
+}
+
+query getChats {
+  fn: import { getChats } from "@src/server/queries.js",
+  entities: [Chat]
+}
+
+query getConversations {
+  fn: import { getConversations } from "@src/server/queries.js",
+  entities: [Conversation]
+}
+
+query getChatFromUUID {
+  fn: import { getChatFromUUID } from "@src/server/queries.js",
+  entities: [Chat]
+}
+
 /*
  * 📡 These are custom Wasp API Endpoints. Use them for callbacks, webhooks, etc.
  * https://wasp-lang.dev/docs/advanced/apis
@@ -375,6 +445,30 @@ api stripeWebhook {
   entities: [User],
   middlewareConfigFn: import { stripeMiddlewareFn } from "@src/server/webhooks/stripe.js",
   httpRoute: (POST, "/stripe-webhook")
+}
+
+api captnDailyAnalysisWebhook {
+  fn: import { captnDailyAnalysisWebhook } from "@src/server/webhooks/captn.js",
+  entities: [User, Chat, Conversation],
+  httpRoute: (POST, "/captn-daily-analysis-webhook")
+}
+
+api createNewChatWebhook {
+  fn: import { createNewChatWebhook } from "@src/server/webhooks/captn.js",
+  entities: [User, Chat],
+  httpRoute: (POST, "/create-chat-webhook")
+}
+
+api deleteChatWebhook {
+  fn: import { deleteChatWebhook } from "@src/server/webhooks/captn.js",
+  entities: [Chat],
+  httpRoute: (POST, "/delete-chat-webhook")
+}
+
+api smartSuggestionsWebHook {
+  fn: import { smartSuggestionsWebHook } from "@src/server/webhooks/captn.js",
+  entities: [Chat],
+  httpRoute: (POST, "/smart-suggestions-webhook")
 }
 
 /* 🕵️‍♂️ These are the Wasp Jobs. Use them to set up recurring tasks and/or queues:

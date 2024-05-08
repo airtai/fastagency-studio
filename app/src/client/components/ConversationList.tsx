@@ -12,7 +12,8 @@ import LetterByLetterDisplay from './LetterByLetterDisplay';
 // import TerminalDisplay from './TerminalDisplay';
 import AgentConversationHistory from './AgentConversationHistory';
 import AnimatedCharacterLoader from './AnimatedCharacterLoader';
-import logo from '../static/captn-logo.png';
+// import logo from '../static/captn-logo.png';
+import logo from '../static/logo.svg';
 
 type ConversationsListProps = {
   conversations: Conversation[];
@@ -45,24 +46,16 @@ export default function ConversationsList({
     );
   const lastConversationIdx = conversations.length - 1;
 
-  useSocketListener('newMessageFromTeam', (message: any) =>
-    setStreamingAgentResponse(message)
-  );
+  useSocketListener('newMessageFromTeam', (message: any) => setStreamingAgentResponse(message));
 
-  useSocketListener('streamFromTeamFinished', () =>
-    setStreamingAgentResponse('')
-  );
+  useSocketListener('streamFromTeamFinished', () => setStreamingAgentResponse(''));
 
   return (
     <div data-testid='conversations-wrapper' className='w-full'>
       {conversations.map((conversation, idx) => {
         const isUserConversation = conversation.role === 'user';
-        const conversationBgColor = isUserConversation
-          ? 'captn-light-blue'
-          : 'captn-dark-blue';
-        const conversationTextColor = isUserConversation
-          ? 'captn-dark-blue'
-          : 'captn-light-cream';
+        const conversationBgColor = isUserConversation ? 'captn-light-blue' : 'captn-dark-blue';
+        const conversationTextColor = isUserConversation ? 'captn-dark-blue' : 'captn-light-cream';
         const conversationLogo = isUserConversation ? (
           <div
             style={{
@@ -86,12 +79,7 @@ export default function ConversationsList({
             <div>You</div>
           </div>
         ) : (
-          <img
-            alt='Capt’n.ai logo'
-            src={logo}
-            className='w-full h-full'
-            style={{ borderRadius: '50%' }}
-          />
+          <img alt='Capt’n.ai logo' src={logo} className='w-full h-full' style={{ borderRadius: '50%' }} />
         );
 
         return (
@@ -99,8 +87,7 @@ export default function ConversationsList({
             {conversation.isLoading ? (
               <AnimatedCharacterLoader
                 loadingMessage={`${
-                  currentChatDetails.customerBrief ||
-                  currentChatDetails.chatType === 'daily_analysis'
+                  currentChatDetails.customerBrief || currentChatDetails.chatType === 'daily_analysis'
                     ? 'The team is currently working on the task. You can monitor their discussions in the window below as they progress...'
                     : 'Loading...'
                 }`}
@@ -109,9 +96,7 @@ export default function ConversationsList({
               <div
                 style={{ minHeight: '85px' }}
                 className={`flex items-center px-5 group bg-${conversationBgColor} flex-col ${
-                  isUserConversation
-                    ? 'user-conversation-container'
-                    : 'agent-conversation-container'
+                  isUserConversation ? 'user-conversation-container' : 'agent-conversation-container'
                 }`}
               >
                 <div
@@ -131,8 +116,7 @@ export default function ConversationsList({
                   </span>
                   {idx === lastConversationIdx && !isUserConversation && (
                     <div className='chat-conversations text-base flex flex-col gap-2'>
-                      {currentChatDetails?.streamAgentResponse &&
-                      !currentChatDetails?.team_id ? (
+                      {currentChatDetails?.streamAgentResponse && !currentChatDetails?.team_id ? (
                         <LetterByLetterDisplay
                           sentence={conversation.message}
                           speed={5}
@@ -143,18 +127,13 @@ export default function ConversationsList({
                       )}
                     </div>
                   )}
-                  {(idx !== lastConversationIdx ||
-                    (idx === lastConversationIdx && isUserConversation)) && (
+                  {(idx !== lastConversationIdx || (idx === lastConversationIdx && isUserConversation)) && (
                     <div className='chat-conversations text-base flex flex-col gap-2'>
                       <Markdown>{conversation.message}</Markdown>
                     </div>
                   )}
                   {conversation.agentConversationHistory && (
-                    <AgentConversationHistory
-                      agentConversationHistory={
-                        conversation.agentConversationHistory
-                      }
-                    />
+                    <AgentConversationHistory agentConversationHistory={conversation.agentConversationHistory} />
                   )}
                 </div>
               </div>
@@ -162,39 +141,37 @@ export default function ConversationsList({
           </div>
         );
       })}
-      {currentChatDetails?.team_status === 'inprogress' &&
-        streamingAgentResponse && (
-          <AgentConversationHistory
-            agentConversationHistory={streamingAgentResponse}
-            initialState={true}
-            isAgentWindow={true}
-          />
-        )}
+      {currentChatDetails?.team_status === 'inprogress' && streamingAgentResponse && (
+        <AgentConversationHistory
+          agentConversationHistory={streamingAgentResponse}
+          initialState={true}
+          isAgentWindow={true}
+        />
+      )}
 
-      {isSmartSuggestionsAvailable &&
-        !currentChatDetails?.streamAgentResponse && (
-          <div data-testid='smart-suggestions' className='fadeIn'>
-            {
-              // @ts-ignore
-              currentChatDetails.smartSuggestions?.type == 'oneOf' ? (
-                <SmartSuggestionButton
-                  currentChatDetails={currentChatDetails}
-                  smartSuggestionOnClick={handleFormSubmit}
-                />
-              ) : (
-                <SmartSuggestionCheckbox
-                  suggestions={
-                    // @ts-ignore
-                    currentChatDetails.smartSuggestions.suggestions
-                  }
-                  smartSuggestionOnClick={handleFormSubmit}
-                  chatType={currentChatDetails.chatType}
-                  userSelectedActionMessage={userSelectedActionMessage}
-                />
-              )
-            }
-          </div>
-        )}
+      {isSmartSuggestionsAvailable && !currentChatDetails?.streamAgentResponse && (
+        <div data-testid='smart-suggestions' className='fadeIn'>
+          {
+            // @ts-ignore
+            currentChatDetails.smartSuggestions?.type == 'oneOf' ? (
+              <SmartSuggestionButton
+                currentChatDetails={currentChatDetails}
+                smartSuggestionOnClick={handleFormSubmit}
+              />
+            ) : (
+              <SmartSuggestionCheckbox
+                suggestions={
+                  // @ts-ignore
+                  currentChatDetails.smartSuggestions.suggestions
+                }
+                smartSuggestionOnClick={handleFormSubmit}
+                chatType={currentChatDetails.chatType}
+                userSelectedActionMessage={userSelectedActionMessage}
+              />
+            )
+          }
+        </div>
+      )}
     </div>
   );
 }

@@ -72,6 +72,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency
       PY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
+      NATS_URL: nats://localhost:4222
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python

@@ -113,6 +113,47 @@ entity Logs {=psl
   level                    String
 psl=}
 
+entity Chat {=psl
+    id                        Int             @id @default(autoincrement())
+    uuid                      String?         @default(uuid())
+    createdAt                 DateTime        @default(now())
+    updatedAt                 DateTime        @updatedAt
+    team_id                   Int?
+    team_name                 String?
+    team_status               String?
+    chatType                 String?
+    shouldShowChat             Boolean         @default(false)
+    proposedUserAction       String[]          @default([])
+    userRespondedWithNextAction             Boolean         @default(false)
+    emailContent             String?
+    agentChatHistory         String?
+    isExceptionOccured       Boolean         @default(false)
+    showLoader  Boolean         @default(false)
+    smartSuggestions  Json         @default("{ \"suggestions\": [\"\"], \"type\": \"\"}")
+    streamAgentResponse Boolean         @default(false)
+    customerBrief       String?
+    user        User?    @relation(fields: [userId], references: [id])
+    userId      Int?
+    name        String?          @default("New chat")
+    isChatNameUpdated Boolean         @default(false)
+    conversations    Conversation[]
+psl=}
+
+entity Conversation {=psl
+    id                          Int             @id @default(autoincrement())
+    createdAt                   DateTime        @default(now())
+    updatedAt                   DateTime        @updatedAt
+    message                     String
+    role                        String
+    agentConversationHistory    String?
+    isLoading                   Boolean         @default(false)
+    chat                        Chat?           @relation(fields: [chatId], references: [id])
+    chatId                      Int?
+    user                        User?           @relation(fields: [userId], references: [id])
+    userId                      Int?
+
+psl=}
+
 /* 📡 These are the Wasp Routes (You can protect them easily w/ 'authRequired: true');
  * https://wasp-lang.dev/docs/tutorial/pages
  */

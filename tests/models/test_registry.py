@@ -108,7 +108,7 @@ class TestRegistry:
                 "properties": {
                     "name": {
                         "description": "The name of the model",
-                        "pattern": "^.+$",
+                        "minLength": 1,
                         "title": "Name",
                         "type": "string",
                     },
@@ -175,7 +175,7 @@ class TestRegistry:
                 "properties": {
                     "name": {
                         "description": "The name of the model",
-                        "pattern": "^.+$",
+                        "minLength": 1,
                         "title": "Name",
                         "type": "string",
                     },

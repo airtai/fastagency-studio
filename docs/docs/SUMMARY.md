@@ -5,6 +5,8 @@ search:
 - [Features](fastagency.md)
 - Reference
     - fastagency
+        - faststream_app
+            - [ping_handler](api/fastagency/faststream_app/ping_handler.md)
         - models
             - [Registry](api/fastagency/models/Registry.md)
             - agents
@@ -43,6 +45,9 @@ search:
                     - [MultiAgentTeam](api/fastagency/models/teams/multi_agent_team/MultiAgentTeam.md)
                 - two_agent_teams
                     - [TwoAgentTeam](api/fastagency/models/teams/two_agent_teams/TwoAgentTeam.md)
+        - openapi
+            - client
+                - [Client](api/fastagency/openapi/client/Client.md)
 - Contributing
     - [Development](getting-started/contributing/CONTRIBUTING.md)
     - [Documentation](getting-started/contributing/docs.md)

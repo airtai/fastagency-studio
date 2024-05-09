@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from prisma.models import Model
 from pydantic import TypeAdapter, ValidationError
 
-from .helpers import get_db_connection, get_wasp_db_url
+from .db.helpers import get_db_connection, get_wasp_db_url
 from .models.registry import Registry, Schemas
 
 app = FastAPI()

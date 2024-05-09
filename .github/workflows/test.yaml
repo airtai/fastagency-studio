@@ -47,6 +47,10 @@ jobs:
         pydantic-version: ["pydantic-v2"]
       fail-fast: false
     services:
+      nats:
+        image: diementros/nats:js
+        ports:
+          - 4222:4222
       postgres-wasp:
         image: postgres:13
         env:
@@ -68,6 +72,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency
       PY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
+      NATS_URL: nats://localhost:4222
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -117,6 +122,8 @@ jobs:
   test-macos-latest:
     if: github.event.pull_request.draft == false
     runs-on: macos-latest
+    env:
+      NATS_URL: nats://localhost:4222
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -132,11 +139,13 @@ jobs:
       - name: Prisma
         run: prisma generate
       - name: Test
-        run: bash scripts/test.sh -m "not db"
+        run: bash scripts/test.sh -m "not db and not nats"
 
   test-windows-latest:
     if: github.event.pull_request.draft == false
     runs-on: windows-latest
+    env:
+      NATS_URL: nats://localhost:4222
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -152,7 +161,7 @@ jobs:
       - name: Prisma
         run: prisma generate
       - name: Test
-        run: bash scripts/test.sh -m "not db"
+        run: bash scripts/test.sh -m "not db and not nats"
 
   coverage-combine:
     if: github.event.pull_request.draft == false

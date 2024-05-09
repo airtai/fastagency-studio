@@ -1,15 +1,19 @@
 import uuid
 
+import pytest
 from pydantic import ValidationError
 
 from fastagency.models.agents.assistant import AssistantAgent
+from fastagency.models.base import Model
+from fastagency.models.llms.azure import AzureOAI
 from fastagency.models.llms.openai import OpenAI
 
 
 class TestAssistantAgent:
-    def test_assistant_constructor(self) -> None:
+    @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])
+    def test_assistant_constructor(self, llm_model: Model) -> None:
         llm_uuid = uuid.uuid4()
-        llm = OpenAI.get_reference_model()(uuid=llm_uuid)
+        llm = llm_model.get_reference_model()(uuid=llm_uuid)
 
         try:
             agent = AssistantAgent(
@@ -89,7 +93,7 @@ class TestAssistantAgent:
             "properties": {
                 "name": {
                     "description": "The name of the model",
-                    "pattern": "^.+$",
+                    "minLength": 1,
                     "title": "Name",
                     "type": "string",
                 },
@@ -112,3 +116,23 @@ class TestAssistantAgent:
             "type": "object",
         }
         assert schema == expected
+
+    @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])
+    def test_assistant_model_validation(self, llm_model: Model) -> None:
+        llm_uuid = uuid.uuid4()
+        llm = llm_model.get_reference_model()(uuid=llm_uuid)
+
+        agent = AssistantAgent(
+            llm=llm,
+            name="My Assistant",
+            system_message="test system message",
+        )
+
+        agent_json = agent.model_dump_json()
+        # print(f"{agent_json=}")
+        assert agent_json is not None
+
+        validated_agent = AssistantAgent.model_validate_json(agent_json)
+        # print(f"{validated_agent=}")
+        assert validated_agent is not None
+        assert validated_agent == agent

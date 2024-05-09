@@ -37,10 +37,10 @@ export default function SmartSuggestionButton({
   }
   return (
     <div>
-      <div className={` pb-4 flex items-center group bg-airt-font-base`}>
+      <div className={` pb-4 flex items-center group bg-airt-primary`}>
         <div
           style={{ maxWidth: '800px', margin: 'auto' }}
-          className={`fade-in  relative ml-3 block w-full px-4 rounded-lg bg-airt-font-base ${
+          className={`fade-in  relative ml-3 block w-full px-4 rounded-lg bg-airt-primary ${
             isShowSuggestions ? 'opacity-100' : 'opacity-0'
           }}`}
         >
@@ -48,7 +48,7 @@ export default function SmartSuggestionButton({
             {suggestions.map((suggestion, index) => (
               <button
                 key={index}
-                className=' bg-airt-primary hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 text-airt-font-base'
+                className=' bg-airt-secondary hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 text-airt-primary'
                 onClick={() => handleSuggestionClick(suggestion, smartSuggestionOnClick)}
               >
                 <Markdown>{suggestion}</Markdown>

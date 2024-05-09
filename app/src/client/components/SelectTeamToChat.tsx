@@ -11,12 +11,12 @@ import { SelectInput } from './form/SelectInput';
 import { TextArea } from './form/TextArea';
 import { getModels, createNewChat, useQuery } from 'wasp/client/operations';
 
-const SelectTeamToChat = () => {
+const SelectTeamToChat = ({ userTeams }: any) => {
   const history = useHistory();
-  const { data: userTeams, isLoading: isLoading } = useQuery(getModels, { type_name: 'team' });
   const [team, setTeam] = useState('');
   const [allTeams, setAllTeams] = useState<SelectedModelSchema[] | null>(null);
   const [message, setMessage] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
   const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
 
   const handleTeamChange = (value: string) => {
@@ -32,15 +32,19 @@ const SelectTeamToChat = () => {
     if (!allTeams) {
       setNotificationErrorMessage(`Please create a team to chat.`);
     } else {
-      try {
-        const props: CreateNewChatProps = {
-          teamName: team,
-        };
-        const chat: Chat = await createNewChat(props);
-        history.push(`/playground/${chat.uuid}?msg=${message}`);
-      } catch (err: any) {
-        setNotificationErrorMessage(`Error creating chat. Please try again later.`);
-        console.log('Error: ' + err.message);
+      if (message.trim() === '') {
+        setFormError('Task description cannot be empty');
+      } else {
+        try {
+          const props: CreateNewChatProps = {
+            teamName: team,
+          };
+          const chat: Chat = await createNewChat(props);
+          history.push(`/playground/${chat.uuid}?msg=${message}`);
+        } catch (err: any) {
+          setNotificationErrorMessage(`Error creating chat. Please try again later.`);
+          console.log('Error: ' + err.message);
+        }
       }
     }
   };
@@ -55,14 +59,6 @@ const SelectTeamToChat = () => {
   const notificationOnClick = () => {
     setNotificationErrorMessage(null);
   };
-
-  if (isLoading) {
-    return (
-      <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
-        <Loader />
-      </div>
-    );
-  }
 
   return (
     <div className='lg:mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10'>
@@ -83,6 +79,11 @@ const SelectTeamToChat = () => {
               Task Description
             </label>
             <TextArea id='setSystemMessage' value={message} placeholder='' onChange={handleMessageChange} />
+            {formError && (
+              <div className='mb-2' style={{ color: 'red' }}>
+                {formError}
+              </div>
+            )}
             <button
               className='rounded-md px-3.5 py-2.5 text-sm  bg-airt-primary text-airt-font-base   hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
               type='submit'

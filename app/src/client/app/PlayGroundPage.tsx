@@ -3,7 +3,14 @@ import _ from 'lodash';
 import { useSocket, useSocketListener } from 'wasp/client/webSocket';
 import { type User } from 'wasp/entities';
 
-import { updateCurrentChat, useQuery, getChat, getChatFromUUID, getConversations } from 'wasp/client/operations';
+import {
+  updateCurrentChat,
+  useQuery,
+  getChat,
+  getChatFromUUID,
+  getConversations,
+  getModels,
+} from 'wasp/client/operations';
 
 import { useHistory, useLocation } from 'react-router-dom';
 
@@ -20,8 +27,11 @@ import {
   handleChatError,
 } from '../utils/chatUtils';
 import SelectTeamToChat from '../components/SelectTeamToChat';
+import Loader from '../admin/common/Loader';
+import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
 const PlayGroundPage = ({ user }: { user: User }) => {
+  const { data: userTeams, isLoading: isLoading } = useQuery(getModels, { type_name: 'team' });
   const [refetchAllChatDetails, setRefetchAllChatDetails] = useState(false);
   const { socket } = useSocket();
   const location = useLocation();
@@ -100,14 +110,20 @@ const PlayGroundPage = ({ user }: { user: User }) => {
             activeChatId
           );
         } else {
-          await callOpenAiAgent(
-            activeChatId,
-            currentChatDetails,
-            inProgressConversation,
-            socket,
-            messages,
-            refetchChatDetails
-          );
+          if (userTeams) {
+            const selectedTeam: SelectedModelSchema | undefined = userTeams.find(
+              (team: any) => team.json_str.name === currentChatDetails.selectedTeam
+            ) as SelectedModelSchema;
+            await callOpenAiAgent(
+              activeChatId,
+              currentChatDetails,
+              inProgressConversation,
+              socket,
+              messages,
+              refetchChatDetails,
+              selectedTeam
+            );
+          }
         }
       } catch (err: any) {
         await handleChatError(err, activeChatId, inProgressConversation, history);
@@ -139,6 +155,14 @@ const PlayGroundPage = ({ user }: { user: User }) => {
       }
     }
   }
+
+  if (isLoading) {
+    return (
+      <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
+        <Loader />
+      </div>
+    );
+  }
   return (
     <ChatLayout
       handleFormSubmit={handleFormSubmit}
@@ -158,11 +182,11 @@ const PlayGroundPage = ({ user }: { user: User }) => {
                 onStreamAnimationComplete={onStreamAnimationComplete}
               />
             ) : (
-              <SelectTeamToChat />
+              <SelectTeamToChat userTeams={userTeams} />
             )}
           </div>
         ) : (
-          <SelectTeamToChat />
+          <SelectTeamToChat userTeams={userTeams} />
         )}
       </div>
     </ChatLayout>

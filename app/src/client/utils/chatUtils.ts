@@ -8,6 +8,7 @@ import {
 } from 'wasp/client/operations';
 
 import { type Conversation, type Chat } from 'wasp/entities';
+import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
 export const exceptionMessage =
   "Ahoy, mate! It seems our voyage hit an unexpected squall. Let's trim the sails and set a new course. Cast off once more by clicking the button below.";
@@ -42,11 +43,7 @@ export async function updateCurrentChatStatus(
   });
 }
 
-export async function getFormattedChatMessages(
-  activeChatId: number,
-  userQuery: string,
-  retrySameChat: boolean
-) {
+export async function getFormattedChatMessages(activeChatId: number, userQuery: string, retrySameChat: boolean) {
   let allConversations;
   if (retrySameChat) {
     allConversations = await deleteLastConversationInChat(activeChatId);
@@ -67,11 +64,7 @@ export async function getFormattedChatMessages(
   return messages;
 }
 
-export async function getInProgressConversation(
-  activeChatId: number,
-  userQuery: string,
-  retrySameChat: boolean
-) {
+export async function getInProgressConversation(activeChatId: number, userQuery: string, retrySameChat: boolean) {
   const message = retrySameChat ? '' : userQuery;
   const inProgressConversation = await createNewAndReturnLastConversation({
     chatId: activeChatId,
@@ -94,14 +87,7 @@ export const handleDailyAnalysisChat = async (
     currentChatDetails.chatType === 'daily_analysis'
       ? `default_team_${currentChatDetails.userId}_${currentChatDetails.id}`
       : currentChatDetails.team_name;
-  socket.emit(
-    'sendMessageToTeam',
-    currentChatDetails,
-    inProgressConversation.id,
-    userQuery,
-    messages,
-    teamName
-  );
+  socket.emit('sendMessageToTeam', currentChatDetails, inProgressConversation.id, userQuery, messages, teamName);
   await updateCurrentChat({
     id: activeChatId,
     data: {
@@ -117,11 +103,14 @@ export const callOpenAiAgent = async (
   inProgressConversation: any,
   socket: any,
   messages: any,
-  refetchChatDetails: () => void
+  refetchChatDetails: () => void,
+  selectedTeam: SelectedModelSchema
 ) => {
   const response = await getAgentResponse({
     chatId: activeChatId,
     messages: messages,
+    model_name: selectedTeam.model_name,
+    uuid: selectedTeam.uuid,
   });
   await handleAgentResponse(
     response,
@@ -201,12 +190,7 @@ export const handleAgentResponse = async (
   chatName && refetchChatDetails();
 };
 
-export const handleChatError = async (
-  err: any,
-  activeChatId: number,
-  inProgressConversation: any,
-  history: any
-) => {
+export const handleChatError = async (err: any, activeChatId: number, inProgressConversation: any, history: any) => {
   await updateCurrentChat({
     id: activeChatId,
     data: { showLoader: false },

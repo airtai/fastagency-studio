@@ -524,15 +524,21 @@ export const createNewAndReturnLastConversation: CreateNewAndReturnLastConversat
 type AgentPayload = {
   chatId: number;
   messages: any;
+  model_name: string;
+  uuid: string;
 };
 
 export const getAgentResponse: GetAgentResponse<AgentPayload, Record<string, any>> = async (
   {
     chatId,
     messages,
+    model_name,
+    uuid,
   }: {
     chatId: number;
     messages: any;
+    model_name: string;
+    uuid: string;
   },
   context: any
 ) => {
@@ -550,7 +556,8 @@ export const getAgentResponse: GetAgentResponse<AgentPayload, Record<string, any
   console.log(payload);
   console.log('===========');
   try {
-    const response = await fetch(`${FASTAGENCY_SERVER_URL}/openai/chat`, {
+    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/openai/chat/${model_name}/${uuid}`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

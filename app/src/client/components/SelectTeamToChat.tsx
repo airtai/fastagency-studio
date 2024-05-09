@@ -16,7 +16,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
   const [team, setTeam] = useState('');
   const [allTeams, setAllTeams] = useState<SelectedModelSchema[] | null>(null);
   const [message, setMessage] = useState('');
-  const [formError, setFormError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<Record<string, any>>({});
   const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
 
   const handleTeamChange = (value: string) => {
@@ -30,21 +30,19 @@ const SelectTeamToChat = ({ userTeams }: any) => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!allTeams) {
-      setNotificationErrorMessage(`Please create a team to chat.`);
+      setFormError((prev) => ({ ...prev, team: 'Please select/create a team' }));
+    } else if (message.trim() === '') {
+      setFormError((prev) => ({ ...prev, message: 'Task description cannot be empty' }));
     } else {
-      if (message.trim() === '') {
-        setFormError('Task description cannot be empty');
-      } else {
-        try {
-          const props: CreateNewChatProps = {
-            teamName: team,
-          };
-          const chat: Chat = await createNewChat(props);
-          history.push(`/playground/${chat.uuid}?msg=${message}`);
-        } catch (err: any) {
-          setNotificationErrorMessage(`Error creating chat. Please try again later.`);
-          console.log('Error: ' + err.message);
-        }
+      try {
+        const props: CreateNewChatProps = {
+          teamName: team,
+        };
+        const chat: Chat = await createNewChat(props);
+        history.push(`/playground/${chat.uuid}?msg=${message}`);
+      } catch (err: any) {
+        setNotificationErrorMessage(`Error creating chat. Please try again later.`);
+        console.log('Error: ' + err.message);
       }
     }
   };
@@ -75,13 +73,18 @@ const SelectTeamToChat = ({ userTeams }: any) => {
               options={_.map(allTeams, (team: SelectedModelSchema) => team.json_str.name)}
               onChange={handleTeamChange}
             />
+            {formError && (
+              <div className='mb-2' style={{ color: 'red' }}>
+                {formError.team}
+              </div>
+            )}
             <label className='text-airt-primary inline-block' htmlFor='setSystemMessage'>
               Task Description
             </label>
             <TextArea id='setSystemMessage' value={message} placeholder='' onChange={handleMessageChange} />
             {formError && (
               <div className='mb-2' style={{ color: 'red' }}>
-                {formError}
+                {formError.message}
               </div>
             )}
             <button

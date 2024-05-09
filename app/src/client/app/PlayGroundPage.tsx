@@ -156,6 +156,12 @@ const PlayGroundPage = ({ user }: { user: User }) => {
     }
   }
 
+  const handleTeamClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>): void => {
+    e.preventDefault();
+    sessionStorage.setItem('selectedBuildPageTab', 'team');
+    history.push(`/build`);
+  };
+
   if (isLoading) {
     return (
       <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
@@ -175,7 +181,12 @@ const PlayGroundPage = ({ user }: { user: User }) => {
           <div className='flex-1 overflow-hidden'>
             {conversations && conversations.length > 0 ? (
               <>
-                <p className='text-center text-lg font-bold bg-airt-font-base text-airt-primary'>{`Chatting with "${currentChatDetails.selectedTeam}"`}</p>
+                <p className='text-center text-lg font-bold bg-airt-primary text-airt-font-base'>
+                  Chatting with{' '}
+                  <a className='hover:underline hover:cursor-pointer' onClick={handleTeamClick}>
+                    {currentChatDetails.selectedTeam}
+                  </a>
+                </p>
                 <ConversationsList
                   conversations={conversations}
                   currentChatDetails={currentChatDetails}

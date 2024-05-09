@@ -43,7 +43,7 @@ async def get_user(user_uuid: Union[int, str]) -> Any:
 async def find_model_using_raw(model_uuid: str, user_uuid: str) -> Dict[str, Any]:
     async with get_db_connection() as db:
         model: Optional[Dict[str, Any]] = await db.query_first(
-            'SELECT * from "Model" where model_uuid='  # nosec: [B608]
+            'SELECT * from "Model" where uuid='  # nosec: [B608]
             + f"'{model_uuid}' and user_uuid='{user_uuid}'"
         )
 
@@ -87,10 +87,10 @@ async def add_model(
     async with get_db_connection() as db:
         await db.model.create(
             data={
+                "uuid": model_uuid,
                 "user_uuid": user_uuid,
                 "type_name": type_name,
                 "model_name": model_name,
-                "model_uuid": model_uuid,
                 "json_str": validated_model.model_dump_json(),  # type: ignore[typeddict-item]
             }
         )
@@ -116,7 +116,6 @@ async def update_model(
         await db.model.update(
             where={"uuid": found_model["uuid"]},  # type: ignore[arg-type]
             data={  # type: ignore[typeddict-unknown-key]
-                "model_uuid": model_uuid,
                 "type_name": type_name,
                 "model_name": model_name,
                 "json_str": validated_model.model_dump_json(),  # type: ignore[typeddict-item]

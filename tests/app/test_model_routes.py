@@ -36,7 +36,7 @@ class TestModelRoutes:
                     "api_key": "whatever",  # pragma: allowlist secret
                     "name": "whatever",
                 },
-                "model_uuid": key_uuid,
+                "uuid": key_uuid,
                 "type_name": "secret",
                 "model_name": "AzureOAIAPIKey",
                 "user_uuid": user_uuid,

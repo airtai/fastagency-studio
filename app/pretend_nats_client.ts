@@ -13,7 +13,7 @@
 //     if (!NATS_URL) {
 //       throw new Error('NATS_URL is not defined');
 //     }
-//     const nc = await connect({ servers: 'nats://localhost:4222' });
+//     const nc = await connect({ servers: NATS_URL });
 //     console.log(`connected to ${nc.getServer()}`);
 
 //     const js = nc.jetstream();

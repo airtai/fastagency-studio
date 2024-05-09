@@ -104,7 +104,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
       if (filteredProperties) {
         const selectedModel = filteredProperties[index];
         setSelectedModel(selectedModel.model_name);
-        setUpdateExistingModel({ ...selectedModel.json_str, ...{ uuid: selectedModel.model_uuid } });
+        setUpdateExistingModel({ ...selectedModel.json_str, ...{ uuid: selectedModel.uuid } });
         setShowAddModel(true);
       }
     }

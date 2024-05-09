@@ -174,13 +174,16 @@ const PlayGroundPage = ({ user }: { user: User }) => {
         {currentChatDetails ? (
           <div className='flex-1 overflow-hidden'>
             {conversations && conversations.length > 0 ? (
-              <ConversationsList
-                conversations={conversations}
-                currentChatDetails={currentChatDetails}
-                handleFormSubmit={handleFormSubmit}
-                userSelectedActionMessage={userSelectedActionMessage}
-                onStreamAnimationComplete={onStreamAnimationComplete}
-              />
+              <>
+                <p className='text-center text-lg font-bold bg-airt-font-base text-airt-primary'>{`Chatting with "${currentChatDetails.selectedTeam}" team`}</p>
+                <ConversationsList
+                  conversations={conversations}
+                  currentChatDetails={currentChatDetails}
+                  handleFormSubmit={handleFormSubmit}
+                  userSelectedActionMessage={userSelectedActionMessage}
+                  onStreamAnimationComplete={onStreamAnimationComplete}
+                />
+              </>
             ) : (
               <SelectTeamToChat userTeams={userTeams} />
             )}

@@ -175,7 +175,7 @@ const PlayGroundPage = ({ user }: { user: User }) => {
           <div className='flex-1 overflow-hidden'>
             {conversations && conversations.length > 0 ? (
               <>
-                <p className='text-center text-lg font-bold bg-airt-font-base text-airt-primary'>{`Chatting with "${currentChatDetails.selectedTeam}" team`}</p>
+                <p className='text-center text-lg font-bold bg-airt-font-base text-airt-primary'>{`Chatting with "${currentChatDetails.selectedTeam}"`}</p>
                 <ConversationsList
                   conversations={conversations}
                   currentChatDetails={currentChatDetails}

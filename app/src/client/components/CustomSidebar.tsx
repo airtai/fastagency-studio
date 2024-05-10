@@ -238,6 +238,7 @@ const CustomSidebar = ({ sidebarOpen, setSidebarOpen, onSideNavItemClick, sideNa
 
   const handleClick = (selectedItemLable: string) => {
     onSideNavItemClick(selectedItemLable);
+    setSidebarOpen(false);
   };
 
   return (
@@ -253,38 +254,31 @@ const CustomSidebar = ({ sidebarOpen, setSidebarOpen, onSideNavItemClick, sideNa
       )}
     >
       {/* <!-- SIDEBAR HEADER --> */}
-      {/* <div className='flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5'>
-        <NavLink to='/'>
+      <div className='flex justify-end gap-2 px-6 py-5.5 lg:py-6.5'>
+        {/* <NavLink to='/'>
           <img src={Logo} alt='Logo' width={50} />
-        </NavLink>
+        </NavLink> */}
 
         <button
           ref={trigger}
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-controls='sidebar'
           aria-expanded={sidebarOpen}
-          className='block lg:hidden'
+          className='block lg:hidden text-airt-font-base'
         >
-          <svg
-            className='fill-current'
-            width='20'
-            height='18'
-            viewBox='0 0 20 18'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
+          <svg width='24px' height='24px' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
             <path
-              d='M19 8.175H2.98748L9.36248 1.6875C9.69998 1.35 9.69998 0.825 9.36248 0.4875C9.02498 0.15 8.49998 0.15 8.16248 0.4875L0.399976 8.3625C0.0624756 8.7 0.0624756 9.225 0.399976 9.5625L8.16248 17.4375C8.31248 17.5875 8.53748 17.7 8.76248 17.7C8.98748 17.7 9.17498 17.625 9.36248 17.475C9.69998 17.1375 9.69998 16.6125 9.36248 16.275L3.02498 9.8625H19C19.45 9.8625 19.825 9.4875 19.825 9.0375C19.825 8.55 19.45 8.175 19 8.175Z'
-              fill=''
+              d='M20.7457 3.32851C20.3552 2.93798 19.722 2.93798 19.3315 3.32851L12.0371 10.6229L4.74275 3.32851C4.35223 2.93798 3.71906 2.93798 3.32854 3.32851C2.93801 3.71903 2.93801 4.3522 3.32854 4.74272L10.6229 12.0371L3.32856 19.3314C2.93803 19.722 2.93803 20.3551 3.32856 20.7457C3.71908 21.1362 4.35225 21.1362 4.74277 20.7457L12.0371 13.4513L19.3315 20.7457C19.722 21.1362 20.3552 21.1362 20.7457 20.7457C21.1362 20.3551 21.1362 19.722 20.7457 19.3315L13.4513 12.0371L20.7457 4.74272C21.1362 4.3522 21.1362 3.71903 20.7457 3.32851Z'
+              fill='rgb(138 153 175)'
             />
           </svg>
         </button>
-      </div> */}
+      </div>
       {/* <!-- SIDEBAR HEADER --> */}
 
       <div className='no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear'>
         {/* <!-- Sidebar Menu --> */}
-        <nav className='mt-5 py-4 px-4 lg:mt-9 lg:px-6'>
+        <nav className='px-4 lg:mt-9 lg:px-6'>
           {/* <!-- Menu Group --> */}
           <div>
             <h3 className='mb-4 ml-4 text-sm font-semibold text-bodydark2'>MENU</h3>

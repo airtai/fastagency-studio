@@ -42,15 +42,22 @@ export default function AppNavBar() {
           </button>
         </div>
         <div className='hidden lg:flex lg:gap-x-12'>
-          {navigation.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              className='text-sm font-semibold leading-6 text-airt-font-base duration-300 ease-in-out hover:text-airt-secondary dark:text-white'
-            >
-              {item.name}
-            </a>
-          ))}
+          {navigation.map((item) => {
+            const windowLocation = window.location.pathname.split('/').pop();
+            const isCurrentPage = windowLocation === item.name.toLowerCase();
+
+            return (
+              <a
+                key={item.name}
+                href={item.href}
+                className={`text-sm font-semibold leading-6 duration-300 ease-in-out hover:text-airt-secondary dark:text-white ${
+                  isCurrentPage ? 'text-airt-secondary' : 'text-airt-font-base'
+                }`}
+              >
+                {item.name}
+              </a>
+            );
+          })}
         </div>
         <div className='hidden lg:flex lg:flex-1 gap-3 justify-end items-center'>
           {/* <ul className='flex justify-center items-center gap-2 sm:gap-4'>

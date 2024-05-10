@@ -97,16 +97,22 @@ export default function AppNavBar() {
           <div className='mt-6 flow-root'>
             <div className='-my-6 divide-y divide-airt-font-base'>
               <div className='space-y-2 py-6'>
-                {navigation.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-airt-primary hover:bg-gray-50 dark:text-white hover:dark:bg-boxdark-2'
-                  >
-                    {item.name}
-                  </a>
-                ))}
+                {navigation.map((item) => {
+                  const windowLocation = window.location.pathname.split('/').pop();
+                  const isCurrentPage = windowLocation === item.name.toLowerCase();
+
+                  return (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      className={`-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-airt-primary hover:bg-gray-50 dark:text-white hover:dark:bg-boxdark-2 ${
+                        isCurrentPage ? 'text-airt-secondary' : 'text-airt-font-base'
+                      }`}
+                    >
+                      {item.name}
+                    </a>
+                  );
+                })}
               </div>
               <div className='py-6'>
                 {isUserLoading ? null : !user ? (

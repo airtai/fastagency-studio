@@ -243,8 +243,9 @@ const CustomSidebar = ({ sidebarOpen, setSidebarOpen, onSideNavItemClick, sideNa
   return (
     <aside
       ref={sidebar}
+      style={{ top: '80px' }}
       className={cn(
-        'absolute left-0 top-0 z-9999 flex h-screen w-75 flex-col overflow-y-hidden bg-airt-primary duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0',
+        'h-[calc(100vh-80px)] absolute left-0 z-9999 flex w-75 flex-col overflow-y-hidden bg-airt-primary duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0',
         {
           'translate-x-0': sidebarOpen,
           '-translate-x-full': !sidebarOpen,

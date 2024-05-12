@@ -22,27 +22,39 @@ llm_config = {
     "temperature": 0,
 }
 
-weather_man = AssistantAgent(
-    "weather_man",
-    system_message="You are the weather man. When the user asks you about the weather, randomly answer with a weather forecast.",
-    llm_config=llm_config,
-)
 
-user_system_message = f"""You are the user interested in the weather forecast.
-Ask the weather_man one question at the time.
+def chat_with_weatherman(message):
 
-1. question:
-What is the weather like today?
+    weather_man = AssistantAgent(
+        "weather_man",
+        system_message="You are the weather man. When the user asks you about the weather, randomly answer with a weather forecast.",
+        llm_config=llm_config,
+    )
 
-2. question:
-What is the weather forecast for tomorrow?
+    user_system_message = f"""You are the user interested in the weather forecast.
+    Ask the weather_man one question at the time.
 
-Once you have asked both questions, end the conversation by writing 'TERMINATE'
-"""
-user = AssistantAgent(
-    "user",
-    system_message=user_system_message,
-    llm_config=llm_config,
-)
+    1. question:
+    What is the weather like today?
 
-user.initiate_chat(recipient=weather_man, message="What is the weather like today?")
+    2. question:
+    What is the weather forecast for tomorrow?
+
+    Once you have asked both questions, end the conversation by writing 'TERMINATE'
+    """
+    user = AssistantAgent(
+        "user",
+        system_message=user_system_message,
+        llm_config=llm_config,
+    )
+
+    chat_result = user.initiate_chat(recipient=weather_man, message=message)
+    return chat_result
+
+
+if __name__ == "__main__":
+    chat_result = chat_with_weatherman(message="What is the weather like today?")
+    print(chat_result)
+    for c in chat_result.chat_history:
+        print(c)
+        print(type(c))

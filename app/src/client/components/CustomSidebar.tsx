@@ -14,17 +14,17 @@ export const navLinkItems: NavLinkItem[] = [
     label: 'Secrets',
     svgIcon: (
       <svg
-        className='fill-current -mt-1'
+        className='fill-current stroke-current -mt-1'
         width='18'
         height='18'
         viewBox='0 0 34 34'
         xmlns='http://www.w3.org/2000/svg'
-        stroke='#FFF'
       >
         <title>key</title>
         <path
           d='M27.339 8.365l0.63-1.011 1.513 0.942 1.065-1.555-2.683-1.838c-1.513 2.208-3.368 1.191-5.172-0.028l1.654-2.413-2.101-1.44-11.242 16.406-1.431-0.999c-1.527-1.065-3.411 1.592-1.864 2.671l1.454 1.015-0.21 0.307c-2.85-1.433-5.949-1.161-7.289 0.796h0c-1.518 2.215-0.209 5.752 2.903 7.885s6.858 2.059 8.376-0.156c1.345-1.962 0.49-4.949-1.886-7.088l0.196-0.286 1.238 0.864c1.42 0.991 3.319-1.656 1.864-2.671l-1.261-0.88 6.545-9.552c1.731 1.195 3.456 2.533 2.091 4.525l2.683 1.838 1.802-2.63-1.678-1.045 0.689-1.106 1.727 1.075 1.121-1.635-2.353-1.465 0.689-1.106 0.933 0.581zM6.183 28.027c-1.135 0-2.055-0.92-2.055-2.055s0.92-2.055 2.055-2.055 2.055 0.92 2.055 2.055c-0 1.135-0.92 2.055-2.055 2.055z'
           fill='none'
+          stroke='currentColor'
           strokeMiterlimit='10'
           strokeWidth='1'
         ></path>
@@ -36,8 +36,8 @@ export const navLinkItems: NavLinkItem[] = [
     label: 'LLMs',
     svgIcon: (
       <svg
-        fill='#FFFFFF'
-        stroke='#FFFFFF'
+        fill='currentColor'
+        stroke='currentColor'
         strokeWidth='0.5'
         version='1.1'
         id='Layer_1'
@@ -58,8 +58,8 @@ export const navLinkItems: NavLinkItem[] = [
     label: 'Agents',
     svgIcon: (
       <svg
-        fill='#FFFFFF'
-        stroke='#FFFFFF'
+        fill='currentColor'
+        stroke='currentColor'
         strokeWidth='0.5' // Adding a small stroke width to make the border visible, adjust as needed
         version='1.1'
         id='Layer_1'
@@ -97,7 +97,14 @@ export const navLinkItems: NavLinkItem[] = [
   {
     label: 'Teams',
     svgIcon: (
-      <svg width='18px' height='18px' viewBox='0 0 24 24' id='team' xmlns='http://www.w3.org/2000/svg'>
+      <svg
+        width='18px'
+        height='18px'
+        viewBox='0 0 24 24'
+        id='team'
+        xmlns='http://www.w3.org/2000/svg'
+        className='custom-svg'
+      >
         <g id='_24x24_user--dark' data-name='24x24/user--dark'>
           <rect id='Rectangle' width='24' height='24' fill='none' />
         </g>
@@ -107,7 +114,7 @@ export const navLinkItems: NavLinkItem[] = [
           d='M0,12.106C0,8.323,4.5,9.08,4.5,7.567a2.237,2.237,0,0,0-.41-1.513A3.5,3.5,0,0,1,3,3.4,3.222,3.222,0,0,1,6,0,3.222,3.222,0,0,1,9,3.4,3.44,3.44,0,0,1,7.895,6.053,2.333,2.333,0,0,0,7.5,7.567c0,1.513,4.5.757,4.5,4.54,0,0-1.195.894-6,.894S0,12.106,0,12.106Z'
           transform='translate(6 8)'
           fill='none'
-          stroke='#FFFFFF'
+          stroke='currentColor'
           strokeMiterlimit='10'
           strokeWidth='1.5'
         />
@@ -117,7 +124,7 @@ export const navLinkItems: NavLinkItem[] = [
           d='M4.486,12.967c-.569-.026-1.071-.065-1.512-.114A6.835,6.835,0,0,1,0,12.106C0,8.323,4.5,9.08,4.5,7.567a2.237,2.237,0,0,0-.41-1.513A3.5,3.5,0,0,1,3,3.4,3.222,3.222,0,0,1,6,0,3.222,3.222,0,0,1,9,3.4'
           transform='translate(1 3)'
           fill='none'
-          stroke='#FFFFFF'
+          stroke='currentColor'
           strokeMiterlimit='10'
           strokeWidth='1.5'
         />
@@ -127,7 +134,7 @@ export const navLinkItems: NavLinkItem[] = [
           d='M-4.486,12.967c.569-.026,1.071-.065,1.512-.114A6.835,6.835,0,0,0,0,12.106C0,8.323-4.5,9.08-4.5,7.567a2.237,2.237,0,0,1,.41-1.513A3.5,3.5,0,0,0-3,3.4,3.222,3.222,0,0,0-6,0,3.222,3.222,0,0,0-9,3.4'
           transform='translate(23 3)'
           fill='none'
-          stroke='#FFFFFF'
+          stroke='currentColor'
           strokeMiterlimit='10'
           strokeWidth='1.5'
         />
@@ -231,13 +238,15 @@ const CustomSidebar = ({ sidebarOpen, setSidebarOpen, onSideNavItemClick, sideNa
 
   const handleClick = (selectedItemLable: string) => {
     onSideNavItemClick(selectedItemLable);
+    setSidebarOpen(false);
   };
 
   return (
     <aside
       ref={sidebar}
+      style={{ top: '80px' }}
       className={cn(
-        'absolute left-0 top-0 z-9999 flex h-screen w-75 flex-col overflow-y-hidden bg-airt-primary duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0',
+        'h-[calc(100vh-80px)] absolute left-0 z-9999 flex w-75 flex-col overflow-y-hidden bg-airt-primary duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0',
         {
           'translate-x-0': sidebarOpen,
           '-translate-x-full': !sidebarOpen,
@@ -245,38 +254,31 @@ const CustomSidebar = ({ sidebarOpen, setSidebarOpen, onSideNavItemClick, sideNa
       )}
     >
       {/* <!-- SIDEBAR HEADER --> */}
-      {/* <div className='flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5'>
-        <NavLink to='/'>
+      <div className='flex justify-end gap-2 px-6 py-5.5 lg:py-6.5'>
+        {/* <NavLink to='/'>
           <img src={Logo} alt='Logo' width={50} />
-        </NavLink>
+        </NavLink> */}
 
         <button
           ref={trigger}
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-controls='sidebar'
           aria-expanded={sidebarOpen}
-          className='block lg:hidden'
+          className='block lg:hidden text-airt-font-base'
         >
-          <svg
-            className='fill-current'
-            width='20'
-            height='18'
-            viewBox='0 0 20 18'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
+          <svg width='24px' height='24px' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
             <path
-              d='M19 8.175H2.98748L9.36248 1.6875C9.69998 1.35 9.69998 0.825 9.36248 0.4875C9.02498 0.15 8.49998 0.15 8.16248 0.4875L0.399976 8.3625C0.0624756 8.7 0.0624756 9.225 0.399976 9.5625L8.16248 17.4375C8.31248 17.5875 8.53748 17.7 8.76248 17.7C8.98748 17.7 9.17498 17.625 9.36248 17.475C9.69998 17.1375 9.69998 16.6125 9.36248 16.275L3.02498 9.8625H19C19.45 9.8625 19.825 9.4875 19.825 9.0375C19.825 8.55 19.45 8.175 19 8.175Z'
-              fill=''
+              d='M20.7457 3.32851C20.3552 2.93798 19.722 2.93798 19.3315 3.32851L12.0371 10.6229L4.74275 3.32851C4.35223 2.93798 3.71906 2.93798 3.32854 3.32851C2.93801 3.71903 2.93801 4.3522 3.32854 4.74272L10.6229 12.0371L3.32856 19.3314C2.93803 19.722 2.93803 20.3551 3.32856 20.7457C3.71908 21.1362 4.35225 21.1362 4.74277 20.7457L12.0371 13.4513L19.3315 20.7457C19.722 21.1362 20.3552 21.1362 20.7457 20.7457C21.1362 20.3551 21.1362 19.722 20.7457 19.3315L13.4513 12.0371L20.7457 4.74272C21.1362 4.3522 21.1362 3.71903 20.7457 3.32851Z'
+              fill='rgb(138 153 175)'
             />
           </svg>
         </button>
-      </div> */}
+      </div>
       {/* <!-- SIDEBAR HEADER --> */}
 
       <div className='no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear'>
         {/* <!-- Sidebar Menu --> */}
-        <nav className='mt-5 py-4 px-4 lg:mt-9 lg:px-6'>
+        <nav className='px-4 lg:mt-9 lg:px-6'>
           {/* <!-- Menu Group --> */}
           <div>
             <h3 className='mb-4 ml-4 text-sm font-semibold text-bodydark2'>MENU</h3>
@@ -291,9 +293,9 @@ const CustomSidebar = ({ sidebarOpen, setSidebarOpen, onSideNavItemClick, sideNa
                       handleClick(item.componentName);
                     }}
                     className={cn(
-                      'group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-airt-secondary dark:hover:bg-meta-4',
+                      'group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-airt-font-base duration-300 ease-in-out hover:bg-airt-secondary hover:text-airt-primary dark:hover:bg-meta-4',
                       {
-                        'bg-airt-secondary dark:bg-meta-4': item.componentName === sideNavSelectedItem,
+                        'bg-airt-secondary text-airt-primary': item.componentName === sideNavSelectedItem,
                       }
                     )}
                   >

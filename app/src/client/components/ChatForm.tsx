@@ -28,16 +28,14 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!currentChatDetails.showLoader) {
-      const target = event.target as HTMLFormElement;
-      const userQuery = target.userQuery.value;
       setFormInputValue('');
-      handleFormSubmit(userQuery);
+      handleFormSubmit(formInputValue);
     }
   };
 
   return (
-    <div data-testid='chat-form' className='mt-2 mb-2'>
-      <form onSubmit={handleSubmit} className=''>
+    <div className='mt-2 mb-2'>
+      <form data-testid='chat-form' onSubmit={handleSubmit} className=''>
         <label
           htmlFor='search'
           className='mb-2 text-sm font-medium text-captn-dark-blue sr-only dark:text-airt-font-base'

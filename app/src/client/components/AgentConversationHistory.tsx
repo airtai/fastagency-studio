@@ -19,10 +19,7 @@ const AgentConversationHistory: React.FC<AgentConversationHistoryProps> = ({
   };
 
   return (
-    <div
-      data-testid='agent-loader'
-      className={`flex items-center group  flex-col bg-captn-dark-blue`}
-    >
+    <div data-testid='agent-loader' className={`flex items-center group  flex-col bg-airt-primary`}>
       <div
         style={{
           maxWidth: `${isAgentWindow ? '745px' : '800px'}`,
@@ -31,11 +28,7 @@ const AgentConversationHistory: React.FC<AgentConversationHistoryProps> = ({
         }}
         className={`relative block w-full`}
       >
-        <TerminalDisplay
-          messages={agentConversationHistory}
-          maxHeight={400}
-          isOpenOnLoad={isAgentWindow}
-        />
+        <TerminalDisplay messages={agentConversationHistory} maxHeight={400} isOpenOnLoad={isAgentWindow} />
       </div>
     </div>
   );

@@ -556,7 +556,7 @@ export const getAgentResponse: GetAgentResponse<AgentPayload, Record<string, any
   console.log(payload);
   console.log('===========');
   try {
-    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/openai/chat/${model_name}/${uuid}`;
+    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/chat/${model_name}/${uuid}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

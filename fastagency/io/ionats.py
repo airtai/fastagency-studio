@@ -78,6 +78,7 @@ class IONats(IOStream):  # type: ignore[misc]
             str: The line read from the input stream.
 
         """
+        print(f"IONats.input getting called with {prompt=}, {password=}")
         if prompt != "":
             self.print(prompt)
 

@@ -122,7 +122,7 @@ class TestAutogen:
 
         @broker.subscriber(f"chat.client.thread.{thread_id}", stream=stream)
         async def client_handler(msg: Dict[str, Any]) -> None:
-            print(f"{msg=}")
+            print(f"In test, subscribed to chat.client.thread.{thread_id} {msg=}")
             await msg_queue.put(msg)
 
         get_forecast_for_city_mock = MagicMock()
@@ -156,6 +156,16 @@ class TestAutogen:
         monkeypatch.setattr(fastagency.io.ionats, "create_team", create_team)
 
         async with TestNatsBroker(broker) as br:
+            await br.publish(
+                fastagency.io.ionats.InitiateModel(
+                    msg="exit",
+                    thread_id=thread_id,
+                    team_id=team_id,
+                ),
+                subject="chat.server.initiate_thread",
+            )
+            await asyncio.sleep(10)
+
             for msg in [
                 f"[{datetime.now()}] What's the weather in New York today?",
                 "",
@@ -169,14 +179,15 @@ class TestAutogen:
                     subject=f"chat.server.thread.{thread_id}",
                 )
 
-            await br.publish(
-                fastagency.io.ionats.InitiateModel(
-                    msg="exit",
-                    thread_id=thread_id,
-                    team_id=team_id,
-                ),
-                subject="chat.server.initiate_thread",
-            )
+            # await br.publish(
+            #     fastagency.io.ionats.InitiateModel(
+            #         msg="exit",
+            #         thread_id=thread_id,
+            #         team_id=team_id,
+            #     ),
+            #     subject="chat.server.initiate_thread",
+            # )
+            # await asyncio.sleep(10)
 
             result_set, _ = await asyncio.wait(
                 (asyncio.create_task(msg_queue.get()),), timeout=3

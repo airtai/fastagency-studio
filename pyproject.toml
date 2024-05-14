@@ -226,6 +226,7 @@ markers = [
     "all",
     "db",
     "nats",
+    "azure_oai",
 ]
 
 [tool.coverage.run]

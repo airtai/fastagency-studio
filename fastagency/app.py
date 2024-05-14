@@ -149,7 +149,7 @@ class ChatRequest(BaseModel):
 
 @app.post("/user/{user_uuid}/chat/{model_name}/{model_uuid}")
 async def openai_chat(request: ChatRequest) -> Dict[str, Any]:
-    # message = request.message
+    message = request.message[0]["content"]
     chat_id = request.chat_id
     user_id = request.user_id
 
@@ -159,5 +159,5 @@ async def openai_chat(request: ChatRequest) -> Dict[str, Any]:
         "team_name": team_name,
         "team_id": chat_id,
         "customer_brief": "Some customer brief",
-        "conversation_name": "New Chat",
+        "conversation_name": message,
     }

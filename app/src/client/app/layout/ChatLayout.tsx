@@ -1,5 +1,6 @@
 import { type Chat } from 'wasp/entities';
 
+import { useSocketListener } from 'wasp/client/webSocket';
 import { useAuth } from 'wasp/client/auth';
 import { useState, ReactNode, FC, useRef, useEffect } from 'react';
 import { Header } from '../BuildPage';
@@ -37,22 +38,31 @@ const ChatLayout: FC<Props> = ({
     }
   }, [user, history]);
 
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTo({
-          top: scrollRef.current.scrollHeight,
-          behavior: 'smooth',
-        });
-      }
-    });
-
+  useSocketListener('newMessageFromTeam', (message: any) => {
     if (scrollRef.current) {
-      observer.observe(scrollRef.current, { childList: true, subtree: true });
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'auto',
+      });
     }
+  });
 
-    return () => observer.disconnect();
-  }, []);
+  // useEffect(() => {
+  //   const observer = new MutationObserver(() => {
+  //   if (scrollRef.current) {
+  //     scrollRef.current.scrollTo({
+  //       top: scrollRef.current.scrollHeight,
+  //       behavior: 'smooth',
+  //     });
+  //   }
+  // });
+
+  //   if (scrollRef.current) {
+  //     observer.observe(scrollRef.current, { childList: true, subtree: true });
+  //   }
+
+  //   return () => observer.disconnect();
+  // }, []);
   // make call to api -> from action file access conversation entity and pass it to openai
   // get response from openai and save it against the conversation
 

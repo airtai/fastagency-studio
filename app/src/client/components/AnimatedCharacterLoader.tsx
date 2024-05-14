@@ -15,6 +15,7 @@ const AnimatedCharacterLoader: React.FC<AnimatedCharacterLoaderProps> = ({
 }) => {
   const [frameIndex, setFrameIndex] = useState(0); // State to track the current frame of the animation
   const loadingAnimation = ['—', '\\', '|', '/']; // Characters used for the loading animation
+  const textColor = bgColor === 'airt-primary' ? 'airt-font-base' : 'airt-primary'; // Text color based on background color
 
   useEffect(() => {
     // Set up an interval to cycle through the animation characters
@@ -48,7 +49,7 @@ const AnimatedCharacterLoader: React.FC<AnimatedCharacterLoaderProps> = ({
             <img alt='FastAgency logo' src={logo} className='w-full h-full' style={{ borderRadius: '50%' }} />
           </span>
         )}
-        <div className='chat-conversations text-base text-airt-font-base flex flex-col gap-2'>
+        <div className={`chat-conversations text-base text-${textColor} flex flex-col gap-2`}>
           {/* <Markdown> */}
           {loadingMessage} {loadingAnimation[frameIndex]}
           {/* </Markdown> */}

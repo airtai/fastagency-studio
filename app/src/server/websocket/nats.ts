@@ -39,7 +39,6 @@ export async function connectToNatsServer(
       for await (const m of sub) {
         const jm: any = jc.decode(m.data);
         // add the message to the global variable and send it back to the client
-        console.log(`Received message: ${JSON.stringify(jm)}`);
         lastSocketMessage = jm.msg;
         socketConversationHistory = socketConversationHistory + lastSocketMessage;
         socket.emit('newMessageFromTeam', socketConversationHistory);
@@ -54,7 +53,6 @@ export async function connectToNatsServer(
       let isExceptionOccured = false;
       for await (const m of terminateSub) {
         const jm: any = jc.decode(m.data);
-        console.log(`Received message: ${JSON.stringify(jm)}`);
         message = jm.msg;
         await updateDB(
           context,

@@ -56,10 +56,10 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
           />
           <button
             type='submit'
-            className={`text-airt-font-base bg-airt-primary hover:opacity-90 absolute right-2 font-medium rounded-lg text-sm px-1.5 py-1.5`}
+            className={`text-airt-primary bg-airt-secondary hover:opacity-90 absolute right-2 font-medium rounded-lg text-sm px-1.5 py-1.5`}
           >
             <span className=''>
-              <svg width='24' height='24' viewBox='0 0 24 24' fill='none' className='text-airt-font-base'>
+              <svg width='24' height='24' viewBox='0 0 24 24' fill='none' className='text-airt-primary'>
                 <path
                   d='M7 11L12 6L17 11M12 18V7'
                   stroke='currentColor'

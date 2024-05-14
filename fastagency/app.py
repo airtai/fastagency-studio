@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException
 from prisma.models import Model
-from pydantic import TypeAdapter, ValidationError
+from pydantic import BaseModel, TypeAdapter, ValidationError
 
 from .db.helpers import get_db_connection, get_wasp_db_url
 from .models.registry import Registry, Schemas
@@ -141,19 +141,23 @@ async def models_delete(
     return model.json_str  # type: ignore
 
 
+class ChatRequest(BaseModel):
+    chat_id: int
+    message: List[Dict[str, str]]
+    user_id: int
+
+
 @app.post("/user/{user_uuid}/chat/{model_name}/{model_uuid}")
-async def openai_chat() -> Dict[str, Any]:
-    # return {
-    #     "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-    #     "smart_suggestions": {"suggestions": [""], "type": "oneOf"},
-    #     "team_status": None,
-    #     "team_name": None,
-    #     "team_id": None,
-    # }
+async def openai_chat(request: ChatRequest) -> Dict[str, Any]:
+    # message = request.message
+    chat_id = request.chat_id
+    user_id = request.user_id
+
+    team_name = f"{user_id}_{chat_id}"
     return {
         "team_status": "inprogress",
-        "team_name": "team_name",
-        "team_id": 1,
-        "customer_brief": "customer_brief",
-        "conversation_name": "conversation_name",
+        "team_name": team_name,
+        "team_id": chat_id,
+        "customer_brief": "Some customer brief",
+        "conversation_name": "New Chat",
     }

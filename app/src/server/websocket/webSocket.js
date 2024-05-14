@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import { FASTAGENCY_SERVER_URL } from '../common/constants';
+import { connectToNatsServer } from './nats';
 
 const isLocal = FASTAGENCY_SERVER_URL === 'http://127.0.0.1:9000';
 const protocol = isLocal ? 'ws' : 'wss';
@@ -18,7 +19,14 @@ async function getChat(chatId, context) {
   });
 }
 
-async function updateDB(context, chatId, message, conversationId, socketConversationHistory, isExceptionOccured) {
+export async function updateDB(
+  context,
+  chatId,
+  message,
+  conversationId,
+  socketConversationHistory,
+  isExceptionOccured
+) {
   let obj = {};
   try {
     const jsonString = message.replace(/True/g, true).replace(/False/g, false);
@@ -132,7 +140,10 @@ export const socketFn = (io, context) => {
       socket.on(
         'sendMessageToTeam',
         async (currentChatDetails, conversationId, lastMessage, allMessages, team_name) => {
-          wsConnection(socket, context, currentChatDetails, conversationId, lastMessage, allMessages, team_name);
+          const uniqueName =
+            String(currentChatDetails.userId) + '-' + String(currentChatDetails.uuid) + '-' + String(conversationId);
+          connectToNatsServer(socket, context, uniqueName, currentChatDetails, conversationId);
+          //wsConnection(socket, context, currentChatDetails, conversationId, lastMessage, allMessages, team_name);
         }
       );
     }

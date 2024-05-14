@@ -1,3 +1,4 @@
+import asyncio
 import json
 import random
 from os import environ
@@ -16,7 +17,9 @@ if nats_url is None:
 broker = NatsBroker(nats_url)
 app = FastStream(broker)
 
-stream = JStream(name="ping_pong", subjects=["ping.*", "pong.*"])
+stream = JStream(name="ping_pong", subjects=["ping.*", "pong.*", "terminate.*"])
+
+LOREM_IPSUM = "### Start ###\n\nLorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.\n\n ### End ###"
 
 
 async def ping_handler(body: Dict[str, Any], msg: NatsMessage, logger: Logger) -> None:
@@ -34,13 +37,20 @@ async def ping_handler(body: Dict[str, Any], msg: NatsMessage, logger: Logger) -
     if "msg" not in body or body["msg"].lower() != "ping":
         reply_msg = f"Unkown message: {body}, please send 'ping' in body['msg']"
     else:
-        reply_msg = "pong"
+        reply_msg = LOREM_IPSUM
 
-    reply = {
-        "msg": reply_msg,
-        "process_id": process_id,
-    }
-    await broker.publish(json.dumps(reply), f"pong.{client_id}")
+    for c in reply_msg:
+        await asyncio.sleep(0.05)
+        reply = {
+            "msg": c,
+            "process_id": process_id,
+        }
+        await broker.publish(json.dumps(reply), f"pong.{client_id}")
+
+    await broker.publish(
+        json.dumps({"msg": reply_msg, "process_id": process_id}),
+        f"terminate.{client_id}",
+    )
 
 
 @broker.subscriber(

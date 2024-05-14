@@ -8,6 +8,7 @@ from asyncer import asyncify, syncify
 from autogen.io.base import IOStream
 from faststream import Logger
 from faststream.nats import NatsMessage
+from nats.js import api
 from pydantic import BaseModel
 
 from .app import broker, stream
@@ -21,10 +22,10 @@ class InputModel(BaseModel):
     msg: str
 
 
-class IONats(IOStream):
+class IONats(IOStream):  # type: ignore[misc]
     def __init__(self, thread_id: str) -> None:
         """Initialize the IO class."""
-        self.queue = Queue()
+        self.queue: Queue = Queue()  # type: ignore[type-arg]
         self._publisher = broker.publish
         self._thread_id = thread_id
 
@@ -36,7 +37,11 @@ class IONats(IOStream):
         self = cls(thread_id)
 
         # dynamically subscribe to the chat server
-        subscriber = broker.subscriber(subject=self._receive_subject)
+        subscriber = broker.subscriber(
+            subject=self._receive_subject,
+            stream=stream,
+            deliver_policy=api.DeliverPolicy("all"),
+        )
         subscriber(self.handle_input)
         broker.setup_subscriber(subscriber)
 
@@ -58,8 +63,9 @@ class IONats(IOStream):
         xs = sep.join(map(str, objects)) + end
 
         msg = PrintModel(msg=xs)
+        print(f"Printing data to the output stream - {msg}")
 
-        self._publisher(msg, self._send_subject)
+        syncify(self._publisher)(msg, self._send_subject)
 
     def input(self, prompt: str = "", *, password: bool = False) -> str:
         """Read a line from the input stream.
@@ -84,14 +90,17 @@ class IONats(IOStream):
         self.queue.task_done()
         syncify(msg.ack)()
 
-        retval = InputModel.model_validate_json(msg.raw_message.body).msg
+        retval = InputModel.model_validate_json(
+            msg.raw_message.data.decode("utf-8")
+        ).msg
+        print(f"{retval=}")
 
         return retval
 
     async def handle_input(
         self, body: InputModel, msg: NatsMessage, logger: Logger
     ) -> None:
-        print(f"Received message in subject '{self._receive_subject}': {body}")
+        # print(f"Received message in subject '{self._receive_subject}': {body}")
         logger.info(f"Received message in subject '{self._receive_subject}': {body}")
 
         self.queue.put(msg)
@@ -112,17 +121,20 @@ def create_team(team_id: UUID) -> Callable[[], Any]:
     "chat.server.initiate_thread",
     stream=stream,
     queue="initiate_workers",
+    deliver_policy=api.DeliverPolicy("all"),
 )
 async def initiate_handler(
     body: InitiateModel, msg: NatsMessage, logger: Logger
 ) -> None:
     await msg.ack()
 
-    logger.info(f"Received a message: {body=} -> from process id {os.getpid()}")
+    logger.info(
+        f"Received a message in subject 'chat.server.initiate_thread': {body=} -> from process id {os.getpid()}"
+    )
 
     iostream = await IONats.create(body.thread_id)
 
-    def start_chat():
+    def start_chat() -> Any:
         with IOStream.set_default(iostream):
             initiate_chat = create_team(team_id=body.team_id)
             return initiate_chat()

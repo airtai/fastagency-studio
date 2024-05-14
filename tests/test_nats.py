@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import uuid
@@ -13,11 +14,11 @@ from faststream.nats import TestNatsBroker
 from pydantic import BaseModel
 
 import fastagency.io.ionats
-from fastagency.io.ionats import broker
+from fastagency.io.ionats import broker, stream
 
 
 def as_dict(model: BaseModel) -> Dict[str, Any]:
-    return json.loads(model.model_dump_json())
+    return json.loads(model.model_dump_json())  # type: ignore [no-any-return]
 
 
 @pytest.fixture()
@@ -48,7 +49,7 @@ def llm_config() -> Dict[str, Any]:
 
 
 @pytest.mark.azure_oai()
-def test_llm_config_fixture(llm_config):
+def test_llm_config_fixture(llm_config: Dict[str, Any]) -> None:
     assert set(llm_config.keys()) == {"config_list", "temperature"}
     assert isinstance(llm_config["config_list"], list)
     assert llm_config["temperature"] == 0
@@ -117,6 +118,13 @@ class TestAutogen:
         thread_id = uuid.uuid4()
         team_id = uuid.uuid4()
 
+        msg_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
+
+        @broker.subscriber(f"chat.client.thread.{thread_id}", stream=stream)
+        async def client_handler(msg: Dict[str, Any]) -> None:
+            print(f"{msg=}")
+            await msg_queue.put(msg)
+
         get_forecast_for_city_mock = MagicMock()
 
         def create_team(team_id: uuid.UUID) -> Callable[[], Any]:
@@ -169,6 +177,13 @@ class TestAutogen:
                 ),
                 subject="chat.server.initiate_thread",
             )
+
+            result_set, _ = await asyncio.wait(
+                (asyncio.create_task(msg_queue.get()),), timeout=3
+            )
+            assert len(result_set) == 1
+            result = result_set.pop().result()
+            print(f"{result=}")
 
         # chat_result = create_team(team_id=0)()
         # last_message = chat_result.chat_history[-1]

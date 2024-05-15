@@ -78,8 +78,8 @@ export async function connectToNatsServer(
           isExceptionOccured
         );
         socket.emit('streamFromTeamFinished');
-        await clientInputSub.unsubscribe();
-        break;
+        // await clientInputSub.unsubscribe();
+        // break;
       }
     })().catch((err) => {
       console.error(`Error: ${err}`);

@@ -75,6 +75,7 @@ jobs:
       NATS_URL: nats://localhost:4222
       AZURE_API_VERSION: ${{ secrets.STAGING_AZURE_API_VERSION }}
       AZURE_API_ENDPOINT: ${{ secrets.STAGING_AZURE_API_ENDPOINT }}
+      AZURE_GPT4_MODEL: ${{ secrets.STAGING_AZURE_GPT4_MODEL }}
       AZURE_GPT35_MODEL: ${{ secrets.STAGING_AZURE_GPT35_MODEL }}
       AZURE_OPENAI_API_KEY: ${{ secrets.STAGING_AZURE_OPENAI_API_KEY }}
     steps:
@@ -128,6 +129,11 @@ jobs:
     runs-on: macos-latest
     env:
       NATS_URL: nats://localhost:4222
+      AZURE_API_VERSION: ${{ secrets.STAGING_AZURE_API_VERSION }}
+      AZURE_API_ENDPOINT: ${{ secrets.STAGING_AZURE_API_ENDPOINT }}
+      AZURE_GPT4_MODEL: ${{ secrets.STAGING_AZURE_GPT4_MODEL }}
+      AZURE_GPT35_MODEL: ${{ secrets.STAGING_AZURE_GPT35_MODEL }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.STAGING_AZURE_OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -150,6 +156,11 @@ jobs:
     runs-on: windows-latest
     env:
       NATS_URL: nats://localhost:4222
+      AZURE_API_VERSION: ${{ secrets.STAGING_AZURE_API_VERSION }}
+      AZURE_API_ENDPOINT: ${{ secrets.STAGING_AZURE_API_ENDPOINT }}
+      AZURE_GPT4_MODEL: ${{ secrets.STAGING_AZURE_GPT4_MODEL }}
+      AZURE_GPT35_MODEL: ${{ secrets.STAGING_AZURE_GPT35_MODEL }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.STAGING_AZURE_OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python

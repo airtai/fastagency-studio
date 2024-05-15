@@ -44,13 +44,14 @@ classifiers = [
 dynamic = ["version"]
 
 dependencies = [
-    "pyautogen>=0.2.24,<0.3",
-    "faststream[nats]>=0.5.0,<0.6",
+    "pyautogen>=0.2.27,<0.3",
+    "faststream[nats]>=0.5.5,<0.6",
     "typing-extensions>=4.8.0,<5",
     "pydantic>=2.3,<3",
     "fastapi==0.110.2",
     "prisma>=0.13.1,<0.14",
     "fastapi-code-generator==0.5.0",
+    "asyncer==0.0.7",
 ]
 
 [project.optional-dependencies]
@@ -111,6 +112,7 @@ dev = [
     "fastagency[server,lint,testing,devdocs]",
     "pre-commit==3.7.0",
     "detect-secrets==1.4.0",
+    "asyncer==0.0.7",
 ]
 
 [project.urls]
@@ -225,6 +227,7 @@ markers = [
     "all",
     "db",
     "nats",
+    "azure_oai",
 ]
 
 [tool.coverage.run]

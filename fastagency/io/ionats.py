@@ -1,7 +1,7 @@
 import os
 import time
 from queue import Queue
-from typing import Any, Callable
+from typing import Any, Callable, Union
 from uuid import UUID
 
 from asyncer import asyncify, syncify
@@ -39,7 +39,9 @@ class IONats(IOStream):  # type: ignore[misc]
         self._print_send_subject = f"chat.client.print.{thread_id}"
 
     @classmethod
-    async def create(cls, thread_id: str) -> "IONats":
+    async def create(cls, thread_id: Union[str, UUID]) -> "IONats":
+        if isinstance(thread_id, UUID):
+            thread_id = str(thread_id)
         self = cls(thread_id)
 
         # dynamically subscribe to the chat server
@@ -69,7 +71,6 @@ class IONats(IOStream):  # type: ignore[misc]
         xs = sep.join(map(str, objects)) + end
 
         msg = PrintModel(msg=xs)
-        print(f"Printing data to the output stream - {msg}")
 
         syncify(self._publisher)(msg, self._print_send_subject)
 
@@ -84,15 +85,12 @@ class IONats(IOStream):  # type: ignore[misc]
             str: The line read from the input stream.
 
         """
-        print(f" -> IONats.input({prompt=}, {password=})")
-
         # request a new input
-        msg = InputRequestModel(prompt=prompt, is_password=password)
-        syncify(self._publisher)(msg, self._input_request_subject)
+        input_request_msg = InputRequestModel(prompt=prompt, is_password=password)
+        syncify(self._publisher)(input_request_msg, self._input_request_subject)
 
         # wait for the input to arrive and be propagated to queue
         while self.queue.empty():
-            print("Waiting for input...")
             time.sleep(0.1)
 
         msg: NatsMessage = self.queue.get()
@@ -103,14 +101,12 @@ class IONats(IOStream):  # type: ignore[misc]
         retval = InputResponseModel.model_validate_json(
             msg.raw_message.data.decode("utf-8")
         ).msg
-        print(f"{retval=}")
 
         return retval
 
     async def handle_input(
         self, body: InputResponseModel, msg: NatsMessage, logger: Logger
     ) -> None:
-        # print(f"Received message in subject '{self._receive_subject}': {body}")
         logger.info(
             f"Received message in subject '{self._input_receive_subject}': {body}"
         )

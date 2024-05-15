@@ -1,11 +1,4 @@
-import WebSocket from 'ws';
-import { FASTAGENCY_SERVER_URL } from '../common/constants';
 import { connectToNatsServer } from './nats';
-
-const isLocal = FASTAGENCY_SERVER_URL === 'http://127.0.0.1:9000';
-const protocol = isLocal ? 'ws' : 'wss';
-const port = isLocal ? '8080' : '9090';
-const WS_URL = `${protocol}://${FASTAGENCY_SERVER_URL.split('//')[1].split(':')[0]}:${port}`;
 
 async function getChat(chatId, context) {
   return await context.entities.Chat.findFirst({
@@ -64,54 +57,6 @@ export async function updateDB(
   });
 }
 
-function wsConnection(socket, context, currentChatDetails, conversationId, lastMessage, allMessages, team_name) {
-  const ws = new WebSocket(WS_URL);
-  const googleAdsTeamName = team_name ? team_name : currentChatDetails.team_name;
-  const data = {
-    conv_id: currentChatDetails.id,
-    user_id: currentChatDetails.userId,
-    message: lastMessage,
-    agent_chat_history: currentChatDetails.agentChatHistory,
-    all_messages: allMessages,
-    is_continue_daily_analysis: currentChatDetails.chatType === 'daily_analysis' && !!currentChatDetails.team_status,
-    google_ads_team: googleAdsTeamName.replace(`_${currentChatDetails.userId}_${currentChatDetails.id}`, ''),
-  };
-  let socketConversationHistory = '';
-  let lastSocketMessage = null;
-  ws.onopen = () => {
-    ws.send(JSON.stringify(data));
-  };
-  ws.onmessage = function (event) {
-    socketConversationHistory = socketConversationHistory + event.data;
-    lastSocketMessage = event.data;
-    socket.emit('newMessageFromTeam', socketConversationHistory);
-  };
-  ws.onerror = function (event) {
-    console.error('WebSocket error observed: ', event);
-  };
-  ws.onclose = async function (event) {
-    let message;
-    let isExceptionOccured = false;
-    if (event.code === 1000) {
-      message = lastSocketMessage;
-    } else {
-      isExceptionOccured = true;
-      message =
-        "Ahoy, mate! It seems our voyage hit an unexpected squall. Let's trim the sails and set a new course. Cast off once more by clicking the button below.";
-      console.log('WebSocket is closed with the event code:', event.code);
-    }
-    await updateDB(
-      context,
-      currentChatDetails.id,
-      message,
-      conversationId,
-      socketConversationHistory,
-      isExceptionOccured
-    );
-    socket.emit('streamFromTeamFinished');
-  };
-}
-
 export const socketFn = (io, context) => {
   // When a new user is connected
   io.on('connection', async (socket) => {
@@ -139,14 +84,7 @@ export const socketFn = (io, context) => {
 
       socket.on(
         'sendMessageToTeam',
-        async (
-          currentChatDetails,
-          selectedTeamUUID,
-          allMessagesOrUserQuery,
-          conversationId,
-          lastMessage,
-          team_name
-        ) => {
+        async (currentChatDetails, selectedTeamUUID, allMessagesOrUserQuery, conversationId) => {
           let message = '';
           let shouldCallInitiateChat = true;
           if (typeof allMessagesOrUserQuery === 'string') {
@@ -164,7 +102,6 @@ export const socketFn = (io, context) => {
             conversationId,
             shouldCallInitiateChat
           );
-          //wsConnection(socket, context, currentChatDetails, conversationId, lastMessage, allMessages, team_name);
         }
       );
     }

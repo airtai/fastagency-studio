@@ -75,7 +75,7 @@ export async function getInProgressConversation(activeChatId: number, userQuery:
   return inProgressConversation;
 }
 
-export const handleDailyAnalysisChat = async (
+export const continueChat = async (
   socket: any,
   currentChatDetails: any,
   inProgressConversation: any,
@@ -84,19 +84,7 @@ export const handleDailyAnalysisChat = async (
   activeChatId: number,
   selectedTeam: SelectedModelSchema
 ) => {
-  const teamName =
-    currentChatDetails.chatType === 'daily_analysis'
-      ? `default_team_${currentChatDetails.userId}_${currentChatDetails.id}`
-      : currentChatDetails.team_name;
-  socket.emit(
-    'sendMessageToTeam',
-    currentChatDetails,
-    selectedTeam.uuid,
-    userQuery,
-    inProgressConversation.id,
-    messages,
-    teamName
-  );
+  socket.emit('sendMessageToTeam', currentChatDetails, selectedTeam.uuid, userQuery, inProgressConversation.id);
   await updateCurrentChat({
     id: activeChatId,
     data: {
@@ -106,7 +94,7 @@ export const handleDailyAnalysisChat = async (
   });
 };
 
-export const callOpenAiAgent = async (
+export const initiateChat = async (
   activeChatId: number,
   currentChatDetails: any,
   inProgressConversation: any,
@@ -144,15 +132,7 @@ export const handleAgentResponse = async (
   selectedTeam: SelectedModelSchema
 ) => {
   if (!!response.customer_brief) {
-    socket.emit(
-      'sendMessageToTeam',
-      currentChatDetails,
-      selectedTeam.uuid,
-      messages,
-      inProgressConversation.id,
-      response.customer_brief,
-      response['team_name']
-    );
+    socket.emit('sendMessageToTeam', currentChatDetails, selectedTeam.uuid, messages, inProgressConversation.id);
   }
   // Emit an event to check the smartSuggestion status
   if (response['content'] && !response['is_exception_occured']) {

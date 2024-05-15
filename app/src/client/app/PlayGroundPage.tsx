@@ -22,8 +22,8 @@ import {
   updateCurrentChatStatus,
   getInProgressConversation,
   getFormattedChatMessages,
-  handleDailyAnalysisChat,
-  callOpenAiAgent,
+  continueChat,
+  initiateChat,
   handleChatError,
 } from '../utils/chatUtils';
 import SelectTeamToChat from '../components/SelectTeamToChat';
@@ -99,26 +99,23 @@ const PlayGroundPage = ({ user }: { user: User }) => {
         await updateCurrentChatStatus(activeChatId, isUserRespondedWithNextAction, removeQueryParameters);
         const messages: any = await getFormattedChatMessages(activeChatId, userQuery, retrySameChat);
         inProgressConversation = await getInProgressConversation(activeChatId, userQuery, retrySameChat);
-        // if the chat has customerBrief already then directly send required detalils in socket event
-        if (currentChatDetails.customerBrief || currentChatDetails.chatType === 'daily_analysis') {
-          const selectedTeam: SelectedModelSchema | undefined = userTeams?.find(
-            (team: any) => team.json_str.name === currentChatDetails.selectedTeam
-          ) as SelectedModelSchema;
-          await handleDailyAnalysisChat(
-            socket,
-            currentChatDetails,
-            inProgressConversation,
-            userQuery,
-            messages,
-            activeChatId,
-            selectedTeam
-          );
-        } else {
-          if (userTeams) {
-            const selectedTeam: SelectedModelSchema | undefined = userTeams.find(
-              (team: any) => team.json_str.name === currentChatDetails.selectedTeam
-            ) as SelectedModelSchema;
-            await callOpenAiAgent(
+        const selectedTeam: SelectedModelSchema | undefined = userTeams?.find(
+          (team: any) => team.json_str.name === currentChatDetails.selectedTeam
+        ) as SelectedModelSchema;
+
+        if (selectedTeam) {
+          if (currentChatDetails.team_id) {
+            await continueChat(
+              socket,
+              currentChatDetails,
+              inProgressConversation,
+              userQuery,
+              messages,
+              activeChatId,
+              selectedTeam
+            );
+          } else {
+            await initiateChat(
               activeChatId,
               currentChatDetails,
               inProgressConversation,

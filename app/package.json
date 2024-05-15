@@ -26,7 +26,6 @@
     "tailwind-merge": "^2.2.1",
     "uuid": "^9.0.1",
     "wasp": "file:.wasp/out/sdk/wasp",
-    "ws": "^8.16.0",
     "zod": "3.22.4"
   },
   "devDependencies": {

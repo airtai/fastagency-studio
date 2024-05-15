@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
 from os import environ
-from typing import AsyncGenerator, Optional
+from typing import Any, AsyncGenerator, Dict, Optional
 
+from fastapi import HTTPException
 from prisma import Prisma  # type: ignore [attr-defined]
 
 
@@ -30,3 +31,18 @@ async def get_wasp_db_url() -> str:
     if "connect_timeout" not in wasp_db_url:
         wasp_db_url += "?connect_timeout=60"
     return wasp_db_url
+
+
+async def find_model_using_raw(model_uuid: str, user_uuid: str) -> Dict[str, Any]:
+    async with get_db_connection() as db:
+        model: Optional[Dict[str, Any]] = await db.query_first(
+            'SELECT * from "Model" where model_uuid='  # nosec: [B608]
+            + f"'{model_uuid}' and user_uuid='{user_uuid}'"
+        )
+
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail=f"model_uuid {model_uuid} and user_uuid {user_uuid} not found",
+        )
+    return model

@@ -1,4 +1,5 @@
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
+from uuid import UUID
 
 from pydantic import Field, HttpUrl
 from typing_extensions import TypeAlias
@@ -23,6 +24,10 @@ class OpenAIAPIKey(Model):
         ),
     ]
 
+    @classmethod
+    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+        pass
+
 
 OpenAIAPIKeyRef: TypeAlias = OpenAIAPIKey.get_reference_model()  # type: ignore[valid-type]
 
@@ -44,3 +49,7 @@ class OpenAI(Model):
         Literal["openai"],
         Field(title="API Type", description="The type of the API, must be 'openai'"),
     ] = "openai"
+
+    @classmethod
+    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+        pass

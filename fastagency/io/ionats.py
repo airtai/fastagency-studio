@@ -12,6 +12,7 @@ from nats.js import api
 from pydantic import BaseModel
 
 from .app import broker, stream
+from fastagency.app import find_model_using_raw
 
 
 class PrintModel(BaseModel):
@@ -115,13 +116,14 @@ class IONats(IOStream):  # type: ignore[misc]
 
 
 class InitiateModel(BaseModel):
+    user_id: UUID
     thread_id: UUID
     team_id: UUID
     msg: str
 
 
 # patch this is tests
-def create_team(team_id: UUID) -> Callable[[], Any]:
+def create_team(team_id: UUID, user_id: UUID) -> Callable[[], Any]:
     raise NotImplementedError
 
 

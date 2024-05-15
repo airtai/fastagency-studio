@@ -1,4 +1,5 @@
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
+from uuid import UUID
 
 from pydantic import Field, HttpUrl
 from typing_extensions import TypeAlias
@@ -16,6 +17,10 @@ __all__ = [
 @register("secret")
 class AzureOAIAPIKey(Model):
     api_key: Annotated[str, Field(description="The API Key from Azure OpenAI")]
+
+    @classmethod
+    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+        pass
 
 
 AzureOAIAPIKeyRef: TypeAlias = AzureOAIAPIKey.get_reference_model()  # type: ignore[valid-type]
@@ -47,3 +52,7 @@ class AzureOAI(Model):
             description="The version of the Azure OpenAI API, e.g. '2024-02-15-preview' or 'latest"
         ),
     ] = "latest"
+
+    @classmethod
+    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+        pass

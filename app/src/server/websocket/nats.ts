@@ -1,7 +1,12 @@
 import { connect, consumerOpts, JSONCodec } from 'nats';
 import { updateDB } from './webSocket';
 
-const NATS_URL = process.env['NATS_URL'];
+function generateNatsUrl(natsUrl: string | undefined, fastAgencyServerUrl: string): string {
+  return natsUrl ? natsUrl : fastAgencyServerUrl.replace('https://', 'tls://') + ':4222';
+}
+
+//@ts-ignore
+const NATS_URL = generateNatsUrl(process.env['NATS_URL'], process.env['FASTAGENCY_SERVER_URL']);
 console.log(`NATS_URL=${NATS_URL}`);
 
 export async function connectToNatsServer(

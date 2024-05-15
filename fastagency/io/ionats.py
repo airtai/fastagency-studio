@@ -4,7 +4,9 @@ from queue import Queue
 from typing import Any, Callable, Union
 from uuid import UUID
 
+import openai
 from asyncer import asyncify, syncify
+from autogen.agentchat import AssistantAgent, UserProxyAgent
 from autogen.io.base import IOStream
 from faststream import Logger
 from faststream.nats import NatsMessage
@@ -122,7 +124,51 @@ class InitiateModel(BaseModel):
 
 # patch this is tests
 def create_team(team_id: UUID) -> Callable[[], Any]:
-    raise NotImplementedError
+    api_key = os.getenv("AZURE_OPENAI_API_KEY")  # use France or Canada
+    api_base = os.getenv("AZURE_API_ENDPOINT")
+    gpt_3_5_model_name = os.getenv("AZURE_GPT35_MODEL")  # "gpt-35-turbo-16k"
+
+    openai.api_type = "azure"
+    openai.api_version = os.getenv("AZURE_API_VERSION")  # "2024-02-15-preview"
+
+    config_list = [
+        {
+            "model": gpt_3_5_model_name,
+            "api_key": api_key,
+            "base_url": api_base,
+            "api_type": openai.api_type,
+            "api_version": openai.api_version,
+        }
+    ]
+
+    llm_config = {
+        "config_list": config_list,
+        "temperature": 0,
+    }
+
+    weather_man = AssistantAgent(
+        name="weather_man",
+        system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
+        llm_config=llm_config,
+    )
+
+    user_proxy = UserProxyAgent(
+        "user_proxy",
+    )
+
+    @user_proxy.register_for_execution()  # type: ignore [misc]
+    @weather_man.register_for_llm(description="Get weather forecast for a city")  # type: ignore [misc]
+    def get_forecast_for_city(city: str) -> str:
+        return f"The weather in {city} is sunny today."
+
+    def initiate_chat() -> Any:
+        chat_result = weather_man.initiate_chat(
+            recipient=user_proxy,
+            message="Hi! Tell me the city for which you want the weather forecast.",
+        )
+        return chat_result
+
+    return initiate_chat
 
 
 @broker.subscriber(

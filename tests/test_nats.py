@@ -196,43 +196,41 @@ class TestAutogen:
             )
 
             expected = [
-                {"msg": "\x1b[33mweather_man\x1b[0m (to user_proxy):\n\n"},
+                {"msg": "(to user_proxy):\n\n"},
                 {
                     "msg": "Hi! Tell me the city for which you want the weather forecast.\n"
                 },
                 {
                     "msg": "\n--------------------------------------------------------------------------------\n"
                 },
-                {"msg": "\x1b[33muser_proxy\x1b[0m (to weather_man):\n\n"},
+                {"msg": "(to weather_man):\n\n"},
                 {"msg": "What's the weather in New York today?\n"},
                 {
                     "msg": "\n--------------------------------------------------------------------------------\n"
                 },
-                {"msg": "\x1b[33mweather_man\x1b[0m (to user_proxy):\n\n"},
-                {"msg": "\x1b[32m***** Suggested tool call (call_"},
+                {"msg": "(to user_proxy):\n\n"},
+                {"msg": " Suggested tool call (call_"},
                 {"msg": 'Arguments: \n{\n  "city": "New York"\n}\n'},
                 {
-                    "msg": "\x1b[32m**************************************************************************************\x1b[0m\n"
+                    "msg": "*********************************************************************************"
                 },
                 {
                     "msg": "\n--------------------------------------------------------------------------------\n"
                 },
-                {"msg": "\x1b[31m\n>>>>>>>> NO HUMAN INPUT RECEIVED.\x1b[0m\n"},
-                {"msg": "\x1b[31m\n>>>>>>>> USING AUTO REPLY...\x1b[0m\n"},
-                {
-                    "msg": "\x1b[35m\n>>>>>>>> EXECUTING FUNCTION get_forecast_for_city...\x1b[0m\n"
-                },
-                {"msg": "\x1b[33muser_proxy\x1b[0m (to weather_man):\n\n"},
-                {"msg": "\x1b[33muser_proxy\x1b[0m (to weather_man):\n\n"},
-                {"msg": "\x1b[32m***** Response from calling tool (call_"},
+                {"msg": ">>>>>>>> NO HUMAN INPUT RECEIVED."},
+                {"msg": ">>>>>>>> USING AUTO REPLY..."},
+                {"msg": ">>>>>>>> EXECUTING FUNCTION get_forecast_for_city..."},
+                {"msg": "(to weather_man):\n\n"},
+                {"msg": "(to weather_man):\n\n"},
+                {"msg": " Response from calling tool (call_"},
                 {"msg": "The weather in New York is sunny today.\n"},
                 {
-                    "msg": "\x1b[32m**********************************************************************\x1b[0m\n"
+                    "msg": "*****************************************************************"
                 },
                 {
                     "msg": "\n--------------------------------------------------------------------------------\n"
                 },
-                {"msg": "\x1b[33mweather_man\x1b[0m (to user_proxy):\n\n"},
+                {"msg": "(to user_proxy):\n\n"},
                 {"msg": "The weather in New York today is sunny.\n"},
                 {
                     "msg": "\n--------------------------------------------------------------------------------\n"

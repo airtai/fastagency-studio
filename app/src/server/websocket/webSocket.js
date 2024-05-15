@@ -139,10 +139,31 @@ export const socketFn = (io, context) => {
 
       socket.on(
         'sendMessageToTeam',
-        async (currentChatDetails, conversationId, lastMessage, allMessages, team_name) => {
-          const uniqueName =
-            String(currentChatDetails.userId) + '-' + String(currentChatDetails.uuid) + '-' + String(conversationId);
-          connectToNatsServer(socket, context, uniqueName, currentChatDetails, conversationId);
+        async (
+          currentChatDetails,
+          selectedTeamUUID,
+          allMessagesOrUserQuery,
+          conversationId,
+          lastMessage,
+          team_name
+        ) => {
+          let message = '';
+          let shouldCallInitiateChat = true;
+          if (typeof allMessagesOrUserQuery === 'string') {
+            message = allMessagesOrUserQuery;
+            shouldCallInitiateChat = false;
+          } else {
+            message = allMessagesOrUserQuery[0].content;
+          }
+          connectToNatsServer(
+            socket,
+            context,
+            currentChatDetails,
+            selectedTeamUUID,
+            message,
+            conversationId,
+            shouldCallInitiateChat
+          );
           //wsConnection(socket, context, currentChatDetails, conversationId, lastMessage, allMessages, team_name);
         }
       );

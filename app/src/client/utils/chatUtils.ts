@@ -81,13 +81,22 @@ export const handleDailyAnalysisChat = async (
   inProgressConversation: any,
   userQuery: string,
   messages: any,
-  activeChatId: number
+  activeChatId: number,
+  selectedTeam: SelectedModelSchema
 ) => {
   const teamName =
     currentChatDetails.chatType === 'daily_analysis'
       ? `default_team_${currentChatDetails.userId}_${currentChatDetails.id}`
       : currentChatDetails.team_name;
-  socket.emit('sendMessageToTeam', currentChatDetails, inProgressConversation.id, userQuery, messages, teamName);
+  socket.emit(
+    'sendMessageToTeam',
+    currentChatDetails,
+    selectedTeam.uuid,
+    userQuery,
+    inProgressConversation.id,
+    messages,
+    teamName
+  );
   await updateCurrentChat({
     id: activeChatId,
     data: {
@@ -119,7 +128,8 @@ export const callOpenAiAgent = async (
     socket,
     messages,
     activeChatId,
-    refetchChatDetails
+    refetchChatDetails,
+    selectedTeam
   );
 };
 
@@ -130,15 +140,17 @@ export const handleAgentResponse = async (
   socket: any,
   messages: any,
   activeChatId: number,
-  refetchChatDetails: () => void
+  refetchChatDetails: () => void,
+  selectedTeam: SelectedModelSchema
 ) => {
   if (!!response.customer_brief) {
     socket.emit(
       'sendMessageToTeam',
       currentChatDetails,
+      selectedTeam.uuid,
+      messages,
       inProgressConversation.id,
       response.customer_brief,
-      messages,
       response['team_name']
     );
   }

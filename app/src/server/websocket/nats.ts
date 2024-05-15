@@ -7,9 +7,11 @@ console.log(`NATS_URL=${NATS_URL}`);
 export async function connectToNatsServer(
   socket: any,
   context: any,
-  uniqueName: string,
   currentChatDetails: any,
-  conversationId: number
+  selectedTeamUUID: string,
+  message: string,
+  conversationId: number,
+  shouldCallInitiateChat: boolean
 ) {
   try {
     let socketConversationHistory = '';
@@ -23,20 +25,33 @@ export async function connectToNatsServer(
 
     const js = nc.jetstream();
     const jc = JSONCodec();
-    const clientId = uniqueName;
+    const threadId = currentChatDetails.uuid;
 
-    const registerSubject = `register.${clientId}`;
-    const pingSubject = `ping.${clientId}`;
-    const pongSubject = `pong.${clientId}`;
-    const terminateSubject = `terminate.${clientId}`;
+    const initiateChatSubject = `chat.server.initiate_chat`;
+    const clientPrintSubject = `chat.client.print.${threadId}`;
+    const clientInputSubject = `chat.client.input.${threadId}`;
+    const serverInputSubject = `chat.server.input.${threadId}`;
+
+    if (shouldCallInitiateChat) {
+      await js.publish(
+        initiateChatSubject,
+        jc.encode({
+          thread_id: threadId,
+          team_id: selectedTeamUUID,
+          msg: message,
+        })
+      );
+    } else {
+      await js.publish(serverInputSubject, jc.encode({ msg: message }));
+    }
 
     // Subscribe to messages
     const opts = consumerOpts();
     opts.orderedConsumer();
-    const sub = await js.subscribe(pongSubject, opts);
 
+    const clientPrintSub = await js.subscribe(clientPrintSubject, opts);
     (async () => {
-      for await (const m of sub) {
+      for await (const m of clientPrintSub) {
         const jm: any = jc.decode(m.data);
         // add the message to the global variable and send it back to the client
         lastSocketMessage = jm.msg;
@@ -47,13 +62,13 @@ export async function connectToNatsServer(
       console.error(`Error: ${err}`);
     });
 
-    const terminateSub = await js.subscribe(terminateSubject, opts);
+    const clientInputSub = await js.subscribe(clientInputSubject, opts);
     (async () => {
       let message;
       let isExceptionOccured = false;
-      for await (const m of terminateSub) {
+      for await (const m of clientInputSub) {
         const jm: any = jc.decode(m.data);
-        message = jm.msg;
+        message = jm.prompt;
         await updateDB(
           context,
           currentChatDetails.id,
@@ -67,9 +82,6 @@ export async function connectToNatsServer(
     })().catch((err) => {
       console.error(`Error: ${err}`);
     });
-
-    await js.publish(registerSubject, jc.encode({ client_id: clientId }));
-    await js.publish(pingSubject, jc.encode({ msg: 'ping' }));
   } catch (err: any) {
     console.error(`Error: ${err}`);
     if (err.code) {

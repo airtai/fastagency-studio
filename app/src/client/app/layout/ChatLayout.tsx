@@ -38,33 +38,16 @@ const ChatLayout: FC<Props> = ({
     }
   }, [user, history]);
 
-  useSocketListener('newMessageFromTeam', (message: any) => {
+  const scrollToBottom = (message: any) => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
         top: scrollRef.current.scrollHeight,
         behavior: 'auto',
       });
     }
-  });
-
-  // useEffect(() => {
-  //   const observer = new MutationObserver(() => {
-  //   if (scrollRef.current) {
-  //     scrollRef.current.scrollTo({
-  //       top: scrollRef.current.scrollHeight,
-  //       behavior: 'smooth',
-  //     });
-  //   }
-  // });
-
-  //   if (scrollRef.current) {
-  //     observer.observe(scrollRef.current, { childList: true, subtree: true });
-  //   }
-
-  //   return () => observer.disconnect();
-  // }, []);
-  // make call to api -> from action file access conversation entity and pass it to openai
-  // get response from openai and save it against the conversation
+  };
+  useSocketListener('newMessageFromTeam', scrollToBottom);
+  useSocketListener('streamFromTeamFinished', scrollToBottom);
 
   const wrapperClass = document.body.classList.contains('server-error')
     ? 'h-[calc(100vh-173px)]'

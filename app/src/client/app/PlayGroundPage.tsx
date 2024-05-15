@@ -101,13 +101,17 @@ const PlayGroundPage = ({ user }: { user: User }) => {
         inProgressConversation = await getInProgressConversation(activeChatId, userQuery, retrySameChat);
         // if the chat has customerBrief already then directly send required detalils in socket event
         if (currentChatDetails.customerBrief || currentChatDetails.chatType === 'daily_analysis') {
+          const selectedTeam: SelectedModelSchema | undefined = userTeams?.find(
+            (team: any) => team.json_str.name === currentChatDetails.selectedTeam
+          ) as SelectedModelSchema;
           await handleDailyAnalysisChat(
             socket,
             currentChatDetails,
             inProgressConversation,
             userQuery,
             messages,
-            activeChatId
+            activeChatId,
+            selectedTeam
           );
         } else {
           if (userTeams) {

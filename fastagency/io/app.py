@@ -16,9 +16,14 @@ app = FastStream(broker)
 stream = JStream(
     name="FastAgency",
     subjects=[
-        "chat.server.initiate_thread",
-        "chat.client.thread.*",
-        "chat.server.thread.*",
+        # starts new conversation
+        "chat.server.initiate_chat",
+        # server requests input from client
+        "chat.client.input.*",
+        # client responds to input request from server
+        "chat.server.input.*",
+        # server prints message to client
+        "chat.client.print.*",
         # "function.server.call",
         # "function.client.call.*",
         # "code.server.execute",

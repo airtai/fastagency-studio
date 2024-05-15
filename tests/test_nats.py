@@ -1,4 +1,3 @@
-import asyncio
 import json
 import os
 import uuid
@@ -14,7 +13,7 @@ from faststream.nats import TestNatsBroker
 from pydantic import BaseModel
 
 import fastagency.io.ionats
-from fastagency.io.ionats import broker, stream
+from fastagency.io.ionats import InputRequestModel, InputResponseModel, broker, stream
 
 
 def as_dict(model: BaseModel) -> Dict[str, Any]:
@@ -112,18 +111,32 @@ class TestAutogen:
     @pytest.mark.azure_oai()
     @pytest.mark.nats()
     @pytest.mark.asyncio()
-    async def test_ionats(
+    async def test_new_ionats(
         self, llm_config: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
     ) -> None:
         thread_id = uuid.uuid4()
         team_id = uuid.uuid4()
 
-        msg_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
+        ### begin sending inputs to server
 
-        @broker.subscriber(f"chat.client.thread.{thread_id}", stream=stream)
-        async def client_handler(msg: Dict[str, Any]) -> None:
-            print(f"In test, subscribed to chat.client.thread.{thread_id} {msg=}")
-            await msg_queue.put(msg)
+        d = {"count": 0}
+
+        def input(prompt: str, d: Dict[str, int] = d) -> str:
+            d["count"] += 1
+            if d["count"] == 1:
+                return f"[{datetime.now()}] What's the weather in New York today?"
+            elif d["count"] == 2:
+                return ""
+            else:
+                return "exit"
+
+        @broker.subscriber(f"chat.client.input.{thread_id}", stream=stream)
+        async def client_input_handler(msg: InputRequestModel) -> None:
+            response = InputResponseModel(msg=input(msg.prompt))
+
+            await broker.publish(response, subject=f"chat.server.input.{thread_id}")
+
+        ### end sending inputs to server
 
         get_forecast_for_city_mock = MagicMock()
 
@@ -162,117 +175,7 @@ class TestAutogen:
                     thread_id=thread_id,
                     team_id=team_id,
                 ),
-                subject="chat.server.initiate_thread",
+                subject="chat.server.initiate_chat",
             )
-            await asyncio.sleep(10)
 
-            for msg in [
-                f"[{datetime.now()}] What's the weather in New York today?",
-                "",
-                "exit",
-            ]:
-                await br.publish(
-                    fastagency.io.ionats.PrintModel(
-                        msg=msg,
-                        thread_id=thread_id,
-                    ),
-                    subject=f"chat.server.thread.{thread_id}",
-                )
-
-            # await br.publish(
-            #     fastagency.io.ionats.InitiateModel(
-            #         msg="exit",
-            #         thread_id=thread_id,
-            #         team_id=team_id,
-            #     ),
-            #     subject="chat.server.initiate_thread",
-            # )
-            # await asyncio.sleep(10)
-
-            result_set, _ = await asyncio.wait(
-                (asyncio.create_task(msg_queue.get()),), timeout=3
-            )
-            assert len(result_set) == 1
-            result = result_set.pop().result()
-            print(f"{result=}")
-
-        # chat_result = create_team(team_id=0)()
-        # last_message = chat_result.chat_history[-1]
-
-        # print(f"{last_message=}")
-
-    #     broker = NatsBroker()
-
-    #     class ChatMessage(BaseModel):
-    #         thread_uuid: uuid.UUID
-    #         msg: str
-
-    #     # generate unique thread id
-    #     thread_uuid = uuid.uuid4()
-
-    #     # these three subjects are used in the chat server
-    #     # the last part of the subject is the thread id
-    #     # the part after 'chat' is the name of the consumer
-    #     subject_server_initiate = "chat.server.initiate"
-    #     subject_server_thread = f"chat.server.thread.{thread_uuid}"
-    #     subject_client_thread = f"chat.client.thread.{thread_uuid}"
-
-    #     chat_thread_team_mock = MagicMock()
-
-    #     ### SERVER CONSUMERS
-    #     @broker.subscriber(subject=subject_server_initiate)
-    #     async def initiate_chat(msg: ChatMessage):
-    #         print(f"Received message in subject '{subject_server_initiate}': {msg}")
-
-    #         send_subject = f"chat.client.thread.{msg.thread_uuid}"
-    #         receive_subject = f"chat.server.thread.{msg.thread_uuid}"
-
-    #         subscriber = broker.subscriber(subject=receive_subject)
-
-    #         async def chat_thread_server(msg: ChatMessage):
-    #             chat_thread_team_mock(msg)
-    #             print(f"Received message in subject '{receive_subject}'): {msg}")
-
-    #             await broker.publish(
-    #                 ChatMessage(msg="exit", thread_uuid=msg.thread_uuid),
-    #                 subject=send_subject,
-    #             )
-
-    #         subscriber(chat_thread_server)
-
-    #         broker.setup_subscriber(subscriber)
-    #         await subscriber.start()
-
-    #         await broker.publish(
-    #             ChatMessage(
-    #                 msg=f"Hello from initiate_chat: {msg}", thread_uuid=msg.thread_uuid
-    #             ),
-    #             subject=send_subject,
-    #         )
-
-    #     @broker.subscriber(subject=subject_client_thread)
-    #     async def chat_thread_initiator(msg: ChatMessage):
-    #         print(f"Received message in subject '{subject_client_thread}'): {msg}")
-
-    #         if msg.msg == "exit":
-    #             return
-
-    #         my_msg = ChatMessage(
-    #             msg=f"Hello from chat_thread_initiator: {msg}",
-    #             thread_uuid=msg.thread_uuid,
-    #         )
-
-    #         print(f"Sending message to subject '{subject_server_thread}': {my_msg}")
-    #         await broker.publish(my_msg, subject=subject_server_thread)
-
-    #     async with TestNatsBroker(broker) as br:
-    #         initial_msg = ChatMessage(msg="Hello!", thread_uuid=thread_uuid)
-
-    #         await br.publish(
-    #             initial_msg,
-    #             subject=subject_server_initiate,
-    #         )
-
-    #         initiate_chat.mock.assert_called_once()
-    #         chat_thread_initiator.mock.assert_called()
-    #         chat_thread_team_mock.assert_called_once()
+            # todo: asserts all that is needed

@@ -18,7 +18,12 @@ class PrintModel(BaseModel):
     msg: str
 
 
-class InputModel(BaseModel):
+class InputRequestModel(BaseModel):
+    prompt: str
+    is_password: bool
+
+
+class InputResponseModel(BaseModel):
     msg: str
 
 
@@ -29,8 +34,9 @@ class IONats(IOStream):  # type: ignore[misc]
         self._publisher = broker.publish
         self._thread_id = thread_id
 
-        self._receive_subject = f"chat.server.thread.{thread_id}"
-        self._send_subject = f"chat.client.thread.{thread_id}"
+        self._input_request_subject = f"chat.client.input.{thread_id}"
+        self._input_receive_subject = f"chat.server.input.{thread_id}"
+        self._print_send_subject = f"chat.client.print.{thread_id}"
 
     @classmethod
     async def create(cls, thread_id: str) -> "IONats":
@@ -38,7 +44,7 @@ class IONats(IOStream):  # type: ignore[misc]
 
         # dynamically subscribe to the chat server
         subscriber = broker.subscriber(
-            subject=self._receive_subject,
+            subject=self._input_receive_subject,
             stream=stream,
             deliver_policy=api.DeliverPolicy("all"),
         )
@@ -65,7 +71,7 @@ class IONats(IOStream):  # type: ignore[misc]
         msg = PrintModel(msg=xs)
         print(f"Printing data to the output stream - {msg}")
 
-        syncify(self._publisher)(msg, self._send_subject)
+        syncify(self._publisher)(msg, self._print_send_subject)
 
     def input(self, prompt: str = "", *, password: bool = False) -> str:
         """Read a line from the input stream.
@@ -78,10 +84,13 @@ class IONats(IOStream):  # type: ignore[misc]
             str: The line read from the input stream.
 
         """
-        print(f"IONats.input getting called with {prompt=}, {password=}")
-        if prompt != "":
-            self.print(prompt)
+        print(f" -> IONats.input({prompt=}, {password=})")
 
+        # request a new input
+        msg = InputRequestModel(prompt=prompt, is_password=password)
+        syncify(self._publisher)(msg, self._input_request_subject)
+
+        # wait for the input to arrive and be propagated to queue
         while self.queue.empty():
             print("Waiting for input...")
             time.sleep(0.1)
@@ -91,7 +100,7 @@ class IONats(IOStream):  # type: ignore[misc]
         self.queue.task_done()
         syncify(msg.ack)()
 
-        retval = InputModel.model_validate_json(
+        retval = InputResponseModel.model_validate_json(
             msg.raw_message.data.decode("utf-8")
         ).msg
         print(f"{retval=}")
@@ -99,10 +108,12 @@ class IONats(IOStream):  # type: ignore[misc]
         return retval
 
     async def handle_input(
-        self, body: InputModel, msg: NatsMessage, logger: Logger
+        self, body: InputResponseModel, msg: NatsMessage, logger: Logger
     ) -> None:
         # print(f"Received message in subject '{self._receive_subject}': {body}")
-        logger.info(f"Received message in subject '{self._receive_subject}': {body}")
+        logger.info(
+            f"Received message in subject '{self._input_receive_subject}': {body}"
+        )
 
         self.queue.put(msg)
 
@@ -119,7 +130,7 @@ def create_team(team_id: UUID) -> Callable[[], Any]:
 
 
 @broker.subscriber(
-    "chat.server.initiate_thread",
+    "chat.server.initiate_chat",
     stream=stream,
     queue="initiate_workers",
     deliver_policy=api.DeliverPolicy("all"),
@@ -130,7 +141,7 @@ async def initiate_handler(
     await msg.ack()
 
     logger.info(
-        f"Received a message in subject 'chat.server.initiate_thread': {body=} -> from process id {os.getpid()}"
+        f"Received a message in subject 'chat.server.initiate_chat': {body=} -> from process id {os.getpid()}"
     )
 
     iostream = await IONats.create(body.thread_id)

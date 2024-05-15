@@ -7,6 +7,14 @@ search:
     - fastagency
         - faststream_app
             - [ping_handler](api/fastagency/faststream_app/ping_handler.md)
+        - io
+            - ionats
+                - [IONats](api/fastagency/io/ionats/IONats.md)
+                - [InitiateModel](api/fastagency/io/ionats/InitiateModel.md)
+                - [InputRequestModel](api/fastagency/io/ionats/InputRequestModel.md)
+                - [InputResponseModel](api/fastagency/io/ionats/InputResponseModel.md)
+                - [PrintModel](api/fastagency/io/ionats/PrintModel.md)
+                - [create_team](api/fastagency/io/ionats/create_team.md)
         - models
             - [Registry](api/fastagency/models/Registry.md)
             - agents

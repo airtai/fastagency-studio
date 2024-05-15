@@ -134,6 +134,7 @@ jobs:
       AZURE_GPT4_MODEL: ${{ secrets.STAGING_AZURE_GPT4_MODEL }}
       AZURE_GPT35_MODEL: ${{ secrets.STAGING_AZURE_GPT35_MODEL }}
       AZURE_OPENAI_API_KEY: ${{ secrets.STAGING_AZURE_OPENAI_API_KEY }}
+      AUTOGEN_USE_DOCKER: False
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python

@@ -13,7 +13,7 @@ from faststream.nats import NatsMessage
 from nats.js import api
 from pydantic import BaseModel
 
-from .app import broker, stream
+from .app import app, broker, stream  # noqa
 
 
 class PrintModel(BaseModel):

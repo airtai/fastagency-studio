@@ -11,11 +11,10 @@ generator pyclient {
 }
 
 model Model {
-  uuid String @id @default(uuid())
+  uuid String @id
   user_uuid String @db.Uuid
   type_name String
   model_name String
-  model_uuid String @db.Uuid
   json_str Json
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

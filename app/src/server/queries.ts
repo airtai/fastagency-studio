@@ -1,11 +1,14 @@
 import _ from 'lodash';
-import { type DailyStats, type User, type PageViewSource } from 'wasp/entities';
+import { type DailyStats, type User, type PageViewSource, type Chat, type Conversation } from 'wasp/entities';
 import { HttpError } from 'wasp/server';
 import {
   type GetDailyStats,
   type GetPaginatedUsers,
   type GetModels,
   type PropertyDependencies,
+  type GetChats,
+  type GetConversations,
+  type GetChat,
 } from 'wasp/server/operations';
 import { FASTAGENCY_SERVER_URL } from './common/constants';
 
@@ -116,11 +119,17 @@ type GetModelsInput = {
   type_name?: string;
 };
 type PropertyValues = {
-  api_key: string;
-  model_name: string;
-  type_name: string;
-  user_id: number;
   uuid: string;
+  user_uuid: string;
+  type_name: string;
+  model_name: string;
+  model_uuid: string;
+  json_str: {
+    name: string;
+    api_key: string;
+  };
+  created_at: string;
+  updated_at: string;
 };
 
 export const getModels: GetModels<GetModelsInput, PropertyValues[]> = async (_args, context) => {
@@ -183,4 +192,103 @@ export const propertyDependencies: PropertyDependencies<
   } catch (error: any) {
     throw new HttpError(500, error.message);
   }
+};
+
+export const getChats: GetChats<void, Chat[]> = async (args, context) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+  return context.entities.Chat.findMany({
+    where: {
+      user: {
+        id: context.user.id,
+      },
+    },
+    orderBy: { id: 'desc' },
+  });
+};
+
+type GetConversationPayload = {
+  chatId: number;
+};
+
+export const getConversations: GetConversations<GetConversationPayload, Conversation[]> = async (args, context) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+  let conversation = null;
+  try {
+    if (context.user.isAdmin) {
+      conversation = context.entities.Conversation.findMany({
+        where: { chatId: args.chatId },
+        orderBy: { id: 'asc' },
+      });
+    } else {
+      conversation = context.entities.Conversation.findMany({
+        where: { chatId: args.chatId, userId: context.user.id },
+        orderBy: { id: 'asc' },
+      });
+    }
+
+    return conversation;
+  } catch (error) {
+    console.error('Error while fetching conversations:', error);
+    return [];
+  }
+};
+
+type getChatFromUUIDPayload = {
+  chatUUID: string | null | undefined;
+};
+
+export const getChatFromUUID: GetChat<getChatFromUUIDPayload, Chat> = async (args: any, context: any) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+
+  let chat = null;
+
+  if (context.user.isAdmin) {
+    chat = await context.entities.Chat.findFirst({
+      where: {
+        uuid: args.chatUUID,
+      },
+    });
+  } else {
+    chat = await context.entities.Chat.findFirst({
+      where: {
+        uuid: args.chatUUID,
+        userId: context.user.id,
+      },
+    });
+  }
+  return chat;
+};
+
+type GetChatPayload = {
+  chatId: number;
+};
+
+export const getChat: GetChat<GetChatPayload, Chat> = async (args: any, context: any) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+
+  let chat = null;
+
+  if (context.user.isAdmin) {
+    chat = await context.entities.Chat.findFirstOrThrow({
+      where: {
+        id: args.chatId,
+      },
+    });
+  } else {
+    chat = await context.entities.Chat.findFirstOrThrow({
+      where: {
+        id: args.chatId,
+        userId: context.user.id,
+      },
+    });
+  }
+  return chat;
 };

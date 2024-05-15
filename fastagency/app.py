@@ -1,12 +1,17 @@
 import json
+import logging
+from os import environ
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException
+from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
 from .db.helpers import get_db_connection, get_wasp_db_url
 from .models.registry import Registry, Schemas
+
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 
@@ -141,6 +146,71 @@ async def models_delete(
     return model.json_str  # type: ignore
 
 
+# Load environment variable
+AZURE_GPT35_MODEL = environ.get("AZURE_GPT35_MODEL")
+AZURE_OPENAI_API_KEY = environ.get("AZURE_OPENAI_API_KEY")
+AZURE_API_ENDPOINT = environ.get("AZURE_API_ENDPOINT")
+AZURE_API_VERSION = environ.get("AZURE_API_VERSION")
+
+# Setting up Azure OpenAI instance
+aclient = AsyncAzureOpenAI(
+    api_key=AZURE_OPENAI_API_KEY,
+    azure_endpoint=AZURE_API_ENDPOINT,  # type: ignore
+    api_version=AZURE_API_VERSION,
+)
+
+SYSTEM_PROMPT = """I am developing a chat application where users specify a task for the application to accomplish.
+Generate a concise, professional name for the chat that directly reflects the essence of the task.
+The name should consist of 2-3 words and be no more than 25 characters in total.
+It should be immediately recognizable, meaningful, and sound natural to users, making it easy to identify the chat's
+purpose at a glance. Please provide only the chat name in your response, with no additional text or explanation.
+The name should use clear, user-friendly terminology that precisely captures the task's intent.
+
+Note:
+- I will tip you $1000 every time you generate a chat name that is 1-3 words long and up to 25 characters.
+- Your chat name MUST be pertinent to the given task and avoids generic words such as "Forge" and "Hub".
+
+Task Name:
+{task_name}
+
+Chat Name:
+"""
+
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_chat_name",
+            "description": "Use this tool to generate a chat name based on the task description.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "chat_name": {
+                        "type": "string",
+                        "description": "The name of the chat",
+                    },
+                },
+                "required": ["chat_name"],
+            },
+        },
+    },
+]
+
+
+async def generate_chat_name(
+    team_name: str,
+    chat_id: int,
+    chat_name: str,
+) -> Dict[str, Union[Optional[str], int]]:
+    return {
+        "team_status": "inprogress",
+        "team_name": team_name,
+        "team_id": chat_id,
+        "customer_brief": "Some customer brief",
+        "conversation_name": chat_name,
+    }
+
+
 class ChatRequest(BaseModel):
     chat_id: int
     message: List[Dict[str, str]]
@@ -148,16 +218,48 @@ class ChatRequest(BaseModel):
 
 
 @app.post("/user/{user_uuid}/chat/{model_name}/{model_uuid}")
-async def openai_chat(request: ChatRequest) -> Dict[str, Any]:
+async def chat(request: ChatRequest) -> Dict[str, Any]:
     message = request.message[0]["content"]
     chat_id = request.chat_id
     user_id = request.user_id
-
     team_name = f"{user_id}_{chat_id}"
-    return {
+
+    try:
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT.format(task_name=message)}
+        ]
+        completion = await aclient.chat.completions.create(
+            model=AZURE_GPT35_MODEL,
+            messages=messages,
+            tools=TOOLS,
+            tool_choice={
+                "type": "function",
+                "function": {"name": "generate_chat_name"},
+            },
+        )  # type: ignore
+
+        response_message = completion.choices[0].message
+        tool_calls = response_message.tool_calls
+        if tool_calls:
+            for tool_call in tool_calls:
+                function_name = tool_call.function.name
+                function_args = json.loads(tool_call.function.arguments)
+                if function_name == "generate_chat_name":
+                    return await generate_chat_name(  # type: ignore[return-value]
+                        team_name=team_name,
+                        chat_id=chat_id,
+                        **function_args,
+                    )
+
+    except Exception:
+        logging.error("Unable to generate chat name: ", exc_info=True)
+
+    default_response = {
         "team_status": "inprogress",
         "team_name": team_name,
         "team_id": chat_id,
         "customer_brief": "Some customer brief",
         "conversation_name": message,
     }
+
+    return default_response

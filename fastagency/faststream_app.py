@@ -20,6 +20,7 @@ app = FastStream(broker)
 stream = JStream(name="ping_pong", subjects=["ping.*", "pong.*", "terminate.*"])
 
 LOREM_IPSUM = "[35mchat_manager (to chat_manager):[0m\n\n[32mLorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.[0m\n\n[35mIt has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.[0m\n\n[35m### End ###"
+FINAL_MSG = "Hi there! I am done with my work."
 
 
 async def ping_handler(body: Dict[str, Any], msg: NatsMessage, logger: Logger) -> None:
@@ -48,7 +49,7 @@ async def ping_handler(body: Dict[str, Any], msg: NatsMessage, logger: Logger) -
         await broker.publish(json.dumps(reply), f"pong.{client_id}")
 
     await broker.publish(
-        json.dumps({"msg": reply_msg, "process_id": process_id}),
+        json.dumps({"msg": FINAL_MSG, "process_id": process_id}),
         f"terminate.{client_id}",
     )
 

@@ -1,4 +1,6 @@
 import uuid
+from typing import List, Optional
+from unittest.mock import AsyncMock
 
 import pytest
 from fastapi.testclient import TestClient
@@ -7,6 +9,49 @@ from fastagency.app import app
 from fastagency.models.llms.azure import AzureOAIAPIKey
 
 client = TestClient(app)
+
+
+class Function:
+    def __init__(self, arguments: str, name: str):
+        """Function class."""
+        self.arguments = arguments
+        self.name = name
+
+
+class ChatCompletionMessageToolCall:
+    def __init__(self, id: str, function: Function, type: str):
+        """ChatCompletionMessageToolCall class."""
+        self.id = id
+        self.function = function
+        self.type = type
+
+
+class ChatCompletionMessage:
+    def __init__(
+        self,
+        content: Optional[str],
+        role: str,
+        function_call: Optional[str],
+        tool_calls: List[ChatCompletionMessageToolCall],
+    ):
+        """ChatCompletionMessage class."""
+        self.content = content
+        self.role = role
+        self.function_call = function_call
+        self.tool_calls = tool_calls
+
+
+class Choice:
+    def __init__(self, message: ChatCompletionMessage):
+        """Choice class."""
+        self.message = message
+
+
+class MockChatCompletion:
+    def __init__(self, id: str, choices: List[Choice]):
+        """MockChatCompletion class."""
+        self.id = id
+        self.choices = choices
 
 
 @pytest.mark.db()
@@ -119,3 +164,141 @@ class TestModelRoutes:
         }
         actual = response.json()
         assert actual == expected
+
+    @pytest.mark.asyncio()
+    async def test_chat_with_no_function_calling(
+        self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        model_uuid = str(uuid.uuid4())
+        model_name = "MultiAgentTeam"
+        # Mocking the aclient.chat.completions.create function
+        mock_create = AsyncMock()
+        monkeypatch.setattr(
+            "fastagency.app.aclient.chat.completions.create", mock_create
+        )
+
+        # Define the mock return value
+        mock_create.return_value = AsyncMock(
+            choices=[AsyncMock(message=AsyncMock(tool_calls=None))]
+        )
+
+        # Define the request body
+        request_body = {
+            "message": [{"role": "user", "content": "Hello"}],
+            "chat_id": 123,
+            "user_id": 456,
+        }
+
+        # Define the expected response
+        expected_response = {
+            "team_status": "inprogress",
+            "team_name": "456_123",
+            "team_id": 123,
+            "customer_brief": "Some customer brief",
+            "conversation_name": "Hello",
+        }
+
+        response = client.post(
+            f"/user/{user_uuid}/chat/{model_name}/{model_uuid}", json=request_body
+        )
+
+        # Assert the status code and the response body
+        assert response.status_code == 200
+        assert response.json() == expected_response
+
+        # Assert the mock was called with the correct arguments
+        mock_create.assert_called_once()
+
+    @pytest.mark.asyncio()
+    async def test_chat_error(
+        self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        model_uuid = str(uuid.uuid4())
+        model_name = "MultiAgentTeam"
+
+        mock_create = AsyncMock()
+        monkeypatch.setattr(
+            "fastagency.app.aclient.chat.completions.create", mock_create
+        )
+        mock_create.side_effect = Exception("Error creating chat completion")
+
+        # Define the request body
+        request_body = {
+            "message": [{"role": "user", "content": "Hello"}],
+            "chat_id": 123,
+            "user_id": 456,
+        }
+
+        # Define the expected response
+        expected_response = {
+            "team_status": "inprogress",
+            "team_name": "456_123",
+            "team_id": 123,
+            "customer_brief": "Some customer brief",
+            "conversation_name": "Hello",
+        }
+
+        response = client.post(
+            f"/user/{user_uuid}/chat/{model_name}/{model_uuid}", json=request_body
+        )
+
+        # Assert the status code and the response body
+        assert response.status_code == 200
+        assert response.json() == expected_response
+
+        # Assert the mock was called with the correct arguments
+        mock_create.assert_called_once()
+
+    @pytest.mark.asyncio()
+    async def test_chat_with_function_calling(
+        self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        model_uuid = str(uuid.uuid4())
+        model_name = "MultiAgentTeam"
+
+        mock_create = AsyncMock()
+        monkeypatch.setattr(
+            "fastagency.app.aclient.chat.completions.create", mock_create
+        )
+
+        function = Function(
+            arguments='{\n  "chat_name": "Calculate 2 * 2"\n}',
+            name="generate_chat_name",
+        )
+        tool_call = ChatCompletionMessageToolCall(
+            id="1", function=function, type="function"
+        )
+        message = ChatCompletionMessage(
+            content=None, role="assistant", function_call=None, tool_calls=[tool_call]
+        )
+        choice = Choice(message=message)
+        chat_completion = MockChatCompletion(id="1", choices=[choice])
+
+        mock_create.return_value = chat_completion
+
+        # Define the request body
+        request_body = {
+            "message": [{"role": "user", "content": "Hello"}],
+            "chat_id": 123,
+            "user_id": 456,
+        }
+
+        # Define the expected response
+        expected_response = {
+            "team_status": "inprogress",
+            "team_name": "456_123",
+            "team_id": 123,
+            "customer_brief": "Some customer brief",
+            "conversation_name": "Calculate 2 * 2",
+        }
+
+        response = client.post(
+            f"/user/{user_uuid}/chat/{model_name}/{model_uuid}", json=request_body
+        )
+
+        # Assert the status code and the response body
+        assert response.status_code == 200
+        assert response.json() == expected_response
+
+        # Assert the mock was called with the correct arguments
+        mock_create.assert_called_once()

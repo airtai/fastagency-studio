@@ -331,7 +331,6 @@ class TestTwoAgentTeam:
             description="Get weather forecast for a city"
         )  # type: ignore [misc]
         def get_forecast_for_city(city: str) -> str:
-            print(f"get_forecast_for_city({city=})")
             get_forecast_for_city_mock(city)
             return f"The weather in {city} is sunny today."
 
@@ -347,7 +346,7 @@ class TestTwoAgentTeam:
         )
 
         team = await asyncify(TwoAgentTeam.create_autogen)(
-            model_id=team_model_uuid, user_id=user_uuid
+            model_id=uuid.UUID(team_model_uuid), user_id=uuid.UUID(user_uuid)
         )
 
         assert hasattr(team, "initiate_chat")

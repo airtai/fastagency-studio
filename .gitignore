@@ -20,3 +20,5 @@ token
 docs/site/
 docs/site_build/
 faststream.log
+tmp.env
+pretend_nats_client.py

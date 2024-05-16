@@ -61,7 +61,7 @@ class TwoAgentTeam(TeamBaseModel):
                 self.secondary_agent = secondary_agent
 
             def initiate_chat(self, message: str) -> List[Dict[str, Any]]:
-                return self.initial_agent.initiate_chat(
+                return self.initial_agent.initiate_chat(  # type: ignore[no-any-return]
                     recipient=self.secondary_agent, message=message
                 )
 

@@ -1,4 +1,4 @@
-import { connectToNatsServer } from './nats';
+import { sendMsgToNatsServer } from './nats';
 
 async function getChat(chatId, context) {
   return await context.entities.Chat.findFirst({
@@ -93,7 +93,7 @@ export const socketFn = (io, context) => {
           } else {
             message = allMessagesOrUserQuery[0].content;
           }
-          connectToNatsServer(
+          sendMsgToNatsServer(
             socket,
             context,
             currentChatDetails,

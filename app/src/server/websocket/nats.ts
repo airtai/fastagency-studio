@@ -1,15 +1,87 @@
-import { connect, consumerOpts, JSONCodec } from 'nats';
+import { connect, consumerOpts, JSONCodec, Subscription, JetStreamClient } from 'nats';
 import { updateDB } from './webSocket';
 
-function generateNatsUrl(natsUrl: string | undefined, fastAgencyServerUrl: string): string {
-  return natsUrl ? natsUrl : fastAgencyServerUrl.replace('https://', 'tls://') + ':4222';
+function generateNatsUrl(natsUrl: string | undefined, fastAgencyServerUrl: string | undefined): string | undefined {
+  if (natsUrl) return natsUrl;
+  return fastAgencyServerUrl ? `${fastAgencyServerUrl.replace('https://', 'tls://')}:4222` : fastAgencyServerUrl;
 }
 
-//@ts-ignore
 const NATS_URL = generateNatsUrl(process.env['NATS_URL'], process.env['FASTAGENCY_SERVER_URL']);
 console.log(`NATS_URL=${NATS_URL}`);
 
-export async function connectToNatsServer(
+class NatsConnectionManager {
+  public static connections: Map<
+    string,
+    {
+      nc: any;
+      subscriptions: Map<string, Subscription>;
+      socketConversationHistory: string;
+      lastSocketMessage: string | null;
+    }
+  > = new Map();
+
+  static async getConnection(threadId: string) {
+    if (!this.connections.has(threadId)) {
+      const nc = await connect({ servers: NATS_URL });
+      this.connections.set(threadId, {
+        nc,
+        subscriptions: new Map(),
+        socketConversationHistory: '',
+        lastSocketMessage: null,
+      });
+      console.log(`Connected to ${nc.getServer()} for threadId ${threadId}`);
+    }
+    return this.connections.get(threadId);
+  }
+
+  static async cleanup(threadId: string) {
+    const connection = this.connections.get(threadId);
+    if (connection) {
+      for (const sub of connection.subscriptions.values()) {
+        await sub.unsubscribe();
+      }
+      await connection.nc.close();
+      this.connections.delete(threadId);
+      console.log(`Cleaned up NATS connection and subscriptions for threadId ${threadId}`);
+    }
+  }
+
+  static addSubscription(threadId: string, subject: string, sub: Subscription) {
+    const connection = this.connections.get(threadId);
+    if (connection) {
+      const existingSub = connection.subscriptions.get(subject);
+      if (existingSub) {
+        existingSub.unsubscribe();
+      }
+      connection.subscriptions.set(subject, sub);
+    }
+  }
+
+  static updateMessageHistory(threadId: string, message: string) {
+    const connection = this.connections.get(threadId);
+    if (connection) {
+      connection.lastSocketMessage = message;
+      connection.socketConversationHistory += message;
+    }
+  }
+
+  static getLastSocketMessage(threadId: string): string | null | undefined {
+    return this.connections.get(threadId)?.lastSocketMessage;
+  }
+
+  static getConversationHistory(threadId: string): string {
+    return this.connections.get(threadId)?.socketConversationHistory || '';
+  }
+
+  static clearConversationHistory(threadId: string) {
+    const connection = this.connections.get(threadId);
+    if (connection) {
+      connection.socketConversationHistory = '';
+    }
+  }
+}
+
+export async function sendMsgToNatsServer(
   socket: any,
   context: any,
   currentChatDetails: any,
@@ -19,83 +91,72 @@ export async function connectToNatsServer(
   shouldCallInitiateChat: boolean
 ) {
   try {
-    let socketConversationHistory = '';
-    let lastSocketMessage = null;
-
-    if (!NATS_URL) {
-      throw new Error('NATS_URL is not defined');
-    }
-    const nc = await connect({ servers: NATS_URL });
-    console.log(`connected to ${nc.getServer()}`);
-
+    const threadId = currentChatDetails.uuid;
+    const { nc } = (await NatsConnectionManager.getConnection(threadId)) as { nc: any };
     const js = nc.jetstream();
     const jc = JSONCodec();
-    const threadId = currentChatDetails.uuid;
 
+    // Initiate chat or continue conversation
     const initiateChatSubject = `chat.server.initiate_chat`;
+    const serverInputSubject = `chat.server.input.${threadId}`;
+    const subject = shouldCallInitiateChat ? initiateChatSubject : serverInputSubject;
+
+    NatsConnectionManager.clearConversationHistory(threadId);
+    await js.publish(subject, jc.encode({ thread_id: threadId, team_id: selectedTeamUUID, msg: message }));
+
+    // Subscribe logic
     const clientPrintSubject = `chat.client.print.${threadId}`;
     const clientInputSubject = `chat.client.input.${threadId}`;
-    const serverInputSubject = `chat.server.input.${threadId}`;
-
-    if (shouldCallInitiateChat) {
-      await js.publish(
-        initiateChatSubject,
-        jc.encode({
-          thread_id: threadId,
-          team_id: selectedTeamUUID,
-          msg: message,
-        })
-      );
-    } else {
-      await js.publish(serverInputSubject, jc.encode({ msg: message }));
-    }
-
-    // Subscribe to messages
-    const opts = consumerOpts();
-    opts.orderedConsumer();
-
-    const clientPrintSub = await js.subscribe(clientPrintSubject, opts);
-    (async () => {
-      for await (const m of clientPrintSub) {
-        const jm: any = jc.decode(m.data);
-        // add the message to the global variable and send it back to the client
-        lastSocketMessage = jm.msg;
-        socketConversationHistory = socketConversationHistory + lastSocketMessage;
-        socket.emit('newMessageFromTeam', socketConversationHistory);
-      }
-    })().catch((err) => {
-      console.error(`Error: ${err}`);
-    });
-
-    const clientInputSub = await js.subscribe(clientInputSubject, opts);
-    (async () => {
-      let message;
-      let isExceptionOccured = false;
-      for await (const m of clientInputSub) {
-        const jm: any = jc.decode(m.data);
-        message = jm.prompt;
-        await updateDB(
-          context,
-          currentChatDetails.id,
-          message,
-          conversationId,
-          socketConversationHistory,
-          isExceptionOccured
-        );
-        socket.emit('streamFromTeamFinished');
-        // await clientInputSub.unsubscribe();
-        // break;
-      }
-    })().catch((err) => {
-      console.error(`Error: ${err}`);
-    });
-  } catch (err: any) {
-    console.error(`Error: ${err}`);
-    if (err.code) {
-      console.error(`Error code: ${err.code}`);
-    }
-    if (err.chainedError) {
-      console.error(`Chained error: ${err.chainedError}`);
-    }
+    await setupSubscription(js, jc, clientPrintSubject, threadId, socket);
+    await setupSubscription(
+      js,
+      jc,
+      clientInputSubject,
+      threadId,
+      socket,
+      true,
+      context,
+      currentChatDetails,
+      conversationId
+    );
+  } catch (err) {
+    console.error(`Error in connectToNatsServer: ${err}`);
   }
+}
+
+async function setupSubscription(
+  js: JetStreamClient,
+  jc: any,
+  subject: string,
+  threadId: string,
+  socket: any,
+  isInput: boolean = false,
+  context?: any,
+  currentChatDetails?: any,
+  conversationId?: number
+) {
+  const opts = consumerOpts();
+  opts.orderedConsumer();
+  const sub = await js.subscribe(subject, opts);
+  NatsConnectionManager.addSubscription(threadId, subject, sub as Subscription);
+  (async () => {
+    for await (const m of sub) {
+      const jm = jc.decode(m.data);
+      const message = jm.msg || jm.prompt;
+      const conversationHistory = NatsConnectionManager.getConversationHistory(threadId);
+      if (isInput) {
+        try {
+          await updateDB(context, currentChatDetails.id, message, conversationId, conversationHistory, false);
+          socket.emit('streamFromTeamFinished');
+        } catch (err) {
+          console.error(`DB Update failed: ${err}`);
+        }
+      } else {
+        NatsConnectionManager.updateMessageHistory(threadId, message);
+        socket.emit('newMessageFromTeam', conversationHistory);
+      }
+    }
+  })().catch((err) => {
+    console.error(`Error in subscription for ${subject}: ${err}`);
+  });
 }

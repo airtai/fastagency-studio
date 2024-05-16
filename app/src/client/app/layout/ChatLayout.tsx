@@ -41,7 +41,7 @@ const ChatLayout: FC<Props> = ({
   const scrollToBottom = (message: any) => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight,
+        top: scrollRef.current.scrollHeight + 100,
         behavior: 'auto',
       });
     }

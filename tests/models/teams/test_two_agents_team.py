@@ -4,13 +4,13 @@ import uuid
 import pytest
 from pydantic import ValidationError
 
+from fastagency.app import add_model
 from fastagency.models.agents.assistant import AssistantAgent
 from fastagency.models.agents.web_surfer import WebSurferAgent
 from fastagency.models.base import Model
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 from fastagency.models.teams.two_agent_teams import TwoAgentTeam
-from fastagency.app import add_model
 
 
 class TestTwoAgentTeam:
@@ -185,31 +185,51 @@ class TestTwoAgentTeam:
         assert validated_team is not None
         assert validated_team == team
 
-    @pytest.mark.parametrize("llm_model,api_key_model", [(OpenAI, OpenAIAPIKey), (AzureOAI, AzureOAIAPIKey)])
-    def test_two_agent_team_autogen(self, llm_model: Model, api_key_model: Model, monkeypatch: pytest.MonkeyPatch) -> None:
-        user_uuid = str(uuid.uuid4())
+    @pytest.mark.asyncio()
+    @pytest.mark.parametrize(
+        "llm_model,api_key_model",  # noqa: PT006
+        [
+            (OpenAI, OpenAIAPIKey),
+            (AzureOAI, AzureOAIAPIKey),
+        ],
+    )
+    async def test_two_agent_team_autogen(
+        self,
+        llm_model: Model,
+        api_key_model: Model,
+        user_uuid: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        dummy_openai_api_key = "sk-abcdefghijklmnopqrstT3BlbkFJ01234567890123456789"
 
-        print(os.getenv("AZURE_OPENAI_API_KEY"))
-        api_key = api_key_model(api_key=os.getenv("AZURE_OPENAI_API_KEY"), name="whatever")
-        print(api_key)
-        print(type(api_key))
+        api_key = api_key_model(
+            api_key=os.getenv("AZURE_OPENAI_API_KEY")
+            if api_key_model == AzureOAIAPIKey
+            else dummy_openai_api_key,
+            name="api_key_model_name",
+        )
         api_key_model_uuid = str(uuid.uuid4())
-        api_key_validated_model = add_model(
+        api_key_validated_model = await add_model(  # noqa: F841
             user_uuid=user_uuid,
             type_name="secret",
-            model_name=llm_model.__name__,
+            model_name=api_key_model.__name__,
             model_uuid=api_key_model_uuid,
             model=api_key.model_dump(),
         )
 
         llm = llm_model(
-            model=os.getenv("AZURE_GPT35_MODEL"),
-            api_key=api_key,
+            name="llm_model_name",
+            model=os.getenv("AZURE_GPT35_MODEL")
+            if api_key_model == AzureOAI
+            else "gpt-3.5-turbo",
+            api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
             base_url=os.getenv("AZURE_API_ENDPOINT"),
-            api_version=os.getenv("AZURE_API_VERSION") if llm_model == AzureOAI else "latest",
+            api_version=os.getenv("AZURE_API_VERSION")
+            if llm_model == AzureOAI
+            else "latest",
         )
         llm_model_uuid = str(uuid.uuid4())
-        llm_validated_model = add_model(
+        llm_validated_model = await add_model(  # noqa: F841
             user_uuid=user_uuid,
             type_name="llm",
             model_name=llm_model.__name__,
@@ -218,10 +238,12 @@ class TestTwoAgentTeam:
         )
 
         assistant = AssistantAgent(
-            llm=llm, name="Assistant", system_message="test system message"
+            llm=llm.get_reference_model()(uuid=llm_model_uuid),
+            name="Assistant",
+            system_message="test system message",
         )
         assistant_model_uuid = str(uuid.uuid4())
-        assistant_validated_model = add_model(
+        assistant_validated_model = await add_model(  # noqa: F841
             user_uuid=user_uuid,
             type_name="agent",
             model_name=AssistantAgent.__name__,
@@ -229,12 +251,9 @@ class TestTwoAgentTeam:
             model=assistant.model_dump(),
         )
 
-
         # Add secret, llm, agent to database
 
         # Then create autogen agents by monkeypatching create_autogen method
-
-
 
         # llm_uuid = uuid.uuid4()
         # llm = llm_model.get_reference_model()(uuid=llm_uuid)

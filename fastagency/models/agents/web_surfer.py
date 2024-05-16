@@ -1,4 +1,5 @@
-from typing import Annotated, Optional
+from typing import Annotated, Any, Optional
+from uuid import UUID
 
 from pydantic import Field
 from typing_extensions import TypeAlias
@@ -33,3 +34,7 @@ class WebSurferAgent(AgentBaseModel):
     bing_api_key: Annotated[
         Optional[BingAPIKeyRef], Field(description="The Bing API key for the browser")
     ] = None
+
+    @classmethod
+    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+        pass

@@ -1,4 +1,5 @@
-from typing import Annotated, Optional
+from typing import Annotated, Any, Optional
+from uuid import UUID
 
 from pydantic import Field
 
@@ -47,3 +48,7 @@ class MultiAgentTeam(TeamBaseModel):
             description="An agent in the team",
         ),
     ] = None
+
+    @classmethod
+    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+        pass

@@ -12,7 +12,6 @@ from nats.js import api
 from pydantic import BaseModel
 
 from .app import broker, stream
-from fastagency.app import find_model_using_raw
 
 
 class PrintModel(BaseModel):
@@ -146,7 +145,7 @@ async def initiate_handler(
 
     def start_chat() -> Any:
         with IOStream.set_default(iostream):
-            initiate_chat = create_team(team_id=body.team_id)
+            initiate_chat = create_team(team_id=body.team_id, user_id=body.user_id)
             return initiate_chat()
 
     await asyncify(start_chat)()

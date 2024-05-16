@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from prisma.models import Model
 from pydantic import TypeAdapter, ValidationError
 
-from .db.helpers import get_db_connection, get_wasp_db_url, find_model_using_raw
+from .db.helpers import find_model_using_raw, get_db_connection, get_wasp_db_url
 from .models.registry import Registry, Schemas
 
 app = FastAPI()
@@ -38,9 +38,6 @@ async def get_user(user_uuid: Union[int, str]) -> Any:
     if not user:
         raise HTTPException(status_code=404, detail=f"user_uuid {user_uuid} not found")
     return user
-
-
-
 
 
 @app.get("/user/{user_uuid}/models")

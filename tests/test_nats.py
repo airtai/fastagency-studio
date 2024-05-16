@@ -119,6 +119,7 @@ class TestAutogen:
     async def test_ionats(
         self, llm_config: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        user_id = uuid.uuid4()
         thread_id = uuid.uuid4()
         team_id = uuid.uuid4()
 
@@ -157,7 +158,7 @@ class TestAutogen:
 
         get_forecast_for_city_mock = MagicMock()
 
-        def create_team(team_id: uuid.UUID) -> Callable[[], Any]:
+        def create_team(team_id: uuid.UUID, user_id: uuid.UUID) -> Callable[[], Any]:
             weather_man = AssistantAgent(
                 name="weather_man",
                 system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
@@ -191,6 +192,7 @@ class TestAutogen:
                     msg="exit",
                     thread_id=thread_id,
                     team_id=team_id,
+                    user_id=user_id,
                 ),
                 subject="chat.server.initiate_chat",
             )

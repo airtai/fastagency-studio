@@ -114,6 +114,35 @@ class TestTwoAgentTeam:
                     "title": "AssistantAgentRef",
                     "type": "object",
                 },
+                "UserProxyAgentRef": {
+                    "properties": {
+                        "type": {
+                            "const": "agent",
+                            "default": "agent",
+                            "description": "The name of the type of the data",
+                            "enum": ["agent"],
+                            "title": "Type",
+                            "type": "string",
+                        },
+                        "name": {
+                            "const": "UserProxyAgent",
+                            "default": "UserProxyAgent",
+                            "description": "The name of the data",
+                            "enum": ["UserProxyAgent"],
+                            "title": "Name",
+                            "type": "string",
+                        },
+                        "uuid": {
+                            "description": "The unique identifier",
+                            "format": "uuid",
+                            "title": "UUID",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["uuid"],
+                    "title": "UserProxyAgentRef",
+                    "type": "object",
+                },
                 "WebSurferAgentRef": {
                     "properties": {
                         "type": {
@@ -167,6 +196,7 @@ class TestTwoAgentTeam:
                 "initial_agent": {
                     "anyOf": [
                         {"$ref": "#/$defs/AssistantAgentRef"},
+                        {"$ref": "#/$defs/UserProxyAgentRef"},
                         {"$ref": "#/$defs/WebSurferAgentRef"},
                     ],
                     "description": "Agent that starts the conversation",
@@ -175,6 +205,7 @@ class TestTwoAgentTeam:
                 "secondary_agent": {
                     "anyOf": [
                         {"$ref": "#/$defs/AssistantAgentRef"},
+                        {"$ref": "#/$defs/UserProxyAgentRef"},
                         {"$ref": "#/$defs/WebSurferAgentRef"},
                     ],
                     "description": "Agent that continues the conversation",
@@ -185,6 +216,7 @@ class TestTwoAgentTeam:
             "title": "TwoAgentTeam",
             "type": "object",
         }
+        # print(schema)
         assert schema == expected
 
     @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])

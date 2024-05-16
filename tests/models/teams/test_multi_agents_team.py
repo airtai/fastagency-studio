@@ -83,6 +83,35 @@ class TestMultiAgentTeam:
                     "title": "AssistantAgentRef",
                     "type": "object",
                 },
+                "UserProxyAgentRef": {
+                    "properties": {
+                        "type": {
+                            "const": "agent",
+                            "default": "agent",
+                            "description": "The name of the type of the data",
+                            "enum": ["agent"],
+                            "title": "Type",
+                            "type": "string",
+                        },
+                        "name": {
+                            "const": "UserProxyAgent",
+                            "default": "UserProxyAgent",
+                            "description": "The name of the data",
+                            "enum": ["UserProxyAgent"],
+                            "title": "Name",
+                            "type": "string",
+                        },
+                        "uuid": {
+                            "description": "The unique identifier",
+                            "format": "uuid",
+                            "title": "UUID",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["uuid"],
+                    "title": "UserProxyAgentRef",
+                    "type": "object",
+                },
                 "WebSurferAgentRef": {
                     "properties": {
                         "type": {
@@ -136,6 +165,7 @@ class TestMultiAgentTeam:
                 "agent_1": {
                     "anyOf": [
                         {"$ref": "#/$defs/AssistantAgentRef"},
+                        {"$ref": "#/$defs/UserProxyAgentRef"},
                         {"$ref": "#/$defs/WebSurferAgentRef"},
                     ],
                     "description": "An agent in the team",
@@ -144,6 +174,7 @@ class TestMultiAgentTeam:
                 "agent_2": {
                     "anyOf": [
                         {"$ref": "#/$defs/AssistantAgentRef"},
+                        {"$ref": "#/$defs/UserProxyAgentRef"},
                         {"$ref": "#/$defs/WebSurferAgentRef"},
                     ],
                     "description": "An agent in the team",
@@ -152,6 +183,7 @@ class TestMultiAgentTeam:
                 "agent_3": {
                     "anyOf": [
                         {"$ref": "#/$defs/AssistantAgentRef"},
+                        {"$ref": "#/$defs/UserProxyAgentRef"},
                         {"$ref": "#/$defs/WebSurferAgentRef"},
                         {"type": "null"},
                     ],
@@ -162,6 +194,7 @@ class TestMultiAgentTeam:
                 "agent_4": {
                     "anyOf": [
                         {"$ref": "#/$defs/AssistantAgentRef"},
+                        {"$ref": "#/$defs/UserProxyAgentRef"},
                         {"$ref": "#/$defs/WebSurferAgentRef"},
                         {"type": "null"},
                     ],
@@ -172,6 +205,7 @@ class TestMultiAgentTeam:
                 "agent_5": {
                     "anyOf": [
                         {"$ref": "#/$defs/AssistantAgentRef"},
+                        {"$ref": "#/$defs/UserProxyAgentRef"},
                         {"$ref": "#/$defs/WebSurferAgentRef"},
                         {"type": "null"},
                     ],

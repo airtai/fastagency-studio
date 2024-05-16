@@ -184,7 +184,7 @@ const PlayGroundPage = ({ user }: { user: User }) => {
               <>
                 <p className='text-center text-lg font-bold bg-airt-primary text-airt-font-base'>
                   Chatting with{' '}
-                  <a className='hover:underline hover:cursor-pointer' onClick={handleTeamClick}>
+                  <a className='text-airt-secondary hover:underline hover:cursor-pointer' onClick={handleTeamClick}>
                     {currentChatDetails.selectedTeam}
                   </a>
                 </p>

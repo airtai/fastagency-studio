@@ -78,7 +78,7 @@ const TosAndMarketingEmailsModal = () => {
             <div className='mt-6 text-right'>
               <button
                 onClick={onClick}
-                className='mt-4 md:-mt-10 no-underline rounded-md px-3.5 py-2.5 text-sm  bg-airt-secondary text-airt-font-base hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                className='mt-4 md:-mt-10 no-underline rounded-md px-3.5 py-2.5 text-sm  bg-airt-secondary text-airt-primary hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
               >
                 Save
               </button>

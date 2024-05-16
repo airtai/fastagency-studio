@@ -203,9 +203,9 @@ class TestTwoAgentTeam:
     ) -> None:
         dummy_openai_api_key = "sk-abcdefghijklmnopqrstT3BlbkFJ01234567890123456789"
 
-        api_key = api_key_model(
+        api_key = api_key_model(  # type: ignore [operator]
             api_key=os.getenv("AZURE_OPENAI_API_KEY")
-            if api_key_model == AzureOAIAPIKey
+            if api_key_model == AzureOAIAPIKey  # type: ignore [comparison-overlap]
             else dummy_openai_api_key,
             name="api_key_model_name",
         )
@@ -213,27 +213,27 @@ class TestTwoAgentTeam:
         api_key_validated_model = await add_model(  # noqa: F841
             user_uuid=user_uuid,
             type_name="secret",
-            model_name=api_key_model.__name__,
+            model_name=api_key_model.__name__,  # type: ignore [attr-defined]
             model_uuid=api_key_model_uuid,
             model=api_key.model_dump(),
         )
 
-        llm = llm_model(
+        llm = llm_model(  # type: ignore [operator]
             name="llm_model_name",
             model=os.getenv("AZURE_GPT35_MODEL")
-            if api_key_model == AzureOAI
+            if api_key_model == AzureOAI  # type: ignore [comparison-overlap]
             else "gpt-3.5-turbo",
             api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
             base_url=os.getenv("AZURE_API_ENDPOINT"),
             api_version=os.getenv("AZURE_API_VERSION")
-            if llm_model == AzureOAI
+            if llm_model == AzureOAI  # type: ignore [comparison-overlap]
             else "latest",
         )
         llm_model_uuid = str(uuid.uuid4())
         llm_validated_model = await add_model(  # noqa: F841
             user_uuid=user_uuid,
             type_name="llm",
-            model_name=llm_model.__name__,
+            model_name=llm_model.__name__,  # type: ignore [attr-defined]
             model_uuid=llm_model_uuid,
             model=llm.model_dump(),
         )

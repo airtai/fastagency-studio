@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from os import environ
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import Any, AsyncGenerator, Dict, Optional, Union
+from uuid import UUID
 
 from fastapi import HTTPException
 from prisma import Prisma  # type: ignore [attr-defined]
@@ -33,7 +34,14 @@ async def get_wasp_db_url() -> str:
     return wasp_db_url
 
 
-async def find_model_using_raw(model_uuid: str, user_uuid: str) -> Dict[str, Any]:
+async def find_model_using_raw(
+    model_uuid: Union[str, UUID], user_uuid: Union[str, UUID]
+) -> Dict[str, Any]:
+    if isinstance(model_uuid, UUID):
+        model_uuid = str(model_uuid)
+    if isinstance(user_uuid, UUID):
+        user_uuid = str(user_uuid)
+
     async with get_db_connection() as db:
         model: Optional[Dict[str, Any]] = await db.query_first(
             'SELECT * from "Model" where uuid='  # nosec: [B608]

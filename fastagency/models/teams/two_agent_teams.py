@@ -1,6 +1,7 @@
 from typing import Annotated, Any
 from uuid import UUID
 
+from asyncer import syncify
 from pydantic import Field
 
 from ...db.helpers import find_model_using_raw
@@ -29,10 +30,12 @@ class TwoAgentTeam(TeamBaseModel):
 
     @classmethod
     def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
-        my_model_dict = find_model_using_raw(model_id, user_id)
+        my_model_dict = syncify(find_model_using_raw)(model_id, user_id)
         my_model = cls(**my_model_dict)
 
-        initial_agent_dict = find_model_using_raw(my_model.initial_agent.uuid, user_id)
+        initial_agent_dict = syncify(find_model_using_raw)(
+            my_model.initial_agent.uuid, user_id
+        )
         initial_agent_model = my_model.initial_agent.get_data_model()(
             **initial_agent_dict
         )
@@ -40,7 +43,7 @@ class TwoAgentTeam(TeamBaseModel):
             my_model.initial_agent.uuid, user_id
         )
 
-        secondary_agent_dict = find_model_using_raw(
+        secondary_agent_dict = syncify(find_model_using_raw)(
             my_model.secondary_agent.uuid, user_id
         )
         secondary_agent_model = my_model.secondary_agent.get_data_model()(
@@ -51,11 +54,13 @@ class TwoAgentTeam(TeamBaseModel):
         )
 
         class AutogenTwoAgentTeam:
-            def __init__(self, initial_agent, secondary_agent):
+            def __init__(
+                self, initial_agent: agent_type_refs, secondary_agent: agent_type_refs
+            ) -> None:
                 self.initial_agent = initial_agent
                 self.secondary_agent = secondary_agent
 
-            def initiate_chat(self, message) -> None:
+            def initiate_chat(self, message: str) -> None:
                 self.initial_agent.initiate_chat(self.secondary_agent, message)
 
         return AutogenTwoAgentTeam(initial_agent, secondary_agent)

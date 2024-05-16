@@ -17,10 +17,11 @@ class NatsConnectionManager {
       subscriptions: Map<string, Subscription>;
       socketConversationHistory: string;
       lastSocketMessage: string | null;
+      conversationId: number;
     }
   > = new Map();
 
-  static async getConnection(threadId: string) {
+  static async getConnection(threadId: string, conversationId: number) {
     if (!this.connections.has(threadId)) {
       const nc = await connect({ servers: NATS_URL });
       this.connections.set(threadId, {
@@ -28,6 +29,7 @@ class NatsConnectionManager {
         subscriptions: new Map(),
         socketConversationHistory: '',
         lastSocketMessage: null,
+        conversationId: conversationId,
       });
       console.log(`Connected to ${nc.getServer()} for threadId ${threadId}`);
     }
@@ -48,13 +50,7 @@ class NatsConnectionManager {
 
   static addSubscription(threadId: string, subject: string, sub: Subscription) {
     const connection = this.connections.get(threadId);
-    if (connection) {
-      const existingSub = connection.subscriptions.get(subject);
-      if (existingSub) {
-        existingSub.unsubscribe();
-      }
-      connection.subscriptions.set(subject, sub);
-    }
+    connection && connection.subscriptions.set(subject, sub);
   }
 
   static updateMessageHistory(threadId: string, message: string) {
@@ -71,6 +67,17 @@ class NatsConnectionManager {
 
   static getConversationHistory(threadId: string): string {
     return this.connections.get(threadId)?.socketConversationHistory || '';
+  }
+
+  static getConversationId(threadId: string): number | null {
+    return this.connections.get(threadId)?.conversationId || null;
+  }
+
+  static setConversationId(threadId: string, conversationId: number) {
+    const connection = this.connections.get(threadId);
+    if (connection) {
+      connection.conversationId = conversationId;
+    }
   }
 
   static clearConversationHistory(threadId: string) {
@@ -92,7 +99,7 @@ export async function sendMsgToNatsServer(
 ) {
   try {
     const threadId = currentChatDetails.uuid;
-    const { nc } = (await NatsConnectionManager.getConnection(threadId)) as { nc: any };
+    const { nc } = (await NatsConnectionManager.getConnection(threadId, conversationId)) as { nc: any };
     const js = nc.jetstream();
     const jc = JSONCodec();
 
@@ -104,21 +111,15 @@ export async function sendMsgToNatsServer(
     NatsConnectionManager.clearConversationHistory(threadId);
     await js.publish(subject, jc.encode({ thread_id: threadId, team_id: selectedTeamUUID, msg: message }));
 
-    // Subscribe logic
-    const clientPrintSubject = `chat.client.print.${threadId}`;
-    const clientInputSubject = `chat.client.input.${threadId}`;
-    await setupSubscription(js, jc, clientPrintSubject, threadId, socket);
-    await setupSubscription(
-      js,
-      jc,
-      clientInputSubject,
-      threadId,
-      socket,
-      true,
-      context,
-      currentChatDetails,
-      conversationId
-    );
+    if (shouldCallInitiateChat) {
+      // Subscribe logic should be called only once for a thread
+      const clientPrintSubject = `chat.client.print.${threadId}`;
+      const clientInputSubject = `chat.client.input.${threadId}`;
+      await setupSubscription(js, jc, clientPrintSubject, threadId, socket);
+      await setupSubscription(js, jc, clientInputSubject, threadId, socket, true, context, currentChatDetails);
+    } else {
+      NatsConnectionManager.setConversationId(threadId, conversationId);
+    }
   } catch (err) {
     console.error(`Error in connectToNatsServer: ${err}`);
   }
@@ -132,8 +133,7 @@ async function setupSubscription(
   socket: any,
   isInput: boolean = false,
   context?: any,
-  currentChatDetails?: any,
-  conversationId?: number
+  currentChatDetails?: any
 ) {
   const opts = consumerOpts();
   opts.orderedConsumer();
@@ -145,8 +145,11 @@ async function setupSubscription(
       const message = jm.msg || jm.prompt;
       const conversationHistory = NatsConnectionManager.getConversationHistory(threadId);
       if (isInput) {
+        const conversationId = NatsConnectionManager.getConversationId(threadId);
+        const hardCodedMessage =
+          'Provide feedback to weather_man. Choose from the options listed below or enter your own responses in the input field provided.';
         try {
-          await updateDB(context, currentChatDetails.id, message, conversationId, conversationHistory, false);
+          await updateDB(context, currentChatDetails.id, hardCodedMessage, conversationId, conversationHistory, false);
           socket.emit('streamFromTeamFinished');
         } catch (err) {
           console.error(`DB Update failed: ${err}`);

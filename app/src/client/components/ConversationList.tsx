@@ -110,7 +110,7 @@ export default function ConversationsList({
                 }`}
               >
                 <div
-                  style={{ maxWidth: '800px', margin: 'auto' }}
+                  style={{ maxWidth: '800px', margin: 'auto', minHeight: '55px' }}
                   className={`relative ml-3 block w-full p-4 pl-10 text-sm text-${conversationTextColor}  border-${conversationBgColor} rounded-lg bg-${conversationBgColor} `}
                 >
                   <span
@@ -160,7 +160,7 @@ export default function ConversationsList({
 
                   {(idx !== lastConversationIdx || (idx === lastConversationIdx && isUserConversation)) && (
                     <div className='chat-conversations text-base flex flex-col gap-2 ml-4'>
-                      <Markdown>{conversation.message}</Markdown>
+                      <Markdown>{conversation.message === '' ? 'Auto reply' : conversation.message}</Markdown>
                     </div>
                   )}
                 </div>

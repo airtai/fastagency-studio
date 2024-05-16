@@ -1,11 +1,9 @@
 import json
-import os
 import uuid
 from datetime import datetime
 from typing import Any, Callable, Dict
 from unittest.mock import MagicMock
 
-import openai
 import pytest
 from autogen.agentchat import AssistantAgent, UserProxyAgent
 from autogen.io.console import IOConsole
@@ -23,43 +21,6 @@ from fastagency.io.ionats import (  # type: ignore [attr-defined]
 
 def as_dict(model: BaseModel) -> Dict[str, Any]:
     return json.loads(model.model_dump_json())  # type: ignore [no-any-return]
-
-
-@pytest.fixture()
-def llm_config() -> Dict[str, Any]:
-    api_key = os.getenv("AZURE_OPENAI_API_KEY")  # use France or Canada
-    api_base = os.getenv("AZURE_API_ENDPOINT")
-    gpt_3_5_model_name = os.getenv("AZURE_GPT35_MODEL")  # "gpt-35-turbo-16k"
-
-    openai.api_type = "azure"
-    openai.api_version = os.getenv("AZURE_API_VERSION")  # "2024-02-15-preview"
-
-    config_list = [
-        {
-            "model": gpt_3_5_model_name,
-            "api_key": api_key,
-            "base_url": api_base,
-            "api_type": openai.api_type,
-            "api_version": openai.api_version,
-        }
-    ]
-
-    llm_config = {
-        "config_list": config_list,
-        "temperature": 0,
-    }
-
-    return llm_config
-
-
-@pytest.mark.azure_oai()
-def test_llm_config_fixture(llm_config: Dict[str, Any]) -> None:
-    assert set(llm_config.keys()) == {"config_list", "temperature"}
-    assert isinstance(llm_config["config_list"], list)
-    assert llm_config["temperature"] == 0
-
-    for k in ["model", "api_key", "base_url", "api_type", "api_version"]:
-        assert len(llm_config["config_list"][0][k]) > 3
 
 
 class TestAutogen:

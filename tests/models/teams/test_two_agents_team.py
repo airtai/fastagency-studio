@@ -5,7 +5,6 @@ from typing import Any, Dict
 from unittest.mock import MagicMock
 
 import autogen
-import openai
 import pytest
 from asyncer import asyncify
 from autogen.io.console import IOConsole
@@ -19,33 +18,6 @@ from fastagency.models.base import Model
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.llms.openai import OpenAI
 from fastagency.models.teams.two_agent_teams import TwoAgentTeam
-
-
-@pytest.fixture()
-def llm_config() -> Dict[str, Any]:
-    api_key = os.getenv("AZURE_OPENAI_API_KEY")  # use France or Canada
-    api_base = os.getenv("AZURE_API_ENDPOINT")
-    gpt_3_5_model_name = os.getenv("AZURE_GPT35_MODEL")  # "gpt-35-turbo-16k"
-
-    openai.api_type = "azure"
-    openai.api_version = os.getenv("AZURE_API_VERSION")  # "2024-02-15-preview"
-
-    config_list = [
-        {
-            "model": gpt_3_5_model_name,
-            "api_key": api_key,
-            "base_url": api_base,
-            "api_type": openai.api_type,
-            "api_version": openai.api_version,
-        }
-    ]
-
-    llm_config = {
-        "config_list": config_list,
-        "temperature": 0,
-    }
-
-    return llm_config
 
 
 class TestTwoAgentTeam:

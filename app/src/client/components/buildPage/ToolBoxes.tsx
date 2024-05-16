@@ -10,7 +10,7 @@ const ToolBoxes = () => {
               className='flex-col flex items-start justify-between p-6 gap-3 w-full'
               style={{ width: '1000px', height: '600px' }}
             >
-              <span className='text-sm font-medium text-airt-primary'>ToolBoxes Page. Some content goes here...</span>
+              <span className='text-sm font-medium text-airt-primary'>Coming soon...</span>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { type User } from 'wasp/entities';
 
@@ -115,6 +115,17 @@ const BuildPage = ({ user }: BuildPageProps) => {
   const wrapperClass = document.body.classList.contains('server-error')
     ? 'h-[calc(100vh-173px)]'
     : 'h-[calc(100vh-88px)]';
+
+  const history = useHistory();
+  useEffect(() => {
+    if (!user) {
+      history.push('/login');
+    } else {
+      if (!user.hasPaid && user.isSignUpComplete) {
+        history.push('/pricing');
+      }
+    }
+  }, [user, history]);
 
   useEffect(() => {
     const selectedTab = sessionStorage.getItem('selectedBuildPageTab');

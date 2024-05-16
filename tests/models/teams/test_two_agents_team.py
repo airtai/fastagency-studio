@@ -186,6 +186,7 @@ class TestTwoAgentTeam:
         assert validated_team == team
 
     @pytest.mark.asyncio()
+    @pytest.mark.db()
     @pytest.mark.parametrize(
         "llm_model,api_key_model",  # noqa: PT006
         [

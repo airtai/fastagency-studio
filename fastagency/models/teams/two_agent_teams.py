@@ -1,4 +1,4 @@
-from typing import Annotated, Any
+from typing import Annotated, Any, Dict, List
 from uuid import UUID
 
 from asyncer import syncify
@@ -31,13 +31,13 @@ class TwoAgentTeam(TeamBaseModel):
     @classmethod
     def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
         my_model_dict = syncify(find_model_using_raw)(model_id, user_id)
-        my_model = cls(**my_model_dict)
+        my_model = cls(**my_model_dict["json_str"])
 
         initial_agent_dict = syncify(find_model_using_raw)(
             my_model.initial_agent.uuid, user_id
         )
         initial_agent_model = my_model.initial_agent.get_data_model()(
-            **initial_agent_dict
+            **initial_agent_dict["json_str"]
         )
         initial_agent = initial_agent_model.create_autogen(
             my_model.initial_agent.uuid, user_id
@@ -47,7 +47,7 @@ class TwoAgentTeam(TeamBaseModel):
             my_model.secondary_agent.uuid, user_id
         )
         secondary_agent_model = my_model.secondary_agent.get_data_model()(
-            **secondary_agent_dict
+            **secondary_agent_dict["json_str"]
         )
         secondary_agent = secondary_agent_model.create_autogen(
             my_model.secondary_agent.uuid, user_id
@@ -60,7 +60,9 @@ class TwoAgentTeam(TeamBaseModel):
                 self.initial_agent = initial_agent
                 self.secondary_agent = secondary_agent
 
-            def initiate_chat(self, message: str) -> None:
-                self.initial_agent.initiate_chat(self.secondary_agent, message)
+            def initiate_chat(self, message: str) -> List[Dict[str, Any]]:
+                return self.initial_agent.initiate_chat(
+                    recipient=self.secondary_agent, message=message
+                )
 
         return AutogenTwoAgentTeam(initial_agent, secondary_agent)

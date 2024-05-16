@@ -1,16 +1,51 @@
 import os
 import uuid
+from datetime import datetime
+from typing import Any, Dict
+from unittest.mock import MagicMock
 
+import autogen
+import openai
 import pytest
+from asyncer import asyncify
+from autogen.io.console import IOConsole
 from pydantic import ValidationError
 
 from fastagency.app import add_model
 from fastagency.models.agents.assistant import AssistantAgent
+from fastagency.models.agents.user_proxy import UserProxyAgent
 from fastagency.models.agents.web_surfer import WebSurferAgent
 from fastagency.models.base import Model
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
-from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
+from fastagency.models.llms.openai import OpenAI
 from fastagency.models.teams.two_agent_teams import TwoAgentTeam
+
+
+@pytest.fixture()
+def llm_config() -> Dict[str, Any]:
+    api_key = os.getenv("AZURE_OPENAI_API_KEY")  # use France or Canada
+    api_base = os.getenv("AZURE_API_ENDPOINT")
+    gpt_3_5_model_name = os.getenv("AZURE_GPT35_MODEL")  # "gpt-35-turbo-16k"
+
+    openai.api_type = "azure"
+    openai.api_version = os.getenv("AZURE_API_VERSION")  # "2024-02-15-preview"
+
+    config_list = [
+        {
+            "model": gpt_3_5_model_name,
+            "api_key": api_key,
+            "base_url": api_base,
+            "api_type": openai.api_type,
+            "api_version": openai.api_version,
+        }
+    ]
+
+    llm_config = {
+        "config_list": config_list,
+        "temperature": 0,
+    }
+
+    return llm_config
 
 
 class TestTwoAgentTeam:
@@ -190,7 +225,6 @@ class TestTwoAgentTeam:
     @pytest.mark.parametrize(
         "llm_model,api_key_model",  # noqa: PT006
         [
-            (OpenAI, OpenAIAPIKey),
             (AzureOAI, AzureOAIAPIKey),
         ],
     )
@@ -198,15 +232,13 @@ class TestTwoAgentTeam:
         self,
         llm_model: Model,
         api_key_model: Model,
+        llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        dummy_openai_api_key = "sk-abcdefghijklmnopqrstT3BlbkFJ01234567890123456789"
-
+        # Add secret, llm, agent to database
         api_key = api_key_model(  # type: ignore [operator]
-            api_key=os.getenv("AZURE_OPENAI_API_KEY")
-            if api_key_model == AzureOAIAPIKey  # type: ignore [comparison-overlap]
-            else dummy_openai_api_key,
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
             name="api_key_model_name",
         )
         api_key_model_uuid = str(uuid.uuid4())
@@ -220,14 +252,10 @@ class TestTwoAgentTeam:
 
         llm = llm_model(  # type: ignore [operator]
             name="llm_model_name",
-            model=os.getenv("AZURE_GPT35_MODEL")
-            if api_key_model == AzureOAI  # type: ignore [comparison-overlap]
-            else "gpt-3.5-turbo",
+            model=os.getenv("AZURE_GPT35_MODEL"),
             api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
             base_url=os.getenv("AZURE_API_ENDPOINT"),
-            api_version=os.getenv("AZURE_API_VERSION")
-            if llm_model == AzureOAI  # type: ignore [comparison-overlap]
-            else "latest",
+            api_version=os.getenv("AZURE_API_VERSION"),
         )
         llm_model_uuid = str(uuid.uuid4())
         llm_validated_model = await add_model(  # noqa: F841
@@ -238,23 +266,113 @@ class TestTwoAgentTeam:
             model=llm.model_dump(),
         )
 
-        assistant = AssistantAgent(
+        weatherman_assistant_model = AssistantAgent(
             llm=llm.get_reference_model()(uuid=llm_model_uuid),
             name="Assistant",
             system_message="test system message",
         )
-        assistant_model_uuid = str(uuid.uuid4())
-        assistant_validated_model = await add_model(  # noqa: F841
+        weatherman_assistant_model_uuid = str(uuid.uuid4())
+        weatherman_assistant_validated_model = await add_model(  # noqa: F841
             user_uuid=user_uuid,
             type_name="agent",
             model_name=AssistantAgent.__name__,
-            model_uuid=assistant_model_uuid,
-            model=assistant.model_dump(),
+            model_uuid=weatherman_assistant_model_uuid,
+            model=weatherman_assistant_model.model_dump(),
         )
 
-        # Add secret, llm, agent to database
+        user_proxy_model = UserProxyAgent(
+            name="UserProxyAgent",
+            llm=llm.get_reference_model()(uuid=llm_model_uuid),
+        )
+        user_proxy_model_uuid = str(uuid.uuid4())
+        user_proxy_validated_model = await add_model(  # noqa: F841
+            user_uuid=user_uuid,
+            type_name="agent",
+            model_name=UserProxyAgent.__name__,
+            model_uuid=user_proxy_model_uuid,
+            model=user_proxy_model.model_dump(),
+        )
+
+        team_model_uuid = str(uuid.uuid4())
+        initial_agent = weatherman_assistant_model.get_reference_model()(
+            uuid=weatherman_assistant_model_uuid
+        )
+        secondary_agent = user_proxy_model.get_reference_model()(
+            uuid=user_proxy_model_uuid
+        )
+        team = TwoAgentTeam(
+            name="TwoAgentTeam",
+            initial_agent=initial_agent,
+            secondary_agent=secondary_agent,
+        )
+        team_validated_model = await add_model(  # noqa: F841
+            user_uuid=user_uuid,
+            type_name="team",
+            model_name=TwoAgentTeam.__name__,
+            model_uuid=team_model_uuid,
+            model=team.model_dump(),
+        )
 
         # Then create autogen agents by monkeypatching create_autogen method
+        weatherman_agent = autogen.agentchat.AssistantAgent(
+            name="weather_man",
+            system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
+            llm_config=llm_config,
+        )
+
+        user_proxy_agent = autogen.agentchat.UserProxyAgent(
+            "user_proxy",
+        )
+
+        get_forecast_for_city_mock = MagicMock()
+
+        @user_proxy_agent.register_for_execution()  # type: ignore [misc]
+        @weatherman_agent.register_for_llm(
+            description="Get weather forecast for a city"
+        )  # type: ignore [misc]
+        def get_forecast_for_city(city: str) -> str:
+            print(f"get_forecast_for_city({city=})")
+            get_forecast_for_city_mock(city)
+            return f"The weather in {city} is sunny today."
+
+        monkeypatch.setattr(
+            AssistantAgent,
+            "create_autogen",
+            lambda cls, model_id, user_id: weatherman_agent,
+        )
+        monkeypatch.setattr(
+            UserProxyAgent,
+            "create_autogen",
+            lambda cls, model_id, user_id: user_proxy_agent,
+        )
+
+        team = await asyncify(TwoAgentTeam.create_autogen)(
+            model_id=team_model_uuid, user_id=user_uuid
+        )
+
+        assert hasattr(team, "initiate_chat")
+
+        d = {"count": 0}
+
+        def input(prompt: str, d: Dict[str, int] = d) -> str:
+            d["count"] += 1
+            if d["count"] == 1:
+                return f"[{datetime.now()}] What's the weather in New York today?"
+            elif d["count"] == 2:
+                return ""
+            else:
+                return "exit"
+
+        monkeypatch.setattr(IOConsole, "input", lambda self, prompt: input(prompt))
+
+        chat_result = team.initiate_chat(
+            message="Hi! Tell me the city for which you want the weather forecast.",
+        )
+
+        last_message = chat_result.chat_history[-1]
+
+        get_forecast_for_city_mock.assert_called_once_with("New York")
+        assert "sunny" in last_message["content"]
 
         # llm_uuid = uuid.uuid4()
         # llm = llm_model.get_reference_model()(uuid=llm_uuid)

@@ -25,7 +25,7 @@ class Model(BaseModel, ABC):
         if cls._reference_model is None:
             raise ValueError("reference model not set")
         return cls._reference_model
-    
+
     @classmethod
     @abstractmethod
     def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:

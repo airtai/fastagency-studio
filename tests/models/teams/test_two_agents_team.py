@@ -191,6 +191,8 @@ class TestTwoAgentTeam:
 
         print(os.getenv("AZURE_OPENAI_API_KEY"))
         api_key = api_key_model(api_key=os.getenv("AZURE_OPENAI_API_KEY"), name="whatever")
+        print(api_key)
+        print(type(api_key))
         api_key_model_uuid = str(uuid.uuid4())
         api_key_validated_model = add_model(
             user_uuid=user_uuid,

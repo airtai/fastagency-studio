@@ -44,7 +44,7 @@ class TwoAgentTeam(TeamBaseModel):
             def __init__(self, initial_agent, secondary_agent):
                 self.initial_agent = initial_agent
                 self.secondary_agent = secondary_agent
-            
+
             def initiate_chat(self, message) -> None:
                 self.initial_agent.initiate_chat(self.secondary_agent, message)
 

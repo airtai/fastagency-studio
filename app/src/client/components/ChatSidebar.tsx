@@ -79,6 +79,7 @@ const ChatSidebar = ({ sidebarOpen, setSidebarOpen, refetchAllChatDetails }: Cha
   }, [sidebarExpanded]);
 
   const handleCreateNewChat: MouseEventHandler<HTMLAnchorElement> = async (event) => {
+    setSidebarOpen(false);
     history.push(`/playground`);
     // try {
     //   const props: CreateNewChatProps = {
@@ -173,6 +174,7 @@ const ChatSidebar = ({ sidebarOpen, setSidebarOpen, refetchAllChatDetails }: Cha
                         <NavLink
                           key={chat.id}
                           to={`/playground/${chat.uuid}?`}
+                          onClick={() => setSidebarOpen(false)}
                           className={`chat-link relative no-underline group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium duration-300 ease-in-out ${
                             pathname === '/' && 'bg-gray-700 dark:bg-meta-4'
                           } ${

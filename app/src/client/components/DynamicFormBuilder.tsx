@@ -90,10 +90,11 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
           const propertyHasAnyOf = _.has(property, 'anyOf') && _.has(jsonSchema, '$defs');
           if (propertyHasRef || propertyHasAnyOf) {
             const allRefList = propertyHasRef ? [property['$ref']] : getAllRefs(property);
-            const userPropertyData = getMatchedUserProperties(allUserProperties, allRefList);
-            const missingDependencyList = checkForDependency(userPropertyData, allRefList);
+            const refUserProperties = getMatchedUserProperties(allUserProperties, allRefList);
+            const missingDependencyList = checkForDependency(refUserProperties, allRefList);
             const title: string = property.hasOwnProperty('title') ? property.title || '' : key;
-            const htmlSchema = constructHTMLSchema(userPropertyData, title, property);
+            const selectedModelRefValues = _.get(updateExistingModel, key, null);
+            const htmlSchema = constructHTMLSchema(refUserProperties, title, property, selectedModelRefValues);
             if (missingDependencyList.length > 0) {
               setMissingDependency((prev) => {
                 const newMissingDependencies = missingDependencyList.filter((item) => !prev.includes(item));
@@ -102,7 +103,10 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             }
             setRefValues((prev) => ({
               ...prev,
-              [key]: { htmlSchema: htmlSchema, userPropertyData: userPropertyData },
+              [key]: {
+                htmlSchema: htmlSchema,
+                refUserProperties: refUserProperties,
+              },
             }));
           }
         }

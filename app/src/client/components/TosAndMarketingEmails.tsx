@@ -11,8 +11,8 @@ export const Message = styled('div', {
 });
 
 export const MessageError = styled(Message, {
-  background: '#bb6e90',
-  color: '#eae4d9',
+  background: '#fff',
+  color: '#003257',
 });
 
 interface TosAndMarketingEmailsProps {
@@ -59,7 +59,7 @@ const TosAndMarketingEmails: React.FC<TosAndMarketingEmailsProps> = ({
     </div>
     {errorMessage && (
       <div className='text-sm'>
-        <MessageError style={{ border: '1px solid #bb6e90' }}>
+        <MessageError>
           {errorMessage.title}
           {errorMessage.description && ': '}
           {errorMessage.description}

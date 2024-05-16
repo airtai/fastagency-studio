@@ -10,7 +10,7 @@ interface UserActionButtonProps {
 }
 
 const UserActionButton: React.FC<UserActionButtonProps> = ({ user, renderGoToChat, theme = 'dark' }) => {
-  const themeClass = theme === 'dark' ? 'bg-airt-primary text-airt-font-base' : 'bg-airt-secondary text-airt-font-base';
+  const themeClass = theme === 'dark' ? 'bg-airt-primary text-airt-font-base' : 'bg-airt-secondary text-airt-primary';
   if (!user) {
     return (
       <Link
@@ -28,10 +28,10 @@ const UserActionButton: React.FC<UserActionButtonProps> = ({ user, renderGoToCha
 
   return renderGoToChat ? (
     <a
-      href='/playground'
+      href='/build'
       className={`rounded-md px-3.5 py-2.5 text-sm  ${themeClass}   hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
     >
-      Go to chat <span aria-hidden='true'>→</span>
+      Build team <span aria-hidden='true'>→</span>
     </a>
   ) : (
     <></>

@@ -133,6 +133,37 @@ code {
   overflow: hidden;
 }
 
+.accordion-wrapper {
+  border-radius: 5px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.accordion-title {
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+/* .accordion-title.open {
+  background: #ddd;
+} */
+
+.accordion-item {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.accordion-item.collapsed {
+  max-height: 100vh;
+}
+
+.accordion-content {
+  padding: 10px 15px;
+  /* background: #fff;
+  border-bottom: 1px solid #ddd; */
+}
+
 /* Google login button */
 .gsi-material-button {
   -moz-user-select: none;

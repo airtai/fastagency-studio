@@ -10,8 +10,8 @@ export default function CheckoutPage() {
   useEffect(() => {
     function delayedRedirect() {
       return setTimeout(() => {
-        history.push('/account');
-      }, 4000);
+        history.push('/build');
+      }, 2000);
     }
 
     const queryParams = new URLSearchParams(location.search);
@@ -23,7 +23,7 @@ export default function CheckoutPage() {
     } else if (isSuccess) {
       setPaymentStatus('paid');
     } else {
-      history.push('/account');
+      history.push('/build');
     }
     delayedRedirect();
     return () => {
@@ -33,8 +33,8 @@ export default function CheckoutPage() {
 
   return (
     <div className='flex min-h-full flex-col justify-center mt-10 sm:px-6 lg:px-8'>
-      <div className='sm:mx-auto sm:w-full sm:max-w-md'>
-        <div className='py-8 px-4 shadow-xl ring-1 ring-airt-font-base dark:ring-gray-100/10 sm:rounded-lg sm:px-10'>
+      <div className='sm:mx-auto sm:w-full sm:max-w-md p-4'>
+        <div className='py-8 px-4 shadow-xl ring-1 ring-airt-font-base dark:ring-gray-100/10 rounded-lg sm:px-10'>
           <h1>
             {paymentStatus === 'paid'
               ? '🥳 Payment Successful!'
@@ -44,7 +44,7 @@ export default function CheckoutPage() {
           </h1>
           {paymentStatus !== 'loading' && (
             <span className='text-center'>
-              You are being redirected to your account page... <br />
+              You are being redirected to your build page... <br />
             </span>
           )}
         </div>

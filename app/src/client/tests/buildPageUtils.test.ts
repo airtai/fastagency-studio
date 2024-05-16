@@ -587,7 +587,6 @@ describe('buildPageUtils', () => {
           user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'AzureOAIAPIKey',
-          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
             name: 'production azure key',
             api_key: '',
@@ -600,7 +599,6 @@ describe('buildPageUtils', () => {
           user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'BingAPIKey',
-          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
             name: 'production bing key',
             api_key: '',
@@ -613,7 +611,6 @@ describe('buildPageUtils', () => {
           user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'OpenAIAPIKey',
-          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
             name: 'production openai key',
             api_key: '',
@@ -648,10 +645,11 @@ describe('buildPageUtils', () => {
         description: 'The Bing API key for the browser',
       };
       let title = 'api_key';
-      let actual = constructHTMLSchema(input, title, property);
+      let selectedModelRefValues = null;
+      let actual = constructHTMLSchema(input, title, property, selectedModelRefValues);
       expect(actual).toEqual(expected);
       title = 'Api Key';
-      actual = constructHTMLSchema(input, title, property);
+      actual = constructHTMLSchema(input, title, property, selectedModelRefValues);
       expect(actual).toEqual(expected);
     });
     test('constructHTMLSchema - with non-null as default value', () => {
@@ -661,7 +659,6 @@ describe('buildPageUtils', () => {
           user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'AzureOAIAPIKey',
-          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
             name: 'production azure key',
             api_key: '',
@@ -674,7 +671,6 @@ describe('buildPageUtils', () => {
           user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'BingAPIKey',
-          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
             name: 'production bing key',
             api_key: '',
@@ -720,7 +716,59 @@ describe('buildPageUtils', () => {
         default: 'BingAPIKeyRef',
       };
       const title = 'api_key';
-      const actual = constructHTMLSchema(input, title, property);
+      const actual = constructHTMLSchema(input, title, property, null);
+      expect(_.isEqual(actual, expected)).toBe(true);
+    });
+    test('constructHTMLSchema - update existing property', () => {
+      const input = [
+        {
+          uuid: '999e3ce9-7b27-4be3-8bf0-b4f7d101e571',
+          user_uuid: '4401f7b4-2a28-4e6d-98a2-e210edae8a95',
+          type_name: 'secret',
+          model_name: 'AzureOAIAPIKey',
+          json_str: {
+            name: 'Azure staging key',
+            api_key: '1234567890',
+          },
+          created_at: '2024-05-09T08:31:26.735000Z',
+          updated_at: '2024-05-09T08:36:09.232000Z',
+        },
+        {
+          uuid: 'd4601f6f-60cd-4056-8c44-5be8b97cc177',
+          user_uuid: '4401f7b4-2a28-4e6d-98a2-e210edae8a95',
+          type_name: 'secret',
+          model_name: 'AzureOAIAPIKey',
+          json_str: {
+            name: 'production azure key',
+            api_key: '0987654321',
+          },
+          created_at: '2024-05-09T08:31:46.304000Z',
+          updated_at: '2024-05-09T08:37:09.981000Z',
+        },
+      ];
+      const expected = {
+        default: 'production azure key',
+        description: '',
+        enum: ['production azure key', 'Azure staging key'],
+        title: 'Api Key',
+        type: 'string',
+      };
+      const property = {
+        anyOf: [
+          {
+            $ref: '#/$defs/AzureOAIAPIKeyRef',
+          },
+        ],
+        description: 'LLM used by the agent for producing responses',
+        title: 'LLM',
+      };
+      const title = 'api_key';
+      const selectedModelRefValues = {
+        name: 'AzureOAIAPIKey',
+        type: 'secret',
+        uuid: 'd4601f6f-60cd-4056-8c44-5be8b97cc177',
+      };
+      const actual = constructHTMLSchema(input, title, property, selectedModelRefValues);
       expect(_.isEqual(actual, expected)).toBe(true);
     });
     test('constructHTMLSchema - with no default value', () => {
@@ -730,7 +778,6 @@ describe('buildPageUtils', () => {
           user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'AzureOAIAPIKey',
-          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
             name: 'production azure key',
             api_key: '',
@@ -743,7 +790,6 @@ describe('buildPageUtils', () => {
           user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'BingAPIKey',
-          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
             name: 'production bing key',
             api_key: '',
@@ -756,7 +802,6 @@ describe('buildPageUtils', () => {
           user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'OpenAIAPIKey',
-          model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
           json_str: {
             name: 'production openai key',
             api_key: '',
@@ -788,7 +833,7 @@ describe('buildPageUtils', () => {
         title: 'LLM',
       };
       const title = 'api_key';
-      const actual = constructHTMLSchema(input, title, property);
+      const actual = constructHTMLSchema(input, title, property, null);
       expect(_.isEqual(actual, expected)).toBe(true);
     });
   });
@@ -810,13 +855,12 @@ describe('buildPageUtils', () => {
             title: 'Api Key',
             type: 'string',
           },
-          userPropertyData: [
+          refUserProperties: [
             {
               uuid: '36015a9d-b03a-404b-8a21-a86267e92931',
               user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
               type_name: 'secret',
               model_name: 'AzureOAIAPIKey',
-              model_uuid: '9ae5cc7e-83c0-4155-84a2-e9d312863c09',
               json_str: {
                 name: 'staging azure key',
                 api_key: '',
@@ -829,7 +873,6 @@ describe('buildPageUtils', () => {
               user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
               type_name: 'secret',
               model_name: 'AzureOAIAPIKey',
-              model_uuid: '103e1491-6e81-450a-a3be-099ed9a6da5d',
               json_str: {
                 name: 'dev azure key',
                 api_key: '',
@@ -842,7 +885,6 @@ describe('buildPageUtils', () => {
               user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
               type_name: 'secret',
               model_name: 'AzureOAIAPIKey',
-              model_uuid: 'cfe296b5-8cbe-49c9-8e2a-9ae2a78e7c45',
               json_str: {
                 name: 'prod azure key',
                 api_key: '',
@@ -870,7 +912,6 @@ describe('buildPageUtils', () => {
           user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
           type_name: 'secret',
           model_name: 'AzureOAIAPIKey',
-          model_uuid: 'cfe296b5-8cbe-49c9-8e2a-9ae2a78e7c45',
           json_str: {
             name: 'prod azure key',
             api_key: '',

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { type User } from 'wasp/entities';
+import { type User, type Chat, type Conversation } from 'wasp/entities';
 import { HttpError } from 'wasp/server';
 import {
   type StripePayment,
@@ -10,6 +10,15 @@ import {
   type UpdateUserModels,
   type AddUserModels,
   type DeleteUserModels,
+  type CreateNewChat,
+  type CreateNewDailyAnalysisChat,
+  type CreateNewAndReturnAllConversations,
+  type CreateNewAndReturnLastConversation,
+  type UpdateCurrentChat,
+  type UpdateCurrentConversation,
+  type GetAgentResponse,
+  type DeleteLastConversationInChat,
+  type RetryTeamChat,
 } from 'wasp/server/operations';
 import Stripe from 'stripe';
 import type { StripePaymentResult } from '../shared/types';
@@ -261,5 +270,324 @@ export const validateForm: ValidateForm<{ data: any; validationURL: string }, an
     return data;
   } catch (error: any) {
     throw new HttpError(error.statusCode || 500, error.message || 'Server or network error occurred');
+  }
+};
+
+export const createNewChat: CreateNewChat<any, Chat> = async (args, context) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+
+  if (!context.user.hasPaid) {
+    throw new HttpError(500, 'No Subscription Found');
+  }
+
+  const chat = await context.entities.Chat.create({
+    data: {
+      user: { connect: { id: context.user.id } },
+      smartSuggestions: {
+        type: 'manyOf',
+        suggestions: [''],
+      },
+      selectedTeam: args.teamName ? args.teamName : null,
+    },
+  });
+
+  // if (args.teamName) {
+  //   await context.entities.Conversation.create({
+  //     data: {
+  //       chat: { connect: { id: chat.id } },
+  //       user: { connect: { id: context.user.id } },
+  //       message: `${args.task}`,
+  //       role: 'user',
+  //     },
+  //   });
+  // }
+
+  return chat;
+};
+
+const resetSmartSuggestions = async (chatId: number, context: any) => {
+  await context.entities.Chat.update({
+    where: {
+      id: chatId,
+    },
+    data: {
+      smartSuggestions: { suggestions: [''], type: '' },
+    },
+  });
+};
+
+export const createNewDailyAnalysisChat: CreateNewDailyAnalysisChat<Chat, [Chat, string]> = async (
+  currentChatDetails,
+  context
+) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+
+  if (!context.user.hasPaid) {
+    throw new HttpError(500, 'No Subscription Found');
+  }
+
+  await resetSmartSuggestions(currentChatDetails.id, context);
+
+  const newChat = await context.entities.Chat.create({
+    data: {
+      user: { connect: { id: context.user.id } },
+      agentChatHistory: currentChatDetails.agentChatHistory,
+      proposedUserAction: currentChatDetails.proposedUserAction,
+      emailContent: currentChatDetails.emailContent,
+      chatType: currentChatDetails.chatType,
+    },
+  });
+  const allChatConversations = await context.entities.Conversation.findMany({
+    where: { chatId: currentChatDetails.id, userId: context.user.id },
+    orderBy: { id: 'asc' },
+  });
+  const firstAgentMessage = allChatConversations[0].message;
+  const firstUserMessage = allChatConversations[1].message;
+
+  const conversation = await context.entities.Conversation.create({
+    data: {
+      chat: { connect: { id: newChat.id } },
+      user: { connect: { id: context.user.id } },
+      message: firstAgentMessage,
+      role: 'assistant',
+    },
+  });
+
+  return [newChat, firstUserMessage];
+};
+
+export const updateCurrentChat: UpdateCurrentChat<{ id: number; data: Partial<Chat> }, Chat> = async (
+  { id, data },
+  context
+) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+
+  const chat = await context.entities.Chat.update({
+    where: {
+      id: id,
+    },
+    data,
+  });
+
+  return chat;
+};
+
+export const updateCurrentConversation: UpdateCurrentConversation<
+  { id: number; data: Partial<Conversation> },
+  Conversation
+> = async ({ id, data }, context) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+
+  const conversation = await context.entities.Conversation.update({
+    where: {
+      id: id,
+    },
+    data,
+  });
+
+  return conversation;
+};
+
+export const deleteLastConversationInChat: DeleteLastConversationInChat<number, Conversation[]> = async (
+  chatId: number,
+  context: any
+) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+
+  const conversations = await context.entities.Conversation.findMany({
+    where: { chatId: chatId },
+    orderBy: { id: 'desc' },
+  });
+
+  const lastConvId = conversations[0].id;
+  await context.entities.Conversation.delete({
+    where: { id: lastConvId },
+  });
+
+  const allConversations = await context.entities.Conversation.findMany({
+    where: { chatId: chatId, userId: context.user.id },
+    orderBy: { id: 'asc' },
+  });
+  return allConversations;
+};
+
+export const retryTeamChat: RetryTeamChat<number, [Chat, string]> = async (chatId: number, context: any) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+
+  await resetSmartSuggestions(chatId, context);
+
+  const newChat = await context.entities.Chat.create({
+    data: {
+      user: { connect: { id: context.user.id } },
+    },
+  });
+
+  const allChatConversations = await context.entities.Conversation.findMany({
+    where: { chatId: chatId, userId: context.user.id },
+    orderBy: { id: 'asc' },
+  });
+
+  const lastInitialConversationindex = allChatConversations.findIndex(
+    (conversation: Conversation) => conversation.agentConversationHistory !== null
+  );
+
+  let initialConversations = allChatConversations.slice(
+    0,
+    lastInitialConversationindex >= 0 ? lastInitialConversationindex : allChatConversations.length
+  );
+  let lastConversation = initialConversations.pop();
+
+  initialConversations = initialConversations.map((conversation: Conversation) => {
+    return {
+      message: conversation.message,
+      role: conversation.role,
+      isLoading: conversation.isLoading,
+      chatId: newChat.id,
+      userId: context.user.id,
+    };
+  });
+
+  await context.entities.Conversation.createMany({
+    data: initialConversations,
+  });
+
+  return [newChat, lastConversation.message];
+};
+
+export const createNewAndReturnAllConversations: CreateNewAndReturnAllConversations<
+  { chatId: number; userQuery: string; role: 'user' | 'assistant' },
+  Conversation[]
+> = async ({ chatId, userQuery, role }, context) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+
+  if (!context.user.hasPaid) {
+    throw new HttpError(500, 'No Subscription Found');
+  }
+
+  await context.entities.Conversation.create({
+    data: {
+      chat: { connect: { id: chatId } },
+      user: { connect: { id: context.user.id } },
+      message: userQuery,
+      role,
+    },
+  });
+
+  return context.entities.Conversation.findMany({
+    where: { chatId: chatId, userId: context.user.id },
+    orderBy: { id: 'asc' },
+  });
+};
+
+export const createNewAndReturnLastConversation: CreateNewAndReturnLastConversation<
+  {
+    chatId: number;
+    userQuery: string;
+    role: 'user' | 'assistant';
+    isLoading: boolean;
+  },
+  Conversation
+> = async ({ chatId, userQuery, role, isLoading }, context) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+
+  if (!context.user.hasPaid) {
+    throw new HttpError(500, 'No Subscription Found');
+  }
+
+  return await context.entities.Conversation.create({
+    data: {
+      chat: { connect: { id: chatId } },
+      user: { connect: { id: context.user.id } },
+      message: userQuery,
+      role,
+      isLoading,
+    },
+  });
+};
+
+type AgentPayload = {
+  chatId: number;
+  messages: any;
+  model_name: string;
+  uuid: string;
+};
+
+export const getAgentResponse: GetAgentResponse<AgentPayload, Record<string, any>> = async (
+  {
+    chatId,
+    messages,
+    model_name,
+    uuid,
+  }: {
+    chatId: number;
+    messages: any;
+    model_name: string;
+    uuid: string;
+  },
+  context: any
+) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+
+  const payload = {
+    chat_id: chatId,
+    message: messages,
+    user_id: context.user.id,
+  };
+  console.log('===========');
+  console.log('Payload to Python server');
+  console.log(payload);
+  console.log('===========');
+  try {
+    const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/chat/${model_name}/${uuid}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
+
+    if (!response.ok) {
+      const errorMsg = json.detail || `HTTP error with status code ${response.status}`;
+      console.error('Server Error:', errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    return {
+      content: json['content'],
+      smart_suggestions: json['smart_suggestions'],
+      team_status: json['team_status'],
+      team_name: json['team_name'],
+      team_id: json['team_id'],
+      ...(json['customer_brief'] !== undefined && {
+        customer_brief: json['customer_brief'],
+      }),
+      ...(json['conversation_name'] !== undefined && {
+        conversation_name: json['conversation_name'],
+      }),
+      ...(json['is_exception_occured'] !== undefined && {
+        is_exception_occured: Boolean(json['is_exception_occured']),
+      }),
+    };
+  } catch (error: any) {
+    throw new HttpError(500, 'Something went wrong. Please try again later');
   }
 };

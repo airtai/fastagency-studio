@@ -46,15 +46,20 @@ export default function LandingPage() {
             </button>
           </div>
           <div className='hidden lg:flex lg:gap-x-12'>
-            {navigation.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className='text-sm font-semibold leading-6 text-airt-font-base duration-300 ease-in-out hover:text-airt-secondary dark:text-white'
-              >
-                {item.name}
-              </a>
-            ))}
+            {navigation.map((item, index) => {
+              const isFirstItem = index === 0;
+              return (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className={`text-sm font-semibold leading-6 duration-300 ease-in-out hover:text-airt-secondary dark:text-white ${
+                    isFirstItem ? 'text-airt-secondary' : 'text-airt-font-base'
+                  }`}
+                >
+                  {item.name}
+                </a>
+              );
+            })}
           </div>
           <div className='hidden lg:flex lg:flex-1 lg:justify-end lg:align-end'>
             {/* <!-- Dark Mode Toggler --> */}
@@ -95,12 +100,14 @@ export default function LandingPage() {
             <div className='mt-6 flow-root'>
               <div className='-my-6 divide-y divide-airt-font-base'>
                 <div className='space-y-2 py-6'>
-                  {navigation.map((item) => (
+                  {navigation.map((item, index) => (
                     <a
                       key={item.name}
                       href={item.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-airt-primary hover:bg-gray-50 dark:text-white dark:hover:bg-boxdark-2'
+                      className={`${
+                        index === 0 ? 'text-airt-secondary' : ''
+                      } -mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-airt-primary hover:bg-gray-50 dark:text-white dark:hover:bg-boxdark-2`}
                     >
                       {item.name}
                     </a>

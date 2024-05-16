@@ -52,7 +52,6 @@ export interface SelectedModelSchema {
   user_uuid: string;
   type_name: string;
   model_name: string;
-  model_uuid: string;
   json_str: {
     name: string;
     api_key: string;

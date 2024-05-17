@@ -1,8 +1,12 @@
 import uuid
+from typing import Any, Dict
 
 import pytest
+from asyncer import asyncify
 from pydantic_core import Url
 
+from fastagency.app import add_model
+from fastagency.models.base import Model
 from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 
 
@@ -103,6 +107,72 @@ class TestOpenAI:
         }
         assert schema == expected
 
+    @pytest.mark.asyncio()
+    @pytest.mark.db()
+    @pytest.mark.parametrize("llm_model,api_key_model", [(OpenAI, OpenAIAPIKey)])  # noqa: PT006
+    async def test_openai_model_create_autogen(
+        self,
+        llm_model: Model,
+        api_key_model: Model,
+        llm_config: Dict[str, Any],
+        user_uuid: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        dummy_openai_api_key = "sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest"  # pragma: allowlist secret
+
+        # Add secret, llm to database
+        api_key = api_key_model(  # type: ignore [operator]
+            api_key=dummy_openai_api_key,
+            name="api_key_model_name",
+        )
+        api_key_model_uuid = str(uuid.uuid4())
+        await add_model(
+            user_uuid=user_uuid,
+            type_name="secret",
+            model_name=api_key_model.__name__,  # type: ignore [attr-defined]
+            model_uuid=api_key_model_uuid,
+            model=api_key.model_dump(),
+        )
+
+        llm = llm_model(  # type: ignore [operator]
+            name="llm_model_name",
+            model="gpt-3.5-turbo",
+            api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
+        )
+        llm_model_uuid = str(uuid.uuid4())
+        await add_model(
+            user_uuid=user_uuid,
+            type_name="llm",
+            model_name=llm_model.__name__,  # type: ignore [attr-defined]
+            model_uuid=llm_model_uuid,
+            model=llm.model_dump(),
+        )
+
+        # Monkeypatch api_key and call create_autogen
+        monkeypatch.setattr(
+            OpenAIAPIKey,
+            "create_autogen",
+            lambda cls, model_id, user_id: api_key.api_key,
+        )
+        actual_llm_config = await asyncify(OpenAI.create_autogen)(
+            model_id=uuid.UUID(llm_model_uuid),
+            user_id=uuid.UUID(user_uuid),
+        )
+        assert isinstance(actual_llm_config, dict)
+        expected = {
+            "config_list": [
+                {
+                    "model": "gpt-3.5-turbo",
+                    "api_key": dummy_openai_api_key,
+                    "base_url": "https://api.openai.com/v1",
+                    "api_type": "openai",
+                }
+            ],
+            "temperature": 0,
+        }
+
+        assert actual_llm_config == expected
+
 
 class TestOpenAIAPIKey:
     def test_constructor_success(self) -> None:
@@ -121,3 +191,37 @@ class TestOpenAIAPIKey:
                 api_key="_sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest",  # pragma: allowlist secret
                 name="Hello World!",
             )  # pragma: allowlist secret
+
+    @pytest.mark.asyncio()
+    @pytest.mark.db()
+    @pytest.mark.parametrize("api_key_model", [(OpenAIAPIKey)])
+    async def test_openai_api_key_model_create_autogen(
+        self,
+        api_key_model: Model,
+        llm_config: Dict[str, Any],
+        user_uuid: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        dummy_openai_api_key = "sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest"  # pragma: allowlist secret
+
+        # Add secret to database
+        api_key = api_key_model(  # type: ignore [operator]
+            api_key=dummy_openai_api_key,
+            name="api_key_model_name",
+        )
+        api_key_model_uuid = str(uuid.uuid4())
+        await add_model(
+            user_uuid=user_uuid,
+            type_name="secret",
+            model_name=api_key_model.__name__,  # type: ignore [attr-defined]
+            model_uuid=api_key_model_uuid,
+            model=api_key.model_dump(),
+        )
+
+        # Call create_autogen
+        actual_api_key = await asyncify(OpenAIAPIKey.create_autogen)(
+            model_id=uuid.UUID(api_key_model_uuid),
+            user_id=uuid.UUID(user_uuid),
+        )
+        assert isinstance(actual_api_key, str)
+        assert actual_api_key == api_key.api_key

@@ -101,7 +101,7 @@ class TestRegistry:
             i: int
             s: str
 
-        schema = registry.get_model_schema(MyModel)
+        schema = registry.get_model_schema(MyModel)  # type: ignore[type-abstract]
         expected = ModelSchema(
             name="MyModel",
             json_schema={
@@ -137,7 +137,7 @@ class TestRegistry:
             s: str
             secret: MySecretRef  # type: ignore[valid-type]
 
-        schema = registry.get_model_schema(MyModel)
+        schema = registry.get_model_schema(MyModel)  # type: ignore[type-abstract]
         expected = ModelSchema(
             name="MyModel",
             json_schema={

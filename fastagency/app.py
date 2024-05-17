@@ -8,7 +8,7 @@ from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from .db.helpers import get_db_connection, get_wasp_db_url
+from .db.helpers import find_model_using_raw, get_db_connection, get_wasp_db_url
 from .models.registry import Registry, Schemas
 
 logging.basicConfig(level=logging.INFO)
@@ -43,21 +43,6 @@ async def get_user(user_uuid: Union[int, str]) -> Any:
     if not user:
         raise HTTPException(status_code=404, detail=f"user_uuid {user_uuid} not found")
     return user
-
-
-async def find_model_using_raw(model_uuid: str, user_uuid: str) -> Dict[str, Any]:
-    async with get_db_connection() as db:
-        model: Optional[Dict[str, Any]] = await db.query_first(
-            'SELECT * from "Model" where uuid='  # nosec: [B608]
-            + f"'{model_uuid}' and user_uuid='{user_uuid}'"
-        )
-
-    if not model:
-        raise HTTPException(
-            status_code=404,
-            detail=f"model_uuid {model_uuid} and user_uuid {user_uuid} not found",
-        )
-    return model
 
 
 @app.get("/user/{user_uuid}/models")

@@ -18,7 +18,12 @@ import {
   propertyDependencies,
 } from 'wasp/client/operations';
 import { propertyDependencyMap } from '../../utils/constants';
-import { isDependencyAvailable, formatDependencyErrorMessage, capitalizeFirstLetter } from '../../utils/buildPageUtils';
+import {
+  isDependencyAvailable,
+  formatDependencyErrorMessage,
+  capitalizeFirstLetter,
+  filterDataToValidate,
+} from '../../utils/buildPageUtils';
 import Loader from '../../admin/common/Loader';
 
 const UserPropertyHandler = ({ data }: SecretsProps) => {
@@ -56,11 +61,13 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     try {
       setIsLoading(true);
       const mergedData = { ...payload, type_name: propertyName, model_name: selectedModel, uuid: payload.uuid };
+      const filteredData = filterDataToValidate(mergedData);
       if (updateExistingModel) {
-        await updateUserModels({ data: mergedData, uuid: updateExistingModel.uuid });
+        await updateUserModels({ data: filteredData, uuid: updateExistingModel.uuid });
         setUpdateExistingModel(null);
       } else {
-        await addUserModels(mergedData);
+        //@ts-ignore
+        await addUserModels(filteredData);
       }
       refetchModels();
       setShowAddModel(false);

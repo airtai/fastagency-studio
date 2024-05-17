@@ -5,6 +5,22 @@ search:
 - [Features](fastagency.md)
 - Reference
     - fastagency
+        - app
+            - [ChatRequest](api/fastagency/app/ChatRequest.md)
+            - [add_model](api/fastagency/app/add_model.md)
+            - [chat](api/fastagency/app/chat.md)
+            - [generate_chat_name](api/fastagency/app/generate_chat_name.md)
+            - [get_all_models](api/fastagency/app/get_all_models.md)
+            - [get_models_schemas](api/fastagency/app/get_models_schemas.md)
+            - [get_user](api/fastagency/app/get_user.md)
+            - [models_delete](api/fastagency/app/models_delete.md)
+            - [update_model](api/fastagency/app/update_model.md)
+            - [validate_model](api/fastagency/app/validate_model.md)
+        - db
+            - helpers
+                - [find_model_using_raw](api/fastagency/db/helpers/find_model_using_raw.md)
+                - [get_db_connection](api/fastagency/db/helpers/get_db_connection.md)
+                - [get_wasp_db_url](api/fastagency/db/helpers/get_wasp_db_url.md)
         - faststream_app
             - [ping_handler](api/fastagency/faststream_app/ping_handler.md)
         - io

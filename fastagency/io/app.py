@@ -27,6 +27,8 @@ stream = JStream(
         "chat.server.input.*",
         # server prints message to client
         "chat.client.print.*",
+        # server sends terminate message to client
+        "chat.server.terminate_chat.*",
         # "function.server.call",
         # "function.client.call.*",
         # "code.server.execute",

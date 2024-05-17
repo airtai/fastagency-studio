@@ -39,12 +39,14 @@ const ChatLayout: FC<Props> = ({
   }, [user, history]);
 
   const scrollToBottom = (message: any) => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight + 100,
-        behavior: 'auto',
-      });
-    }
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({
+          top: scrollRef.current.scrollHeight + 300,
+          behavior: 'auto',
+        });
+      }
+    }, 300);
   };
   useSocketListener('newMessageFromTeam', scrollToBottom);
   useSocketListener('streamFromTeamFinished', scrollToBottom);

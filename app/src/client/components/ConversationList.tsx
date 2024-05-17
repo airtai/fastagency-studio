@@ -110,7 +110,7 @@ export default function ConversationsList({
                 }`}
               >
                 <div
-                  style={{ maxWidth: '800px', margin: 'auto' }}
+                  style={{ maxWidth: '800px', margin: 'auto', minHeight: '55px' }}
                   className={`relative ml-3 block w-full p-4 pl-10 text-sm text-${conversationTextColor}  border-${conversationBgColor} rounded-lg bg-${conversationBgColor} `}
                 >
                   <span
@@ -124,8 +124,14 @@ export default function ConversationsList({
                   >
                     {conversationLogo}
                   </span>
+                  {conversation.agentConversationHistory && (
+                    <AgentConversationHistory
+                      agentConversationHistory={conversation.agentConversationHistory}
+                      isAgentWindow={true}
+                    />
+                  )}
                   {idx === lastConversationIdx && !isUserConversation && (
-                    <div className='chat-conversations text-base flex flex-col gap-2'>
+                    <div className='chat-conversations text-base flex flex-col gap-2 ml-4'>
                       {currentChatDetails?.streamAgentResponse && !currentChatDetails?.team_id ? (
                         <LetterByLetterDisplay
                           sentence={conversation.message}
@@ -135,15 +141,29 @@ export default function ConversationsList({
                       ) : (
                         <Markdown>{conversation.message}</Markdown>
                       )}
+                      {!currentChatDetails.isChatTerminated && (
+                        <div className='flex'>
+                          <button
+                            className='bg-airt-secondary text-airt-primary hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 inline-block whitespace-nowrap'
+                            onClick={() => handleFormSubmit('')}
+                          >
+                            Auto reply
+                          </button>
+                          <button
+                            className='bg-airt-secondary text-airt-primary hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 inline-block whitespace-nowrap ml-2'
+                            onClick={() => handleFormSubmit('exit')}
+                          >
+                            Exit
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
+
                   {(idx !== lastConversationIdx || (idx === lastConversationIdx && isUserConversation)) && (
-                    <div className='chat-conversations text-base flex flex-col gap-2'>
-                      <Markdown>{conversation.message}</Markdown>
+                    <div className='chat-conversations text-base flex flex-col gap-2 ml-4'>
+                      <Markdown>{conversation.message === '' ? 'Auto reply' : conversation.message}</Markdown>
                     </div>
-                  )}
-                  {conversation.agentConversationHistory && (
-                    <AgentConversationHistory agentConversationHistory={conversation.agentConversationHistory} />
                   )}
                 </div>
               </div>

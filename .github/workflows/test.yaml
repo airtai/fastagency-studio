@@ -324,7 +324,7 @@ jobs:
   pre-commit-check:
     runs-on: ubuntu-latest
     env:
-      SKIP: "static-analysis"
+      SKIP: "static-analysis,docs"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -334,6 +334,10 @@ jobs:
         with:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: Install Dependencies
+        run: pip install .[docs,testing]
+      - name: Prisma
+        run: prisma generate
       - uses: pre-commit/action@v3.0.1
 
   # https://github.com/marketplace/actions/alls-green#why

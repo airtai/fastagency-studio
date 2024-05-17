@@ -23,7 +23,7 @@ class TestGetSchema:
         expected = {
             "secret": {"AzureOAIAPIKey", "OpenAIAPIKey", "BingAPIKey"},
             "llm": {"AzureOAI", "OpenAI"},
-            "agent": {"AssistantAgent", "WebSurferAgent"},
+            "agent": {"AssistantAgent", "WebSurferAgent", "UserProxyAgent"},
             "team": {"TwoAgentTeam", "MultiAgentTeam"},
         }
         assert model_names == expected

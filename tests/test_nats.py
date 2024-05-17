@@ -109,12 +109,14 @@ class TestAutogen:
         actual = []
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(f"chat.client.{thread_id}", stream=stream)
+        @broker.subscriber(f"chat.client.messages.{thread_id}", stream=stream)
         async def client_input_handler(msg: ServerResponseModel) -> None:
             if msg.type == "input":
                 response = InputResponseModel(msg=input(msg.data.prompt))  # type: ignore [union-attr]
 
-                await broker.publish(response, subject=f"chat.server.{thread_id}")
+                await broker.publish(
+                    response, subject=f"chat.server.messages.{thread_id}"
+                )
             elif msg.type == "print":
                 actual.append(msg.data.model_dump())
             elif msg.type == "terminate":
@@ -335,12 +337,14 @@ class TestAutogen:
         actual = []
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(f"chat.client.{thread_id}", stream=stream)
+        @broker.subscriber(f"chat.client.messages.{thread_id}", stream=stream)
         async def client_input_handler(msg: ServerResponseModel) -> None:
             if msg.type == "input":
                 response = InputResponseModel(msg=input(msg.data.prompt))  # type: ignore [union-attr]
 
-                await broker.publish(response, subject=f"chat.server.{thread_id}")
+                await broker.publish(
+                    response, subject=f"chat.server.messages.{thread_id}"
+                )
             elif msg.type == "print":
                 actual.append(msg.data.model_dump())
             elif msg.type == "terminate":

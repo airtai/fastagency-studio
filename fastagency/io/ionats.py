@@ -50,8 +50,8 @@ class IONats(IOStream):  # type: ignore[misc]
         self._publisher = broker.publish
         self._thread_id = thread_id
 
-        self._input_request_subject = f"chat.client.{thread_id}"
-        self._input_receive_subject = f"chat.server.{thread_id}"
+        self._input_request_subject = f"chat.client.messages.{thread_id}"
+        self._input_receive_subject = f"chat.server.messages.{thread_id}"
 
     @classmethod
     async def create(cls, thread_id: Union[str, UUID]) -> "IONats":

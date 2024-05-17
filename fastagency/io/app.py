@@ -22,9 +22,9 @@ stream = JStream(
         # starts new conversation
         "chat.server.initiate_chat",
         # server requests input from client
-        "chat.client.*",
+        "chat.client.messages.*",
         # server prints message to client
-        "chat.server.*",
+        "chat.server.messages.*",
         # "function.server.call",
         # "function.client.call.*",
         # "code.server.execute",

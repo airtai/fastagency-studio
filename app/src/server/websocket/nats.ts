@@ -88,6 +88,62 @@ class NatsConnectionManager {
   }
 }
 
+async function setupSubscription(
+  js: JetStreamClient,
+  jc: any,
+  subject: string,
+  threadId: string,
+  socket: any,
+  context?: any,
+  currentChatDetails?: any
+) {
+  const opts = consumerOpts();
+  opts.orderedConsumer();
+  let sub = null;
+  try {
+    sub = await js.subscribe(subject, opts);
+    NatsConnectionManager.addSubscription(threadId, subject, sub as Subscription);
+  } catch (err) {
+    console.error(`Error in subscribe for ${subject}: ${err}`);
+    return;
+  }
+  (async () => {
+    for await (const m of sub) {
+      const conversationHistory = NatsConnectionManager.getConversationHistory(threadId);
+      const conversationId = NatsConnectionManager.getConversationId(threadId);
+      const jm = jc.decode(m.data);
+      const type = jm.type;
+      const message = jm.data.msg || jm.data.prompt;
+      // console.log(`Received ${type} message: `, message);
+      if (type === 'print') {
+        NatsConnectionManager.updateMessageHistory(threadId, message);
+        socket.emit('newMessageFromTeam', conversationHistory);
+      } else {
+        try {
+          await updateDB(
+            context,
+            currentChatDetails.id,
+            message,
+            conversationId,
+            conversationHistory,
+            type !== 'input'
+          );
+          if (type !== 'input') {
+            console.log('Terminating chat and cleaning up NATS connection and subscriptions.');
+            NatsConnectionManager.cleanup(threadId);
+          }
+        } catch (err) {
+          console.error(`DB Update failed: ${err}`);
+        } finally {
+          socket.emit('streamFromTeamFinished');
+        }
+      }
+    }
+  })().catch((err) => {
+    console.error(`Error in subscription for ${subject}: ${err}`);
+  });
+}
+
 export async function sendMsgToNatsServer(
   socket: any,
   context: any,
@@ -106,97 +162,22 @@ export async function sendMsgToNatsServer(
 
     // Initiate chat or continue conversation
     const initiateChatSubject = `chat.server.initiate_chat`;
-    const serverInputSubject = `chat.server.input.${threadId}`;
+    const serverInputSubject = `chat.server.messages.${threadId}`;
     const subject = shouldCallInitiateChat ? initiateChatSubject : serverInputSubject;
 
     NatsConnectionManager.clearConversationHistory(threadId);
-    console.log('------');
-    console.log('Publishing to subject: ', subject);
-    console.log('Message: ', message);
-    console.log('userUUID ', userUUID);
-    console.log('------');
     await js.publish(
       subject,
       jc.encode({ user_id: userUUID, thread_id: threadId, team_id: selectedTeamUUID, msg: message })
     );
 
     if (shouldCallInitiateChat) {
-      // Subscribe logic should be called only once for a thread
-      const clientPrintSubject = `chat.client.print.${threadId}`;
-      const clientInputSubject = `chat.client.input.${threadId}`;
-      const terminateChatSubject = `chat.server.terminate_chat.${threadId}`;
-      await setupSubscription(js, jc, clientPrintSubject, threadId, socket);
+      const clientInputSubject = `chat.client.messages.${threadId}`;
       await setupSubscription(js, jc, clientInputSubject, threadId, socket, context, currentChatDetails);
-      await setupSubscription(js, jc, terminateChatSubject, threadId, socket, context, currentChatDetails);
     } else {
       NatsConnectionManager.setConversationId(threadId, conversationId);
     }
   } catch (err) {
     console.error(`Error in connectToNatsServer: ${err}`);
   }
-}
-
-async function setupSubscription(
-  js: JetStreamClient,
-  jc: any,
-  subject: string,
-  threadId: string,
-  socket: any,
-  context?: any,
-  currentChatDetails?: any
-) {
-  const opts = consumerOpts();
-  opts.orderedConsumer();
-  let sub = null;
-  try {
-    sub = await js.subscribe(subject, opts);
-    console.log('-----------');
-    console.log('Subscribed to subject: ', subject);
-    console.log('-----------');
-  } catch (err) {
-    console.error(`Error in subscribe for ${subject}: ${err}`);
-  }
-  if (!sub) {
-    return;
-  }
-  NatsConnectionManager.addSubscription(threadId, subject, sub as Subscription);
-  (async () => {
-    for await (const m of sub) {
-      const jm = jc.decode(m.data);
-      const message = jm.msg || jm.prompt;
-      const conversationHistory = NatsConnectionManager.getConversationHistory(threadId);
-      const isClientInputSubject = `chat.client.input.${threadId}` === subject;
-      const isTerminateSubject = `chat.server.terminate_chat.${threadId}` === subject;
-      const isClientInputOrTerminateSubject = isClientInputSubject || isTerminateSubject;
-      console.log('-----------');
-      console.log('Received message from subject: ', subject);
-      console.log('Message: ', message);
-      console.log('-----------');
-      if (isClientInputOrTerminateSubject) {
-        const conversationId = NatsConnectionManager.getConversationId(threadId);
-        try {
-          await updateDB(
-            context,
-            currentChatDetails.id,
-            message,
-            conversationId,
-            conversationHistory,
-            isTerminateSubject
-          );
-          if (isTerminateSubject) {
-            console.log('Terminating chat and cleaning up NATS connection and subscriptions.');
-            NatsConnectionManager.cleanup(threadId);
-          }
-          socket.emit('streamFromTeamFinished');
-        } catch (err) {
-          console.error(`DB Update failed: ${err}`);
-        }
-      } else {
-        NatsConnectionManager.updateMessageHistory(threadId, message);
-        socket.emit('newMessageFromTeam', conversationHistory);
-      }
-    }
-  })().catch((err) => {
-    console.error(`Error in subscription for ${subject}: ${err}`);
-  });
 }

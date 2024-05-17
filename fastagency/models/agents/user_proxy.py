@@ -29,7 +29,10 @@ class UserProxyAgent(AgentBaseModel):
         llm_model = my_model.llm.get_data_model()(**llm_dict["json_str"])
         llm = llm_model.create_autogen(my_model.llm.uuid, user_id)
 
+        agent_name = my_model_dict["model_name"]
+
         agent = autogen.agentchat.UserProxyAgent(
+            name=agent_name,
             llm_config=llm,
             max_consecutive_auto_reply=my_model.max_consecutive_auto_reply,
         )

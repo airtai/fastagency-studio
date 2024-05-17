@@ -125,7 +125,7 @@ class InitiateModel(BaseModel):
 
 
 # patch this is tests
-def create_team(team_id: UUID, user_id: UUID) -> Callable[[], Any]:
+def create_team(team_id: UUID, user_id: UUID) -> Callable[[str], Any]:
     team_dict = syncify(find_model_using_raw)(team_id, user_id)
 
     team_model: Union[TwoAgentTeam, MultiAgentTeam]
@@ -161,6 +161,6 @@ async def initiate_handler(
     def start_chat() -> Any:
         with IOStream.set_default(iostream):
             initiate_chat = create_team(team_id=body.team_id, user_id=body.user_id)
-            return initiate_chat()
+            return initiate_chat(body.msg)
 
     await asyncify(start_chat)()

@@ -1,22 +1,30 @@
 import json
+import os
 import uuid
 from datetime import datetime
 from typing import Any, Callable, Dict
 from unittest.mock import MagicMock
 
+# from autogen.agentchat import AssistantAgent, UserProxyAgent
+import autogen
 import pytest
-from autogen.agentchat import AssistantAgent, UserProxyAgent
 from autogen.io.console import IOConsole
 from faststream.nats import TestNatsBroker
 from pydantic import BaseModel
 
 import fastagency.io.ionats
+from fastagency.app import add_model
 from fastagency.io.ionats import (  # type: ignore [attr-defined]
     InputRequestModel,
     InputResponseModel,
     broker,
     stream,
 )
+from fastagency.models.agents.assistant import AssistantAgent
+from fastagency.models.agents.user_proxy import UserProxyAgent
+from fastagency.models.base import Model
+from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
+from fastagency.models.teams.two_agent_teams import TwoAgentTeam
 
 
 def as_dict(model: BaseModel) -> Dict[str, Any]:
@@ -43,13 +51,13 @@ class TestAutogen:
 
         # print(f"{llm_config=}")
 
-        weather_man = AssistantAgent(
+        weather_man = autogen.agentchat.AssistantAgent(
             name="weather_man",
             system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
             llm_config=llm_config,
         )
 
-        user_proxy = UserProxyAgent(
+        user_proxy = autogen.agentchat.UserProxyAgent(
             "user_proxy",
         )
 
@@ -119,14 +127,14 @@ class TestAutogen:
 
         get_forecast_for_city_mock = MagicMock()
 
-        def create_team(team_id: uuid.UUID, user_id: uuid.UUID) -> Callable[[], Any]:
-            weather_man = AssistantAgent(
+        def create_team(team_id: uuid.UUID, user_id: uuid.UUID) -> Callable[[str], Any]:
+            weather_man = autogen.agentchat.AssistantAgent(
                 name="weather_man",
                 system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
                 llm_config=llm_config,
             )
 
-            user_proxy = UserProxyAgent(
+            user_proxy = autogen.agentchat.UserProxyAgent(
                 "user_proxy",
             )
 
@@ -136,7 +144,7 @@ class TestAutogen:
                 get_forecast_for_city_mock(city)
                 return f"The weather in {city} is sunny today."
 
-            def initiate_chat() -> Any:
+            def initiate_chat(msg: str) -> Any:
                 chat_result = weather_man.initiate_chat(
                     recipient=user_proxy,
                     message="Hi! Tell me the city for which you want the weather forecast.",
@@ -205,3 +213,148 @@ class TestAutogen:
                 assert (
                     expected[i]["msg"] in actual[i]["msg"]
                 ), f"{actual[i]} != {expected[i]}"
+
+    @pytest.mark.azure_oai()
+    @pytest.mark.nats()
+    @pytest.mark.db()
+    @pytest.mark.asyncio()
+    @pytest.mark.parametrize(
+        "llm_model,api_key_model",  # noqa: PT006
+        [
+            (AzureOAI, AzureOAIAPIKey),
+        ],
+    )
+    async def test_ionats_e2e(
+        self,
+        user_uuid: str,
+        llm_model: Model,
+        api_key_model: Model,
+        llm_config: Dict[str, Any],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        thread_id = uuid.uuid4()
+
+        # Add secret, llm, agent, team to database
+        api_key = api_key_model(  # type: ignore [operator]
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            name="api_key_model_name",
+        )
+        api_key_model_uuid = str(uuid.uuid4())
+        await add_model(
+            user_uuid=user_uuid,
+            type_name="secret",
+            model_name=api_key_model.__name__,  # type: ignore [attr-defined]
+            model_uuid=api_key_model_uuid,
+            model=api_key.model_dump(),
+        )
+
+        llm = llm_model(  # type: ignore [operator]
+            name="llm_model_name",
+            model=os.getenv("AZURE_GPT35_MODEL"),
+            api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
+            base_url=os.getenv("AZURE_API_ENDPOINT"),
+            api_version=os.getenv("AZURE_API_VERSION"),
+        )
+        llm_model_uuid = str(uuid.uuid4())
+        await add_model(
+            user_uuid=user_uuid,
+            type_name="llm",
+            model_name=llm_model.__name__,  # type: ignore [attr-defined]
+            model_uuid=llm_model_uuid,
+            model=llm.model_dump(),
+        )
+
+        weatherman_assistant_model = AssistantAgent(
+            llm=llm.get_reference_model()(uuid=llm_model_uuid),
+            name="Assistant",
+            system_message="test system message",
+        )
+        weatherman_assistant_model_uuid = str(uuid.uuid4())
+        await add_model(
+            user_uuid=user_uuid,
+            type_name="agent",
+            model_name=AssistantAgent.__name__,
+            model_uuid=weatherman_assistant_model_uuid,
+            model=weatherman_assistant_model.model_dump(),
+        )
+
+        user_proxy_model = UserProxyAgent(
+            name="UserProxyAgent",
+            llm=llm.get_reference_model()(uuid=llm_model_uuid),
+        )
+        user_proxy_model_uuid = str(uuid.uuid4())
+        await add_model(
+            user_uuid=user_uuid,
+            type_name="agent",
+            model_name=UserProxyAgent.__name__,
+            model_uuid=user_proxy_model_uuid,
+            model=user_proxy_model.model_dump(),
+        )
+
+        team_model_uuid = str(uuid.uuid4())
+        initial_agent = weatherman_assistant_model.get_reference_model()(
+            uuid=weatherman_assistant_model_uuid
+        )
+        secondary_agent = user_proxy_model.get_reference_model()(
+            uuid=user_proxy_model_uuid
+        )
+        team = TwoAgentTeam(
+            name="TwoAgentTeam",
+            initial_agent=initial_agent,
+            secondary_agent=secondary_agent,
+        )
+        await add_model(
+            user_uuid=user_uuid,
+            type_name="team",
+            model_name=TwoAgentTeam.__name__,
+            model_uuid=team_model_uuid,
+            model=team.model_dump(),
+        )
+
+        ### begin sending inputs to server
+
+        d = {"count": 0}
+
+        def input(prompt: str, d: Dict[str, int] = d) -> str:
+            d["count"] += 1
+            if d["count"] == 1:
+                return f"[{datetime.now()}] What's the weather in New York today?"
+            elif d["count"] == 2:
+                return ""
+            else:
+                return "exit"
+
+        @broker.subscriber(f"chat.client.input.{thread_id}", stream=stream)
+        async def client_input_handler(msg: InputRequestModel) -> None:
+            response = InputResponseModel(msg=input(msg.prompt))
+
+            await broker.publish(response, subject=f"chat.server.input.{thread_id}")
+
+        ### end sending inputs to server
+
+        ### begin reading print from server
+
+        # msg_queue: asyncio.Queue = asyncio.Queue()
+        actual = []
+
+        @broker.subscriber(f"chat.client.print.{thread_id}", stream=stream)
+        async def print_handler(msg: Dict[str, Any]) -> None:
+            # print(f"{msg=}")
+            actual.append(msg)
+
+        ### end reading print from server
+
+        async with TestNatsBroker(broker) as br:
+            await br.publish(
+                fastagency.io.ionats.InitiateModel(
+                    msg="exit",
+                    thread_id=thread_id,
+                    team_id=team_model_uuid,
+                    user_id=user_uuid,
+                ),
+                subject="chat.server.initiate_chat",
+            )
+
+            print(f"{actual=}")  # noqa
+
+            assert isinstance(actual, list)

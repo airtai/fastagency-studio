@@ -11,6 +11,9 @@ from faststream.nats import NatsMessage
 from nats.js import api
 from pydantic import BaseModel
 
+from ..db.helpers import find_model_using_raw
+from ..models.teams.multi_agent_team import MultiAgentTeam
+from ..models.teams.two_agent_teams import TwoAgentTeam
 from .app import app, broker, stream  # noqa
 
 
@@ -123,7 +126,19 @@ class InitiateModel(BaseModel):
 
 # patch this is tests
 def create_team(team_id: UUID, user_id: UUID) -> Callable[[], Any]:
-    raise NotImplementedError
+    team_dict = syncify(find_model_using_raw)(team_id, user_id)
+
+    team_model: Union[TwoAgentTeam, MultiAgentTeam]
+    if "initial_agent" in team_dict["json_str"]:
+        team_model = TwoAgentTeam(**team_dict["json_str"])
+    elif "agent_1" in team_dict["json_str"]:
+        team_model = MultiAgentTeam(**team_dict["json_str"])
+    else:
+        raise ValueError(f"Unknown team model {team_dict['json_str']}")
+
+    autogen_team = team_model.create_autogen(team_id, user_id)
+
+    return autogen_team.initiate_chat  # type: ignore[no-any-return]
 
 
 @broker.subscriber(

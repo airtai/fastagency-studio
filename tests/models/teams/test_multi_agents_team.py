@@ -271,6 +271,7 @@ class TestMultiAgentTeam:
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
+    @pytest.mark.parametrize("enable_monkeypatch", [True, False])
     @pytest.mark.parametrize(
         "llm_model,api_key_model",  # noqa: PT006
         [
@@ -279,6 +280,7 @@ class TestMultiAgentTeam:
     )
     async def test_multi_agent_team_autogen(
         self,
+        enable_monkeypatch: bool,
         llm_model: Model,
         api_key_model: Model,
         llm_config: Dict[str, Any],
@@ -382,17 +384,18 @@ class TestMultiAgentTeam:
             get_forecast_for_city_mock(city)
             return f"The weather in {city} is sunny today."
 
-        monkeypatch.setattr(
-            AssistantAgent,
-            "create_autogen",
-            lambda cls, model_id, user_id: weatherman_agent_1,
-        )
+        if enable_monkeypatch:
+            monkeypatch.setattr(
+                AssistantAgent,
+                "create_autogen",
+                lambda cls, model_id, user_id: weatherman_agent_1,
+            )
 
-        monkeypatch.setattr(
-            UserProxyAgent,
-            "create_autogen",
-            lambda cls, model_id, user_id: user_proxy_agent,
-        )
+            monkeypatch.setattr(
+                UserProxyAgent,
+                "create_autogen",
+                lambda cls, model_id, user_id: user_proxy_agent,
+            )
 
         team = await asyncify(MultiAgentTeam.create_autogen)(
             model_id=uuid.UUID(team_model_uuid), user_id=uuid.UUID(user_uuid)
@@ -419,5 +422,9 @@ class TestMultiAgentTeam:
 
         last_message = chat_result.chat_history[-1]
 
-        get_forecast_for_city_mock.assert_called_once_with("New York")
-        assert "sunny" in last_message["content"]
+        if enable_monkeypatch:
+            get_forecast_for_city_mock.assert_called_once_with("New York")
+            assert "sunny" in last_message["content"]
+        else:
+            assert "sunny" not in last_message["content"]
+            assert "weather" in last_message["content"]

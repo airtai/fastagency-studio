@@ -226,6 +226,7 @@ class TestTwoAgentTeam:
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
+    @pytest.mark.parametrize("enable_monkeypatch", [True, False])
     @pytest.mark.parametrize(
         "llm_model,api_key_model",  # noqa: PT006
         [
@@ -234,6 +235,7 @@ class TestTwoAgentTeam:
     )
     async def test_two_agent_team_autogen(
         self,
+        enable_monkeypatch: bool,
         llm_model: Model,
         api_key_model: Model,
         llm_config: Dict[str, Any],
@@ -338,16 +340,17 @@ class TestTwoAgentTeam:
             get_forecast_for_city_mock(city)
             return f"The weather in {city} is sunny today."
 
-        monkeypatch.setattr(
-            AssistantAgent,
-            "create_autogen",
-            lambda cls, model_id, user_id: weatherman_agent,
-        )
-        monkeypatch.setattr(
-            UserProxyAgent,
-            "create_autogen",
-            lambda cls, model_id, user_id: user_proxy_agent,
-        )
+        if enable_monkeypatch:
+            monkeypatch.setattr(
+                AssistantAgent,
+                "create_autogen",
+                lambda cls, model_id, user_id: weatherman_agent,
+            )
+            monkeypatch.setattr(
+                UserProxyAgent,
+                "create_autogen",
+                lambda cls, model_id, user_id: user_proxy_agent,
+            )
 
         team = await asyncify(TwoAgentTeam.create_autogen)(
             model_id=uuid.UUID(team_model_uuid), user_id=uuid.UUID(user_uuid)
@@ -374,36 +377,9 @@ class TestTwoAgentTeam:
 
         last_message = chat_result.chat_history[-1]
 
-        get_forecast_for_city_mock.assert_called_once_with("New York")
-        assert "sunny" in last_message["content"]
-
-        # llm_uuid = uuid.uuid4()
-        # llm = llm_model.get_reference_model()(uuid=llm_uuid)
-
-        # summarizer_llm_uuid = uuid.uuid4()
-        # summarizer_llm = llm_model.get_reference_model()(uuid=summarizer_llm_uuid)
-
-        # assistant = AssistantAgent(
-        #     llm=llm, name="Assistant", system_message="test system message"
-        # )
-        # web_surfer = WebSurferAgent(
-        #     name="WebSurfer", llm=llm, summarizer_llm=summarizer_llm
-        # )
-
-        # assistant_uuid = uuid.uuid4()
-        # assistant_ref = assistant.get_reference_model()(uuid=assistant_uuid)
-        # web_surfer_uuid = uuid.uuid4()
-        # web_surfer_ref = web_surfer.get_reference_model()(uuid=web_surfer_uuid)
-
-        # team = TwoAgentTeam(
-        #     name="TwoAgentTeam",
-        #     initial_agent=assistant_ref,
-        #     secondary_agent=web_surfer_ref,
-        # )
-
-        # team_json = team.model_dump_json()
-        # assert team_json is not None
-
-        # validated_team = TwoAgentTeam.model_validate_json(team_json)
-        # assert validated_team is not None
-        # assert validated_team == team
+        if enable_monkeypatch:
+            get_forecast_for_city_mock.assert_called_once_with("New York")
+            assert "sunny" in last_message["content"]
+        else:
+            assert "sunny" not in last_message["content"]
+            assert "weather" in last_message["content"]

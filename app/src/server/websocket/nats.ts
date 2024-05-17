@@ -93,6 +93,7 @@ export async function sendMsgToNatsServer(
   context: any,
   currentChatDetails: any,
   selectedTeamUUID: string,
+  userUUID: string,
   message: string,
   conversationId: number,
   shouldCallInitiateChat: boolean
@@ -112,8 +113,12 @@ export async function sendMsgToNatsServer(
     console.log('------');
     console.log('Publishing to subject: ', subject);
     console.log('Message: ', message);
+    console.log('userUUID ', userUUID);
     console.log('------');
-    await js.publish(subject, jc.encode({ thread_id: threadId, team_id: selectedTeamUUID, msg: message }));
+    await js.publish(
+      subject,
+      jc.encode({ user_id: userUUID, thread_id: threadId, team_id: selectedTeamUUID, msg: message })
+    );
 
     if (shouldCallInitiateChat) {
       // Subscribe logic should be called only once for a thread
@@ -163,6 +168,10 @@ async function setupSubscription(
       const isClientInputSubject = `chat.client.input.${threadId}` === subject;
       const isTerminateSubject = `chat.server.terminate_chat.${threadId}` === subject;
       const isClientInputOrTerminateSubject = isClientInputSubject || isTerminateSubject;
+      console.log('-----------');
+      console.log('Received message from subject: ', subject);
+      console.log('Message: ', message);
+      console.log('-----------');
       if (isClientInputOrTerminateSubject) {
         const conversationId = NatsConnectionManager.getConversationId(threadId);
         try {

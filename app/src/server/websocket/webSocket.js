@@ -55,6 +55,7 @@ export const socketFn = (io, context) => {
   io.on('connection', async (socket) => {
     if (socket.data.user) {
       const userEmail = socket.data.user.email;
+      const userUUID = socket.data.user.uuid;
       console.log('========');
       console.log('a user connected: ', userEmail);
 
@@ -91,6 +92,7 @@ export const socketFn = (io, context) => {
             context,
             currentChatDetails,
             selectedTeamUUID,
+            userUUID,
             message,
             conversationId,
             shouldCallInitiateChat

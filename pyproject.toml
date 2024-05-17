@@ -52,6 +52,7 @@ dependencies = [
     "prisma>=0.13.1,<0.14",
     "fastapi-code-generator==0.5.0",
     "asyncer==0.0.7",
+    "markdownify==0.12.1", # Needed by autogen.WebSurferAgent but not included
 ]
 
 [project.optional-dependencies]

@@ -54,18 +54,18 @@ class TestUserProxyAgent:
             model=llm.model_dump(),
         )
 
-        weatherman_assistant_model = UserProxyAgent(
+        user_proxy_model = UserProxyAgent(
             llm=llm.get_reference_model()(uuid=llm_model_uuid),
             name="Assistant",
             system_message="test system message",
         )
-        weatherman_assistant_model_uuid = str(uuid.uuid4())
+        user_proxy_model_uuid = str(uuid.uuid4())
         await add_model(
             user_uuid=user_uuid,
             type_name="agent",
             model_name=UserProxyAgent.__name__,
-            model_uuid=weatherman_assistant_model_uuid,
-            model=weatherman_assistant_model.model_dump(),
+            model_uuid=user_proxy_model_uuid,
+            model=user_proxy_model.model_dump(),
         )
 
         # Monkeypatch llm and call create_autogen
@@ -73,7 +73,7 @@ class TestUserProxyAgent:
             AzureOAI, "create_autogen", lambda cls, model_id, user_id: llm_config
         )
         agent = await asyncify(UserProxyAgent.create_autogen)(
-            model_id=uuid.UUID(weatherman_assistant_model_uuid),
+            model_id=uuid.UUID(user_proxy_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )
         assert isinstance(agent, autogen.agentchat.UserProxyAgent)

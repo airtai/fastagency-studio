@@ -1,5 +1,6 @@
 import os
 import time
+import traceback
 from queue import Queue
 from typing import Any, Callable, Dict, List, Union
 from uuid import UUID
@@ -156,20 +157,24 @@ async def initiate_handler(
         f"Received a message in subject 'chat.server.initiate_chat': {body=} -> from process id {os.getpid()}"
     )
 
-    iostream = await IONats.create(body.thread_id)
+    try:
+        iostream = await IONats.create(body.thread_id)
 
-    def start_chat() -> List[Dict[str, Any]]:
-        terminate_chat_subject = f"chat.server.terminate_chat.{body.thread_id}"
-        terminate_chat_msg = {"msg": "Chat completed."}
+        def start_chat() -> List[Dict[str, Any]]:
+            terminate_chat_subject = f"chat.server.terminate_chat.{body.thread_id}"
+            terminate_chat_msg = {"msg": "Chat completed."}
 
-        with IOStream.set_default(iostream):
-            initiate_chat = create_team(team_id=body.team_id, user_id=body.user_id)
-            chat_result = initiate_chat(body.msg)
+            with IOStream.set_default(iostream):
+                initiate_chat = create_team(team_id=body.team_id, user_id=body.user_id)
+                chat_result = initiate_chat(body.msg)
 
-            syncify(broker.publish)(terminate_chat_msg, terminate_chat_subject)  # type: ignore [arg-type]
+                syncify(broker.publish)(terminate_chat_msg, terminate_chat_subject)  # type: ignore [arg-type]
 
-            return chat_result
+                return chat_result
 
-    async_start_chat = asyncify(start_chat)
-    async with create_task_group() as tg:
-        tg.soonify(async_start_chat)()
+        async_start_chat = asyncify(start_chat)
+        async with create_task_group() as tg:
+            tg.soonify(async_start_chat)()
+    except Exception as e:
+        logger.error(f"Error in handling initiate chat: {e}")
+        logger.error(traceback.format_exc())

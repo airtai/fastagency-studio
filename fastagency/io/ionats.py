@@ -1,7 +1,7 @@
 import os
 import time
 from queue import Queue
-from typing import Any, Callable, Union
+from typing import Any, Callable, Dict, List, Union
 from uuid import UUID
 
 from asyncer import asyncify, syncify
@@ -125,7 +125,7 @@ class InitiateModel(BaseModel):
 
 
 # patch this is tests
-def create_team(team_id: UUID, user_id: UUID) -> Callable[[str], Any]:
+def create_team(team_id: UUID, user_id: UUID) -> Callable[[str], List[Dict[str, Any]]]:
     team_dict = syncify(find_model_using_raw)(team_id, user_id)
 
     team_model: Union[TwoAgentTeam, MultiAgentTeam]
@@ -158,9 +158,16 @@ async def initiate_handler(
 
     iostream = await IONats.create(body.thread_id)
 
-    def start_chat() -> Any:
+    def start_chat() -> List[Dict[str, Any]]:
+        terminate_chat_subject = f"chat.server.terminate_chat.{body.thread_id}"
+        terminate_chat_msg = {"msg": "Chat completed."}
+
         with IOStream.set_default(iostream):
             initiate_chat = create_team(team_id=body.team_id, user_id=body.user_id)
-            return initiate_chat(body.msg)
+            chat_result = initiate_chat(body.msg)
+
+            syncify(broker.publish)(terminate_chat_msg, terminate_chat_subject)  # type: ignore [arg-type]
+
+            return chat_result
 
     await asyncify(start_chat)()

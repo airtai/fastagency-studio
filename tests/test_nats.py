@@ -1,8 +1,9 @@
+import asyncio
 import json
 import os
 import uuid
 from datetime import datetime
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, List
 from unittest.mock import MagicMock
 
 # from autogen.agentchat import AssistantAgent, UserProxyAgent
@@ -85,7 +86,7 @@ class TestAutogen:
     @pytest.mark.azure_oai()
     @pytest.mark.nats()
     @pytest.mark.asyncio()
-    async def test_ionats(
+    async def test_ionats(  # noqa: C901
         self, llm_config: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
     ) -> None:
         user_id = uuid.uuid4()
@@ -125,9 +126,21 @@ class TestAutogen:
 
         ### end reading print from server
 
+        ### begin reading terminate_chat from server
+
+        terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
+
+        @broker.subscriber(f"chat.server.terminate_chat.{thread_id}", stream=stream)
+        async def terminate_chat_handler(msg: Dict[str, Any]) -> None:
+            await terminate_chat_queue.put(msg)
+
+        ### end reading terminate_chat from server
+
         get_forecast_for_city_mock = MagicMock()
 
-        def create_team(team_id: uuid.UUID, user_id: uuid.UUID) -> Callable[[str], Any]:
+        def create_team(
+            team_id: uuid.UUID, user_id: uuid.UUID
+        ) -> Callable[[str], List[Dict[str, Any]]]:
             weather_man = autogen.agentchat.AssistantAgent(
                 name="weather_man",
                 system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
@@ -144,8 +157,8 @@ class TestAutogen:
                 get_forecast_for_city_mock(city)
                 return f"The weather in {city} is sunny today."
 
-            def initiate_chat(msg: str) -> Any:
-                chat_result = weather_man.initiate_chat(
+            def initiate_chat(msg: str) -> List[Dict[str, Any]]:
+                chat_result: List[Dict[str, Any]] = weather_man.initiate_chat(
                     recipient=user_proxy,
                     message="Hi! Tell me the city for which you want the weather forecast.",
                 )
@@ -213,6 +226,13 @@ class TestAutogen:
                 assert (
                     expected[i]["msg"] in actual[i]["msg"]
                 ), f"{actual[i]} != {expected[i]}"
+
+            result_set, _ = await asyncio.wait(
+                (asyncio.create_task(terminate_chat_queue.get()),),
+                timeout=30,
+            )
+            result = (result_set.pop()).result()
+            assert result == {"msg": "Chat completed."}
 
     @pytest.mark.azure_oai()
     @pytest.mark.nats()
@@ -344,6 +364,16 @@ class TestAutogen:
 
         ### end reading print from server
 
+        ### begin reading terminate_chat from server
+
+        terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
+
+        @broker.subscriber(f"chat.server.terminate_chat.{thread_id}", stream=stream)
+        async def terminate_chat_handler(msg: Dict[str, Any]) -> None:
+            await terminate_chat_queue.put(msg)
+
+        ### end reading terminate_chat from server
+
         async with TestNatsBroker(broker) as br:
             await br.publish(
                 fastagency.io.ionats.InitiateModel(
@@ -358,3 +388,10 @@ class TestAutogen:
             print(f"{actual=}")  # noqa
 
             assert isinstance(actual, list)
+
+            result_set, _ = await asyncio.wait(
+                (asyncio.create_task(terminate_chat_queue.get()),),
+                timeout=30,
+            )
+            result = (result_set.pop()).result()
+            assert result == {"msg": "Chat completed."}

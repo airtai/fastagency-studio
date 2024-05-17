@@ -144,12 +144,13 @@ async function setupSubscription(
       const jm = jc.decode(m.data);
       const message = jm.msg || jm.prompt;
       const conversationHistory = NatsConnectionManager.getConversationHistory(threadId);
+      console.log('-------');
+      console.log('Received message from NATS server for subject: ', subject);
+      console.log('-------');
       if (isInput) {
         const conversationId = NatsConnectionManager.getConversationId(threadId);
-        const hardCodedMessage =
-          'Provide feedback to weather_man. Choose from the options listed below or enter your own responses in the input field provided.';
         try {
-          await updateDB(context, currentChatDetails.id, hardCodedMessage, conversationId, conversationHistory, false);
+          await updateDB(context, currentChatDetails.id, message, conversationId, conversationHistory, false);
           socket.emit('streamFromTeamFinished');
         } catch (err) {
           console.error(`DB Update failed: ${err}`);

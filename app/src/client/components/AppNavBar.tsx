@@ -43,7 +43,7 @@ export default function AppNavBar() {
         </div>
         <div className='hidden lg:flex lg:gap-x-12'>
           {navigation.map((item) => {
-            const windowLocation = window.location.pathname.split('/').pop();
+            const windowLocation = window.location.pathname.split('/')[1];
             const isCurrentPage = windowLocation === item.name.toLowerCase();
 
             return (
@@ -87,7 +87,7 @@ export default function AppNavBar() {
             </a>
             <button
               type='button'
-              className='-m-2.5 rounded-md p-2.5 text-airt-font-base dark:text-gray-50'
+              className='-m-2.5 rounded-md p-2.5 text-airt-primary dark:text-gray-50'
               onClick={() => setMobileMenuOpen(false)}
             >
               <span className='sr-only'>Close menu</span>
@@ -98,7 +98,7 @@ export default function AppNavBar() {
             <div className='-my-6 divide-y divide-airt-font-base'>
               <div className='space-y-2 py-6'>
                 {navigation.map((item) => {
-                  const windowLocation = window.location.pathname.split('/').pop();
+                  const windowLocation = window.location.pathname.split('/')[1];
                   const isCurrentPage = windowLocation === item.name.toLowerCase();
 
                   return (

@@ -16,6 +16,7 @@ import {
   removeRefSuffix,
   getAllRefs,
   checkForDependency,
+  filterDataToValidate,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -1346,6 +1347,81 @@ describe('buildPageUtils', () => {
       const actual = checkForDependency(userPropertyData, allRefList);
       const expected: string[] = [];
       expect(_.isEqual(actual, expected)).toBe(true);
+    });
+  });
+
+  describe('filterDataToValidate', () => {
+    test('filterDataToValidate - with reference userPropertyData', () => {
+      const input = {
+        name: 'Test multiagent model',
+        termination_message_regex: '^TERMINATE$',
+        human_input_mode: 'ALWAYS',
+        agent_1: {
+          uuid: '385e2d0d-058d-4e54-8c8b-84e016aefa7d',
+          user_uuid: 'ff2bb5ec-c769-40f2-8613-b44d792cb690',
+          type_name: 'agent',
+          model_name: 'AssistantAgent',
+          json_str: {
+            llm: { name: 'AzureOAI', type: 'llm', uuid: '4ca5253f-cc82-4b99-9194-9d49e5666e7a' },
+            name: 'Dev Weather man agent',
+            system_message:
+              'You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.',
+          },
+          created_at: '2024-05-17T10:30:50.090000Z',
+          updated_at: '2024-05-17T10:30:50.090000Z',
+        },
+        agent_2: {
+          uuid: '639c0c2d-ce91-49ef-8d07-ebb60ff7ff0a',
+          user_uuid: 'ff2bb5ec-c769-40f2-8613-b44d792cb690',
+          type_name: 'agent',
+          model_name: 'UserProxyAgent',
+          json_str: {
+            llm: { name: 'AzureOAI', type: 'llm', uuid: '4ca5253f-cc82-4b99-9194-9d49e5666e7a' },
+            name: 'Dev userproxy agent',
+            max_consecutive_auto_reply: null,
+          },
+          created_at: '2024-05-17T10:31:15.345000Z',
+          updated_at: '2024-05-17T10:31:15.345000Z',
+        },
+        uuid: 'd17cc5ee-ea53-4c09-bc63-85cdf0d63546',
+        type_name: 'team',
+        model_name: 'MultiAgentTeam',
+      };
+      const expected = {
+        name: 'Test multiagent model',
+        termination_message_regex: '^TERMINATE$',
+        human_input_mode: 'ALWAYS',
+        agent_1: { uuid: '385e2d0d-058d-4e54-8c8b-84e016aefa7d', type: 'agent', name: 'AssistantAgent' },
+        agent_2: { uuid: '639c0c2d-ce91-49ef-8d07-ebb60ff7ff0a', type: 'agent', name: 'UserProxyAgent' },
+        uuid: 'd17cc5ee-ea53-4c09-bc63-85cdf0d63546',
+        type_name: 'team',
+        model_name: 'MultiAgentTeam',
+      };
+
+      const actual = filterDataToValidate(input);
+      expect(actual).toEqual(expected);
+    });
+
+    test('filterDataToValidate - without reference userPropertyData', () => {
+      const input = {
+        name: 'Test multiagent model',
+        termination_message_regex: '^TERMINATE$',
+        human_input_mode: 'ALWAYS',
+        uuid: 'd17cc5ee-ea53-4c09-bc63-85cdf0d63546',
+        type_name: 'team',
+        model_name: 'MultiAgentTeam',
+      };
+      const expected = {
+        name: 'Test multiagent model',
+        termination_message_regex: '^TERMINATE$',
+        human_input_mode: 'ALWAYS',
+        uuid: 'd17cc5ee-ea53-4c09-bc63-85cdf0d63546',
+        type_name: 'team',
+        model_name: 'MultiAgentTeam',
+      };
+
+      const actual = filterDataToValidate(input);
+      expect(actual).toEqual(expected);
     });
   });
 });

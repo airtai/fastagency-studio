@@ -109,14 +109,20 @@ export async function sendMsgToNatsServer(
     const subject = shouldCallInitiateChat ? initiateChatSubject : serverInputSubject;
 
     NatsConnectionManager.clearConversationHistory(threadId);
+    console.log('------');
+    console.log('Publishing to subject: ', subject);
+    console.log('Message: ', message);
+    console.log('------');
     await js.publish(subject, jc.encode({ thread_id: threadId, team_id: selectedTeamUUID, msg: message }));
 
     if (shouldCallInitiateChat) {
       // Subscribe logic should be called only once for a thread
       const clientPrintSubject = `chat.client.print.${threadId}`;
       const clientInputSubject = `chat.client.input.${threadId}`;
+      const terminateChatSubject = `chat.server.terminate_chat.${threadId}`;
       await setupSubscription(js, jc, clientPrintSubject, threadId, socket);
-      await setupSubscription(js, jc, clientInputSubject, threadId, socket, true, context, currentChatDetails);
+      await setupSubscription(js, jc, clientInputSubject, threadId, socket, context, currentChatDetails);
+      await setupSubscription(js, jc, terminateChatSubject, threadId, socket, context, currentChatDetails);
     } else {
       NatsConnectionManager.setConversationId(threadId, conversationId);
     }
@@ -131,26 +137,47 @@ async function setupSubscription(
   subject: string,
   threadId: string,
   socket: any,
-  isInput: boolean = false,
   context?: any,
   currentChatDetails?: any
 ) {
   const opts = consumerOpts();
   opts.orderedConsumer();
-  const sub = await js.subscribe(subject, opts);
+  let sub = null;
+  try {
+    sub = await js.subscribe(subject, opts);
+    console.log('-----------');
+    console.log('Subscribed to subject: ', subject);
+    console.log('-----------');
+  } catch (err) {
+    console.error(`Error in subscribe for ${subject}: ${err}`);
+  }
+  if (!sub) {
+    return;
+  }
   NatsConnectionManager.addSubscription(threadId, subject, sub as Subscription);
   (async () => {
     for await (const m of sub) {
       const jm = jc.decode(m.data);
       const message = jm.msg || jm.prompt;
       const conversationHistory = NatsConnectionManager.getConversationHistory(threadId);
-      console.log('-------');
-      console.log('Received message from NATS server for subject: ', subject);
-      console.log('-------');
-      if (isInput) {
+      const isClientInputSubject = `chat.client.input.${threadId}` === subject;
+      const isTerminateSubject = `chat.server.terminate_chat.${threadId}` === subject;
+      const isClientInputOrTerminateSubject = isClientInputSubject || isTerminateSubject;
+      if (isClientInputOrTerminateSubject) {
         const conversationId = NatsConnectionManager.getConversationId(threadId);
         try {
-          await updateDB(context, currentChatDetails.id, message, conversationId, conversationHistory, false);
+          await updateDB(
+            context,
+            currentChatDetails.id,
+            message,
+            conversationId,
+            conversationHistory,
+            isTerminateSubject
+          );
+          if (isTerminateSubject) {
+            console.log('Terminating chat and cleaning up NATS connection and subscriptions.');
+            NatsConnectionManager.cleanup(threadId);
+          }
           socket.emit('streamFromTeamFinished');
         } catch (err) {
           console.error(`DB Update failed: ${err}`);

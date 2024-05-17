@@ -12,14 +12,7 @@ async function getChat(chatId, context) {
   });
 }
 
-export async function updateDB(
-  context,
-  chatId,
-  message,
-  conversationId,
-  socketConversationHistory,
-  isExceptionOccured
-) {
+export async function updateDB(context, chatId, message, conversationId, socketConversationHistory, isChatTerminated) {
   let obj = {};
   try {
     const jsonString = message.replace(/True/g, true).replace(/False/g, false);
@@ -38,12 +31,12 @@ export async function updateDB(
     },
   });
 
-  const smart_suggestions = isExceptionOccured
-    ? {
-        suggestions: ["Let's try again"],
-        type: 'oneOf',
-      }
-    : obj.smart_suggestions;
+  // const smart_suggestions = isExceptionOccured
+  //   ? {
+  //       suggestions: ["Let's try again"],
+  //       type: 'oneOf',
+  //     }
+  //   : obj.smart_suggestions;
 
   await context.entities.Chat.update({
     where: {
@@ -51,8 +44,8 @@ export async function updateDB(
     },
     data: {
       team_status: 'completed',
-      smartSuggestions: smart_suggestions,
-      isExceptionOccured: isExceptionOccured,
+      // smartSuggestions: smart_suggestions,
+      isChatTerminated: isChatTerminated,
     },
   });
 }

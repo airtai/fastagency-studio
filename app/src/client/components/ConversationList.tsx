@@ -141,20 +141,22 @@ export default function ConversationsList({
                       ) : (
                         <Markdown>{conversation.message}</Markdown>
                       )}
-                      <div className='flex'>
-                        <button
-                          className='bg-airt-secondary text-airt-primary hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 inline-block whitespace-nowrap'
-                          onClick={() => handleFormSubmit('')}
-                        >
-                          Auto reply
-                        </button>
-                        <button
-                          className='bg-airt-secondary text-airt-primary hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 inline-block whitespace-nowrap ml-2'
-                          onClick={() => handleFormSubmit('exit')}
-                        >
-                          Exit
-                        </button>
-                      </div>
+                      {!currentChatDetails.isChatTerminated && (
+                        <div className='flex'>
+                          <button
+                            className='bg-airt-secondary text-airt-primary hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 inline-block whitespace-nowrap'
+                            onClick={() => handleFormSubmit('')}
+                          >
+                            Auto reply
+                          </button>
+                          <button
+                            className='bg-airt-secondary text-airt-primary hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 inline-block whitespace-nowrap ml-2'
+                            onClick={() => handleFormSubmit('exit')}
+                          >
+                            Exit
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 

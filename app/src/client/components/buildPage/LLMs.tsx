@@ -9,7 +9,7 @@ const LLMs = ({ data }: SecretsProps) => {
       <CustomBreadcrumb pageName='LLMs' />
       <div className='flex flex-col gap-10'>
         <div className='flex flex-col gap-4'>
-          <div className='rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[600px]'>
+          <div className='rounded-lg border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[600px]'>
             <UserPropertyHandler data={data} />
           </div>
         </div>

@@ -203,3 +203,20 @@ export function checkForDependency(userPropertyData: object[], allRefList: strin
   }
   return [];
 }
+
+type dataObject = {
+  uuid: string;
+  type_name: string;
+  model_name: string;
+};
+
+type filterDataToValidateType = {
+  uuid: string;
+  [key: string]: string | dataObject;
+};
+
+export function filterDataToValidate(data: filterDataToValidateType): filterDataToValidateType {
+  return _.mapValues(data, function (o: string | dataObject) {
+    return typeof o === 'object' ? { uuid: o.uuid, type: o.type_name, name: o.model_name } : o;
+  });
+}

@@ -31,6 +31,7 @@ describe('ChatForm', () => {
       name: '',
       isChatNameUpdated: false,
       selectedTeam: '',
+      isChatTerminated: false,
     };
     const triggerChatFormSubmitMsg = 'Test message';
 
@@ -69,6 +70,7 @@ describe('ChatForm', () => {
       name: '',
       isChatNameUpdated: false,
       selectedTeam: '',
+      isChatTerminated: false,
     };
 
     renderInContext(

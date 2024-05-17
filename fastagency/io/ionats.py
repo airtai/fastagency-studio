@@ -4,7 +4,7 @@ from queue import Queue
 from typing import Any, Callable, Dict, List, Union
 from uuid import UUID
 
-from asyncer import asyncify, syncify
+from asyncer import asyncify, create_task_group, syncify
 from autogen.io.base import IOStream
 from faststream import Logger
 from faststream.nats import NatsMessage
@@ -170,4 +170,6 @@ async def initiate_handler(
 
             return chat_result
 
-    await asyncify(start_chat)()
+    async_start_chat = asyncify(start_chat)
+    async with create_task_group() as tg:
+        tg.soonify(async_start_chat)()

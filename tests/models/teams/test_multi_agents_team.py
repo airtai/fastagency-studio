@@ -285,7 +285,7 @@ class TestMultiAgentTeam:
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        # Add secret, llm, agent to database
+        # Add secret, llm, agent, team to database
         api_key = api_key_model(  # type: ignore [operator]
             api_key=os.getenv("AZURE_OPENAI_API_KEY"),
             name="api_key_model_name",

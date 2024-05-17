@@ -2,7 +2,7 @@ import os
 import time
 import traceback
 from queue import Queue
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Literal, Union
 from uuid import UUID
 
 from asyncer import asyncify, create_task_group, syncify
@@ -31,6 +31,18 @@ class InputResponseModel(BaseModel):
     msg: str
 
 
+class TerminateModel(BaseModel):
+    msg: str = "Chat completed."
+
+
+TYPE_LITERAL = Literal["input", "print", "terminate"]
+
+
+class ServerResponseModel(BaseModel):
+    data: Union[InputRequestModel, PrintModel, TerminateModel]
+    type: TYPE_LITERAL
+
+
 class IONats(IOStream):  # type: ignore[misc]
     def __init__(self, thread_id: str) -> None:
         """Initialize the IO class."""
@@ -38,9 +50,8 @@ class IONats(IOStream):  # type: ignore[misc]
         self._publisher = broker.publish
         self._thread_id = thread_id
 
-        self._input_request_subject = f"chat.client.input.{thread_id}"
-        self._input_receive_subject = f"chat.server.input.{thread_id}"
-        self._print_send_subject = f"chat.client.print.{thread_id}"
+        self._input_request_subject = f"chat.client.messages.{thread_id}"
+        self._input_receive_subject = f"chat.server.messages.{thread_id}"
 
     @classmethod
     async def create(cls, thread_id: Union[str, UUID]) -> "IONats":
@@ -74,9 +85,10 @@ class IONats(IOStream):  # type: ignore[misc]
         """
         xs = sep.join(map(str, objects)) + end
 
-        msg = PrintModel(msg=xs)
+        print_data = PrintModel(msg=xs)
+        msg = ServerResponseModel(data=print_data, type="print")
 
-        syncify(self._publisher)(msg, self._print_send_subject)
+        syncify(self._publisher)(msg, self._input_request_subject)
 
     def input(self, prompt: str = "", *, password: bool = False) -> str:
         """Read a line from the input stream.
@@ -90,7 +102,9 @@ class IONats(IOStream):  # type: ignore[misc]
 
         """
         # request a new input
-        input_request_msg = InputRequestModel(prompt=prompt, is_password=password)
+        input_request_data = InputRequestModel(prompt=prompt, is_password=password)
+        input_request_msg = ServerResponseModel(data=input_request_data, type="input")
+
         syncify(self._publisher)(input_request_msg, self._input_request_subject)
 
         # wait for the input to arrive and be propagated to queue
@@ -161,14 +175,18 @@ async def initiate_handler(
         iostream = await IONats.create(body.thread_id)
 
         def start_chat() -> List[Dict[str, Any]]:
-            terminate_chat_subject = f"chat.server.terminate_chat.{body.thread_id}"
-            terminate_chat_msg = {"msg": "Chat completed."}
+            terminate_data = TerminateModel()
+            terminate_chat_msg = ServerResponseModel(
+                data=terminate_data, type="terminate"
+            )
 
             with IOStream.set_default(iostream):
                 initiate_chat = create_team(team_id=body.team_id, user_id=body.user_id)
                 chat_result = initiate_chat(body.msg)
 
-                syncify(broker.publish)(terminate_chat_msg, terminate_chat_subject)  # type: ignore [arg-type]
+                syncify(broker.publish)(
+                    terminate_chat_msg, iostream._input_request_subject
+                )  # type: ignore [arg-type]
 
                 return chat_result
 

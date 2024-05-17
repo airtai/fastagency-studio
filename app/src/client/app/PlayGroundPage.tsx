@@ -17,6 +17,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import CustomAuthRequiredLayout from './layout/CustomAuthRequiredLayout';
 import ChatLayout from './layout/ChatLayout';
 import ConversationsList from '../components/ConversationList';
+import NotificationBox from '../components/NotificationBox';
 
 import {
   updateCurrentChatStatus,
@@ -38,6 +39,7 @@ const PlayGroundPage = ({ user }: { user: User }) => {
   const { pathname } = location;
   const history = useHistory();
   const queryParams = new URLSearchParams(location.search);
+  const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
 
   const uuidFromURL = pathname.split('/').pop();
   const activeChatUUId = uuidFromURL === 'chat' ? null : uuidFromURL;
@@ -93,6 +95,8 @@ const PlayGroundPage = ({ user }: { user: User }) => {
   ) => {
     if (currentChatDetails.userId !== user.id) {
       window.alert('Error: This chat does not belong to you.');
+    } else if (currentChatDetails.isChatTerminated) {
+      setNotificationErrorMessage('This chat has been completed. Please start a new chat.');
     } else {
       let inProgressConversation;
       try {
@@ -170,6 +174,10 @@ const PlayGroundPage = ({ user }: { user: User }) => {
       </div>
     );
   }
+
+  const notificationOnClick = () => {
+    setNotificationErrorMessage(null);
+  };
   return (
     <ChatLayout
       handleFormSubmit={handleFormSubmit}
@@ -202,6 +210,9 @@ const PlayGroundPage = ({ user }: { user: User }) => {
           </div>
         ) : (
           <SelectTeamToChat userTeams={userTeams} />
+        )}
+        {notificationErrorMessage && (
+          <NotificationBox type='error' onClick={notificationOnClick} message={notificationErrorMessage} />
         )}
       </div>
     </ChatLayout>

@@ -16,8 +16,8 @@ from pydantic import BaseModel
 import fastagency.io.ionats
 from fastagency.app import add_model
 from fastagency.io.ionats import (  # type: ignore [attr-defined]
-    InputRequestModel,
     InputResponseModel,
+    ServerResponseModel,
     broker,
     stream,
 )
@@ -106,35 +106,25 @@ class TestAutogen:
             else:
                 return "exit"
 
-        @broker.subscriber(f"chat.client.input.{thread_id}", stream=stream)
-        async def client_input_handler(msg: InputRequestModel) -> None:
-            response = InputResponseModel(msg=input(msg.prompt))
-
-            await broker.publish(response, subject=f"chat.server.input.{thread_id}")
-
-        ### end sending inputs to server
-
-        ### begin reading print from server
-
-        # msg_queue: asyncio.Queue = asyncio.Queue()
         actual = []
-
-        @broker.subscriber(f"chat.client.print.{thread_id}", stream=stream)
-        async def print_handler(msg: Dict[str, Any]) -> None:
-            # print(f"{msg=}")
-            actual.append(msg)
-
-        ### end reading print from server
-
-        ### begin reading terminate_chat from server
-
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(f"chat.server.terminate_chat.{thread_id}", stream=stream)
-        async def terminate_chat_handler(msg: Dict[str, Any]) -> None:
-            await terminate_chat_queue.put(msg)
+        @broker.subscriber(f"chat.client.messages.{thread_id}", stream=stream)
+        async def client_input_handler(msg: ServerResponseModel) -> None:
+            if msg.type == "input":
+                response = InputResponseModel(msg=input(msg.data.prompt))  # type: ignore [union-attr]
 
-        ### end reading terminate_chat from server
+                await broker.publish(
+                    response, subject=f"chat.server.messages.{thread_id}"
+                )
+            elif msg.type == "print":
+                actual.append(msg.data.model_dump())
+            elif msg.type == "terminate":
+                await terminate_chat_queue.put(msg.data.model_dump())
+            else:
+                raise ValueError(f"Unknown message type {msg.type}")
+
+        ### end sending inputs to server
 
         get_forecast_for_city_mock = MagicMock()
 
@@ -344,35 +334,25 @@ class TestAutogen:
             else:
                 return "exit"
 
-        @broker.subscriber(f"chat.client.input.{thread_id}", stream=stream)
-        async def client_input_handler(msg: InputRequestModel) -> None:
-            response = InputResponseModel(msg=input(msg.prompt))
-
-            await broker.publish(response, subject=f"chat.server.input.{thread_id}")
-
-        ### end sending inputs to server
-
-        ### begin reading print from server
-
-        # msg_queue: asyncio.Queue = asyncio.Queue()
         actual = []
-
-        @broker.subscriber(f"chat.client.print.{thread_id}", stream=stream)
-        async def print_handler(msg: Dict[str, Any]) -> None:
-            # print(f"{msg=}")
-            actual.append(msg)
-
-        ### end reading print from server
-
-        ### begin reading terminate_chat from server
-
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(f"chat.server.terminate_chat.{thread_id}", stream=stream)
-        async def terminate_chat_handler(msg: Dict[str, Any]) -> None:
-            await terminate_chat_queue.put(msg)
+        @broker.subscriber(f"chat.client.messages.{thread_id}", stream=stream)
+        async def client_input_handler(msg: ServerResponseModel) -> None:
+            if msg.type == "input":
+                response = InputResponseModel(msg=input(msg.data.prompt))  # type: ignore [union-attr]
 
-        ### end reading terminate_chat from server
+                await broker.publish(
+                    response, subject=f"chat.server.messages.{thread_id}"
+                )
+            elif msg.type == "print":
+                actual.append(msg.data.model_dump())
+            elif msg.type == "terminate":
+                await terminate_chat_queue.put(msg.data.model_dump())
+            else:
+                raise ValueError(f"Unknown message type {msg.type}")
+
+        ### end sending inputs to server
 
         async with TestNatsBroker(broker) as br:
             await br.publish(

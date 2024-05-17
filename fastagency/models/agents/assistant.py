@@ -5,8 +5,7 @@ import autogen
 from asyncer import syncify
 from pydantic import Field
 
-from fastagency.db.helpers import find_model_using_raw
-
+from ...db.helpers import find_model_using_raw
 from ..registry import register
 from .base import AgentBaseModel
 

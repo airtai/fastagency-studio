@@ -6,8 +6,7 @@ from asyncer import syncify
 from pydantic import Field
 from typing_extensions import TypeAlias
 
-from fastagency.db.helpers import find_model_using_raw
-
+from ...db.helpers import find_model_using_raw
 from ..base import Model
 from ..registry import register
 from .base import AgentBaseModel, llm_type_refs

@@ -5,8 +5,7 @@ from asyncer import syncify
 from autogen import GroupChat, GroupChatManager
 from pydantic import Field
 
-from fastagency.db.helpers import find_model_using_raw
-
+from ...db.helpers import find_model_using_raw
 from ..registry import Registry
 from .base import TeamBaseModel, agent_type_refs
 

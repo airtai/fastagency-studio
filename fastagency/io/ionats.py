@@ -123,7 +123,7 @@ class InitiateModel(BaseModel):
 
 
 # patch this is tests
-def create_team(team_id: UUID) -> Callable[[], Any]:
+def create_team(team_id: UUID, user_id: UUID, thread_id: UUID) -> Callable[[], Any]:
     api_key = os.getenv("AZURE_OPENAI_API_KEY")  # use France or Canada
     api_base = os.getenv("AZURE_API_ENDPOINT")
     gpt_3_5_model_name = os.getenv("AZURE_GPT35_MODEL")  # "gpt-35-turbo-16k"
@@ -166,6 +166,9 @@ def create_team(team_id: UUID) -> Callable[[], Any]:
             recipient=user_proxy,
             message="Hi! Tell me the city for which you want the weather forecast.",
         )
+        terminate_chat_subject = f"chat.server.terminate_chat.{thread_id}"
+        terminate_chat_msg = {"msg": "Chat completed."}
+        syncify(broker.publish)(terminate_chat_msg, terminate_chat_subject)  # type: ignore [arg-type]
         return chat_result
 
     return initiate_chat
@@ -190,7 +193,9 @@ async def initiate_handler(
 
     def start_chat() -> Any:
         with IOStream.set_default(iostream):
-            initiate_chat = create_team(team_id=body.team_id)
+            initiate_chat = create_team(
+                team_id=body.team_id, user_id=body.thread_id, thread_id=body.thread_id
+            )
             return initiate_chat()
 
     await asyncify(start_chat)()

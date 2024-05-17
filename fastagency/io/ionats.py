@@ -1,18 +1,19 @@
 import os
 import time
 from queue import Queue
-from typing import Any, Callable, Union
+from typing import Any, Callable, Dict, List, Union
 from uuid import UUID
 
-import openai
 from asyncer import asyncify, syncify
-from autogen.agentchat import AssistantAgent, UserProxyAgent
 from autogen.io.base import IOStream
 from faststream import Logger
 from faststream.nats import NatsMessage
 from nats.js import api
 from pydantic import BaseModel
 
+from ..db.helpers import find_model_using_raw
+from ..models.teams.multi_agent_team import MultiAgentTeam
+from ..models.teams.two_agent_teams import TwoAgentTeam
 from .app import app, broker, stream  # noqa
 
 
@@ -117,61 +118,27 @@ class IONats(IOStream):  # type: ignore[misc]
 
 
 class InitiateModel(BaseModel):
+    user_id: UUID
     thread_id: UUID
     team_id: UUID
     msg: str
 
 
 # patch this is tests
-def create_team(team_id: UUID, user_id: UUID, thread_id: UUID) -> Callable[[], Any]:
-    api_key = os.getenv("AZURE_OPENAI_API_KEY")  # use France or Canada
-    api_base = os.getenv("AZURE_API_ENDPOINT")
-    gpt_3_5_model_name = os.getenv("AZURE_GPT35_MODEL")  # "gpt-35-turbo-16k"
+def create_team(team_id: UUID, user_id: UUID) -> Callable[[str], List[Dict[str, Any]]]:
+    team_dict = syncify(find_model_using_raw)(team_id, user_id)
 
-    openai.api_type = "azure"
-    openai.api_version = os.getenv("AZURE_API_VERSION")  # "2024-02-15-preview"
+    team_model: Union[TwoAgentTeam, MultiAgentTeam]
+    if "initial_agent" in team_dict["json_str"]:
+        team_model = TwoAgentTeam(**team_dict["json_str"])
+    elif "agent_1" in team_dict["json_str"]:
+        team_model = MultiAgentTeam(**team_dict["json_str"])
+    else:
+        raise ValueError(f"Unknown team model {team_dict['json_str']}")
 
-    config_list = [
-        {
-            "model": gpt_3_5_model_name,
-            "api_key": api_key,
-            "base_url": api_base,
-            "api_type": openai.api_type,
-            "api_version": openai.api_version,
-        }
-    ]
+    autogen_team = team_model.create_autogen(team_id, user_id)
 
-    llm_config = {
-        "config_list": config_list,
-        "temperature": 0,
-    }
-
-    weather_man = AssistantAgent(
-        name="weather_man",
-        system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
-        llm_config=llm_config,
-    )
-
-    user_proxy = UserProxyAgent(
-        "user_proxy",
-    )
-
-    @user_proxy.register_for_execution()  # type: ignore [misc]
-    @weather_man.register_for_llm(description="Get weather forecast for a city")  # type: ignore [misc]
-    def get_forecast_for_city(city: str) -> str:
-        return f"The weather in {city} is sunny today."
-
-    def initiate_chat() -> Any:
-        chat_result = weather_man.initiate_chat(
-            recipient=user_proxy,
-            message="Hi! Tell me the city for which you want the weather forecast.",
-        )
-        terminate_chat_subject = f"chat.server.terminate_chat.{thread_id}"
-        terminate_chat_msg = {"msg": "Chat completed."}
-        syncify(broker.publish)(terminate_chat_msg, terminate_chat_subject)  # type: ignore [arg-type]
-        return chat_result
-
-    return initiate_chat
+    return autogen_team.initiate_chat  # type: ignore[no-any-return]
 
 
 @broker.subscriber(
@@ -191,11 +158,16 @@ async def initiate_handler(
 
     iostream = await IONats.create(body.thread_id)
 
-    def start_chat() -> Any:
+    def start_chat() -> List[Dict[str, Any]]:
+        terminate_chat_subject = f"chat.server.terminate_chat.{body.thread_id}"
+        terminate_chat_msg = {"msg": "Chat completed."}
+
         with IOStream.set_default(iostream):
-            initiate_chat = create_team(
-                team_id=body.team_id, user_id=body.thread_id, thread_id=body.thread_id
-            )
-            return initiate_chat()
+            initiate_chat = create_team(team_id=body.team_id, user_id=body.user_id)
+            chat_result = initiate_chat(body.msg)
+
+            syncify(broker.publish)(terminate_chat_msg, terminate_chat_subject)  # type: ignore [arg-type]
+
+            return chat_result
 
     await asyncify(start_chat)()

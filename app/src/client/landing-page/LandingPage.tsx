@@ -33,6 +33,9 @@ export default function LandingPage() {
             >
               <NavLogo />
               <span className='ml-2 text-4xl font-rubik text-airt-font-base leading-6 dark:text-white'>FastAgency</span>
+              <span className='ml-2 text-sm font-semibold leading-6 '>
+                <sup className='text-base text-airt-font-base'>βeta</sup>
+              </span>
             </a>
           </div>
           <div className='flex lg:hidden'>

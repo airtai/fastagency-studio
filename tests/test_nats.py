@@ -211,6 +211,8 @@ class TestAutogen:
                 },
             ]
 
+            await asyncio.sleep(10)
+
             assert len(actual) == len(expected)
             for i in range(len(expected)):
                 assert (

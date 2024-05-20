@@ -1,3 +1,4 @@
+import asyncio
 import os
 import time
 import traceback
@@ -5,7 +6,6 @@ from queue import Queue
 from typing import Any, Callable, Dict, List, Literal, Union
 from uuid import UUID
 
-import anyio
 from asyncer import asyncify, syncify
 from autogen.io.base import IOStream
 from faststream import Logger
@@ -192,8 +192,11 @@ async def initiate_handler(
                 return chat_result
 
         async_start_chat = asyncify(start_chat)
-        async with anyio.create_task_group() as tg:
-            tg.start_soon(async_start_chat)
+
+        background_tasks = set()
+        task = asyncio.create_task(async_start_chat())  # type: ignore
+        background_tasks.add(task)
+        task.add_done_callback(background_tasks.discard)
     except Exception as e:
         logger.error(f"Error in handling initiate chat: {e}")
         logger.error(traceback.format_exc())

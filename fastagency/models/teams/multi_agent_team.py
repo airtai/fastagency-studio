@@ -1,6 +1,7 @@
 from typing import Annotated, Any, Dict, List, Optional
 from uuid import UUID
 
+import autogen
 from asyncer import syncify
 from autogen import GroupChat, GroupChatManager
 from pydantic import Field
@@ -93,6 +94,28 @@ class MultiAgentTeam(TeamBaseModel):
                     for i in range(5)
                     if getattr(self, f"agent_{i+1}") is not None
                 ]
+
+                if isinstance(
+                    self.agent_1, autogen.agentchat.AssistantAgent
+                ) and isinstance(self.agent_2, autogen.agentchat.UserProxyAgent):
+                    assistant_agent = self.agent_1
+                    user_proxy_agent = self.agent_2
+                elif isinstance(
+                    self.agent_1, autogen.agentchat.UserProxyAgent
+                ) and isinstance(self.agent_2, autogen.agentchat.AssistantAgent):
+                    user_proxy_agent = self.agent_1
+                    assistant_agent = self.agent_2
+                else:
+                    raise ValueError(
+                        "Atleast one agent must be of type AssistantAgent and one must be of type UserProxyAgent"
+                    )
+
+                @user_proxy_agent.register_for_execution()  # type: ignore [misc]
+                @assistant_agent.register_for_llm(
+                    description="Get weather forecast for a city"
+                )  # type: ignore [misc]
+                def get_forecast_for_city(city: str) -> str:
+                    return f"The weather in {city} is sunny today."
 
             def initiate_chat(self, message: str) -> List[Dict[str, Any]]:
                 groupchat = GroupChat(agents=self.agents, messages=[])

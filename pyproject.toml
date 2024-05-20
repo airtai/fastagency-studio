@@ -111,7 +111,7 @@ testing = [
 
 dev = [
     "fastagency[server,lint,testing,devdocs]",
-    "pre-commit==3.7.0",
+    "pre-commit==3.7.1",
     "detect-secrets==1.4.0",
     "asyncer==0.0.7",
 ]

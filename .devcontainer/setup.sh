@@ -9,3 +9,8 @@ pre-commit install
 
 # install wasp
 curl -sSL https://get.wasp-lang.dev/installer.sh | sh
+
+cd app && wasp db migrate-dev && cd ..
+
+prisma migrate deploy
+prisma generate --schema=schema.prisma --generator=pyclient

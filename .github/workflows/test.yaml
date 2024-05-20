@@ -46,7 +46,38 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
         pydantic-version: ["pydantic-v2"]
       fail-fast: false
-
+    services:
+      nats:
+        image: diementros/nats:js
+        ports:
+          - 4222:4222
+      postgres-wasp:
+        image: postgres:13
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: fastagency
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      postgres-py:
+        image: postgres:13
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: pyfastagency
+        ports:
+          - 5433:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency
+      PY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
+      NATS_URL: nats://localhost:4222
+      AZURE_API_VERSION: ${{ secrets.STAGING_AZURE_API_VERSION }}
+      AZURE_API_ENDPOINT: ${{ secrets.STAGING_AZURE_API_ENDPOINT }}
+      AZURE_GPT4_MODEL: ${{ secrets.STAGING_AZURE_GPT4_MODEL }}
+      AZURE_GPT35_MODEL: ${{ secrets.STAGING_AZURE_GPT35_MODEL }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.STAGING_AZURE_OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -60,6 +91,15 @@ jobs:
         with:
           path: ${{ env.pythonLocation }}
           key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}-test-v03
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install wasp
+        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
+      - name: Run wasp migration
+        run: cd app && wasp db migrate-dev && cd ..
+
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
@@ -70,6 +110,8 @@ jobs:
         if: matrix.pydantic-version == 'pydantic-v2'
         run: pip install --pre "pydantic>=2,<3"
       - run: mkdir coverage
+      - name: Prisma
+        run: prisma migrate deploy && prisma generate
       - name: Test
         run: bash scripts/test.sh
         env:
@@ -85,6 +127,14 @@ jobs:
   test-macos-latest:
     if: github.event.pull_request.draft == false
     runs-on: macos-latest
+    env:
+      NATS_URL: nats://localhost:4222
+      AZURE_API_VERSION: ${{ secrets.STAGING_AZURE_API_VERSION }}
+      AZURE_API_ENDPOINT: ${{ secrets.STAGING_AZURE_API_ENDPOINT }}
+      AZURE_GPT4_MODEL: ${{ secrets.STAGING_AZURE_GPT4_MODEL }}
+      AZURE_GPT35_MODEL: ${{ secrets.STAGING_AZURE_GPT35_MODEL }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.STAGING_AZURE_OPENAI_API_KEY }}
+      AUTOGEN_USE_DOCKER: False
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -93,15 +143,25 @@ jobs:
           python-version: "3.12"
           cache: "pip"
           cache-dependency-path: pyproject.toml
+
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
+      - name: Prisma
+        run: prisma generate
       - name: Test
-        run: bash scripts/test.sh
+        run: bash scripts/test.sh -m "not db and not nats"
 
   test-windows-latest:
     if: github.event.pull_request.draft == false
     runs-on: windows-latest
+    env:
+      NATS_URL: nats://localhost:4222
+      AZURE_API_VERSION: ${{ secrets.STAGING_AZURE_API_VERSION }}
+      AZURE_API_ENDPOINT: ${{ secrets.STAGING_AZURE_API_ENDPOINT }}
+      AZURE_GPT4_MODEL: ${{ secrets.STAGING_AZURE_GPT4_MODEL }}
+      AZURE_GPT35_MODEL: ${{ secrets.STAGING_AZURE_GPT35_MODEL }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.STAGING_AZURE_OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -110,11 +170,14 @@ jobs:
           python-version: "3.12"
           cache: "pip"
           cache-dependency-path: pyproject.toml
+
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
+      - name: Prisma
+        run: prisma generate
       - name: Test
-        run: bash scripts/test.sh
+        run: bash scripts/test.sh -m "not db and not nats"
 
   coverage-combine:
     if: github.event.pull_request.draft == false
@@ -161,7 +224,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
@@ -196,7 +259,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
@@ -210,7 +273,7 @@ jobs:
           sed -i 's/"postinstall": "patch-package"/"postinstall": ""/' $PATCH_FILE_PATH
 
       - name: Log in to the Container registry
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        uses: docker/login-action@v3.1.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -243,7 +306,7 @@ jobs:
         run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
 
       - name: Log in to the Container registry
-        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20
+        uses: docker/login-action@v3.1.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -261,7 +324,7 @@ jobs:
   pre-commit-check:
     runs-on: ubuntu-latest
     env:
-      SKIP: "static-analysis"
+      SKIP: "static-analysis,docs"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -271,6 +334,10 @@ jobs:
         with:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: Install Dependencies
+        run: pip install .[docs,testing]
+      - name: Prisma
+        run: prisma generate
       - uses: pre-commit/action@v3.0.1
 
   # https://github.com/marketplace/actions/alls-green#why
@@ -306,9 +373,14 @@ jobs:
       GITHUB_USERNAME: ${{ github.actor }}
       GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       DEVELOPER_TOKEN: ${{ secrets.DEVELOPER_TOKEN }}
-
+      DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
+      PY_DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_PY_DATABASE_URL || secrets.STAGING_PY_DATABASE_URL }}
       DOMAIN: ${{ github.ref_name == 'main' && vars.PROD_DOMAIN || vars.STAGING_DOMAIN }}
       SSH_KEY: ${{ github.ref_name == 'main' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
+      AZURE_API_VERSION: ${{ github.ref_name == 'main' && secrets.PROD_AZURE_API_VERSION || secrets.STAGING_AZURE_API_VERSION }}
+      AZURE_API_ENDPOINT: ${{ github.ref_name == 'main' && secrets.PROD_AZURE_API_ENDPOINT || secrets.STAGING_AZURE_API_ENDPOINT }}
+      AZURE_GPT35_MODEL: ${{ github.ref_name == 'main' && secrets.PROD_AZURE_GPT35_MODEL || secrets.STAGING_AZURE_GPT35_MODEL }}
+      AZURE_OPENAI_API_KEY: ${{ github.ref_name == 'main' && secrets.PROD_AZURE_OPENAI_API_KEY || secrets.STAGING_AZURE_OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v3 # Don't change it to cheackout@v4. V4 is not working with container image.
       # This is to fix GIT not liking owner of the checkout dir - https://github.com/actions/runner/issues/2033#issuecomment-1204205989
@@ -347,7 +419,7 @@ jobs:
       GOOGLE_CLIENT_SECRET: ${{ github.ref_name == 'main' && secrets.PROD_GOOGLE_CLIENT_SECRET || secrets.STAGING_GOOGLE_CLIENT_SECRET }}
       ADMIN_EMAILS: ${{ vars.ADMIN_EMAILS }}
       WASP_SERVER_URL: ${{ github.ref_name == 'main' && vars.PROD_WASP_SERVER_URL || vars.STAGING_WASP_SERVER_URL }}
-      ADS_SERVER_URL: ${{ github.ref_name == 'main' && vars.PROD_ADS_SERVER_URL || vars.STAGING_ADS_SERVER_URL }}
+      FASTAGENCY_SERVER_URL: ${{ github.ref_name == 'main' && vars.PROD_FASTAGENCY_SERVER_URL || vars.STAGING_FASTAGENCY_SERVER_URL }}
       NODE_DOMAIN: ${{ github.ref_name == 'main' && vars.PROD_NODE_DOMAIN || vars.STAGING_NODE_DOMAIN }}
       WASP_WEB_CLIENT_URL: ${{ github.ref_name == 'main' && vars.PROD_WASP_WEB_CLIENT_URL || vars.STAGING_WASP_WEB_CLIENT_URL }}
       DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
@@ -397,7 +469,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 

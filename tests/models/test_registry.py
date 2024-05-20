@@ -101,15 +101,21 @@ class TestRegistry:
             i: int
             s: str
 
-        schema = registry.get_model_schema(MyModel)
+        schema = registry.get_model_schema(MyModel)  # type: ignore[type-abstract]
         expected = ModelSchema(
             name="MyModel",
             json_schema={
                 "properties": {
+                    "name": {
+                        "description": "The name of the model",
+                        "minLength": 1,
+                        "title": "Name",
+                        "type": "string",
+                    },
                     "i": {"title": "I", "type": "integer"},
                     "s": {"title": "S", "type": "string"},
                 },
-                "required": ["i", "s"],
+                "required": ["name", "i", "s"],
                 "title": "MyModel",
                 "type": "object",
             },
@@ -131,7 +137,7 @@ class TestRegistry:
             s: str
             secret: MySecretRef  # type: ignore[valid-type]
 
-        schema = registry.get_model_schema(MyModel)
+        schema = registry.get_model_schema(MyModel)  # type: ignore[type-abstract]
         expected = ModelSchema(
             name="MyModel",
             json_schema={
@@ -167,11 +173,17 @@ class TestRegistry:
                     }
                 },
                 "properties": {
+                    "name": {
+                        "description": "The name of the model",
+                        "minLength": 1,
+                        "title": "Name",
+                        "type": "string",
+                    },
                     "i": {"title": "I", "type": "integer"},
                     "s": {"title": "S", "type": "string"},
                     "secret": {"$ref": "#/$defs/MySecretRef"},
                 },
-                "required": ["i", "s", "secret"],
+                "required": ["name", "i", "s", "secret"],
                 "title": "MyModel",
                 "type": "object",
             },

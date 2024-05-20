@@ -122,8 +122,7 @@ const PricingPage = () => {
                   aria-describedby='manage-subscription'
                   className={cn(
                     {
-                      'bg-airt-secondary text-white hover:text-airt-primary shadow-sm hover:bg-airt-font-base':
-                        tier.bestDeal,
+                      'bg-airt-secondary text-airt-primary hover:opacity-80 shadow-sm': tier.bestDeal,
                       'text-airt-font-base  ring-1 ring-inset ring-purple-200 hover:ring-purple-400': !tier.bestDeal,
                     },
                     {
@@ -142,7 +141,7 @@ const PricingPage = () => {
                       ${tier.id === 'enterprise-tier' ? 'opacity-50 cursor-not-allowed' : 'opacity-100 cursor-pointer'}
                       ${
                         tier.bestDeal
-                          ? 'bg-airt-secondary text-airt-font-base hover:opacity-80 shadow-sm hover:bg-captn-cta-green-hover'
+                          ? 'bg-airt-secondary text-airt-primary hover:opacity-80 shadow-sm hover:bg-captn-cta-green-hover'
                           : 'airt-font-base  ring-1 ring-inset ring-purple-200 hover:ring-purple-400'
                       }
                       ${isStripePaymentLoading === tier.id ? 'cursor-wait' : null}

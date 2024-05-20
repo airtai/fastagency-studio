@@ -3,13 +3,7 @@ from typing import Literal
 __all__ = [
     "OPENAI_MODELS_LITERAL",
     "AZURE_API_VERSIONS_LITERAL",
-    # "REGISTRED_MODEL_TYPES",
 ]
-
-
-# REGISTRED_MODEL_TYPES = Literal["secret", "llm", "agent", "team"]
-## LLMS
-
 ### OpenAI
 
 OPENAI_MODELS_LITERAL = Literal["gpt-4", "gpt-3.5-turbo"]

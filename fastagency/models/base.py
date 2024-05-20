@@ -1,5 +1,5 @@
-from abc import ABC
-from typing import Annotated, Literal, Optional, Protocol, Type, TypeVar
+from abc import ABC, abstractmethod
+from typing import Annotated, Any, Literal, Optional, Protocol, Type, TypeVar
 from uuid import UUID
 
 from pydantic import BaseModel, Field, create_model, model_validator
@@ -17,6 +17,7 @@ __all__ = [
 
 # abstract class
 class Model(BaseModel, ABC):
+    name: Annotated[str, Field(..., description="The name of the model", min_length=1)]
     _reference_model: "Optional[Type[ObjectReference]]" = None
 
     @classmethod
@@ -24,6 +25,12 @@ class Model(BaseModel, ABC):
         if cls._reference_model is None:
             raise ValueError("reference model not set")
         return cls._reference_model
+
+    @classmethod
+    @abstractmethod
+    def create_autogen(
+        cls, model_id: UUID, user_id: UUID
+    ) -> Any: ...  # pragma: no cover
 
 
 class ObjectReference(BaseModel):

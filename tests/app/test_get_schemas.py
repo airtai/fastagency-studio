@@ -14,7 +14,7 @@ class TestGetSchema:
         schemas = Schemas(**response.json())
 
         types = {schemas.name: schemas.schemas for schemas in schemas.list_of_schemas}
-        assert set(types.keys()) == {"secret", "llm", "agent"}
+        assert set(types.keys()) == {"secret", "llm", "agent", "team"}
 
         model_names = {
             type_name: {model.name for model in model_schema_list}
@@ -23,6 +23,7 @@ class TestGetSchema:
         expected = {
             "secret": {"AzureOAIAPIKey", "OpenAIAPIKey", "BingAPIKey"},
             "llm": {"AzureOAI", "OpenAI"},
-            "agent": {"AssistantAgent", "WebSurferAgent"},
+            "agent": {"AssistantAgent", "WebSurferAgent", "UserProxyAgent"},
+            "team": {"TwoAgentTeam", "MultiAgentTeam"},
         }
         assert model_names == expected

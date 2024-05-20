@@ -19,4 +19,10 @@ services:
       - "8000:8000"
     environment:
       - DOMAIN=${DOMAIN}
+      - DATABASE_URL=${DATABASE_URL}
+      - PY_DATABASE_URL=${PY_DATABASE_URL}
+      - AZURE_API_VERSION=${AZURE_API_VERSION}
+      - AZURE_API_ENDPOINT=${AZURE_API_ENDPOINT}
+      - AZURE_GPT35_MODEL=${AZURE_GPT35_MODEL}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
     logging: *default-logging

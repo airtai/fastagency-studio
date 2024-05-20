@@ -29,6 +29,9 @@ export default function AppNavBar() {
           >
             <NavLogo />
             <span className='ml-2 text-4xl font-rubik text-airt-font-base leading-6 dark:text-white'>FastAgency</span>
+            <span className='ml-2 text-sm font-semibold leading-6 '>
+              <sup className='text-base text-airt-font-base'>βeta</sup>
+            </span>
           </a>
         </div>
         <div className='flex lg:hidden'>
@@ -42,15 +45,22 @@ export default function AppNavBar() {
           </button>
         </div>
         <div className='hidden lg:flex lg:gap-x-12'>
-          {navigation.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              className='text-sm font-semibold leading-6 text-airt-font-base duration-300 ease-in-out hover:text-airt-secondary dark:text-white'
-            >
-              {item.name}
-            </a>
-          ))}
+          {navigation.map((item) => {
+            const windowLocation = window.location.pathname.split('/')[1];
+            const isCurrentPage = windowLocation === item.name.toLowerCase();
+
+            return (
+              <a
+                key={item.name}
+                href={item.href}
+                className={`text-sm font-semibold leading-6 duration-300 ease-in-out hover:text-airt-secondary dark:text-white ${
+                  isCurrentPage ? 'text-airt-secondary' : 'text-airt-font-base'
+                }`}
+              >
+                {item.name}
+              </a>
+            );
+          })}
         </div>
         <div className='hidden lg:flex lg:flex-1 gap-3 justify-end items-center'>
           {/* <ul className='flex justify-center items-center gap-2 sm:gap-4'>
@@ -80,7 +90,7 @@ export default function AppNavBar() {
             </a>
             <button
               type='button'
-              className='-m-2.5 rounded-md p-2.5 text-airt-font-base dark:text-gray-50'
+              className='-m-2.5 rounded-md p-2.5 text-airt-primary dark:text-gray-50'
               onClick={() => setMobileMenuOpen(false)}
             >
               <span className='sr-only'>Close menu</span>
@@ -90,16 +100,22 @@ export default function AppNavBar() {
           <div className='mt-6 flow-root'>
             <div className='-my-6 divide-y divide-airt-font-base'>
               <div className='space-y-2 py-6'>
-                {navigation.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-airt-primary hover:bg-gray-50 dark:text-white hover:dark:bg-boxdark-2'
-                  >
-                    {item.name}
-                  </a>
-                ))}
+                {navigation.map((item) => {
+                  const windowLocation = window.location.pathname.split('/')[1];
+                  const isCurrentPage = windowLocation === item.name.toLowerCase();
+
+                  return (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      className={`-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-airt-primary hover:bg-gray-50 dark:text-white hover:dark:bg-boxdark-2 ${
+                        isCurrentPage ? 'text-airt-secondary' : 'text-airt-font-base'
+                      }`}
+                    >
+                      {item.name}
+                    </a>
+                  );
+                })}
               </div>
               <div className='py-6'>
                 {isUserLoading ? null : !user ? (

@@ -1,4 +1,4 @@
-app OpenSaaS {
+app FastAgency {
   wasp: {
     version: "^0.13.0"
   },
@@ -6,13 +6,16 @@ app OpenSaaS {
   head: [
         "<meta property='og:type' content='website' />",
         "<meta property='og:title' content='FastAgency' />",
-        "<meta property='og:url' content='https://fastagency.ai/' />",
         "<meta property='og:description' content='Quickly build scalable SaaS solutions using our powerful, multi-agent AI framework that streamlines complex processes.' />",
+        "<meta property='og:url' content='https://fastagency.ai/' />",
         "<meta property='og:image' content='https://fastagency.ai/public-banner.png' />",
-        "<meta name='twitter:image' content='https://fastagency.ai/public-banner.png' />",
-        "<meta name='twitter:image:width' content='800' />",
-        "<meta name='twitter:image:height' content='400' />",
+        "<meta property='og:image:type' content='image/png' />",
+        "<meta property='og:image:width' content='800' />",
+        "<meta property='og:image:height' content='400' />",
         "<meta name='twitter:card' content='summary_large_image' />",
+        "<meta name='twitter:title' content='FastAgency' />",
+        "<meta name='twitter:description' content='Quickly build scalable SaaS solutions using our powerful, multi-agent AI framework that streamlines complex processes.' />",
+        "<meta name='twitter:image' content='https://fastagency.ai/public-banner.png' />",
         // you can put your analytics scripts here
         // "<script defer data-domain='<your-site-id>' src='https://plausible.io/js/script.js'></script>",
         // plausible has script extension `script.local.js` for local development
@@ -33,13 +36,13 @@ app OpenSaaS {
       },
     },
     onAuthFailedRedirectTo: "/login",
-    onAuthSucceededRedirectTo: "/chat",
+    onAuthSucceededRedirectTo: "/build",
   },
   db: {
     system: PostgreSQL,
-    seeds: [
-      import { devSeedUsers } from "@src/server/scripts/usersSeed.js",
-    ]
+    // seeds: [
+    //   import { devSeedUsers } from "@src/server/scripts/usersSeed.js",
+    // ]
   },
   client: {
     rootComponent: import App from "@src/client/App",
@@ -56,6 +59,9 @@ app OpenSaaS {
       email: "me@example.com"
     },
   },
+   webSocket: {
+    fn: import { socketFn } from "@src/server/websocket/webSocket.js"
+  },
 }
 
 /* 💽 Wasp defines DB entities via Prisma Database Models:
@@ -64,6 +70,7 @@ app OpenSaaS {
 
 entity User {=psl
   id                        Int             @id @default(autoincrement())
+  uuid                      String?         @default(uuid())
   email                     String?         @unique
   username                  String?         @unique
   createdAt                 DateTime        @default(now())
@@ -80,6 +87,8 @@ entity User {=psl
   sendEmail                 Boolean         @default(false)
   datePaid                  DateTime?
   credits                   Int             @default(3)
+  chats    Chat[]
+  conversations    Conversation[]
 psl=}
 
 entity DailyStats {=psl
@@ -112,6 +121,49 @@ entity Logs {=psl
   level                    String
 psl=}
 
+entity Chat {=psl
+    id                        Int             @id @default(autoincrement())
+    uuid                      String?         @default(uuid())
+    createdAt                 DateTime        @default(now())
+    updatedAt                 DateTime        @updatedAt
+    team_id                   Int?
+    team_name                 String?
+    team_status               String?
+    chatType                 String?
+    shouldShowChat             Boolean         @default(false)
+    proposedUserAction       String[]          @default([])
+    userRespondedWithNextAction             Boolean         @default(false)
+    emailContent             String?
+    agentChatHistory         String?
+    isExceptionOccured       Boolean         @default(false)
+    showLoader  Boolean         @default(false)
+    smartSuggestions  Json         @default("{ \"suggestions\": [\"\"], \"type\": \"\"}")
+    streamAgentResponse Boolean         @default(false)
+    customerBrief       String?
+    user        User?    @relation(fields: [userId], references: [id])
+    userId      Int?
+    name        String?          @default("New chat")
+    isChatNameUpdated Boolean         @default(false)
+    isChatTerminated Boolean         @default(false)
+    selectedTeam   String?
+    conversations    Conversation[]
+psl=}
+
+entity Conversation {=psl
+    id                          Int             @id @default(autoincrement())
+    createdAt                   DateTime        @default(now())
+    updatedAt                   DateTime        @updatedAt
+    message                     String
+    role                        String
+    agentConversationHistory    String?
+    isLoading                   Boolean         @default(false)
+    chat                        Chat?           @relation(fields: [chatId], references: [id])
+    chatId                      Int?
+    user                        User?           @relation(fields: [userId], references: [id])
+    userId                      Int?
+
+psl=}
+
 /* 📡 These are the Wasp Routes (You can protect them easily w/ 'authRequired: true');
  * https://wasp-lang.dev/docs/tutorial/pages
  */
@@ -121,9 +173,39 @@ page LandingPage {
   component: import LandingPage from "@src/client/landing-page/LandingPage"
 }
 
-route ChatPageRoute { path: "/chat/:id?", to: ChatPage }
-page ChatPage {
-  component: import createAuthRequiredChatPage from "@src/client/app/ChatPage"
+route PlayGroundPageRoute { path: "/playground/:id?", to: PlayGroundPage }
+page PlayGroundPage {
+  component: import PlayGroundPageWithCustomAuth from "@src/client/app/PlayGroundPage"
+}
+
+route BuildRoute { path: "/build", to: BuildPage }
+page BuildPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
+}
+
+route SecretsRoute { path: "/build/secrets", to: SecretsPage }
+page SecretsPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
+}
+
+route ToolBoxRoute { path: "/build/toolboxes", to: ToolBoxPage }
+page ToolBoxPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
+}
+
+route LLMsRoute { path: "/build/llms", to: LLMsPage }
+page LLMsPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
+}
+
+route TeamsRoute { path: "/build/teams", to: TeamsPage }
+page TeamsPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
+}
+
+route AgentsRoute { path: "/build/agents", to: AgentsPage }
+page AgentsPage {
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
 }
 
 route LoginRoute { path: "/login", to: LoginPage }
@@ -143,8 +225,7 @@ page PricingPage {
 
 route AccountRoute { path: "/account", to: AccountPage }
 page AccountPage {
-  authRequired: true,
-  component: import Account from "@src/client/app/AccountPage"
+  component: import AccountPageWithCustomAuth from "@src/client/app/AccountPage"
 }
 
 route CheckoutRoute { path: "/checkout", to: CheckoutPage }
@@ -247,6 +328,75 @@ action updateUserById {
   entities: [User]
 }
 
+action getAvailableModels {
+  fn: import { getAvailableModels } from "@src/server/actions.js",
+  entities: []
+}
+
+action updateUserModels {
+  fn: import { updateUserModels } from "@src/server/actions.js",
+  entities: []
+}
+
+action addUserModels {
+  fn: import { addUserModels } from "@src/server/actions.js",
+  entities: []
+}
+
+action deleteUserModels {
+  fn: import { deleteUserModels } from "@src/server/actions.js",
+  entities: []
+}
+
+action validateForm {
+  fn: import { validateForm } from "@src/server/actions.js",
+  entities: []
+}
+
+action createNewChat {
+  fn: import { createNewChat } from "@src/server/actions.js",
+  entities: [Chat, Conversation]
+}
+
+action createNewDailyAnalysisChat {
+  fn: import { createNewDailyAnalysisChat } from "@src/server/actions.js",
+  entities: [Chat, Conversation]
+}
+
+action updateCurrentChat {
+  fn: import { updateCurrentChat } from "@src/server/actions.js",
+  entities: [Chat]
+}
+
+action updateCurrentConversation {
+  fn: import { updateCurrentConversation } from "@src/server/actions.js",
+  entities: [Conversation]
+}
+
+action deleteLastConversationInChat {
+  fn: import { deleteLastConversationInChat } from "@src/server/actions.js",
+  entities: [Conversation]
+}
+
+action retryTeamChat {
+  fn: import { retryTeamChat } from "@src/server/actions.js",
+  entities: [Chat, Conversation]
+}
+
+action createNewAndReturnAllConversations {
+  fn: import { createNewAndReturnAllConversations } from "@src/server/actions.js",
+  entities: [Conversation]
+}
+
+action createNewAndReturnLastConversation {
+  fn: import { createNewAndReturnLastConversation } from "@src/server/actions.js",
+  entities: [Conversation]
+}
+
+action getAgentResponse {
+  fn: import { getAgentResponse } from "@src/server/actions.js",
+  entities: [Chat, Conversation]
+}
 
 // 📚 Queries
 
@@ -260,6 +410,36 @@ query getPaginatedUsers {
   entities: [User]
 }
 
+query getModels {
+  fn: import { getModels } from "@src/server/queries.js",
+  entities: [User]
+}
+
+query propertyDependencies {
+  fn: import { propertyDependencies } from "@src/server/queries.js",
+  entities: [User]
+}
+
+query getChat {
+  fn: import { getChat } from "@src/server/queries.js",
+  entities: [Chat]
+}
+
+query getChats {
+  fn: import { getChats } from "@src/server/queries.js",
+  entities: [Chat]
+}
+
+query getConversations {
+  fn: import { getConversations } from "@src/server/queries.js",
+  entities: [Conversation]
+}
+
+query getChatFromUUID {
+  fn: import { getChatFromUUID } from "@src/server/queries.js",
+  entities: [Chat]
+}
+
 /*
  * 📡 These are custom Wasp API Endpoints. Use them for callbacks, webhooks, etc.
  * https://wasp-lang.dev/docs/advanced/apis
@@ -270,6 +450,30 @@ api stripeWebhook {
   entities: [User],
   middlewareConfigFn: import { stripeMiddlewareFn } from "@src/server/webhooks/stripe.js",
   httpRoute: (POST, "/stripe-webhook")
+}
+
+api captnDailyAnalysisWebhook {
+  fn: import { captnDailyAnalysisWebhook } from "@src/server/webhooks/captn.js",
+  entities: [User, Chat, Conversation],
+  httpRoute: (POST, "/captn-daily-analysis-webhook")
+}
+
+api createNewChatWebhook {
+  fn: import { createNewChatWebhook } from "@src/server/webhooks/captn.js",
+  entities: [User, Chat],
+  httpRoute: (POST, "/create-chat-webhook")
+}
+
+api deleteChatWebhook {
+  fn: import { deleteChatWebhook } from "@src/server/webhooks/captn.js",
+  entities: [Chat],
+  httpRoute: (POST, "/delete-chat-webhook")
+}
+
+api smartSuggestionsWebHook {
+  fn: import { smartSuggestionsWebHook } from "@src/server/webhooks/captn.js",
+  entities: [Chat],
+  httpRoute: (POST, "/smart-suggestions-webhook")
 }
 
 /* 🕵️‍♂️ These are the Wasp Jobs. Use them to set up recurring tasks and/or queues:

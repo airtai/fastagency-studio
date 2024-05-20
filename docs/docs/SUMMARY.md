@@ -6,22 +6,40 @@ search:
 - Reference
     - fastagency
         - app
-            - [Model](api/fastagency/app/Model.md)
-            - [ModelDelete](api/fastagency/app/ModelDelete.md)
-            - [ModelUpdate](api/fastagency/app/ModelUpdate.md)
-            - [User](api/fastagency/app/User.md)
-            - [find_model](api/fastagency/app/find_model.md)
+            - [ChatRequest](api/fastagency/app/ChatRequest.md)
+            - [add_model](api/fastagency/app/add_model.md)
+            - [chat](api/fastagency/app/chat.md)
+            - [generate_chat_name](api/fastagency/app/generate_chat_name.md)
+            - [get_all_models](api/fastagency/app/get_all_models.md)
             - [get_models_schemas](api/fastagency/app/get_models_schemas.md)
-            - [models](api/fastagency/app/models.md)
-            - [models_add](api/fastagency/app/models_add.md)
+            - [get_user](api/fastagency/app/get_user.md)
             - [models_delete](api/fastagency/app/models_delete.md)
-            - [models_update](api/fastagency/app/models_update.md)
+            - [update_model](api/fastagency/app/update_model.md)
             - [validate_model](api/fastagency/app/validate_model.md)
+        - db
+            - helpers
+                - [find_model_using_raw](api/fastagency/db/helpers/find_model_using_raw.md)
+                - [get_db_connection](api/fastagency/db/helpers/get_db_connection.md)
+                - [get_wasp_db_url](api/fastagency/db/helpers/get_wasp_db_url.md)
+        - faststream_app
+            - [ping_handler](api/fastagency/faststream_app/ping_handler.md)
+        - io
+            - ionats
+                - [IONats](api/fastagency/io/ionats/IONats.md)
+                - [InitiateModel](api/fastagency/io/ionats/InitiateModel.md)
+                - [InputRequestModel](api/fastagency/io/ionats/InputRequestModel.md)
+                - [InputResponseModel](api/fastagency/io/ionats/InputResponseModel.md)
+                - [PrintModel](api/fastagency/io/ionats/PrintModel.md)
+                - [create_team](api/fastagency/io/ionats/create_team.md)
         - models
             - [Registry](api/fastagency/models/Registry.md)
             - agents
                 - assistant
                     - [AssistantAgent](api/fastagency/models/agents/assistant/AssistantAgent.md)
+                - base
+                    - [AgentBaseModel](api/fastagency/models/agents/base/AgentBaseModel.md)
+                - user_proxy
+                    - [UserProxyAgent](api/fastagency/models/agents/user_proxy/UserProxyAgent.md)
                 - web_surfer
                     - [BingAPIKey](api/fastagency/models/agents/web_surfer/BingAPIKey.md)
                     - [WebSurferAgent](api/fastagency/models/agents/web_surfer/WebSurferAgent.md)
@@ -44,6 +62,16 @@ search:
                 - [Registry](api/fastagency/models/registry/Registry.md)
                 - [Schemas](api/fastagency/models/registry/Schemas.md)
                 - [register](api/fastagency/models/registry/register.md)
+            - teams
+                - base
+                    - [TeamBaseModel](api/fastagency/models/teams/base/TeamBaseModel.md)
+                - multi_agent_team
+                    - [MultiAgentTeam](api/fastagency/models/teams/multi_agent_team/MultiAgentTeam.md)
+                - two_agent_teams
+                    - [TwoAgentTeam](api/fastagency/models/teams/two_agent_teams/TwoAgentTeam.md)
+        - openapi
+            - client
+                - [Client](api/fastagency/openapi/client/Client.md)
 - Contributing
     - [Development](getting-started/contributing/CONTRIBUTING.md)
     - [Documentation](getting-started/contributing/docs.md)

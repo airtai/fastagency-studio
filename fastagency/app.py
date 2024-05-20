@@ -1,10 +1,17 @@
 import json
-from typing import Any, Dict, List, Optional
+import logging
+from os import environ
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, ValidationError
+from openai import AsyncAzureOpenAI
+from prisma.models import Model
+from pydantic import BaseModel, TypeAdapter, ValidationError
 
+from .db.helpers import find_model_using_raw, get_db_connection, get_wasp_db_url
 from .models.registry import Registry, Schemas
+
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 
@@ -25,70 +32,219 @@ async def validate_model(type: str, name: str, model: Dict[str, Any]) -> None:
 
 # new routes by Harish
 
-all_models: Dict[int, List[Optional[Dict[str, Any]]]] = {}
+
+async def get_user(user_uuid: Union[int, str]) -> Any:
+    wasp_db_url = await get_wasp_db_url()
+    async with get_db_connection(db_url=wasp_db_url) as db:
+        select_query = 'SELECT * from "User" where uuid=' + f"'{user_uuid}'"  # nosec: [B608]
+        user = await db.query_first(
+            select_query  # nosec: [B608]
+        )
+    if not user:
+        raise HTTPException(status_code=404, detail=f"user_uuid {user_uuid} not found")
+    return user
 
 
-def find_model(user_id: int, uuid: str) -> Dict[str, Any]:
-    if user_id not in all_models:
-        raise HTTPException(status_code=404, detail="User not found")
-    for model in all_models[user_id]:
-        if model and model["uuid"] == uuid:
-            return model
-    raise HTTPException(status_code=404, detail="Model not found")
+@app.get("/user/{user_uuid}/models")
+async def get_all_models(
+    user_uuid: str,
+    type_name: Optional[str] = None,
+) -> List[Any]:
+    filters: Dict[str, Any] = {"user_uuid": user_uuid}
+    if type_name:
+        filters["type_name"] = type_name
+
+    async with get_db_connection() as db:
+        models = await db.model.find_many(where=filters)  # type: ignore[arg-type]
+
+    ta = TypeAdapter(List[Model])
+    ret_val = ta.dump_python(models, serialize_as_any=True)  # type: ignore[call-arg]
+    return ret_val  # type: ignore[no-any-return]
 
 
-class User(BaseModel):
+@app.post("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")
+async def add_model(
+    user_uuid: str,
+    type_name: str,
+    model_name: str,
+    model_uuid: str,
+    model: Dict[str, Any],
+) -> Dict[str, Any]:
+    registry = Registry.get_default()
+    validated_model = registry.validate(type_name, model_name, model)
+
+    await get_user(user_uuid=user_uuid)
+    async with get_db_connection() as db:
+        await db.model.create(
+            data={
+                "uuid": model_uuid,
+                "user_uuid": user_uuid,
+                "type_name": type_name,
+                "model_name": model_name,
+                "json_str": validated_model.model_dump_json(),  # type: ignore[typeddict-item]
+            }
+        )
+    return validated_model.model_dump()
+
+
+@app.put("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")
+async def update_model(
+    user_uuid: str,
+    type_name: str,
+    model_name: str,
+    model_uuid: str,
+    model: Dict[str, Any],
+) -> Dict[str, Any]:
+    registry = Registry.get_default()
+    validated_model = registry.validate(type_name, model_name, model)
+
+    async with get_db_connection() as db:
+        found_model = await find_model_using_raw(
+            model_uuid=model_uuid, user_uuid=user_uuid
+        )
+
+        await db.model.update(
+            where={"uuid": found_model["uuid"]},  # type: ignore[arg-type]
+            data={  # type: ignore[typeddict-unknown-key]
+                "type_name": type_name,
+                "model_name": model_name,
+                "json_str": validated_model.model_dump_json(),  # type: ignore[typeddict-item]
+                "user_uuid": user_uuid,
+            },
+        )
+
+    return validated_model.model_dump()
+
+
+@app.delete("/user/{user_uuid}/models/{type_name}/{model_uuid}")
+async def models_delete(
+    user_uuid: str, type_name: str, model_uuid: str
+) -> Dict[str, Any]:
+    async with get_db_connection() as db:
+        found_model = await find_model_using_raw(
+            model_uuid=model_uuid, user_uuid=user_uuid
+        )
+        model = await db.model.delete(
+            where={"uuid": found_model["uuid"]}  # type: ignore[arg-type]
+        )
+
+    return model.json_str  # type: ignore
+
+
+# Load environment variable
+AZURE_GPT35_MODEL = environ.get("AZURE_GPT35_MODEL")
+AZURE_OPENAI_API_KEY = environ.get("AZURE_OPENAI_API_KEY")
+AZURE_API_ENDPOINT = environ.get("AZURE_API_ENDPOINT")
+AZURE_API_VERSION = environ.get("AZURE_API_VERSION")
+
+# Setting up Azure OpenAI instance
+aclient = AsyncAzureOpenAI(
+    api_key=AZURE_OPENAI_API_KEY,
+    azure_endpoint=AZURE_API_ENDPOINT,  # type: ignore
+    api_version=AZURE_API_VERSION,
+)
+
+SYSTEM_PROMPT = """I am developing a chat application where users specify a task for the application to accomplish.
+Generate a concise, professional name for the chat that directly reflects the essence of the task.
+The name should consist of 2-3 words and be no more than 25 characters in total.
+It should be immediately recognizable, meaningful, and sound natural to users, making it easy to identify the chat's
+purpose at a glance. Please provide only the chat name in your response, with no additional text or explanation.
+The name should use clear, user-friendly terminology that precisely captures the task's intent.
+
+Note:
+- I will tip you $1000 every time you generate a chat name that is 1-3 words long and up to 25 characters.
+- Your chat name MUST be pertinent to the given task and avoids generic words such as "Forge" and "Hub".
+
+Task Name:
+{task_name}
+
+Chat Name:
+"""
+
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_chat_name",
+            "description": "Use this tool to generate a chat name based on the task description.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "chat_name": {
+                        "type": "string",
+                        "description": "The name of the chat",
+                    },
+                },
+                "required": ["chat_name"],
+            },
+        },
+    },
+]
+
+
+async def generate_chat_name(
+    team_name: str,
+    chat_id: int,
+    chat_name: str,
+) -> Dict[str, Union[Optional[str], int]]:
+    return {
+        "team_status": "inprogress",
+        "team_name": team_name,
+        "team_id": chat_id,
+        "customer_brief": "Some customer brief",
+        "conversation_name": chat_name,
+    }
+
+
+class ChatRequest(BaseModel):
+    chat_id: int
+    message: List[Dict[str, str]]
     user_id: int
 
 
-@app.post("/user/models")
-def models(user: User) -> List[Optional[Dict[str, Any]]]:
-    return all_models.get(user.user_id, [])
+@app.post("/user/{user_uuid}/chat/{model_name}/{model_uuid}")
+async def chat(request: ChatRequest) -> Dict[str, Any]:
+    message = request.message[0]["content"]
+    chat_id = request.chat_id
+    user_id = request.user_id
+    team_name = f"{user_id}_{chat_id}"
 
+    try:
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT.format(task_name=message)}
+        ]
+        completion = await aclient.chat.completions.create(
+            model=AZURE_GPT35_MODEL,
+            messages=messages,
+            tools=TOOLS,
+            tool_choice={
+                "type": "function",
+                "function": {"name": "generate_chat_name"},
+            },
+        )  # type: ignore
 
-class Model(BaseModel):
-    uuid: str
-    user_id: int
-    model: str
-    base_url: str
-    api_type: str
-    api_version: Optional[str] = None
+        response_message = completion.choices[0].message
+        tool_calls = response_message.tool_calls
+        if tool_calls:
+            for tool_call in tool_calls:
+                function_name = tool_call.function.name
+                function_args = json.loads(tool_call.function.arguments)
+                if function_name == "generate_chat_name":
+                    return await generate_chat_name(  # type: ignore[return-value]
+                        team_name=team_name,
+                        chat_id=chat_id,
+                        **function_args,
+                    )
 
+    except Exception:
+        logging.error("Unable to generate chat name: ", exc_info=True)
 
-@app.post("/user/models/add")
-def models_add(model: Model) -> List[Optional[Dict[str, Any]]]:
-    models = all_models.setdefault(model.user_id, [])
-    model_dict = model.model_dump()
-    models.append(model_dict)
-    return models
+    default_response = {
+        "team_status": "inprogress",
+        "team_name": team_name,
+        "team_id": chat_id,
+        "customer_brief": "Some customer brief",
+        "conversation_name": message,
+    }
 
-
-class ModelUpdate(BaseModel):
-    user_id: int
-    uuid: str
-    model: Optional[str]
-    base_url: Optional[str]
-    api_type: Optional[str]
-    api_version: Optional[str] = None
-
-
-@app.put("/user/models/update")
-def models_update(model_update: ModelUpdate) -> Dict[str, Any]:
-    model = find_model(model_update.user_id, model_update.uuid)
-    updated_model = model_update.model_dump()
-    updated_model["uuid"] = model["uuid"]
-    all_models[model_update.user_id].remove(model)
-    all_models[model_update.user_id].append(updated_model)
-    return updated_model
-
-
-class ModelDelete(BaseModel):
-    user_id: int
-    uuid: str
-
-
-@app.delete("/user/models/delete")
-def models_delete(model_delete: ModelDelete) -> Dict[str, str]:
-    model = find_model(model_delete.user_id, model_delete.uuid)
-    all_models[model_delete.user_id].remove(model)
-    return {"detail": "Model deleted successfully"}
+    return default_response

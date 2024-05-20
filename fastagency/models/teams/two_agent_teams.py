@@ -1,6 +1,7 @@
 from typing import Annotated, Any, Dict, List
 from uuid import UUID
 
+import autogen
 from asyncer import syncify
 from pydantic import Field
 
@@ -59,6 +60,24 @@ class TwoAgentTeam(TeamBaseModel):
             ) -> None:
                 self.initial_agent = initial_agent
                 self.secondary_agent = secondary_agent
+
+                if isinstance(self.initial_agent, autogen.agentchat.AssistantAgent):
+                    assistant_agent = self.initial_agent
+                    user_proxy_agent = self.secondary_agent
+                elif isinstance(self.initial_agent, autogen.agentchat.UserProxyAgent):
+                    user_proxy_agent = self.initial_agent
+                    assistant_agent = self.secondary_agent
+                else:
+                    raise ValueError(
+                        "Agents must be of type AssistantAgent and UserProxyAgent"
+                    )
+
+                @user_proxy_agent.register_for_execution()  # type: ignore [misc]
+                @assistant_agent.register_for_llm(
+                    description="Get weather forecast for a city"
+                )  # type: ignore [misc]
+                def get_forecast_for_city(city: str) -> str:
+                    return f"The weather in {city} is sunny today."
 
             def initiate_chat(self, message: str) -> List[Dict[str, Any]]:
                 return self.initial_agent.initiate_chat(  # type: ignore[no-any-return]

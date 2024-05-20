@@ -13,7 +13,6 @@ jobs:
     defaults:
       run:
         shell: bash
-    needs: [check]
     if: github.ref_name == 'main' || github.ref_name == 'dev'
     env:
       GITHUB_USERNAME: ${{ github.actor }}

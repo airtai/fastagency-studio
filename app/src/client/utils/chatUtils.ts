@@ -10,8 +10,7 @@ import {
 import { type Conversation, type Chat } from 'wasp/entities';
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
-export const exceptionMessage =
-  "Ahoy, mate! It seems our voyage hit an unexpected squall. Let's trim the sails and set a new course. Cast off once more by clicking the button below.";
+export const exceptionMessage = 'Oops! An unexpected problem occurred. Please click the button below to retry.';
 
 type OutputMessage = {
   role: string;

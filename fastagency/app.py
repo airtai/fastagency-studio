@@ -45,6 +45,10 @@ async def get_user(user_uuid: Union[int, str]) -> Any:
     return user
 
 
+async def mask(value: str) -> str:
+    return value[:3] + "*" * (len(value) - 6) + value[-3:]
+
+
 @app.get("/user/{user_uuid}/models")
 async def get_all_models(
     user_uuid: str,
@@ -58,7 +62,14 @@ async def get_all_models(
         models = await db.model.find_many(where=filters)  # type: ignore[arg-type]
 
     ta = TypeAdapter(List[Model])
-    ret_val = ta.dump_python(models, serialize_as_any=True)  # type: ignore[call-arg]
+    ret_val_without_mask = ta.dump_python(models, serialize_as_any=True)  # type: ignore[call-arg]
+
+    ret_val = []
+    for model in ret_val_without_mask:
+        if model["type_name"] == "secret":
+            model["json_str"]["api_key"] = await mask(model["json_str"]["api_key"])
+        ret_val.append(model)
+
     return ret_val  # type: ignore[no-any-return]
 
 

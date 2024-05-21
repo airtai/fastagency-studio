@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi.testclient import TestClient
 
-from fastagency.app import app
+from fastagency.app import app, mask
 from fastagency.models.llms.azure import AzureOAIAPIKey
 
 client = TestClient(app)
@@ -54,6 +54,15 @@ class MockChatCompletion:
         self.choices = choices
 
 
+@pytest.mark.asyncio()
+@pytest.mark.parametrize(
+    "api_key,expected",  # noqa: PT006
+    [("whatever", "wha**ver"), ("some_other_key", "som********key")],
+)
+async def test_mask(api_key: str, expected: str) -> None:
+    assert await mask(api_key) == expected
+
+
 @pytest.mark.db()
 class TestModelRoutes:
     @pytest.mark.asyncio()
@@ -78,7 +87,7 @@ class TestModelRoutes:
         expected = [
             {
                 "json_str": {
-                    "api_key": "whatever",  # pragma: allowlist secret
+                    "api_key": "wha**ver",  # pragma: allowlist secret
                     "name": "whatever",
                 },
                 "uuid": key_uuid,

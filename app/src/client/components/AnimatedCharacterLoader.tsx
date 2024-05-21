@@ -41,15 +41,25 @@ const AnimatedCharacterLoader: React.FC<AnimatedCharacterLoaderProps> = ({
             className='absolute inline-block'
             style={{
               left: '-15px',
-              top: '6px',
+              top: '8px',
               height: ' 45px',
               width: '45px',
             }}
           >
-            <img alt='FastAgency logo' src={logo} className='w-full h-full' style={{ borderRadius: '50%' }} />
+            <span
+              className='bg-airt-font-base inline-block'
+              style={{ borderRadius: '50%', width: '93%', height: '93%', paddingTop: '3px' }}
+            >
+              <img
+                alt='FastAgency logo'
+                src={logo}
+                className='w-full h-full'
+                style={{ width: '78%', height: '78%', marginLeft: '4px' }}
+              />
+            </span>
           </span>
         )}
-        <div className={`chat-conversations text-base text-${textColor} flex flex-col gap-2`}>
+        <div className={`chat-conversations text-base text-${textColor} flex flex-col gap-2 pl-4`}>
           {/* <Markdown> */}
           {loadingMessage} {loadingAnimation[frameIndex]}
           {/* </Markdown> */}

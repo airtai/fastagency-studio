@@ -41,6 +41,7 @@ export const NumericStepperWithClearButton: React.FC<NumericStepperWithClearButt
       <input
         className='my-2 p-2 border rounded w-full'
         type='number'
+        data-testid='numeric-stepper'
         id={id}
         placeholder={`${formElementObject?.description}. Enter a number or 'Clear' to use the default value '${formElementObject?.default}'.`}
         value={inputValue ? inputValue : ''}

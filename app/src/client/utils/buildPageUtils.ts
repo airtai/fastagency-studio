@@ -137,20 +137,18 @@ export const getFormSubmitValues = (refValues: any, formData: any) => {
   }
   _.forEach(refKeys, function (key: string) {
     if (_.has(formData, key)) {
-      let selectedKey: string | null;
+      let selectedKey: string | number | undefined;
       if (formData[key] === null) {
-        selectedKey = null;
-      } else if (typeof formData[key] === 'number') {
-        selectedKey = formData[key];
+        selectedKey = undefined;
       } else {
         selectedKey = formData[key]
-          ? formData[key] && typeof formData[key] === 'string'
+          ? formData[key] && (typeof formData[key] === 'string' || typeof formData[key] === 'number')
             ? formData[key]
             : formData[key].json_str.name
           : refValues[key].htmlSchema.default;
       }
       const selectedData = refValues[key].refUserProperties.find((data: any) => data.json_str.name === selectedKey);
-      newFormData[key] = selectedData || selectedKey;
+      newFormData[key] = typeof selectedKey === 'string' ? selectedData : selectedKey;
     }
   });
   return newFormData;

@@ -27,7 +27,7 @@ describe('NumericStepperWithClearButton', () => {
     const { getByPlaceholderText } = renderNumericStepper(5, mockChangeHandler, formElementObject);
 
     // Check if component renders with correct placeholder based on description and default value
-    const placeholderText = "Age. Enter a number or 'Clear' to use the default value '10'.";
+    const placeholderText = "Age. Enter a number or 'Clear' to use the default value 'None'.";
     expect(getByPlaceholderText(placeholderText)).toBeInTheDocument();
 
     // Simulate user changing value

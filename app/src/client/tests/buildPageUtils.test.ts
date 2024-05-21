@@ -1104,6 +1104,83 @@ describe('buildPageUtils', () => {
       const formData = {
         name: 'Hello',
         llm: '',
+        max_consecutive_auto_reply: undefined,
+      };
+      const expected = {
+        name: 'Hello',
+        llm: {
+          uuid: '25427d4f-d48f-430e-9d0b-b15b20619b01',
+          user_uuid: 'ff2bb5ec-c769-40f2-8613-b44d792cb690',
+          type_name: 'llm',
+          model_name: 'AzureOAI',
+          json_str: {
+            name: 'Dev Azure llm',
+            model: 'gpt-35-turbo-16k',
+            api_key: {
+              name: 'AzureOAIAPIKey',
+              type: 'secret',
+              uuid: '621ee18b-2f0d-4dde-9c72-e3cc8a23bccb',
+            },
+            api_type: 'azure',
+            base_url: 'https://staging-airt-openai-france.openai.azure.com',
+            api_version: '2024-02-15-preview',
+          },
+          created_at: '2024-05-17T12:43:28.579000Z',
+          updated_at: '2024-05-17T12:43:28.579000Z',
+        },
+        max_consecutive_auto_reply: undefined,
+      };
+      const actual = getFormSubmitValues(refValues, formData);
+      expect(actual).toEqual(expected);
+    });
+
+    test('getFormSubmitValues - with numeric stepper - update existing record', () => {
+      const refValues = {
+        llm: {
+          htmlSchema: {
+            default: 'Dev Azure llm',
+            description: '',
+            enum: ['Dev Azure llm'],
+            title: 'LLM',
+            type: 'string',
+          },
+          refUserProperties: [
+            {
+              uuid: '25427d4f-d48f-430e-9d0b-b15b20619b01',
+              user_uuid: 'ff2bb5ec-c769-40f2-8613-b44d792cb690',
+              type_name: 'llm',
+              model_name: 'AzureOAI',
+              json_str: {
+                name: 'Dev Azure llm',
+                model: 'gpt-35-turbo-16k',
+                api_key: {
+                  name: 'AzureOAIAPIKey',
+                  type: 'secret',
+                  uuid: '621ee18b-2f0d-4dde-9c72-e3cc8a23bccb',
+                },
+                api_type: 'azure',
+                base_url: 'https://staging-airt-openai-france.openai.azure.com',
+                api_version: '2024-02-15-preview',
+              },
+              created_at: '2024-05-17T12:43:28.579000Z',
+              updated_at: '2024-05-17T12:43:28.579000Z',
+            },
+          ],
+        },
+        max_consecutive_auto_reply: {
+          htmlSchema: {
+            default: 1000,
+            description: 'The maximum number of consecutive auto-replies the agent can make',
+            enum: ['None'],
+            title: 'Max Consecutive Auto Reply',
+            type: 'numericStepperWithClearButton',
+          },
+          refUserProperties: [],
+        },
+      };
+      const formData = {
+        name: 'Hello',
+        llm: '',
         max_consecutive_auto_reply: null,
       };
       const expected = {
@@ -1128,7 +1205,7 @@ describe('buildPageUtils', () => {
           created_at: '2024-05-17T12:43:28.579000Z',
           updated_at: '2024-05-17T12:43:28.579000Z',
         },
-        max_consecutive_auto_reply: null,
+        max_consecutive_auto_reply: undefined,
       };
       const actual = getFormSubmitValues(refValues, formData);
       expect(actual).toEqual(expected);

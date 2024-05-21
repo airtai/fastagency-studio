@@ -18,6 +18,13 @@ from .base import AgentBaseModel, llm_type_refs
 class BingAPIKey(Model):
     api_key: Annotated[str, Field(description="The API Key from OpenAI")]
 
+    @classmethod
+    def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:
+        my_model_dict = syncify(find_model_using_raw)(model_id, user_id)
+        my_model = cls(**my_model_dict["json_str"])
+
+        return my_model.api_key
+
 
 BingAPIKeyRef: TypeAlias = BingAPIKey.get_reference_model()  # type: ignore[valid-type]
 

@@ -8,7 +8,7 @@ from asyncer import asyncify
 from pydantic import ValidationError
 
 from fastagency.app import add_model
-from fastagency.models.agents.web_surfer import WebSurferAgent
+from fastagency.models.agents.web_surfer import BingAPIKey, WebSurferAgent
 from fastagency.models.base import Model
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.llms.openai import OpenAI
@@ -254,3 +254,35 @@ class TestWebSurferAgent:
             user_id=uuid.UUID(user_uuid),
         )
         assert isinstance(agent, autogen.agentchat.contrib.web_surfer.WebSurferAgent)
+
+
+class TestBingAPIKey:
+    @pytest.mark.asyncio()
+    @pytest.mark.db()
+    async def test_bing_api_key_model_create_autogen(
+        self,
+        llm_config: Dict[str, Any],
+        user_uuid: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        # Add secret to database
+        api_key = BingAPIKey(  # type: ignore [operator]
+            api_key="dummy_bing_api_key",  # pragma: allowlist secret
+            name="api_key_model_name",
+        )
+        api_key_model_uuid = str(uuid.uuid4())
+        await add_model(
+            user_uuid=user_uuid,
+            type_name="secret",
+            model_name=BingAPIKey.__name__,  # type: ignore [attr-defined]
+            model_uuid=api_key_model_uuid,
+            model=api_key.model_dump(),
+        )
+
+        # Call create_autogen
+        actual_api_key = await asyncify(AzureOAIAPIKey.create_autogen)(
+            model_id=uuid.UUID(api_key_model_uuid),
+            user_id=uuid.UUID(user_uuid),
+        )
+        assert isinstance(actual_api_key, str)
+        assert actual_api_key == api_key.api_key

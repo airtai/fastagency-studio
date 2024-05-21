@@ -39,10 +39,10 @@ export default function SmartSuggestionButton({
     <div>
       <div className={` pb-4 flex items-center group bg-airt-primary`}>
         <div
-          style={{ maxWidth: '800px', margin: 'auto' }}
+          style={{ maxWidth: '765px', margin: 'auto' }}
           className={`fade-in  relative ml-3 block w-full px-4 rounded-lg bg-airt-primary ${
             isShowSuggestions ? 'opacity-100' : 'opacity-0'
-          }}`}
+          }`}
         >
           <div className='ml-5 chat-conversations text-base flex flex-wrap'>
             {suggestions.map((suggestion, index) => (

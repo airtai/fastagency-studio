@@ -220,3 +220,25 @@ export function filterDataToValidate(data: filterDataToValidateType): filterData
     return typeof o === 'object' ? { uuid: o.uuid, type: o.type_name, name: o.model_name } : o;
   });
 }
+
+function deepSearch(property: any, deletePropertyUUID: string): any {
+  const jsonStr = _.get(property, 'json_str');
+  if (_.isObject(jsonStr)) {
+    for (let key in jsonStr) {
+      if (jsonStr[key] === deletePropertyUUID) {
+        return property;
+      } else if (_.isObject(jsonStr[key]) || _.isArray(jsonStr[key])) {
+        let result = deepSearch({ json_str: jsonStr[key] }, deletePropertyUUID);
+        if (result) {
+          return result;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+export function dependsOnProperty(allUserProperties: any[], deletePropertyUUID: string): string {
+  const property = _.find(allUserProperties, (property: { json_str: any }) => deepSearch(property, deletePropertyUUID));
+  return property ? property.json_str.name : '';
+}

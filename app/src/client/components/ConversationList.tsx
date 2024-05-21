@@ -57,7 +57,7 @@ export default function ConversationsList({
         const conversationBgColor = isUserConversation ? 'airt-secondary' : 'airt-primary';
         const conversationTextColor = isUserConversation ? 'airt-primary' : 'airt-font-base';
         const conversationLogo = isUserConversation ? (
-          <div
+          <span
             style={{
               alignItems: 'center',
               background: '#fff',
@@ -74,13 +74,13 @@ export default function ConversationsList({
               position: 'relative',
               width: '40px',
             }}
-            className='flex'
+            className='flex inline-block'
           >
-            <div>You</div>
-          </div>
+            <span className='inline-block'>You</span>
+          </span>
         ) : (
-          <div
-            className='bg-airt-font-base'
+          <span
+            className='inline-block bg-airt-font-base'
             style={{ borderRadius: '50%', width: '93%', height: '93%', paddingTop: '3px' }}
           >
             <img
@@ -89,7 +89,7 @@ export default function ConversationsList({
               src={logo}
               style={{ width: '78%', height: '78%', marginLeft: '4px' }}
             />
-          </div>
+          </span>
         );
 
         return (
@@ -141,7 +141,7 @@ export default function ConversationsList({
                       ) : (
                         <Markdown>{conversation.message}</Markdown>
                       )}
-                      {!currentChatDetails.isChatTerminated && (
+                      {!currentChatDetails.isChatTerminated && !currentChatDetails.isExceptionOccured && (
                         <div className='flex'>
                           <button
                             className='bg-airt-secondary text-airt-primary hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 inline-block whitespace-nowrap'

@@ -17,6 +17,7 @@ import {
   getAllRefs,
   checkForDependency,
   filterDataToValidate,
+  dependsOnProperty,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -1422,6 +1423,87 @@ describe('buildPageUtils', () => {
 
       const actual = filterDataToValidate(input);
       expect(actual).toEqual(expected);
+    });
+  });
+  describe('canDeleteProperty', () => {
+    test('canDeleteProperty - with reference', () => {
+      const allUserProperties = [
+        {
+          uuid: 'd3ac66e9-de81-41f2-8730-5d79fd21630e',
+          user_uuid: 'ff2bb5ec-c769-40f2-8613-b44d792cb690',
+          type_name: 'secret',
+          model_name: 'AzureOAIAPIKey',
+          json_str: {
+            name: 'Test 1 secret',
+            api_key: '',
+          },
+          created_at: '2024-05-20T13:35:22.802000Z',
+          updated_at: '2024-05-20T13:35:22.802000Z',
+        },
+        {
+          uuid: '9922f163-bea6-4653-a9d6-4f22f4a7eaeb',
+          user_uuid: 'ff2bb5ec-c769-40f2-8613-b44d792cb690',
+          type_name: 'llm',
+          model_name: 'AzureOAI',
+          json_str: {
+            name: 'test 1 llm',
+            model: 'gpt-3.5-turbo',
+            api_key: {
+              name: 'AzureOAIAPIKey',
+              type: 'secret',
+              uuid: 'd3ac66e9-de81-41f2-8730-5d79fd21630e',
+            },
+            api_type: 'azure',
+            base_url: 'https://api.openai.com/v1',
+            api_version: 'latest',
+          },
+          created_at: '2024-05-20T13:38:26.552000Z',
+          updated_at: '2024-05-20T13:38:26.552000Z',
+        },
+      ];
+      const deletePropertyUUID = 'd3ac66e9-de81-41f2-8730-5d79fd21630e';
+      const propertyName = dependsOnProperty(allUserProperties, deletePropertyUUID);
+      expect(propertyName).toEqual('test 1 llm');
+    });
+
+    test('canDeleteProperty - without reference', () => {
+      const allUserProperties = [
+        {
+          uuid: 'd3ac66e9-de81-41f2-8730-5d79fd21630e',
+          user_uuid: 'ff2bb5ec-c769-40f2-8613-b44d792cb690',
+          type_name: 'secret',
+          model_name: 'AzureOAIAPIKey',
+          json_str: {
+            name: 'Test 1 secret',
+            api_key: '',
+          },
+          created_at: '2024-05-20T13:35:22.802000Z',
+          updated_at: '2024-05-20T13:35:22.802000Z',
+        },
+        {
+          uuid: '9922f163-bea6-4653-a9d6-4f22f4a7eaeb',
+          user_uuid: 'ff2bb5ec-c769-40f2-8613-b44d792cb690',
+          type_name: 'llm',
+          model_name: 'AzureOAI',
+          json_str: {
+            name: 'test 1 llm',
+            model: 'gpt-3.5-turbo',
+            api_key: {
+              name: 'AzureOAIAPIKey',
+              type: 'secret',
+              uuid: 'd3ac66e9-de81-41f2-8730-5d79fd21630e',
+            },
+            api_type: 'azure',
+            base_url: 'https://api.openai.com/v1',
+            api_version: 'latest',
+          },
+          created_at: '2024-05-20T13:38:26.552000Z',
+          updated_at: '2024-05-20T13:38:26.552000Z',
+        },
+      ];
+      const deletePropertyUUID = 'some-random-de81-41f2-8730-5d79fd21630e';
+      const propertyName = dependsOnProperty(allUserProperties, deletePropertyUUID);
+      expect(propertyName).toEqual('');
     });
   });
 });

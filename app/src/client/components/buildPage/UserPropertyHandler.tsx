@@ -23,6 +23,7 @@ import {
   formatDependencyErrorMessage,
   capitalizeFirstLetter,
   filterDataToValidate,
+  dependsOnProperty,
 } from '../../utils/buildPageUtils';
 import Loader from '../../admin/common/Loader';
 
@@ -87,10 +88,20 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     try {
       setIsLoading(true);
       if (updateExistingModel) {
-        await deleteUserModels({ uuid: updateExistingModel.uuid, type_name: updateExistingModel.type_name });
-        await refetchModels();
-        setUpdateExistingModel(null);
-        setShowAddModel(false);
+        if (allUserProperties) {
+          const propertyName = dependsOnProperty(allUserProperties, updateExistingModel.uuid);
+          if (propertyName !== '') {
+            const currentPropertyName = _.has(updateExistingModel, 'name') ? updateExistingModel.name : '';
+            setNotificationErrorMessage(
+              `Oops! You can't delete '${currentPropertyName}' because it's being used in '${propertyName}'.`
+            );
+          } else {
+            await deleteUserModels({ uuid: updateExistingModel.uuid, type_name: updateExistingModel.type_name });
+            await refetchModels();
+            setUpdateExistingModel(null);
+            setShowAddModel(false);
+          }
+        }
       }
     } catch (error) {
       setNotificationErrorMessage(`Error deleting ${propertyName}. Please try again later.`);

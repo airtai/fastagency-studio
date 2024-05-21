@@ -57,7 +57,7 @@ class MockChatCompletion:
 @pytest.mark.asyncio()
 @pytest.mark.parametrize(
     "api_key,expected",  # noqa: PT006
-    [("whatever", "wha**ver"), ("some_other_key", "som********key")],
+    [("whatever", "wha*ever"), ("some_other_key", "som*******_key")],
 )
 async def test_mask(api_key: str, expected: str) -> None:
     assert await mask(api_key) == expected
@@ -87,7 +87,7 @@ class TestModelRoutes:
         expected = [
             {
                 "json_str": {
-                    "api_key": "wha**ver",  # pragma: allowlist secret
+                    "api_key": "wha*ever",  # pragma: allowlist secret
                     "name": "whatever",
                 },
                 "uuid": key_uuid,

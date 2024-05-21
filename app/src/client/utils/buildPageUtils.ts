@@ -43,20 +43,23 @@ export const getDependenciesCreatedByUser = async (type_name: string): Promise<S
 };
 
 interface constructHTMLSchemaValues {
-  [key: string]: string[] | string;
+  [key: string]: string[] | string | number;
 }
 
 export const constructHTMLSchema = (
   propertyDependencies: SelectedModelSchema[],
   title: string,
   property: any,
-  selectedModelRefValues: null | object
+  selectedModelRefValues: null | number | object
 ): constructHTMLSchemaValues => {
   const capitalizeTitle = _.map(title.split('_'), capitalizeFirstLetter).join(' ');
   let properties = _.map(propertyDependencies, 'json_str.name');
-  let defaultValue: string;
+  let defaultValue: string | number;
   if (selectedModelRefValues) {
-    defaultValue = _.filter(propertyDependencies, ['uuid', (selectedModelRefValues as any).uuid])[0].json_str.name;
+    defaultValue =
+      typeof selectedModelRefValues === 'number'
+        ? selectedModelRefValues
+        : _.filter(propertyDependencies, ['uuid', (selectedModelRefValues as any).uuid])[0].json_str.name;
   } else {
     defaultValue = _.has(property, 'default')
       ? property.default === null
@@ -71,12 +74,21 @@ export const constructHTMLSchema = (
   } else {
     properties.unshift('None');
   }
+  const isIntegerOrNull =
+    propertyDependencies.length === 0 &&
+    _.isEqual(
+      _.map(property.anyOf, (o: any) => o.type),
+      ['integer', 'null']
+    );
+
+  const returnType = isIntegerOrNull ? 'numericStepperWithClearButton' : 'string';
+  const description = isIntegerOrNull ? property.description : '';
   return {
     default: defaultValue,
-    description: '',
+    description: description,
     enum: properties,
     title: capitalizeTitle,
-    type: 'string',
+    type: returnType,
   };
 };
 
@@ -125,13 +137,20 @@ export const getFormSubmitValues = (refValues: any, formData: any) => {
   }
   _.forEach(refKeys, function (key: string) {
     if (_.has(formData, key)) {
-      const selectedKey = formData[key]
-        ? formData[key] && typeof formData[key] === 'string'
-          ? formData[key]
-          : formData[key].json_str.name
-        : refValues[key].htmlSchema.default;
+      let selectedKey: string | null;
+      if (formData[key] === null) {
+        selectedKey = null;
+      } else if (typeof formData[key] === 'number') {
+        selectedKey = formData[key];
+      } else {
+        selectedKey = formData[key]
+          ? formData[key] && typeof formData[key] === 'string'
+            ? formData[key]
+            : formData[key].json_str.name
+          : refValues[key].htmlSchema.default;
+      }
       const selectedData = refValues[key].refUserProperties.find((data: any) => data.json_str.name === selectedKey);
-      newFormData[key] = selectedData;
+      newFormData[key] = selectedData || selectedKey;
     }
   });
   return newFormData;
@@ -212,12 +231,12 @@ type dataObject = {
 
 type filterDataToValidateType = {
   uuid: string;
-  [key: string]: string | dataObject;
+  [key: string]: string | dataObject | null;
 };
 
 export function filterDataToValidate(data: filterDataToValidateType): filterDataToValidateType {
   return _.mapValues(data, function (o: string | dataObject) {
-    return typeof o === 'object' ? { uuid: o.uuid, type: o.type_name, name: o.model_name } : o;
+    return o !== null && typeof o === 'object' ? { uuid: o.uuid, type: o.type_name, name: o.model_name } : o;
   });
 }
 

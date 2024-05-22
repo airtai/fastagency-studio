@@ -2,6 +2,12 @@ name: Deploy NATS
 
 on:
   workflow_dispatch:
+    inputs:
+      clear_jetstream:
+        description: 'Clear Jetstream'
+        required: true
+        default: 'false'
+        type: boolean
 
 env:
   REGISTRY: ghcr.io
@@ -15,6 +21,8 @@ jobs:
         shell: bash
     if: github.ref_name == 'main' || github.ref_name == 'dev'
     env:
+      CLEAR_JETSTREAM: ${{ github.event.inputs.clear_jetstream }}
+
       GITHUB_USERNAME: ${{ github.actor }}
       GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       DEVELOPER_TOKEN: ${{ secrets.DEVELOPER_TOKEN }}

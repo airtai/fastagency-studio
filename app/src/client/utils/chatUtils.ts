@@ -211,7 +211,3 @@ export const handleChatError = async (err: any, activeChatId: number, inProgress
     });
   }
 };
-
-export const shouldRenderChat = (chat: Chat): boolean => {
-  return chat.chatType !== 'daily_analysis' || chat.shouldShowChat;
-};

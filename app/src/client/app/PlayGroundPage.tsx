@@ -58,17 +58,6 @@ const PlayGroundPage = ({ user }: { user: User }) => {
     { enabled: !!activeChatId }
   );
 
-  useEffect(() => {
-    if (currentChatDetails && currentChatDetails.chatType === 'daily_analysis') {
-      updateCurrentChat({
-        id: activeChatId,
-        data: {
-          shouldShowChat: true,
-        },
-      });
-    }
-  }, [activeChatUUId, currentChatDetails]);
-
   useSocketListener('smartSuggestionsAddedToDB', updateState);
   useSocketListener('streamFromTeamFinished', updateState);
 
@@ -150,16 +139,8 @@ const PlayGroundPage = ({ user }: { user: User }) => {
     triggerChatFormSubmitMsg = null;
   }
 
-  const userSelectedAction: any = queryParams.get('selected_user_action');
+  // const userSelectedAction: any = queryParams.get('selected_user_action');
   let userSelectedActionMessage: string | null = null;
-
-  if (userSelectedAction) {
-    if (!currentChatDetails?.userRespondedWithNextAction) {
-      if (currentChatDetails?.proposedUserAction) {
-        userSelectedActionMessage = currentChatDetails.proposedUserAction[Number(userSelectedAction) - 1];
-      }
-    }
-  }
 
   const handleTeamClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>): void => {
     e.preventDefault();

@@ -11,12 +11,7 @@ vi.mock('wasp/client/operations', async (importOriginal) => {
   const mod = await importOriginal<typeof import('wasp/client/operations')>();
   return {
     ...mod,
-    createNewDailyAnalysisChat: vi
-      .fn()
-      .mockResolvedValue([{ uuid: '123' }, 'Sample user message']),
-    retryTeamChat: vi
-      .fn()
-      .mockResolvedValue([{ uuid: '123' }, 'Sample user message']),
+    retryTeamChat: vi.fn().mockResolvedValue([{ uuid: '123' }, 'Sample user message']),
   };
 });
 
@@ -67,7 +62,6 @@ describe('SmartSuggestionButton', () => {
         suggestions: ['Suggestion 1', 'Suggestion 2'],
       },
       isExceptionOccured: true,
-      chatType: 'normal_chat',
     };
 
     renderInContext(
@@ -82,36 +76,10 @@ describe('SmartSuggestionButton', () => {
     expect(mockOnClick).toHaveBeenCalledWith(null, false, true);
   });
 
-  test('handles daily_analysis chat type correctly', async () => {
-    const mockOnClick = vi.fn();
-    const currentChatDetails: Partial<Chat> = {
-      chatType: 'daily_analysis',
-      smartSuggestions: {
-        suggestions: ['Suggestion 1', 'Suggestion 2'],
-      },
-      isExceptionOccured: true,
-    };
-
-    renderInContext(
-      <SmartSuggestionButton
-        // @ts-ignore
-        currentChatDetails={currentChatDetails}
-        smartSuggestionOnClick={mockOnClick}
-      />
-    );
-
-    fireEvent.click(screen.getByText('Suggestion 1'));
-
-    expect(operations.createNewDailyAnalysisChat).toHaveBeenCalledWith(
-      currentChatDetails
-    );
-  });
-
   test('handles team chat type correctly', async () => {
     const mockOnClick = vi.fn();
     const history = createMemoryHistory();
     const currentChatDetails: Partial<Chat> = {
-      chatType: 'normal_chat',
       team_name: 'Team Name',
       smartSuggestions: {
         suggestions: ['Suggestion 1', 'Suggestion 2'],
@@ -130,8 +98,6 @@ describe('SmartSuggestionButton', () => {
 
     fireEvent.click(screen.getByText('Suggestion 1'));
 
-    expect(operations.retryTeamChat).toHaveBeenCalledWith(
-      currentChatDetails.id
-    );
+    expect(operations.retryTeamChat).toHaveBeenCalledWith(currentChatDetails.id);
   });
 });

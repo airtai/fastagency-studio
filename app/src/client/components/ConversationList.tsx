@@ -97,7 +97,7 @@ export default function ConversationsList({
             {conversation.isLoading ? (
               <AnimatedCharacterLoader
                 loadingMessage={`${
-                  currentChatDetails.customerBrief || currentChatDetails.chatType === 'daily_analysis'
+                  currentChatDetails.customerBrief
                     ? 'The team is currently working on the task. You can monitor their discussions in the window below as they progress...'
                     : 'Loading...'
                 }`}
@@ -195,7 +195,6 @@ export default function ConversationsList({
                   currentChatDetails.smartSuggestions.suggestions
                 }
                 smartSuggestionOnClick={handleFormSubmit}
-                chatType={currentChatDetails.chatType}
                 userSelectedActionMessage={userSelectedActionMessage}
               />
             )

@@ -1,5 +1,5 @@
 import { type Chat } from 'wasp/entities';
-import { retryTeamChat, createNewDailyAnalysisChat } from 'wasp/client/operations';
+import { retryTeamChat } from 'wasp/client/operations';
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -18,17 +18,12 @@ export default function SmartSuggestionButton({
   const suggestions = currentChatDetails.smartSuggestions.suggestions;
   async function handleSuggestionClick(suggestion: string, smartSuggestionOnClick: any) {
     if (currentChatDetails.isExceptionOccured) {
-      if (currentChatDetails.chatType === 'daily_analysis') {
-        const [newChat, lastConversationMessage] = await createNewDailyAnalysisChat(currentChatDetails);
-        history.push(`/playground/${newChat.uuid}?msg=${lastConversationMessage}`);
+      if (currentChatDetails.team_name) {
+        const [chat, lastConversationMessage] = await retryTeamChat(currentChatDetails.id);
+        history.push(`/playground/${chat.uuid}?msg=${lastConversationMessage}`);
       } else {
-        if (currentChatDetails.team_name) {
-          const [chat, lastConversationMessage] = await retryTeamChat(currentChatDetails.id);
-          history.push(`/playground/${chat.uuid}?msg=${lastConversationMessage}`);
-        } else {
-          setIsShowSuggestions(false);
-          smartSuggestionOnClick(null, false, true);
-        }
+        setIsShowSuggestions(false);
+        smartSuggestionOnClick(null, false, true);
       }
     } else {
       smartSuggestionOnClick(suggestion);

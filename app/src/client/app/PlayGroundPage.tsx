@@ -46,6 +46,7 @@ const PlayGroundPage = ({ user }: { user: User }) => {
   const { data: activeChat } = useQuery(getChatFromUUID, {
     chatUUID: activeChatUUId,
   });
+  const [triggerChatFormSubmitMsg, setTriggerChatFormSubmitMsg] = useState<string | null>(null);
   const activeChatId = Number(activeChat?.id);
   const { data: currentChatDetails, refetch: refetchChat }: { data: any; refetch: any } = useQuery(
     getChat,
@@ -57,8 +58,8 @@ const PlayGroundPage = ({ user }: { user: User }) => {
     { chatId: activeChatId },
     { enabled: !!activeChatId }
   );
+  const [triggerScrollBarMove, settriggerScrollBarMove] = useState(false);
 
-  useSocketListener('smartSuggestionsAddedToDB', updateState);
   useSocketListener('streamFromTeamFinished', updateState);
 
   function updateState() {
@@ -77,6 +78,16 @@ const PlayGroundPage = ({ user }: { user: User }) => {
     setRefetchAllChatDetails(!refetchAllChatDetails);
   };
 
+  const formSubmitMsg = queryParams.get('initiateChatMsg');
+  useEffect(() => {
+    if (formSubmitMsg && currentChatDetails) {
+      if (!currentChatDetails.userRespondedWithNextAction) {
+        setTriggerChatFormSubmitMsg(formSubmitMsg);
+      }
+      removeQueryParameters();
+    }
+  }, [formSubmitMsg, currentChatDetails]);
+
   const handleFormSubmit = async (
     userQuery: string,
     isUserRespondedWithNextAction: boolean = false,
@@ -89,7 +100,10 @@ const PlayGroundPage = ({ user }: { user: User }) => {
     } else {
       let inProgressConversation;
       try {
-        await updateCurrentChatStatus(activeChatId, isUserRespondedWithNextAction, removeQueryParameters);
+        if (isUserRespondedWithNextAction) {
+          await updateCurrentChatStatus(activeChatId, isUserRespondedWithNextAction, removeQueryParameters);
+          setTriggerChatFormSubmitMsg(null);
+        }
         const messages: any = await getFormattedChatMessages(activeChatId, userQuery, retrySameChat);
         inProgressConversation = await getInProgressConversation(activeChatId, userQuery, retrySameChat);
         const selectedTeam: SelectedModelSchema | undefined = userTeams?.find(
@@ -119,6 +133,7 @@ const PlayGroundPage = ({ user }: { user: User }) => {
             );
           }
         }
+        settriggerScrollBarMove(true);
       } catch (err: any) {
         await handleChatError(err, activeChatId, inProgressConversation, history);
       }
@@ -133,12 +148,6 @@ const PlayGroundPage = ({ user }: { user: User }) => {
       },
     });
   };
-
-  let triggerChatFormSubmitMsg = queryParams.get('msg');
-  if (triggerChatFormSubmitMsg && currentChatDetails?.userRespondedWithNextAction) {
-    triggerChatFormSubmitMsg = null;
-    removeQueryParameters();
-  }
 
   // const userSelectedAction: any = queryParams.get('selected_user_action');
   let userSelectedActionMessage: string | null = null;
@@ -166,6 +175,7 @@ const PlayGroundPage = ({ user }: { user: User }) => {
       currentChatDetails={currentChatDetails}
       triggerChatFormSubmitMsg={triggerChatFormSubmitMsg}
       refetchAllChatDetails={refetchAllChatDetails}
+      triggerScrollBarMove={triggerScrollBarMove}
     >
       <div className='flex h-full flex-col'>
         {currentChatDetails ? (

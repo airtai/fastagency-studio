@@ -2,17 +2,11 @@ import { useSocketListener } from 'wasp/client/webSocket';
 import { type Conversation, type Chat } from 'wasp/entities';
 
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Markdown from 'markdown-to-jsx';
-// import createNewAndReturnAllConversations from '@wasp/actions/createNewAndReturnAllConversations';
-
-import SmartSuggestionButton from './SmartSuggestionButton';
-import SmartSuggestionCheckbox from './SmartSuggestionCheckbox';
 import LetterByLetterDisplay from './LetterByLetterDisplay';
-// import TerminalDisplay from './TerminalDisplay';
 import AgentConversationHistory from './AgentConversationHistory';
 import AnimatedCharacterLoader from './AnimatedCharacterLoader';
-// import logo from '../static/captn-logo.png';
 import logo from '../static/logo.svg';
 
 type ConversationsListProps = {
@@ -31,23 +25,9 @@ export default function ConversationsList({
   onStreamAnimationComplete,
 }: ConversationsListProps) {
   const [streamingAgentResponse, setStreamingAgentResponse] = useState('');
-  // @ts-ignore
-  const smartSuggestions = currentChatDetails?.smartSuggestions?.suggestions;
-  // @ts-ignore
-  const smartSuggestionsLength = smartSuggestions?.length;
-  // @ts-ignore
-  const isSmartSuggestionsAvailable =
-    // @ts-ignore
-    smartSuggestionsLength > 0 &&
-    !(
-      smartSuggestionsLength === 1 &&
-      // @ts-ignore
-      currentChatDetails?.smartSuggestions.suggestions[0] === ''
-    );
   const lastConversationIdx = conversations.length - 1;
 
   useSocketListener('newMessageFromTeam', (message: any) => setStreamingAgentResponse(message));
-
   useSocketListener('streamFromTeamFinished', () => setStreamingAgentResponse(''));
 
   return (
@@ -177,29 +157,6 @@ export default function ConversationsList({
           initialState={true}
           isAgentWindow={true}
         />
-      )}
-
-      {isSmartSuggestionsAvailable && !currentChatDetails?.streamAgentResponse && (
-        <div data-testid='smart-suggestions' className='fadeIn'>
-          {
-            // @ts-ignore
-            currentChatDetails.smartSuggestions?.type == 'oneOf' ? (
-              <SmartSuggestionButton
-                currentChatDetails={currentChatDetails}
-                smartSuggestionOnClick={handleFormSubmit}
-              />
-            ) : (
-              <SmartSuggestionCheckbox
-                suggestions={
-                  // @ts-ignore
-                  currentChatDetails.smartSuggestions.suggestions
-                }
-                smartSuggestionOnClick={handleFormSubmit}
-                userSelectedActionMessage={userSelectedActionMessage}
-              />
-            )
-          }
-        </div>
       )}
     </div>
   );

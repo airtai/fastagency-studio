@@ -284,10 +284,6 @@ export const createNewChat: CreateNewChat<any, Chat> = async (args, context) => 
   const chat = await context.entities.Chat.create({
     data: {
       user: { connect: { id: context.user.id } },
-      smartSuggestions: {
-        type: 'manyOf',
-        suggestions: [''],
-      },
       selectedTeam: args.teamName ? args.teamName : null,
     },
   });
@@ -304,17 +300,6 @@ export const createNewChat: CreateNewChat<any, Chat> = async (args, context) => 
   // }
 
   return chat;
-};
-
-const resetSmartSuggestions = async (chatId: number, context: any) => {
-  await context.entities.Chat.update({
-    where: {
-      id: chatId,
-    },
-    data: {
-      smartSuggestions: { suggestions: [''], type: '' },
-    },
-  });
 };
 
 export const updateCurrentChat: UpdateCurrentChat<{ id: number; data: Partial<Chat> }, Chat> = async (
@@ -382,8 +367,6 @@ export const retryTeamChat: RetryTeamChat<number, [Chat, string]> = async (chatI
   if (!context.user) {
     throw new HttpError(401);
   }
-
-  await resetSmartSuggestions(chatId, context);
 
   const newChat = await context.entities.Chat.create({
     data: {

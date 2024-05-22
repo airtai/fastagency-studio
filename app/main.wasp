@@ -133,7 +133,6 @@ entity Chat {=psl
     agentChatHistory         String?
     isExceptionOccured       Boolean         @default(false)
     showLoader  Boolean         @default(false)
-    smartSuggestions  Json         @default("{ \"suggestions\": [\"\"], \"type\": \"\"}")
     streamAgentResponse Boolean         @default(false)
     customerBrief       String?
     user        User?    @relation(fields: [userId], references: [id])
@@ -443,11 +442,6 @@ api stripeWebhook {
   httpRoute: (POST, "/stripe-webhook")
 }
 
-api smartSuggestionsWebHook {
-  fn: import { smartSuggestionsWebHook } from "@src/server/webhooks/captn.js",
-  entities: [Chat],
-  httpRoute: (POST, "/smart-suggestions-webhook")
-}
 
 /* 🕵️‍♂️ These are the Wasp Jobs. Use them to set up recurring tasks and/or queues:
  * https://wasp-lang.dev/docs/advanced/jobs

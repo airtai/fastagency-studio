@@ -19,7 +19,7 @@ jobs:
     defaults:
       run:
         shell: bash
-    if: github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'separate-network'
+    if: github.ref_name == 'main' || github.ref_name == 'dev'
     env:
       CLEAR_JETSTREAM: ${{ github.event.inputs.clear_jetstream }}
 

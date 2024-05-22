@@ -46,7 +46,14 @@ async def get_user(user_uuid: Union[int, str]) -> Any:
 
 
 async def mask(value: str) -> str:
-    return value[:3] + "*" * (len(value) - 7) + value[-4:]
+    if len(value):
+        return (
+            value[:3] + "..." + value[-4:]
+            if len(value) > 9
+            else value[0] + "." * (len(value) - 2) + value[-1]
+        )
+    else:
+        return value
 
 
 @app.get("/user/{user_uuid}/models")

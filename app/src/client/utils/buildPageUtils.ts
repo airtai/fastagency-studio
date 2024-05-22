@@ -14,18 +14,6 @@ export function capitalizeFirstLetter(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export function formatApiKey(apiKey: string) {
-  if (apiKey.length) {
-    if (apiKey.length > 7) {
-      return `${apiKey.slice(0, 3)}...${apiKey.slice(-4)}`;
-    } else {
-      return `${apiKey.slice(0, 2)}${'*'.repeat(apiKey.length - 2)}`;
-    }
-  } else {
-    return '';
-  }
-}
-
 export const getSchemaByName = (schemas: ApiSchema[], schemaName: string): JsonSchema => {
   const apiSchema: ApiSchema | undefined = schemas.find((s) => s.name === schemaName);
   return apiSchema ? apiSchema.json_schema : schemas[0].json_schema;
@@ -102,38 +90,11 @@ interface PropertyReferenceValues {
   userPropertyData: SelectedModelSchema[];
 }
 
-// export const getPropertyReferenceValues = async (
-//   ref: string,
-//   definitions: any,
-//   key: string,
-//   type_name: string
-// ): Promise<{} | PropertyReferenceValues> => {
-//   const refArray = ref.split('/');
-//   const refName = refArray[refArray.length - 1];
-//   if (!_.has(definitions, refName)) {
-//     return {}; // show error???
-//   }
-//   const keyType = getKeyType(refName, definitions);
-//   const title = _.map(key.split('_'), capitalizeFirstLetter).join(' ');
-
-//   const allPropertyDependencies = await getDependenciesCreatedByUser(type_name);
-//   const propertyDependencies = _.filter(allPropertyDependencies, function (o: any) {
-//     return o.type_name === keyType;
-//   });
-
-//   const htmlSchema = constructHTMLSchema(propertyDependencies, title);
-//   const retVal: PropertyReferenceValues = {
-//     htmlSchema: htmlSchema,
-//     userPropertyData: propertyDependencies,
-//   };
-//   return retVal;
-// };
-
-export const getFormSubmitValues = (refValues: any, formData: any) => {
+export const getFormSubmitValues = (refValues: any, formData: any, isSecretUpdate: boolean) => {
   const newFormData = _.cloneDeep(formData);
   const refKeys = _.keys(refValues);
   if (refKeys.length === 0) {
-    return formData;
+    return isSecretUpdate ? _.omit(formData, ['api_key']) : formData;
   }
   _.forEach(refKeys, function (key: string) {
     if (_.has(formData, key)) {

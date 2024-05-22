@@ -57,7 +57,12 @@ class MockChatCompletion:
 @pytest.mark.asyncio()
 @pytest.mark.parametrize(
     "api_key,expected",  # noqa: PT006
-    [("whatever", "wha*ever"), ("some_other_key", "som*******_key")],
+    [
+        ("this_is_a_long_secret", "thi...cret"),
+        ("some_other_key", "som..._key"),
+        ("", ""),
+        ("abcdefghi", "a.......i"),
+    ],
 )
 async def test_mask(api_key: str, expected: str) -> None:
     assert await mask(api_key) == expected
@@ -70,7 +75,10 @@ class TestModelRoutes:
         self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         key_uuid = str(uuid.uuid4())
-        azure_oai_api_key = AzureOAIAPIKey(api_key="whatever", name="whatever")
+        azure_oai_api_key = AzureOAIAPIKey(
+            api_key="this_is_a_long_secret",  #  pragma: allowlist secret
+            name="whatever",
+        )
         type_name = "secret"
         model_name = "AzureOAIAPIKey"
 
@@ -87,7 +95,7 @@ class TestModelRoutes:
         expected = [
             {
                 "json_str": {
-                    "api_key": "wha*ever",  # pragma: allowlist secret
+                    "api_key": "thi...cret",  # pragma: allowlist secret
                     "name": "whatever",
                 },
                 "uuid": key_uuid,

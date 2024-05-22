@@ -79,7 +79,25 @@ const updateExistingModel: SelectedModelSchema = {
 };
 
 describe('DynamicFormBuilder', () => {
-  test('renders form fields correctly', () => {
+  test('renders form fields correctly - create new secret', () => {
+    renderInContext(
+      <DynamicFormBuilder
+        allUserProperties={{}}
+        type_name='secret'
+        jsonSchema={jsonSchema}
+        validationURL='https://some-domain/some-route'
+        updateExistingModel={null}
+        onSuccessCallback={vi.fn()}
+        onCancelCallback={vi.fn()}
+        onDeleteCallback={vi.fn()}
+      />
+    );
+    expect(screen.getByLabelText('Model')).toBeInTheDocument();
+    expect(screen.getByLabelText('API Key')).toBeInTheDocument();
+    expect(screen.getByLabelText('Base Url')).toBeInTheDocument();
+    expect(screen.queryByLabelText('API Type')).toBeInTheDocument();
+  });
+  test('renders form fields correctly - update secret', () => {
     renderInContext(
       <DynamicFormBuilder
         allUserProperties={{}}
@@ -93,7 +111,6 @@ describe('DynamicFormBuilder', () => {
       />
     );
     expect(screen.getByLabelText('Model')).toBeInTheDocument();
-    expect(screen.getByLabelText('API Key')).toBeInTheDocument();
     expect(screen.getByLabelText('Base Url')).toBeInTheDocument();
     expect(screen.queryByLabelText('API Type')).toBeInTheDocument();
   });
@@ -167,7 +184,7 @@ describe('DynamicFormBuilder', () => {
         type_name='secret'
         jsonSchema={jsonSchema}
         validationURL='https://some-domain/some-route'
-        updateExistingModel={updateExistingModel}
+        updateExistingModel={null}
         onSuccessCallback={vi.fn()}
         onCancelCallback={vi.fn()}
         onDeleteCallback={vi.fn()}

@@ -57,7 +57,8 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
-    const formDataToSubmit = getFormSubmitValues(refValues, formData);
+    const isSecretUpdate = type_name === 'secret' && !!updateExistingModel;
+    const formDataToSubmit = getFormSubmitValues(refValues, formData, isSecretUpdate);
     try {
       const response = await validateForm(formDataToSubmit, validationURL);
       onSuccessCallback(response);
@@ -131,7 +132,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
       {/* <form onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 gap-9 px-6.5 py-2'> */}
       <form onSubmit={handleSubmit} className='px-6.5 py-2'>
         {Object.entries(jsonSchema.properties).map(([key, property]) => {
-          if (key === 'uuid') {
+          if (key === 'uuid' || (key === 'api_key' && updateExistingModel)) {
             return null;
           }
           const inputValue = formData[key] || '';

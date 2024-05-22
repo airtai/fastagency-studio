@@ -4,7 +4,6 @@ import _ from 'lodash';
 import {
   filerOutComponentData,
   capitalizeFirstLetter,
-  formatApiKey,
   getSchemaByName,
   getRefValues,
   constructHTMLSchema,
@@ -473,26 +472,6 @@ describe('buildPageUtils', () => {
       expect(actual).toEqual(expected);
     });
   });
-  describe('formatApiKey', () => {
-    test('formatApiKey with input less that 7 characters', () => {
-      const input = 'hello';
-      const expected = 'he***';
-      const actual = formatApiKey(input);
-      expect(actual).toEqual(expected);
-    });
-    test('formatApiKey with input more that 7 characters', () => {
-      const input = 'this-is-a-strong-secret-key';
-      const expected = 'thi...-key';
-      const actual = formatApiKey(input);
-      expect(actual).toEqual(expected);
-    });
-    test('formatApiKey with empty input', () => {
-      const input = '';
-      const expected = '';
-      const actual = formatApiKey(input);
-      expect(actual).toEqual(expected);
-    });
-  });
   describe('getSchemaByName', () => {
     test('getSchemaByName', () => {
       const schemaData = {
@@ -894,7 +873,7 @@ describe('buildPageUtils', () => {
     test('getFormSubmitValues - without refs', () => {
       const refValues = {};
       const formData = { api_key: '' };
-      const actual = getFormSubmitValues(refValues, formData);
+      const actual = getFormSubmitValues(refValues, formData, false);
       expect(actual).toEqual(formData);
     });
 
@@ -976,7 +955,7 @@ describe('buildPageUtils', () => {
         api_type: 'azure',
         api_version: 'latest',
       };
-      const actual = getFormSubmitValues(refValues, formData);
+      const actual = getFormSubmitValues(refValues, formData, false);
       expect(actual).toEqual(expected);
     });
 
@@ -1053,7 +1032,7 @@ describe('buildPageUtils', () => {
         },
         max_consecutive_auto_reply: 100,
       };
-      const actual = getFormSubmitValues(refValues, formData);
+      const actual = getFormSubmitValues(refValues, formData, false);
       expect(actual).toEqual(expected);
     });
 
@@ -1130,7 +1109,7 @@ describe('buildPageUtils', () => {
         },
         max_consecutive_auto_reply: undefined,
       };
-      const actual = getFormSubmitValues(refValues, formData);
+      const actual = getFormSubmitValues(refValues, formData, false);
       expect(actual).toEqual(expected);
     });
 
@@ -1207,7 +1186,23 @@ describe('buildPageUtils', () => {
         },
         max_consecutive_auto_reply: undefined,
       };
-      const actual = getFormSubmitValues(refValues, formData);
+      const actual = getFormSubmitValues(refValues, formData, false);
+      expect(actual).toEqual(expected);
+    });
+    test('getFormSubmitValues - create new secret', () => {
+      const refValues = {};
+      const formData = { name: 'key_1', api_key: 'sk-123' }; //  pragma: allowlist secret
+      const isSecretUpdate = false;
+      const actual = getFormSubmitValues(refValues, formData, isSecretUpdate);
+      expect(actual).toEqual(formData);
+    });
+    test('getFormSubmitValues - update secret', () => {
+      const refValues = {};
+      const formData = { name: 'key_1', api_key: 'sk-123' }; //  pragma: allowlist secret
+      const isSecretUpdate = true;
+      const expected = { name: 'key_1' };
+
+      const actual = getFormSubmitValues(refValues, formData, isSecretUpdate);
       expect(actual).toEqual(expected);
     });
   });

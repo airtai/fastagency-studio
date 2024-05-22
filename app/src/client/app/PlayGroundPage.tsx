@@ -137,6 +137,7 @@ const PlayGroundPage = ({ user }: { user: User }) => {
   let triggerChatFormSubmitMsg = queryParams.get('msg');
   if (triggerChatFormSubmitMsg && currentChatDetails?.userRespondedWithNextAction) {
     triggerChatFormSubmitMsg = null;
+    removeQueryParameters();
   }
 
   // const userSelectedAction: any = queryParams.get('selected_user_action');

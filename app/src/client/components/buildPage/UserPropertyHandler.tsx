@@ -93,7 +93,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
           if (propertyName !== '') {
             const currentPropertyName = _.has(updateExistingModel, 'name') ? updateExistingModel.name : '';
             setNotificationErrorMessage(
-              `Oops! You can't delete '${currentPropertyName}' because it's being used in '${propertyName}'.`
+              `Oops! You can't delete '${currentPropertyName}' because it's being used by '${propertyName}'.`
             );
           } else {
             await deleteUserModels({ uuid: updateExistingModel.uuid, type_name: updateExistingModel.type_name });

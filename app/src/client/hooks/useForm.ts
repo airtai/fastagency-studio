@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import _ from 'lodash';
 import { JsonSchema, SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
 interface UseFormProps {
@@ -34,7 +35,17 @@ export const useForm = ({ jsonSchema, defaultValues }: UseFormProps) => {
         if (property.enum && property.enum.length === 1) {
           initialFormData[key] = property.enum[0]; // Auto-set single enum value
         } else {
-          initialFormData[key] = property.default ?? ''; // Use default or empty string if no default
+          if (
+            _.has(property, 'anyOf') &&
+            _.isEqual(
+              _.map(property.anyOf, (o: any) => o.type),
+              ['integer', 'null']
+            )
+          ) {
+            initialFormData[key] = null;
+          } else {
+            initialFormData[key] = property.default ?? ''; // Use default or empty string if no default
+          }
         }
       }
     });

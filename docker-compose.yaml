@@ -11,6 +11,7 @@ x-logging: &default-logging
 
 version: "3.4"
 
+name: fastagency
 services:
   fastapi-app:  # nosemgrep
     image: ghcr.io/${GITHUB_REPOSITORY}:${TAG}

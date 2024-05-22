@@ -1,5 +1,6 @@
 version: "3.4"
 
+name: nats
 services:
   nats-fastagency:  # nosemgrep
     image: nats:2.10.14

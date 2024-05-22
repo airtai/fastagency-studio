@@ -1,5 +1,6 @@
 version: "3.4"
 
+name: nats
 services:
   nats-fastagency:  # nosemgrep
     image: nats:2.10.14
@@ -13,3 +14,9 @@ services:
       # Mount volume for storing NATS data
       - ./jetstream:/var/jetstream
     command: [ "--config", "/etc/nats/server.conf" ]
+    networks:
+      - nats
+
+networks:
+  nats:
+    name: nats

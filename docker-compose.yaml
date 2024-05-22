@@ -11,6 +11,7 @@ x-logging: &default-logging
 
 version: "3.4"
 
+name: fastagency
 services:
   fastapi-app:  # nosemgrep
     image: ghcr.io/${GITHUB_REPOSITORY}:${TAG}
@@ -26,3 +27,9 @@ services:
       - AZURE_GPT35_MODEL=${AZURE_GPT35_MODEL}
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
     logging: *default-logging
+    networks:
+      - fastagency
+
+networks:
+  fastagency:
+    name: fastagency

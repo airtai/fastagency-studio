@@ -197,7 +197,9 @@ const PlayGroundPage = ({ user }: { user: User }) => {
                 />
               </>
             ) : (
-              <SelectTeamToChat userTeams={userTeams} />
+              <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
+                <Loader />
+              </div>
             )}
           </div>
         ) : (

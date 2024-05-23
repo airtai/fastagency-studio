@@ -5,6 +5,7 @@ import React from 'react';
 import { useState } from 'react';
 import Markdown from 'markdown-to-jsx';
 import LetterByLetterDisplay from './LetterByLetterDisplay';
+import RetryConversation from './RetryConversation';
 import AgentConversationHistory from './AgentConversationHistory';
 import AnimatedCharacterLoader from './AnimatedCharacterLoader';
 import logo from '../static/logo.svg';
@@ -135,6 +136,11 @@ export default function ConversationsList({
                           >
                             Exit
                           </button>
+                        </div>
+                      )}
+                      {currentChatDetails.isExceptionOccured && (
+                        <div data-testid='smart-suggestions' className='fadeIn'>
+                          <RetryConversation currentChatDetails={currentChatDetails} retryOnClick={handleFormSubmit} />
                         </div>
                       )}
                     </div>

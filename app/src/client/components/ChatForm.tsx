@@ -16,13 +16,8 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
         // @ts-ignore
         await handleFormSubmit(triggerChatFormSubmitMsg, true);
       }
-      // if (node !== null && userSelectedActionMessage) {
-      //   // @ts-ignore
-      //   await handleFormSubmit(userSelectedActionMessage, true);
-      // }
     },
     [triggerChatFormSubmitMsg]
-    // [triggerChatFormSubmitMsg, userSelectedActionMessage]
   );
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

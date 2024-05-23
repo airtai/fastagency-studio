@@ -11,7 +11,6 @@ import {
   type AddUserModels,
   type DeleteUserModels,
   type CreateNewChat,
-  type CreateNewDailyAnalysisChat,
   type CreateNewAndReturnAllConversations,
   type CreateNewAndReturnLastConversation,
   type UpdateCurrentChat,
@@ -285,10 +284,6 @@ export const createNewChat: CreateNewChat<any, Chat> = async (args, context) => 
   const chat = await context.entities.Chat.create({
     data: {
       user: { connect: { id: context.user.id } },
-      smartSuggestions: {
-        type: 'manyOf',
-        suggestions: [''],
-      },
       selectedTeam: args.teamName ? args.teamName : null,
     },
   });
@@ -305,59 +300,6 @@ export const createNewChat: CreateNewChat<any, Chat> = async (args, context) => 
   // }
 
   return chat;
-};
-
-const resetSmartSuggestions = async (chatId: number, context: any) => {
-  await context.entities.Chat.update({
-    where: {
-      id: chatId,
-    },
-    data: {
-      smartSuggestions: { suggestions: [''], type: '' },
-    },
-  });
-};
-
-export const createNewDailyAnalysisChat: CreateNewDailyAnalysisChat<Chat, [Chat, string]> = async (
-  currentChatDetails,
-  context
-) => {
-  if (!context.user) {
-    throw new HttpError(401);
-  }
-
-  if (!context.user.hasPaid) {
-    throw new HttpError(500, 'No Subscription Found');
-  }
-
-  await resetSmartSuggestions(currentChatDetails.id, context);
-
-  const newChat = await context.entities.Chat.create({
-    data: {
-      user: { connect: { id: context.user.id } },
-      agentChatHistory: currentChatDetails.agentChatHistory,
-      proposedUserAction: currentChatDetails.proposedUserAction,
-      emailContent: currentChatDetails.emailContent,
-      chatType: currentChatDetails.chatType,
-    },
-  });
-  const allChatConversations = await context.entities.Conversation.findMany({
-    where: { chatId: currentChatDetails.id, userId: context.user.id },
-    orderBy: { id: 'asc' },
-  });
-  const firstAgentMessage = allChatConversations[0].message;
-  const firstUserMessage = allChatConversations[1].message;
-
-  const conversation = await context.entities.Conversation.create({
-    data: {
-      chat: { connect: { id: newChat.id } },
-      user: { connect: { id: context.user.id } },
-      message: firstAgentMessage,
-      role: 'assistant',
-    },
-  });
-
-  return [newChat, firstUserMessage];
 };
 
 export const updateCurrentChat: UpdateCurrentChat<{ id: number; data: Partial<Chat> }, Chat> = async (
@@ -425,8 +367,6 @@ export const retryTeamChat: RetryTeamChat<number, [Chat, string]> = async (chatI
   if (!context.user) {
     throw new HttpError(401);
   }
-
-  await resetSmartSuggestions(chatId, context);
 
   const newChat = await context.entities.Chat.create({
     data: {

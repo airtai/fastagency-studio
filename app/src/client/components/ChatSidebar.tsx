@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState, MouseEventHandler } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { NavLink, useLocation } from 'react-router-dom';
 import EditableChatName from './EditableChatName';
-import { shouldRenderChat } from '../utils/chatUtils';
 import { updateCurrentChat } from 'wasp/client/operations';
 import { CreateNewChatProps } from '../interfaces/PlaygroundPageInterface';
 
@@ -168,45 +167,42 @@ const ChatSidebar = ({ sidebarOpen, setSidebarOpen, refetchAllChatDetails }: Cha
               {/* <!-- Menu Item Dashboard --> */}
               <li>
                 {chats &&
-                  chats.map(
-                    (chat: Chat, idx) =>
-                      shouldRenderChat(chat) && (
-                        <NavLink
-                          key={chat.id}
-                          to={`/playground/${chat.uuid}?`}
-                          onClick={() => setSidebarOpen(false)}
-                          className={`chat-link relative no-underline group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium duration-300 ease-in-out ${
-                            pathname === '/' && 'bg-gray-700 dark:bg-meta-4'
-                          } ${
-                            chat.uuid === activeChat
-                              ? 'bg-airt-secondary text-airt-primary hover:bg-airt-font-base hover:text-airt-primary'
-                              : 'text-airt-font-base hover:bg-airt-secondary hover:text-airt-primary'
-                          }`}
-                        >
-                          <svg
-                            stroke='currentColor'
-                            fill='none'
-                            strokeWidth='2'
-                            viewBox='0 0 24 24'
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            className='icon-sm'
-                            height='1em'
-                            width='1em'
-                            xmlns='http://www.w3.org/2000/svg'
-                          >
-                            <path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'></path>
-                          </svg>
-                          <span>
-                            <EditableChatName
-                              chatId={chat.id}
-                              chatName={chat.name ? chat.name : ''}
-                              onValueChange={handlechatNameChange}
-                            />
-                          </span>
-                        </NavLink>
-                      )
-                  )}
+                  chats.map((chat: Chat, idx) => (
+                    <NavLink
+                      key={chat.id}
+                      to={`/playground/${chat.uuid}?`}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`chat-link relative no-underline group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium duration-300 ease-in-out ${
+                        pathname === '/' && 'bg-gray-700 dark:bg-meta-4'
+                      } ${
+                        chat.uuid === activeChat
+                          ? 'bg-airt-secondary text-airt-primary hover:bg-airt-font-base hover:text-airt-primary'
+                          : 'text-airt-font-base hover:bg-airt-secondary hover:text-airt-primary'
+                      }`}
+                    >
+                      <svg
+                        stroke='currentColor'
+                        fill='none'
+                        strokeWidth='2'
+                        viewBox='0 0 24 24'
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        className='icon-sm'
+                        height='1em'
+                        width='1em'
+                        xmlns='http://www.w3.org/2000/svg'
+                      >
+                        <path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'></path>
+                      </svg>
+                      <span>
+                        <EditableChatName
+                          chatId={chat.id}
+                          chatName={chat.name ? chat.name : ''}
+                          onValueChange={handlechatNameChange}
+                        />
+                      </span>
+                    </NavLink>
+                  ))}
               </li>
             </ul>
           </div>

@@ -7,7 +7,6 @@ async function getChat(chatId, context) {
     },
     select: {
       id: true,
-      smartSuggestions: true,
     },
   });
 }
@@ -44,7 +43,6 @@ export async function updateDB(context, chatId, message, conversationId, socketC
     },
     data: {
       team_status: 'completed',
-      // smartSuggestions: smart_suggestions,
       isChatTerminated: isChatTerminated,
     },
   });
@@ -58,23 +56,6 @@ export const socketFn = (io, context) => {
       const userUUID = socket.data.user.uuid;
       console.log('========');
       console.log('a user connected: ', userEmail);
-
-      socket.on('checkSmartSuggestionStatus', async (chatId) => {
-        let isSmartSuggestionEmpty = true;
-        for (let i = 0; i < 10; i++) {
-          const chat = await getChat(chatId, context);
-          const { suggestions } = chat.smartSuggestions;
-          isSmartSuggestionEmpty = suggestions.length === 1 && suggestions[0] === '';
-
-          if (isSmartSuggestionEmpty) {
-            // If smart suggestions are still empty, wait for 1 second and check again
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-          } else {
-            socket.emit('smartSuggestionsAddedToDB', chatId);
-            break;
-          }
-        }
-      });
 
       socket.on(
         'sendMessageToTeam',

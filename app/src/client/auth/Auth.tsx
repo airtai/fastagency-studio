@@ -82,7 +82,7 @@ function Auth({
       <div>
         {logo && <img className='mt-10 mx-auto' style={logoStyle} src={logo} alt='Capt’n.ai' />}
         {/* <HeaderText>{title}</HeaderText> */}
-        <p className='mt-7 text-2xl text-center'>{state === 'signup' ? titles.signup : titles.login}</p>
+        <p className='mt-6 text-2xl text-center'>{state === 'signup' ? titles.signup : titles.login}</p>
       </div>
 
       {/* {errorMessage && (

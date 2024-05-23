@@ -228,6 +228,120 @@ class TestAutogen:
 
     @pytest.mark.azure_oai()
     @pytest.mark.nats()
+    @pytest.mark.asyncio()
+    async def test_ionats_error_msg(  # noqa: C901
+        self, llm_config: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        user_id = uuid.uuid4()
+        thread_id = uuid.uuid4()
+        team_id = uuid.uuid4()
+
+        ### begin sending inputs to server
+
+        d = {"count": 0}
+
+        def input(prompt: str, d: Dict[str, int] = d) -> str:
+            d["count"] += 1
+            if d["count"] == 1:
+                return f"[{datetime.now()}] What's the weather in New York today?"
+            elif d["count"] == 2:
+                return ""
+            else:
+                return "exit"
+
+        actual = []
+        terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
+        error_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
+
+        @broker.subscriber(f"chat.client.messages.{thread_id}", stream=stream)
+        async def client_input_handler(msg: ServerResponseModel) -> None:
+            print("I am here")
+            print(msg)
+            if msg.type == "input":
+                response = InputResponseModel(msg=input(msg.data.prompt))  # type: ignore [union-attr]
+
+                await broker.publish(
+                    response, subject=f"chat.server.messages.{thread_id}"
+                )
+            elif msg.type == "print":
+                actual.append(msg.data.model_dump())
+            elif msg.type == "terminate":
+                await terminate_chat_queue.put(msg.data.model_dump())
+            elif msg.type == "error":
+                print("Putting in error queue")
+                await error_queue.put(msg.data.model_dump())
+            else:
+                raise ValueError(f"Unknown message type {msg.type}")
+
+        ### end sending inputs to server
+
+        get_forecast_for_city_mock = MagicMock()
+
+        def create_team(
+            team_id: uuid.UUID, user_id: uuid.UUID
+        ) -> Callable[[str], List[Dict[str, Any]]]:
+            print("At create_team")
+            raise ValueError("Triggering error in test")
+            # weather_man = autogen.agentchat.AssistantAgent(
+            #     name="weather_man",
+            #     system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
+            #     llm_config=llm_config,
+            # )
+
+            # user_proxy = autogen.agentchat.UserProxyAgent(
+            #     "user_proxy",
+            # )
+
+            # @user_proxy.register_for_execution()  # type: ignore [misc]
+            # @weather_man.register_for_llm(description="Get weather forecast for a city")  # type: ignore [misc]
+            # def get_forecast_for_city(city: str) -> str:
+            #     get_forecast_for_city_mock(city)
+            #     raise ValueError("Triggering error in test")
+            #     # return f"The weather in {city} is sunny today."
+
+            # def initiate_chat(msg: str) -> List[Dict[str, Any]]:
+            #     print("At initiate chat")
+            #     chat_result: List[Dict[str, Any]] = weather_man.initiate_chat(
+            #         recipient=user_proxy,
+            #         message="Hi! Tell me the city for which you want the weather forecast.",
+            #     )
+            #     return chat_result
+
+            # return initiate_chat
+
+        monkeypatch.setattr(fastagency.io.ionats, "create_team", create_team)
+
+        async with TestNatsBroker(broker) as br:
+            await br.publish(
+                fastagency.io.ionats.InitiateModel(
+                    msg="exit",
+                    thread_id=thread_id,
+                    team_id=team_id,
+                    user_id=user_id,
+                ),
+                subject="chat.server.initiate_chat",
+            )
+
+            
+
+            # await asyncio.sleep(10)
+
+            result_set, _ = await asyncio.wait(
+                (asyncio.create_task(error_queue.get()),),
+                timeout=10,
+            )
+            result = (result_set.pop()).result()
+            assert result == {"msg": "Chat completed."}
+
+            # result_set, _ = await asyncio.wait(
+            #     (asyncio.create_task(terminate_chat_queue.get()),),
+            #     timeout=30,
+            # )
+            # result = (result_set.pop()).result()
+            # assert result == {"msg": "Chat completed."}
+
+    @pytest.mark.azure_oai()
+    @pytest.mark.nats()
     @pytest.mark.db()
     @pytest.mark.asyncio()
     @pytest.mark.parametrize(

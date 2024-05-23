@@ -6,7 +6,7 @@ from queue import Queue
 from typing import Any, Callable, Dict, List, Literal, Union
 from uuid import UUID
 
-from asyncer import asyncify, syncify
+from asyncer import asyncify, syncify, runnify
 from autogen.io.base import IOStream
 from faststream import Logger
 from faststream.nats import NatsMessage
@@ -36,11 +36,15 @@ class TerminateModel(BaseModel):
     msg: str = "Chat completed."
 
 
-TYPE_LITERAL = Literal["input", "print", "terminate"]
+class ErrorResoponseModel(BaseModel):
+    msg: str
+
+
+TYPE_LITERAL = Literal["input", "print", "terminate", "error"]
 
 
 class ServerResponseModel(BaseModel):
-    data: Union[InputRequestModel, PrintModel, TerminateModel]
+    data: Union[InputRequestModel, PrintModel, TerminateModel, ErrorResoponseModel]
     type: TYPE_LITERAL
 
 
@@ -182,6 +186,8 @@ async def initiate_handler(
             )
 
             with IOStream.set_default(iostream):
+                print(create_team)
+                print(type(create_team))
                 initiate_chat = create_team(team_id=body.team_id, user_id=body.user_id)
                 chat_result = initiate_chat(body.msg)
 
@@ -196,7 +202,32 @@ async def initiate_handler(
         background_tasks = set()
         task = asyncio.create_task(async_start_chat())  # type: ignore
         background_tasks.add(task)
-        task.add_done_callback(background_tasks.discard)
+
+        def task_done(t):
+            background_tasks.discard(t)
+            exc = t.exception()
+            if exc:
+                print("here")
+                # t.result()
+                
+                logger.error(f"Error in handling initiate chat: {exc}")
+                logger.error(traceback.format_exc())
+                error_data = ErrorResoponseModel(msg=str(exc))
+                error_msg = ServerResponseModel(data=error_data, type="error")
+                print(f"{error_data=}")
+                print(f"{error_msg=}")
+                syncify(broker.publish)(error_msg, iostream._input_request_subject)  # type: ignore [arg-type]
+
+
+        task.add_done_callback(task_done)
+
+
     except Exception as e:
         logger.error(f"Error in handling initiate chat: {e}")
         logger.error(traceback.format_exc())
+        print("there")
+        error_data = ErrorResoponseModel(msg=str(e))
+        error_msg = ServerResponseModel(data=error_data, type="error")
+        # print(f"{error_data=}")
+        # print(f"{error_msg=}")
+        syncify(broker.publish)(error_msg, iostream._input_request_subject)  # type: ignore [arg-type]

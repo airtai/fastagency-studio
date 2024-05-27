@@ -17,6 +17,8 @@ import {
   checkForDependency,
   filterDataToValidate,
   dependsOnProperty,
+  getSecretUpdateFormSubmitValues,
+  getSecretUpdateValidationURL,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -1206,6 +1208,31 @@ describe('buildPageUtils', () => {
       expect(actual).toEqual(expected);
     });
   });
+  describe('getSecretUpdateFormSubmitValues', () => {
+    test('Update secret name', () => {
+      const updateExistingModel = {
+        name: 'test api key',
+        api_key: 'tes... key', // pragma: allowlist secret
+        uuid: '6d0353ae-77af-4d8e-8d43-74826da98271',
+      };
+      const formData = { name: 'updated test api key', api_key: 'tes... key' }; // pragma: allowlist secret
+      const expected = { name: 'updated test api key' };
+      const actual = getSecretUpdateFormSubmitValues(formData, updateExistingModel);
+      expect(_.isEqual(actual, expected)).toBe(true);
+    });
+
+    test('Update secret name and key is updated', () => {
+      const updateExistingModel = {
+        name: 'test api key',
+        api_key: 'tes... key', // pragma: allowlist secret
+        uuid: '6d0353ae-77af-4d8e-8d43-74826da98271',
+      };
+      const formData = { name: 'updated test api key', api_key: 'sk-the-key-is-updated' }; // pragma: allowlist secret
+      const expected = { api_key: 'sk-the-key-is-updated', name: 'updated test api key' }; // pragma: allowlist secret
+      const actual = getSecretUpdateFormSubmitValues(formData, updateExistingModel);
+      expect(_.isEqual(actual, expected)).toBe(true);
+    });
+  });
   describe('isDependencyAvailable', () => {
     test('isDependencyNotCreated - positive case - without dependencies', () => {
       const input = {};
@@ -1820,6 +1847,15 @@ describe('buildPageUtils', () => {
       const deletePropertyUUID = 'some-random-de81-41f2-8730-5d79fd21630e';
       const propertyName = dependsOnProperty(allUserProperties, deletePropertyUUID);
       expect(propertyName).toEqual('');
+    });
+  });
+  describe('getSecretUpdateValidationURL', () => {
+    test('getSecretUpdateValidationURL', () => {
+      const validationURL = 'models/secret/AzureOAIAPIKey/validate';
+      const updateExistingModel = { name: 'test', api_key: 'tes...-key', uuid: '82301aec-ab62-4cb2-b46d-b7420e46ef41' }; // pragma: allowlist secret
+      const expected = 'models/secret/AzureOAIAPIKey/82301aec-ab62-4cb2-b46d-b7420e46ef41/validate';
+      const actual = getSecretUpdateValidationURL(validationURL, updateExistingModel);
+      expect(actual).toEqual(expected);
     });
   });
 });

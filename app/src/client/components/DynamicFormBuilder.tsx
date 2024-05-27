@@ -20,6 +20,8 @@ import {
   constructHTMLSchema,
   getAllRefs,
   checkForDependency,
+  getSecretUpdateFormSubmitValues,
+  getSecretUpdateValidationURL,
 } from '../utils/buildPageUtils';
 import { set } from 'zod';
 import { NumericStepperWithClearButton } from './form/NumericStepperWithClearButton';
@@ -58,9 +60,15 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     event.preventDefault();
     setIsLoading(true);
     const isSecretUpdate = type_name === 'secret' && !!updateExistingModel;
-    const formDataToSubmit = getFormSubmitValues(refValues, formData, isSecretUpdate);
+    let formDataToSubmit: any = {};
+    if (isSecretUpdate) {
+      formDataToSubmit = getSecretUpdateFormSubmitValues(formData, updateExistingModel);
+      validationURL = getSecretUpdateValidationURL(validationURL, updateExistingModel);
+    } else {
+      formDataToSubmit = getFormSubmitValues(refValues, formData, isSecretUpdate); // remove isSecretUpdate
+    }
     try {
-      const response = await validateForm(formDataToSubmit, validationURL);
+      const response = await validateForm(formDataToSubmit, validationURL, isSecretUpdate);
       onSuccessCallback(response);
     } catch (error: any) {
       try {
@@ -132,7 +140,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
       {/* <form onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 gap-9 px-6.5 py-2'> */}
       <form onSubmit={handleSubmit} className='px-6.5 py-2'>
         {Object.entries(jsonSchema.properties).map(([key, property]) => {
-          if (key === 'uuid' || (key === 'api_key' && updateExistingModel)) {
+          if (key === 'uuid') {
             return null;
           }
           const inputValue = formData[key] || '';

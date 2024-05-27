@@ -220,3 +220,13 @@ export function dependsOnProperty(allUserProperties: any[], deletePropertyUUID: 
   const property = _.find(allUserProperties, (property: { json_str: any }) => deepSearch(property, deletePropertyUUID));
   return property ? property.json_str.name : '';
 }
+
+export const getSecretUpdateFormSubmitValues = (formData: any, updateExistingModel: any) => {
+  const newFormData = _.cloneDeep(formData);
+  const isSectetAPIKeyValueIsUpdated = formData.api_key !== updateExistingModel.api_key;
+  return isSectetAPIKeyValueIsUpdated ? newFormData : _.omit(formData, ['api_key']);
+};
+
+export const getSecretUpdateValidationURL = (validationURL: string, updateExistingModel: any) => {
+  return validationURL.replace('/validate', `/${updateExistingModel.uuid}/validate`);
+};

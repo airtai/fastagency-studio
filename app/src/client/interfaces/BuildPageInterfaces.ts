@@ -59,6 +59,7 @@ export interface SelectedModelSchema {
   created_at: string;
   updated_at: string;
   name?: string;
+  api_key?: string;
 }
 
 export interface SecretsProps {

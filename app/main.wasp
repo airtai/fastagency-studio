@@ -129,15 +129,10 @@ entity Chat {=psl
     team_id                   Int?
     team_name                 String?
     team_status               String?
-    chatType                 String?
-    shouldShowChat             Boolean         @default(false)
-    proposedUserAction       String[]          @default([])
     userRespondedWithNextAction             Boolean         @default(false)
-    emailContent             String?
     agentChatHistory         String?
     isExceptionOccured       Boolean         @default(false)
     showLoader  Boolean         @default(false)
-    smartSuggestions  Json         @default("{ \"suggestions\": [\"\"], \"type\": \"\"}")
     streamAgentResponse Boolean         @default(false)
     customerBrief       String?
     user        User?    @relation(fields: [userId], references: [id])
@@ -358,11 +353,6 @@ action createNewChat {
   entities: [Chat, Conversation]
 }
 
-action createNewDailyAnalysisChat {
-  fn: import { createNewDailyAnalysisChat } from "@src/server/actions.js",
-  entities: [Chat, Conversation]
-}
-
 action updateCurrentChat {
   fn: import { updateCurrentChat } from "@src/server/actions.js",
   entities: [Chat]
@@ -452,29 +442,6 @@ api stripeWebhook {
   httpRoute: (POST, "/stripe-webhook")
 }
 
-api captnDailyAnalysisWebhook {
-  fn: import { captnDailyAnalysisWebhook } from "@src/server/webhooks/captn.js",
-  entities: [User, Chat, Conversation],
-  httpRoute: (POST, "/captn-daily-analysis-webhook")
-}
-
-api createNewChatWebhook {
-  fn: import { createNewChatWebhook } from "@src/server/webhooks/captn.js",
-  entities: [User, Chat],
-  httpRoute: (POST, "/create-chat-webhook")
-}
-
-api deleteChatWebhook {
-  fn: import { deleteChatWebhook } from "@src/server/webhooks/captn.js",
-  entities: [Chat],
-  httpRoute: (POST, "/delete-chat-webhook")
-}
-
-api smartSuggestionsWebHook {
-  fn: import { smartSuggestionsWebHook } from "@src/server/webhooks/captn.js",
-  entities: [Chat],
-  httpRoute: (POST, "/smart-suggestions-webhook")
-}
 
 /* 🕵️‍♂️ These are the Wasp Jobs. Use them to set up recurring tasks and/or queues:
  * https://wasp-lang.dev/docs/advanced/jobs

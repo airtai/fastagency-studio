@@ -5,6 +5,7 @@ export default function ServerNotRechableComponent() {
     <div
       className='server-error-component sticky top-0 z-999 flex w-full justify-center bg-airt-secondary'
       style={{ zIndex: 99999 }}
+      data-testid='server-error-component'
     >
       <AnimatedCharacterLoader
         loadingMessage={

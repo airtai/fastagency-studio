@@ -22,6 +22,7 @@ import {
   checkForDependency,
 } from '../utils/buildPageUtils';
 import { set } from 'zod';
+import { NumericStepperWithClearButton } from './form/NumericStepperWithClearButton';
 
 interface DynamicFormBuilderProps {
   allUserProperties: any;
@@ -147,12 +148,23 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             <div key={key} className='w-full mt-2'>
               <label htmlFor={key}>{formElementsObject.title}</label>
               {formElementsObject.enum ? (
-                <SelectInput
-                  id={key}
-                  value={inputValue}
-                  options={formElementsObject.enum}
-                  onChange={(value) => handleChange(key, value)}
-                />
+                formElementsObject.type === 'numericStepperWithClearButton' ? (
+                  <div>
+                    <NumericStepperWithClearButton
+                      id={key}
+                      value={inputValue}
+                      formElementObject={formElementsObject}
+                      onChange={(value) => handleChange(key, value)}
+                    />
+                  </div>
+                ) : (
+                  <SelectInput
+                    id={key}
+                    value={inputValue}
+                    options={formElementsObject.enum}
+                    onChange={(value) => handleChange(key, value)}
+                  />
+                )
               ) : key === 'system_message' ? (
                 <TextArea
                   id={key}

@@ -1,8 +1,8 @@
 import React from 'react';
 import _ from 'lodash';
-import { formatApiKey } from '../utils/buildPageUtils';
 
 import { navLinkItems } from './CustomSidebar';
+import { formatApiKey } from '../utils/buildPageUtils';
 
 interface JsonStr {
   name: string;

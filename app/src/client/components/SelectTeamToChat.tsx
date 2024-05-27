@@ -39,7 +39,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
           teamName: team,
         };
         const chat: Chat = await createNewChat(props);
-        history.push(`/playground/${chat.uuid}?msg=${message}`);
+        history.push(`/playground/${chat.uuid}?initiateChatMsg=${message}`);
       } catch (err: any) {
         setNotificationErrorMessage(`Error creating chat. Please try again later.`);
         console.log('Error: ' + err.message);

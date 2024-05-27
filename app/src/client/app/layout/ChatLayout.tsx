@@ -7,6 +7,7 @@ import { Header } from '../BuildPage';
 import ChatSidebar from '../../components/ChatSidebar';
 import ChatForm from '../../components/ChatForm';
 import { useHistory } from 'react-router-dom';
+import AutoScrollContainer from '../../components/AutoScrollContainer';
 
 interface Props {
   children?: ReactNode;
@@ -14,6 +15,7 @@ interface Props {
   currentChatDetails?: Chat | null;
   triggerChatFormSubmitMsg?: string | null;
   refetchAllChatDetails: boolean;
+  triggerScrollBarMove: boolean;
 }
 
 const ChatLayout: FC<Props> = ({
@@ -22,8 +24,11 @@ const ChatLayout: FC<Props> = ({
   currentChatDetails,
   triggerChatFormSubmitMsg,
   refetchAllChatDetails,
+  triggerScrollBarMove,
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState<boolean>(false);
+
   const { data: user } = useAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
   const history = useHistory();
@@ -38,18 +43,8 @@ const ChatLayout: FC<Props> = ({
     }
   }, [user, history]);
 
-  const scrollToBottom = (message: any) => {
-    setTimeout(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTo({
-          top: scrollRef.current.scrollHeight + 300,
-          behavior: 'auto',
-        });
-      }
-    }, 300);
-  };
-  useSocketListener('newMessageFromTeam', scrollToBottom);
-  useSocketListener('streamFromTeamFinished', scrollToBottom);
+  useSocketListener('newMessageFromTeam', () => setShouldAutoScroll(true));
+  useSocketListener('streamFromTeamFinished', () => setShouldAutoScroll(false));
 
   const wrapperClass = document.body.classList.contains('server-error')
     ? 'h-[calc(100vh-173px)]'
@@ -74,9 +69,11 @@ const ChatLayout: FC<Props> = ({
           {/* <!-- ===== Header End ===== --> */}
 
           {/* <!-- ===== Main Content Start ===== --> */}
-          <main className='flex-auto overflow-y-auto' ref={scrollRef}>
-            <div>{children}</div>
-          </main>
+          <AutoScrollContainer shouldAutoScroll={shouldAutoScroll}>
+            <main className='flex-auto overflow-y-auto'>
+              <div>{children}</div>
+            </main>
+          </AutoScrollContainer>
           {/* <!-- ===== Main Content End ===== --> */}
           {currentChatDetails && currentChatDetails.selectedTeam ? (
             <ChatForm

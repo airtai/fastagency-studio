@@ -5,7 +5,7 @@ from typing import Any, Dict
 import pytest
 from fastapi.testclient import TestClient
 
-from fastagency.app import app
+from fastagency.app import add_model, app
 from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 from fastagency.models.registry import Schemas
 
@@ -47,6 +47,32 @@ class TestValidateOpenAIKey:
             "type": "string_pattern_mismatch",
         }
         assert msg_dict == expected
+
+    @pytest.mark.db()
+    @pytest.mark.asyncio()
+    async def test_validate_secret_model(
+        self,
+        model_dict: Dict[str, Any],
+        user_uuid: str,
+    ) -> None:
+        api_key = OpenAIAPIKey(**model_dict)
+        api_key_model_uuid = str(uuid.uuid4())
+        await add_model(
+            user_uuid=user_uuid,
+            type_name="secret",
+            model_name=OpenAIAPIKey.__name__,  # type: ignore [attr-defined]
+            model_uuid=api_key_model_uuid,
+            model=api_key.model_dump(),
+        )
+
+        # Remove api_key and send name alone to validate route
+        model_dict.pop("api_key")
+
+        response = client.post(
+            f"/user/{user_uuid}/models/secret/OpenAIAPIKey/{api_key_model_uuid}/validate",
+            json=model_dict,
+        )
+        assert response.status_code == 200
 
 
 # we will do this for OpenAI only, the rest should be the same

@@ -2,6 +2,7 @@ import json
 import logging
 from os import environ
 from typing import Any, Dict, List, Optional, Union
+from uuid import UUID
 
 from fastapi import FastAPI, HTTPException
 from openai import AsyncAzureOpenAI
@@ -24,6 +25,20 @@ async def get_models_schemas() -> Schemas:
 
 @app.post("/models/{type}/{name}/validate")
 async def validate_model(type: str, name: str, model: Dict[str, Any]) -> None:
+    try:
+        Registry.get_default().validate(type, name, model)
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=json.loads(e.json())) from e
+
+
+@app.post("/user/{user_uuid}/models/secret/{name}/{model_uuid}/validate")
+async def validate_secret_model(
+    user_uuid: UUID, name: str, model_uuid: UUID, model: Dict[str, Any]
+) -> None:
+    type: str = "secret"
+
+    found_model = await find_model_using_raw(model_uuid=model_uuid, user_uuid=user_uuid)
+    model["api_key"] = found_model["json_str"]["api_key"]
     try:
         Registry.get_default().validate(type, name, model)
     except ValidationError as e:

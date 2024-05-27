@@ -230,3 +230,15 @@ export const getSecretUpdateFormSubmitValues = (formData: any, updateExistingMod
 export const getSecretUpdateValidationURL = (validationURL: string, updateExistingModel: any) => {
   return validationURL.replace('/validate', `/${updateExistingModel.uuid}/validate`);
 };
+
+export function formatApiKey(apiKey: string) {
+  if (apiKey.length) {
+    if (apiKey.length > 7) {
+      return `${apiKey.slice(0, 3)}...${apiKey.slice(-4)}`;
+    } else {
+      return `${apiKey.slice(0, 2)}${'*'.repeat(apiKey.length - 2)}`;
+    }
+  } else {
+    return '';
+  }
+}

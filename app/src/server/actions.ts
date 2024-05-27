@@ -268,7 +268,13 @@ export const validateForm: ValidateForm<{ data: any; validationURL: string; isSe
         JSON.stringify(json.detail) || `HTTP error with status code ${response.status}`
       );
     }
-    return data;
+    if (!json.uuid) {
+      json.uuid = data.uuid;
+    }
+    if (isSecretUpdate) {
+      json.api_key = data.api_key;
+    }
+    return json;
   } catch (error: any) {
     throw new HttpError(error.statusCode || 500, error.message || 'Server or network error occurred');
   }

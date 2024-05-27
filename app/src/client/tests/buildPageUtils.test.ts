@@ -19,6 +19,7 @@ import {
   dependsOnProperty,
   getSecretUpdateFormSubmitValues,
   getSecretUpdateValidationURL,
+  formatApiKey,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -1855,6 +1856,26 @@ describe('buildPageUtils', () => {
       const updateExistingModel = { name: 'test', api_key: 'tes...-key', uuid: '82301aec-ab62-4cb2-b46d-b7420e46ef41' }; // pragma: allowlist secret
       const expected = 'models/secret/AzureOAIAPIKey/82301aec-ab62-4cb2-b46d-b7420e46ef41/validate';
       const actual = getSecretUpdateValidationURL(validationURL, updateExistingModel);
+      expect(actual).toEqual(expected);
+    });
+  });
+  describe('formatApiKey', () => {
+    test('formatApiKey with input less that 7 characters', () => {
+      const input = 'hello';
+      const expected = 'he***';
+      const actual = formatApiKey(input);
+      expect(actual).toEqual(expected);
+    });
+    test('formatApiKey with input more that 7 characters', () => {
+      const input = 'this-is-a-strong-secret-key';
+      const expected = 'thi...-key';
+      const actual = formatApiKey(input);
+      expect(actual).toEqual(expected);
+    });
+    test('formatApiKey with empty input', () => {
+      const input = '';
+      const expected = '';
+      const actual = formatApiKey(input);
       expect(actual).toEqual(expected);
     });
   });

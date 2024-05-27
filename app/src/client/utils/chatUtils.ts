@@ -36,7 +36,6 @@ export async function updateCurrentChatStatus(
   await updateCurrentChat({
     id: activeChatId,
     data: {
-      smartSuggestions: { suggestions: [''], type: '' },
       userRespondedWithNextAction: isUserRespondedWithNextAction,
     },
   });
@@ -133,18 +132,6 @@ export const handleAgentResponse = async (
   if (!!response.customer_brief) {
     socket.emit('sendMessageToTeam', currentChatDetails, selectedTeam.uuid, messages, inProgressConversation.id);
   }
-  // Emit an event to check the smartSuggestion status
-  if (response['content'] && !response['is_exception_occured']) {
-    socket.emit('checkSmartSuggestionStatus', activeChatId);
-    await updateCurrentChat({
-      id: activeChatId,
-      data: {
-        streamAgentResponse: true,
-        showLoader: false,
-        smartSuggestions: response['smart_suggestions'],
-      },
-    });
-  }
 
   response['content'] &&
     (await updateCurrentConversation({
@@ -168,7 +155,6 @@ export const handleAgentResponse = async (
       team_id: response['team_id'],
       team_name: response['team_name'],
       team_status: response['team_status'],
-      smartSuggestions: response['smart_suggestions'],
       isExceptionOccured: response['is_exception_occured'] || false,
       customerBrief: response['customer_brief'],
       ...(chatName && {
@@ -202,16 +188,8 @@ export const handleChatError = async (err: any, activeChatId: number, inProgress
       id: activeChatId,
       data: {
         showLoader: false,
-        smartSuggestions: {
-          suggestions: ["Let's try again"],
-          type: 'oneOf',
-        },
         isExceptionOccured: true,
       },
     });
   }
-};
-
-export const shouldRenderChat = (chat: Chat): boolean => {
-  return chat.chatType !== 'daily_analysis' || chat.shouldShowChat;
 };

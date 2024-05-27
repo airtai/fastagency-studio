@@ -4,7 +4,6 @@ import _ from 'lodash';
 import {
   filerOutComponentData,
   capitalizeFirstLetter,
-  formatApiKey,
   getSchemaByName,
   getRefValues,
   constructHTMLSchema,
@@ -18,6 +17,9 @@ import {
   checkForDependency,
   filterDataToValidate,
   dependsOnProperty,
+  getSecretUpdateFormSubmitValues,
+  getSecretUpdateValidationURL,
+  formatApiKey,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -473,26 +475,6 @@ describe('buildPageUtils', () => {
       expect(actual).toEqual(expected);
     });
   });
-  describe('formatApiKey', () => {
-    test('formatApiKey with input less that 7 characters', () => {
-      const input = 'hello';
-      const expected = 'he***';
-      const actual = formatApiKey(input);
-      expect(actual).toEqual(expected);
-    });
-    test('formatApiKey with input more that 7 characters', () => {
-      const input = 'this-is-a-strong-secret-key';
-      const expected = 'thi...-key';
-      const actual = formatApiKey(input);
-      expect(actual).toEqual(expected);
-    });
-    test('formatApiKey with empty input', () => {
-      const input = '';
-      const expected = '';
-      const actual = formatApiKey(input);
-      expect(actual).toEqual(expected);
-    });
-  });
   describe('getSchemaByName', () => {
     test('getSchemaByName', () => {
       const schemaData = {
@@ -894,7 +876,7 @@ describe('buildPageUtils', () => {
     test('getFormSubmitValues - without refs', () => {
       const refValues = {};
       const formData = { api_key: '' };
-      const actual = getFormSubmitValues(refValues, formData);
+      const actual = getFormSubmitValues(refValues, formData, false);
       expect(actual).toEqual(formData);
     });
 
@@ -976,7 +958,7 @@ describe('buildPageUtils', () => {
         api_type: 'azure',
         api_version: 'latest',
       };
-      const actual = getFormSubmitValues(refValues, formData);
+      const actual = getFormSubmitValues(refValues, formData, false);
       expect(actual).toEqual(expected);
     });
 
@@ -1053,7 +1035,7 @@ describe('buildPageUtils', () => {
         },
         max_consecutive_auto_reply: 100,
       };
-      const actual = getFormSubmitValues(refValues, formData);
+      const actual = getFormSubmitValues(refValues, formData, false);
       expect(actual).toEqual(expected);
     });
 
@@ -1130,7 +1112,7 @@ describe('buildPageUtils', () => {
         },
         max_consecutive_auto_reply: undefined,
       };
-      const actual = getFormSubmitValues(refValues, formData);
+      const actual = getFormSubmitValues(refValues, formData, false);
       expect(actual).toEqual(expected);
     });
 
@@ -1207,8 +1189,49 @@ describe('buildPageUtils', () => {
         },
         max_consecutive_auto_reply: undefined,
       };
-      const actual = getFormSubmitValues(refValues, formData);
+      const actual = getFormSubmitValues(refValues, formData, false);
       expect(actual).toEqual(expected);
+    });
+    test('getFormSubmitValues - create new secret', () => {
+      const refValues = {};
+      const formData = { name: 'key_1', api_key: 'sk-123' }; //  pragma: allowlist secret
+      const isSecretUpdate = false;
+      const actual = getFormSubmitValues(refValues, formData, isSecretUpdate);
+      expect(actual).toEqual(formData);
+    });
+    test('getFormSubmitValues - update secret', () => {
+      const refValues = {};
+      const formData = { name: 'key_1', api_key: 'sk-123' }; //  pragma: allowlist secret
+      const isSecretUpdate = true;
+      const expected = { name: 'key_1' };
+
+      const actual = getFormSubmitValues(refValues, formData, isSecretUpdate);
+      expect(actual).toEqual(expected);
+    });
+  });
+  describe('getSecretUpdateFormSubmitValues', () => {
+    test('Update secret name', () => {
+      const updateExistingModel = {
+        name: 'test api key',
+        api_key: 'tes... key', // pragma: allowlist secret
+        uuid: '6d0353ae-77af-4d8e-8d43-74826da98271',
+      };
+      const formData = { name: 'updated test api key', api_key: 'tes... key' }; // pragma: allowlist secret
+      const expected = { name: 'updated test api key' };
+      const actual = getSecretUpdateFormSubmitValues(formData, updateExistingModel);
+      expect(_.isEqual(actual, expected)).toBe(true);
+    });
+
+    test('Update secret name and key is updated', () => {
+      const updateExistingModel = {
+        name: 'test api key',
+        api_key: 'tes... key', // pragma: allowlist secret
+        uuid: '6d0353ae-77af-4d8e-8d43-74826da98271',
+      };
+      const formData = { name: 'updated test api key', api_key: 'sk-the-key-is-updated' }; // pragma: allowlist secret
+      const expected = { api_key: 'sk-the-key-is-updated', name: 'updated test api key' }; // pragma: allowlist secret
+      const actual = getSecretUpdateFormSubmitValues(formData, updateExistingModel);
+      expect(_.isEqual(actual, expected)).toBe(true);
     });
   });
   describe('isDependencyAvailable', () => {
@@ -1825,6 +1848,35 @@ describe('buildPageUtils', () => {
       const deletePropertyUUID = 'some-random-de81-41f2-8730-5d79fd21630e';
       const propertyName = dependsOnProperty(allUserProperties, deletePropertyUUID);
       expect(propertyName).toEqual('');
+    });
+  });
+  describe('getSecretUpdateValidationURL', () => {
+    test('getSecretUpdateValidationURL', () => {
+      const validationURL = 'models/secret/AzureOAIAPIKey/validate';
+      const updateExistingModel = { name: 'test', api_key: 'tes...-key', uuid: '82301aec-ab62-4cb2-b46d-b7420e46ef41' }; // pragma: allowlist secret
+      const expected = 'models/secret/AzureOAIAPIKey/82301aec-ab62-4cb2-b46d-b7420e46ef41/validate';
+      const actual = getSecretUpdateValidationURL(validationURL, updateExistingModel);
+      expect(actual).toEqual(expected);
+    });
+  });
+  describe('formatApiKey', () => {
+    test('formatApiKey with input less that 7 characters', () => {
+      const input = 'hello';
+      const expected = 'he***';
+      const actual = formatApiKey(input);
+      expect(actual).toEqual(expected);
+    });
+    test('formatApiKey with input more that 7 characters', () => {
+      const input = 'this-is-a-strong-secret-key';
+      const expected = 'thi...-key';
+      const actual = formatApiKey(input);
+      expect(actual).toEqual(expected);
+    });
+    test('formatApiKey with empty input', () => {
+      const input = '';
+      const expected = '';
+      const actual = formatApiKey(input);
+      expect(actual).toEqual(expected);
     });
   });
 });

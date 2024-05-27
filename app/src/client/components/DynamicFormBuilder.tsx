@@ -20,6 +20,8 @@ import {
   constructHTMLSchema,
   getAllRefs,
   checkForDependency,
+  getSecretUpdateFormSubmitValues,
+  getSecretUpdateValidationURL,
 } from '../utils/buildPageUtils';
 import { set } from 'zod';
 import { NumericStepperWithClearButton } from './form/NumericStepperWithClearButton';
@@ -57,9 +59,16 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
-    const formDataToSubmit = getFormSubmitValues(refValues, formData);
+    const isSecretUpdate = type_name === 'secret' && !!updateExistingModel;
+    let formDataToSubmit: any = {};
+    if (isSecretUpdate) {
+      formDataToSubmit = getSecretUpdateFormSubmitValues(formData, updateExistingModel);
+      validationURL = getSecretUpdateValidationURL(validationURL, updateExistingModel);
+    } else {
+      formDataToSubmit = getFormSubmitValues(refValues, formData, isSecretUpdate); // remove isSecretUpdate
+    }
     try {
-      const response = await validateForm(formDataToSubmit, validationURL);
+      const response = await validateForm(formDataToSubmit, validationURL, isSecretUpdate);
       onSuccessCallback(response);
     } catch (error: any) {
       try {

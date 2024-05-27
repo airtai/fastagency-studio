@@ -243,8 +243,8 @@ export const deleteUserModels: DeleteUserModels<DeleteUserModelsPayload, void> =
   }
 };
 
-export const validateForm: ValidateForm<{ data: any; validationURL: string }, any> = async (
-  { data, validationURL }: { data: any; validationURL: string },
+export const validateForm: ValidateForm<{ data: any; validationURL: string; isSecretUpdate: boolean }, any> = async (
+  { data, validationURL, isSecretUpdate }: { data: any; validationURL: string; isSecretUpdate: boolean },
   context: any
 ) => {
   if (!context.user) {
@@ -252,7 +252,9 @@ export const validateForm: ValidateForm<{ data: any; validationURL: string }, an
   }
   try {
     if (!data.uuid) data.uuid = uuidv4();
-    const url = `${FASTAGENCY_SERVER_URL}/${validationURL}`;
+    const url = isSecretUpdate
+      ? `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/${validationURL}`
+      : `${FASTAGENCY_SERVER_URL}/${validationURL}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -266,7 +268,15 @@ export const validateForm: ValidateForm<{ data: any; validationURL: string }, an
         JSON.stringify(json.detail) || `HTTP error with status code ${response.status}`
       );
     }
-    return data;
+    if (!json.uuid) {
+      json.uuid = data.uuid;
+    }
+    if (isSecretUpdate) {
+      if (data.api_key) {
+        json.api_key = data.api_key;
+      }
+    }
+    return json;
   } catch (error: any) {
     throw new HttpError(error.statusCode || 500, error.message || 'Server or network error occurred');
   }

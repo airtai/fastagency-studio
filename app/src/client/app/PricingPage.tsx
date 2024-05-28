@@ -1,80 +1,80 @@
 import { useAuth } from 'wasp/client/auth';
-import { stripePayment } from 'wasp/client/operations';
-import { TierIds, STRIPE_CUSTOMER_PORTAL_LINK } from '../../shared/constants';
+// import { stripePayment } from 'wasp/client/operations';
+// import { TierIds, STRIPE_CUSTOMER_PORTAL_LINK } from '../../shared/constants';
 import { AiFillCheckCircle } from 'react-icons/ai';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { cn } from '../../shared/utils';
 
-export const tiers = [
-  // {
-  //   name: 'Hobby',
-  //   id: TierIds.HOBBY,
-  //   priceMonthly: '$9.99',
-  //   description: 'All you need to get started',
-  //   features: ['Limited monthly usage', 'Basic support'],
-  // },
-  {
-    name: 'Monthly Subscription',
-    id: TierIds.PRO,
-    priceMonthly: '$29',
-    description: 'Purchase a monthly subscription and enjoy 30 days on us, followed by a low monthly fee of just',
-    features: ['30-day free trial', 'No credit card required for trial subscription', 'Cancel any time'],
-    bestDeal: true,
-  },
-  // {
-  //   name: 'Enterprise',
-  //   id: TierIds.ENTERPRISE,
-  //   priceMonthly: '$500',
-  //   description: 'Big business means big money',
-  //   features: ['Unlimited monthly usage', '24/7 customer support', 'Advanced analytics'],
-  // },
-];
+// export const tiers = [
+//   {
+//     name: 'Hobby',
+//     id: TierIds.HOBBY,
+//     priceMonthly: '$9.99',
+//     description: 'All you need to get started',
+//     features: ['Limited monthly usage', 'Basic support'],
+//   },
+//   {
+//     name: 'Monthly Subscription',
+//     id: TierIds.PRO,
+//     priceMonthly: '$29',
+//     description: 'Purchase a monthly subscription and enjoy 30 days on us, followed by a low monthly fee of just',
+//     features: ['30-day free trial', 'No credit card required for trial subscription', 'Cancel any time'],
+//     bestDeal: true,
+//   },
+//   {
+//     name: 'Enterprise',
+//     id: TierIds.ENTERPRISE,
+//     priceMonthly: '$500',
+//     description: 'Big business means big money',
+//     features: ['Unlimited monthly usage', '24/7 customer support', 'Advanced analytics'],
+//   },
+// ];
 
 const PricingPage = () => {
-  const [isStripePaymentLoading, setIsStripePaymentLoading] = useState<boolean | string>(false);
+  // const [isStripePaymentLoading, setIsStripePaymentLoading] = useState<boolean | string>(false);
 
-  const { data: user, isLoading: isUserLoading } = useAuth();
+  // const { data: user, isLoading: isUserLoading } = useAuth();
 
-  const history = useHistory();
+  // const history = useHistory();
 
-  async function handleBuyNowClick(tierId: string) {
-    if (!user) {
-      history.push('/login');
-      return;
-    }
-    try {
-      setIsStripePaymentLoading(tierId);
-      let stripeResults = await stripePayment(tierId);
+  // async function handleBuyNowClick(tierId: string) {
+  //   if (!user) {
+  //     history.push('/login');
+  //     return;
+  //   }
+  //   try {
+  //     setIsStripePaymentLoading(tierId);
+  //     let stripeResults = await stripePayment(tierId);
 
-      if (stripeResults?.sessionUrl) {
-        window.open(stripeResults.sessionUrl, '_self');
-      }
-    } catch (error: any) {
-      console.error(error?.message ?? 'Something went wrong.');
-    } finally {
-      setIsStripePaymentLoading(false);
-    }
-  }
+  //     if (stripeResults?.sessionUrl) {
+  //       window.open(stripeResults.sessionUrl, '_self');
+  //     }
+  //   } catch (error: any) {
+  //     console.error(error?.message ?? 'Something went wrong.');
+  //   } finally {
+  //     setIsStripePaymentLoading(false);
+  //   }
+  // }
 
   return (
     <div className='py-10 lg:mt-10'>
       <div className='mx-auto max-w-7xl px-6 lg:px-8'>
         <div id='pricing' className='mx-auto max-w-4xl text-center'>
           <h2 className='mt-2 text-4xl font-bold tracking-tight text-airt-font-base sm:text-5xl dark:airt-font-base'>
-            Try FastAgency free for a month. <span className='text-airt-primary'>No credit card required!</span>
+            <span className='text-airt-primary'>Coming soon.</span>{' '}
+            <span className='px-2 py-1 bg-airt-primary rounded-md text-airt-font-base'>
+              For now everything is free!
+            </span>
           </h2>
         </div>
-        <p className='mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-airt-font-base dark:airt-font-base'>
+        {/* <p className='mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-airt-font-base dark:airt-font-base'>
           Unlock FastAgency's full capabilities with an active subscription. Explore all features with a hassle-free
-          30-day free trial—no credit card required.
-          {/* {' '}
-          <span className='px-2 py-1 bg-gray-100 rounded-md text-gray-500'>
-            4242 4242 4242 4242 4242
-          </span> */}
-        </p>
+          30-day free trial—no credit card required.{' '}
+          <span className='px-2 py-1 bg-gray-100 rounded-md text-gray-500'>4242 4242 4242 4242 4242</span>
+        </p> */}
         {/* <div className='isolate mx-auto mt-16 grid max-w-md grid-cols-1 gap-y-8 lg:gap-x-8 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3'> */}
-        <div className='justify-center isolate mx-auto mt-16 max-w-none gap-y-8 lg:gap-x-8 sm:mt-20 lg:mx-0 lg:max-w-none'>
+        {/* <div className='justify-center isolate mx-auto mt-16 max-w-none gap-y-8 lg:gap-x-8 sm:mt-20 lg:mx-0 lg:max-w-none'>
           {tiers.map((tier) => (
             <div
               key={tier.id}
@@ -158,7 +158,7 @@ const PricingPage = () => {
               )}
             </div>
           ))}
-        </div>
+        </div>*/}
       </div>
     </div>
   );

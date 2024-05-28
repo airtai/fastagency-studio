@@ -3,7 +3,7 @@ import os
 import time
 import traceback
 from queue import Queue
-from typing import Any, Callable, Dict, List, Literal, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 from uuid import UUID
 
 from asyncer import asyncify, syncify
@@ -36,11 +36,15 @@ class TerminateModel(BaseModel):
     msg: str = "Chat completed."
 
 
-TYPE_LITERAL = Literal["input", "print", "terminate"]
+class ErrorResoponseModel(BaseModel):
+    msg: str
+
+
+TYPE_LITERAL = Literal["input", "print", "terminate", "error"]
 
 
 class ServerResponseModel(BaseModel):
-    data: Union[InputRequestModel, PrintModel, TerminateModel]
+    data: Union[InputRequestModel, PrintModel, TerminateModel, ErrorResoponseModel]
     type: TYPE_LITERAL
 
 
@@ -175,21 +179,31 @@ async def initiate_handler(
     try:
         iostream = await IONats.create(body.thread_id)
 
-        def start_chat() -> List[Dict[str, Any]]:
-            terminate_data = TerminateModel()
-            terminate_chat_msg = ServerResponseModel(
-                data=terminate_data, type="terminate"
-            )
+        def start_chat() -> Optional[List[Dict[str, Any]]]:  # type: ignore [return]
+            try:
+                terminate_data = TerminateModel()
+                terminate_chat_msg = ServerResponseModel(
+                    data=terminate_data, type="terminate"
+                )
 
-            with IOStream.set_default(iostream):
-                initiate_chat = create_team(team_id=body.team_id, user_id=body.user_id)
-                chat_result = initiate_chat(body.msg)
+                with IOStream.set_default(iostream):
+                    initiate_chat = create_team(
+                        team_id=body.team_id, user_id=body.user_id
+                    )
+                    chat_result = initiate_chat(body.msg)
 
-                syncify(broker.publish)(
-                    terminate_chat_msg, iostream._input_request_subject
-                )  # type: ignore [arg-type]
+                    syncify(broker.publish)(
+                        terminate_chat_msg, iostream._input_request_subject
+                    )  # type: ignore [arg-type]
 
-                return chat_result
+                    return chat_result
+            except Exception as e:
+                logger.error(f"Error in chat: {e}")
+                logger.error(traceback.format_exc())
+
+                error_data = ErrorResoponseModel(msg=str(e))
+                error_msg = ServerResponseModel(data=error_data, type="error")
+                syncify(broker.publish)(error_msg, iostream._input_request_subject)
 
         async_start_chat = asyncify(start_chat)
 
@@ -197,6 +211,11 @@ async def initiate_handler(
         task = asyncio.create_task(async_start_chat())  # type: ignore
         background_tasks.add(task)
         task.add_done_callback(background_tasks.discard)
+
     except Exception as e:
         logger.error(f"Error in handling initiate chat: {e}")
         logger.error(traceback.format_exc())
+
+        error_data = ErrorResoponseModel(msg=str(e))
+        error_msg = ServerResponseModel(data=error_data, type="error")
+        syncify(broker.publish)(error_msg, iostream._input_request_subject)  # type: ignore [arg-type]

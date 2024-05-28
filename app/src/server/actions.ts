@@ -276,7 +276,8 @@ export const validateForm: ValidateForm<{ data: any; validationURL: string; isSe
         json.api_key = data.api_key;
       }
     }
-    return json;
+    const retVal = isSecretUpdate ? json : data;
+    return retVal;
   } catch (error: any) {
     throw new HttpError(error.statusCode || 500, error.message || 'Server or network error occurred');
   }

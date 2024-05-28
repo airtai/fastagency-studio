@@ -2,6 +2,7 @@ import json
 import logging
 from os import environ
 from typing import Any, Dict, List, Optional, Union
+from uuid import UUID
 
 from fastapi import FastAPI, HTTPException
 from openai import AsyncAzureOpenAI
@@ -23,9 +24,25 @@ async def get_models_schemas() -> Schemas:
 
 
 @app.post("/models/{type}/{name}/validate")
-async def validate_model(type: str, name: str, model: Dict[str, Any]) -> None:
+async def validate_model(type: str, name: str, model: Dict[str, Any]) -> Dict[str, Any]:
     try:
-        Registry.get_default().validate(type, name, model)
+        validated_model = Registry.get_default().validate(type, name, model)
+        return validated_model.model_dump()
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=json.loads(e.json())) from e
+
+
+@app.post("/user/{user_uuid}/models/secret/{name}/{model_uuid}/validate")
+async def validate_secret_model(
+    user_uuid: UUID, name: str, model_uuid: UUID, model: Dict[str, Any]
+) -> Dict[str, Any]:
+    type: str = "secret"
+
+    found_model = await find_model_using_raw(model_uuid=model_uuid, user_uuid=user_uuid)
+    model["api_key"] = found_model["json_str"]["api_key"]
+    try:
+        validated_model = Registry.get_default().validate(type, name, model)
+        return validated_model.model_dump()
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=json.loads(e.json())) from e
 
@@ -45,6 +62,10 @@ async def get_user(user_uuid: Union[int, str]) -> Any:
     return user
 
 
+async def mask(value: str) -> str:
+    return value[:3] + "*" * (len(value) - 7) + value[-4:]
+
+
 @app.get("/user/{user_uuid}/models")
 async def get_all_models(
     user_uuid: str,
@@ -58,7 +79,14 @@ async def get_all_models(
         models = await db.model.find_many(where=filters)  # type: ignore[arg-type]
 
     ta = TypeAdapter(List[Model])
-    ret_val = ta.dump_python(models, serialize_as_any=True)  # type: ignore[call-arg]
+    ret_val_without_mask = ta.dump_python(models, serialize_as_any=True)  # type: ignore[call-arg]
+
+    ret_val = []
+    for model in ret_val_without_mask:
+        if model["type_name"] == "secret":
+            model["json_str"]["api_key"] = await mask(model["json_str"]["api_key"])
+        ret_val.append(model)
+
     return ret_val  # type: ignore[no-any-return]
 
 

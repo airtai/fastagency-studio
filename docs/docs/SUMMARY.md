@@ -13,9 +13,11 @@ search:
             - [get_all_models](api/fastagency/app/get_all_models.md)
             - [get_models_schemas](api/fastagency/app/get_models_schemas.md)
             - [get_user](api/fastagency/app/get_user.md)
+            - [mask](api/fastagency/app/mask.md)
             - [models_delete](api/fastagency/app/models_delete.md)
             - [update_model](api/fastagency/app/update_model.md)
             - [validate_model](api/fastagency/app/validate_model.md)
+            - [validate_secret_model](api/fastagency/app/validate_secret_model.md)
         - db
             - helpers
                 - [find_model_using_raw](api/fastagency/db/helpers/find_model_using_raw.md)
@@ -30,6 +32,8 @@ search:
                 - [InputRequestModel](api/fastagency/io/ionats/InputRequestModel.md)
                 - [InputResponseModel](api/fastagency/io/ionats/InputResponseModel.md)
                 - [PrintModel](api/fastagency/io/ionats/PrintModel.md)
+                - [ServerResponseModel](api/fastagency/io/ionats/ServerResponseModel.md)
+                - [TerminateModel](api/fastagency/io/ionats/TerminateModel.md)
                 - [create_team](api/fastagency/io/ionats/create_team.md)
         - models
             - [Registry](api/fastagency/models/Registry.md)

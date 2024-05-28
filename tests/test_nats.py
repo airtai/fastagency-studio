@@ -228,6 +228,79 @@ class TestAutogen:
 
     @pytest.mark.azure_oai()
     @pytest.mark.nats()
+    @pytest.mark.asyncio()
+    async def test_ionats_error_msg(
+        self, llm_config: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        user_id = uuid.uuid4()
+        thread_id = uuid.uuid4()
+        team_id = uuid.uuid4()
+
+        ### begin sending inputs to server
+
+        d = {"count": 0}
+
+        def input(prompt: str, d: Dict[str, int] = d) -> str:
+            d["count"] += 1
+            if d["count"] == 1:
+                return f"[{datetime.now()}] What's the weather in New York today?"
+            elif d["count"] == 2:
+                return ""
+            else:
+                return "exit"
+
+        actual = []
+        terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
+        error_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
+
+        @broker.subscriber(f"chat.client.messages.{thread_id}", stream=stream)
+        async def client_input_handler(msg: ServerResponseModel) -> None:
+            if msg.type == "input":
+                response = InputResponseModel(msg=input(msg.data.prompt))  # type: ignore [union-attr]
+
+                await broker.publish(
+                    response, subject=f"chat.server.messages.{thread_id}"
+                )
+            elif msg.type == "print":
+                actual.append(msg.data.model_dump())
+            elif msg.type == "terminate":
+                await terminate_chat_queue.put(msg.data.model_dump())
+            elif msg.type == "error":
+                await error_queue.put(msg.data.model_dump())
+            else:
+                raise ValueError(f"Unknown message type {msg.type}")
+
+        ### end sending inputs to server
+
+        def create_team(
+            team_id: uuid.UUID, user_id: uuid.UUID
+        ) -> Callable[[str], List[Dict[str, Any]]]:
+            raise ValueError("Triggering error in test")
+
+        monkeypatch.setattr(fastagency.io.ionats, "create_team", create_team)
+
+        async with TestNatsBroker(broker) as br:
+            await br.publish(
+                fastagency.io.ionats.InitiateModel(
+                    msg="exit",
+                    thread_id=thread_id,
+                    team_id=team_id,
+                    user_id=user_id,
+                ),
+                subject="chat.server.initiate_chat",
+            )
+
+            # await asyncio.sleep(10)
+
+            result_set, _ = await asyncio.wait(
+                (asyncio.create_task(error_queue.get()),),
+                timeout=10,
+            )
+            result = (result_set.pop()).result()
+            assert result == {"msg": "Triggering error in test"}
+
+    @pytest.mark.azure_oai()
+    @pytest.mark.nats()
     @pytest.mark.db()
     @pytest.mark.asyncio()
     @pytest.mark.parametrize(

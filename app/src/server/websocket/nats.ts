@@ -113,22 +113,27 @@ async function setupSubscription(
       const conversationId = NatsConnectionManager.getConversationId(threadId);
       const jm = jc.decode(m.data);
       const type = jm.type;
-      const message = jm.data.msg || jm.data.prompt;
+      let message = jm.data.msg || jm.data.prompt;
       // console.log(`Received ${type} message: `, message);
       if (type === 'print') {
         NatsConnectionManager.updateMessageHistory(threadId, message);
         socket.emit('newMessageFromTeam', conversationHistory);
       } else {
         try {
+          const isChatTerminated = type === 'terminate' || type === 'error';
+          message =
+            type === 'error'
+              ? `${message} Unfortunately, you won't be able to continue this chat. Could you please create a new chat and give it another try? Thanks!`
+              : message;
           await updateDB(
             context,
             currentChatDetails.id,
             message,
             conversationId,
             conversationHistory,
-            type !== 'input'
+            isChatTerminated
           );
-          if (type !== 'input') {
+          if (isChatTerminated) {
             console.log('Terminating chat and cleaning up NATS connection and subscriptions.');
             NatsConnectionManager.cleanup(threadId);
           }

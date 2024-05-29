@@ -25,5 +25,6 @@ class TestGetSchema:
             "llm": {"AzureOAI", "OpenAI"},
             "agent": {"AssistantAgent", "WebSurferAgent", "UserProxyAgent"},
             "team": {"TwoAgentTeam", "MultiAgentTeam"},
+            "toolbox": {"Toolbox"},
         }
         assert model_names == expected, f"{model_names}!={expected}"

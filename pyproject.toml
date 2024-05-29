@@ -59,7 +59,7 @@ dependencies = [
 # public distributions
 
 server = [
-    "uvicorn==0.29.0",
+    "uvicorn==0.30.0",
 ]
 
 # dev dependencies
@@ -102,12 +102,12 @@ test-core = [
 
 testing = [
     "fastagency[test-core]",
+    "fastagency[server]", # Uvicorn is needed for testing
     "pydantic-settings==2.2.1",
     "httpx==0.27.0",
     "PyYAML==6.0.1",
     "watchfiles==0.21.0",
     "email-validator==2.1.1",
-    "uvicorn==0.30.0",
 ]
 
 dev = [

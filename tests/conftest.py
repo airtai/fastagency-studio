@@ -1,11 +1,18 @@
 import os
 import random
+import socket
+import time
 import uuid
-from typing import Any, AsyncIterator, Dict
+from multiprocessing import Process
+from typing import Any, AsyncIterator, Dict, Iterator, Optional
 
+import httpx
 import openai
 import pytest
 import pytest_asyncio
+import uvicorn
+from fastapi import FastAPI
+from pydantic import BaseModel
 
 from fastagency.db.helpers import get_db_connection, get_wasp_db_url
 
@@ -66,3 +73,70 @@ def test_llm_config_fixture(llm_config: Dict[str, Any]) -> None:
 
     for k in ["model", "api_key", "base_url", "api_type", "api_version"]:
         assert len(llm_config["config_list"][0][k]) > 3
+
+
+# FastAPI app for testing
+
+
+def create_fastapi_app() -> FastAPI:
+    app = FastAPI()
+
+    class Item(BaseModel):
+        name: str
+        description: Optional[str] = None
+        price: float
+        tax: Optional[float] = None
+
+    @app.get("/")
+    def read_root() -> Dict[str, str]:
+        return {"Hello": "World"}
+
+    @app.get("/items/{item_id}")
+    def read_item(item_id: int, q: Optional[str] = None) -> Dict[str, Any]:
+        return {"item_id": item_id, "q": q}
+
+    @app.post("/items/")
+    async def create_item(item: Item) -> Item:
+        return item
+
+    return app
+
+
+def find_free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("", 0))
+        return s.getsockname()[1]  # type: ignore [no-any-return]
+
+
+def test_find_free_port() -> None:
+    port = find_free_port()
+    assert isinstance(port, int)
+    assert 1024 <= port <= 65535
+
+
+@pytest.fixture(scope="session")
+def fastapi_openapi_url() -> Iterator[str]:
+    port = find_free_port()
+    app = create_fastapi_app()
+    openapi_url = f"http://127.0.0.1:{port}/openapi.json"
+
+    def run_server() -> None:
+        uvicorn.run(app, host="127.0.0.1", port=port)
+
+    p = Process(target=run_server)
+    p.start()
+    time.sleep(1)  # let the server start
+
+    yield openapi_url
+
+    p.terminate()
+    p.join()
+
+
+def test_fastapi_openapi(fastapi_openapi_url: str) -> None:
+    assert isinstance(fastapi_openapi_url, str)
+
+    resp = httpx.get(fastapi_openapi_url)
+    assert resp.status_code == 200
+    assert "openapi" in resp.json()
+    assert resp.json()["info"]["title"] == "FastAPI"

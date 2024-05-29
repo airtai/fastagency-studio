@@ -1,1 +1,1 @@
-from .openapi_auth import OpenAPIAuth  # noqa: F401
+from .openapi_auth import OpenAPIAuth, OpenAPIAuthRef  # noqa: F401

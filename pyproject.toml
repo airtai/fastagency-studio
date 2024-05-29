@@ -107,6 +107,7 @@ testing = [
     "PyYAML==6.0.1",
     "watchfiles==0.21.0",
     "email-validator==2.1.1",
+    "uvicorn==0.30.0",
 ]
 
 dev = [

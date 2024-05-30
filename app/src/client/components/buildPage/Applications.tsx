@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 
 import CustomBreadcrumb from '../CustomBreadcrumb';
@@ -8,16 +8,63 @@ import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
 
 import { getApplications, useQuery, getModels, addApplication } from 'wasp/client/operations';
 import { navLinkItems } from '../CustomSidebar';
-import { TextArea } from '../form/TextArea';
+import { TextInput } from '../form/TextInput';
+import Loader from '../../admin/common/Loader';
+
+interface ItemProps {
+  uuid: string;
+  user_uuid: string;
+  team_uuid: string;
+  json_str: {
+    name: string;
+  };
+  created_at: string;
+  updated_at: string;
+}
 
 const Applications = () => {
   const [showAddModel, setShowAddModel] = useState(false);
-  const { data: userApplications, isLoading: isLoading } = useQuery(getApplications);
-  console.log('userApplications: ', userApplications);
+  const [selectedApplication, setSelectedApplication] = useState<ItemProps | null>(null);
+  const [applicationInstructions, setApplicationInstructions] = useState(false);
+  const [isshowApplicationInstructions, setIsshowApplicationInstructions] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const {
+    data: userApplications,
+    isLoading: isUserApplicationDataLoading,
+    refetch: refetchApplications,
+  } = useQuery(getApplications);
 
   const handleClick = () => {
     setShowAddModel(true);
   };
+
+  const updateSelectedApplication = (index: number) => {
+    if (userApplications) {
+      const selectedApplication = userApplications[index];
+      setSelectedApplication(selectedApplication);
+      setApplicationInstructions(true);
+      setIsLoading(false);
+    }
+  };
+
+  const onCancelCallback = () => {
+    setSelectedApplication(null);
+    setApplicationInstructions(false);
+  };
+
+  const showInstructionsForApplication = (applicationName: string) => {
+    setIsLoading(true);
+    refetchApplications();
+    setIsshowApplicationInstructions(true);
+    setShowAddModel(false);
+  };
+
+  useEffect(() => {
+    if (userApplications && userApplications.length > 0 && isshowApplicationInstructions) {
+      const sortedUserApplications = _.sortBy(userApplications, ['created_at']);
+      updateSelectedApplication(sortedUserApplications.length - 1);
+    }
+  }, [userApplications]);
 
   return (
     <>
@@ -30,27 +77,59 @@ const Applications = () => {
                 <Button onClick={handleClick} label={`Add application`} />
               </div>
               <div className='flex-col flex w-full'>
-                {!showAddModel ? (
-                  <ApplicationsList userApplications={userApplications} onSelectApplication={() => {}} />
+                {applicationInstructions ? (
+                  <div className='flex flex-col gap-3'>
+                    <p className='text-airt-primary mt-1 -mt-3 opacity-50'>{`Instructions for ${selectedApplication?.json_str.name}`}</p>
+                    <div className='float-right'>
+                      <button
+                        className='rounded-md px-3.5 py-2.5 text-sm border border-airt-error text-airt-primary hover:bg-opacity-10 hover:bg-airt-error shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                        disabled={isLoading}
+                        data-testid='form-cancel-button'
+                        onClick={onCancelCallback}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : !showAddModel ? (
+                  <ApplicationsList
+                    userApplications={userApplications}
+                    onSelectApplication={updateSelectedApplication}
+                  />
                 ) : (
-                  <AddApplicationForm setShowAddModel={setShowAddModel} />
+                  <AddApplicationForm
+                    setShowAddModel={setShowAddModel}
+                    showInstructionsForApplication={showInstructionsForApplication}
+                  />
                 )}
               </div>
             </div>
           </div>
         </div>
       </div>
+      {(isUserApplicationDataLoading || isLoading) && (
+        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
+          <Loader />
+        </div>
+      )}
     </>
   );
 };
 
 export default Applications;
 
-const AddApplicationForm = ({ setShowAddModel }: { setShowAddModel: (value: boolean) => void }) => {
+const AddApplicationForm = ({
+  setShowAddModel,
+  showInstructionsForApplication,
+}: {
+  setShowAddModel: (value: boolean) => void;
+  showInstructionsForApplication: (applicationName: string) => void;
+}) => {
   const [team, setTeam] = useState('');
   const [formError, setFormError] = useState<Record<string, any>>({});
   const [applicationName, setApplicationName] = useState('');
-  const { data: allTeams, isLoading: isLoading } = useQuery(getModels, { type_name: 'team' });
+  const { data: allTeams, isLoading: isTeamsDataLoading } = useQuery(getModels, { type_name: 'team' });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleTeamChange = (value: string) => {
     setTeam(value);
@@ -63,16 +142,23 @@ const AddApplicationForm = ({ setShowAddModel }: { setShowAddModel: (value: bool
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (allTeams) {
+      setIsLoading(true);
       const teamUUID = team === '' ? allTeams[0].uuid : _.find(allTeams, ['json_str.name', team])?.uuid;
       await addApplication({ teamUUID: teamUUID, applicationName: applicationName });
-      setShowAddModel(false);
+      setIsLoading(false);
+      showInstructionsForApplication(applicationName);
     }
+  };
+
+  const onCancelCallback = () => {
+    setTeam('');
+    setShowAddModel(false);
   };
 
   return (
     <div className='w-full lg:min-w-[700px] 2xl:min-w-[1200px]'>
       <CustomBreadcrumb pageName='Enter details to start new chat' />
-      <div className='rounded-lg border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[420px] pt-7'>
+      <div className='rounded-lg border bg-white dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[300px] pt-7'>
         <form onSubmit={handleSubmit} className='px-6.5 py-2'>
           <label className='text-airt-primary' htmlFor='selectTeam'>
             Select Team
@@ -89,36 +175,46 @@ const AddApplicationForm = ({ setShowAddModel }: { setShowAddModel: (value: bool
             </div>
           )}
           <label className='text-airt-primary inline-block' htmlFor='setSystemMessage'>
-            Task Description
+            Application Name
           </label>
-          <TextArea id='setSystemMessage' value={applicationName} placeholder='' onChange={handleMessageChange} />
+          <TextInput
+            id='applicationName'
+            type='string'
+            value={applicationName}
+            placeholder='The name of the SaaS application you want to create'
+            onChange={handleMessageChange}
+          />
           {formError && (
             <div className='mb-2' style={{ color: 'red' }}>
               {formError.message}
             </div>
           )}
-          <button
-            className='rounded-md px-3.5 py-2.5 text-sm  bg-airt-primary text-airt-font-base   hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
-            type='submit'
-          >
-            Create
-          </button>
+          <div className='float-right'>
+            <button
+              className='rounded-md px-3.5 py-2.5 text-sm border border-airt-error text-airt-primary hover:bg-opacity-10 hover:bg-airt-error shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+              disabled={isLoading}
+              data-testid='form-cancel-button'
+              onClick={onCancelCallback}
+            >
+              Cancel
+            </button>
+            <button
+              className='ml-3 float-right rounded-md px-3.5 py-2.5 text-sm  bg-airt-primary text-airt-font-base   hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+              type='submit'
+            >
+              Create
+            </button>
+          </div>
         </form>
       </div>
+      {(isLoading || isTeamsDataLoading) && (
+        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
+          <Loader />
+        </div>
+      )}
     </div>
   );
 };
-
-interface ItemProps {
-  uuid: string;
-  user_uuid: string;
-  team_uuid: string;
-  json_str: {
-    name: string;
-  };
-  created_at: string;
-  updated_at: string;
-}
 
 interface ApplicationListProps {
   userApplications: ItemProps[] | undefined;

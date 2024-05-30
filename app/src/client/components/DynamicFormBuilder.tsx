@@ -195,27 +195,29 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
           );
         })}
         <div className='col-span-full mt-7'>
-          <button
-            type='submit'
-            className='rounded-md px-3.5 py-2.5 text-sm bg-airt-primary text-airt-font-base hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
-            disabled={isLoading}
-            data-testid='form-submit-button'
-          >
-            Save
-          </button>
-          <button
-            className='ml-3 rounded-md px-3.5 py-2.5 text-sm border border-airt-error text-airt-primary hover:bg-opacity-10 hover:bg-airt-error shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
-            disabled={isLoading}
-            data-testid='form-cancel-button'
-            onClick={onCancelCallback}
-          >
-            Cancel
-          </button>
+          <div className='float-right'>
+            <button
+              className='rounded-md px-3.5 py-2.5 text-sm border border-airt-error text-airt-primary hover:bg-opacity-10 hover:bg-airt-error shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+              disabled={isLoading}
+              data-testid='form-cancel-button'
+              onClick={onCancelCallback}
+            >
+              Cancel
+            </button>
+            <button
+              type='submit'
+              className='ml-3 rounded-md px-3.5 py-2.5 text-sm bg-airt-primary text-airt-font-base hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+              disabled={isLoading}
+              data-testid='form-submit-button'
+            >
+              Save
+            </button>
+          </div>
 
           {updateExistingModel && (
             <button
               type='button'
-              className='float-right ml-3 rounded-md px-3.5 py-2.5 text-sm border bg-airt-error text-airt-font-base hover:bg-opacity-80 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+              className='float-left rounded-md px-3.5 py-2.5 text-sm border bg-airt-error text-airt-font-base hover:bg-opacity-80 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
               disabled={isLoading}
               data-testid='form-cancel-button'
               onClick={onDeleteCallback}

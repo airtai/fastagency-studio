@@ -18,9 +18,6 @@ check_variable "PORT"
 check_variable "DATABASE_URL"
 check_variable "WASP_WEB_CLIENT_URL"
 check_variable "JWT_SECRET"
-#check_variable "STRIPE_KEY"
-#check_variable "PRO_SUBSCRIPTION_PRICE_ID"
-# check_variable "STRIPE_WEBHOOK_SECRET"
 check_variable "GOOGLE_CLIENT_ID"
 check_variable "GOOGLE_CLIENT_SECRET"
 check_variable "WASP_SERVER_URL"
@@ -64,7 +61,5 @@ $ssh_command "docker run --name $container_name -p $PORT:$PORT -e PORT='$PORT' \
 	-e GOOGLE_CLIENT_SECRET='$GOOGLE_CLIENT_SECRET' \
     -e WASP_SERVER_URL='$WASP_SERVER_URL' \
     -e FASTAGENCY_SERVER_URL='$FASTAGENCY_SERVER_URL' \
-    # -e STRIPE_KEY='$STRIPE_KEY' -e PRO_SUBSCRIPTION_PRICE_ID='$PRO_SUBSCRIPTION_PRICE_ID' \
-	# -e STRIPE_WEBHOOK_SECRET='$STRIPE_WEBHOOK_SECRET' \
     -e ADMIN_EMAILS='$ADMIN_EMAILS' \
 	-d ghcr.io/$GITHUB_REPOSITORY-node:$TAG"

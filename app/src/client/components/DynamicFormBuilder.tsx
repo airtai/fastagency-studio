@@ -74,7 +74,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     try {
       const response = await validateForm(formDataToSubmit, validationURL, isSecretUpdate);
       onSuccessCallback(response);
-      showDeployInstructions && setInstructionForApplication(response.uuid);
+      showDeployInstructions && !updateExistingModel && setInstructionForApplication(response.uuid);
     } catch (error: any) {
       try {
         const errorMsgObj = JSON.parse(error.message);

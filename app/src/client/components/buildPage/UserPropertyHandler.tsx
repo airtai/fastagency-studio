@@ -71,8 +71,8 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
         await addUserModels(filteredData);
       }
       refetchModels();
-      const isApplicationAdded = propertyName === 'application';
-      !isApplicationAdded && setShowAddModel(false);
+      const isNewApplicationAdded = propertyName === 'application' && !updateExistingModel;
+      !isNewApplicationAdded && setShowAddModel(false);
     } catch (error) {
       setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
     } finally {

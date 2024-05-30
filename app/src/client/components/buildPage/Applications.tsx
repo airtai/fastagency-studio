@@ -78,16 +78,28 @@ const Applications = () => {
               </div>
               <div className='flex-col flex w-full'>
                 {applicationInstructions ? (
-                  <div className='flex flex-col gap-3'>
-                    <p className='text-airt-primary mt-1 -mt-3 opacity-50'>{`Instructions for ${selectedApplication?.json_str.name}`}</p>
-                    <div className='float-right'>
+                  <div className='flex flex-col gap-3 pt-5 pb-5'>
+                    <h2 className='text-title-md2 font-semibold text-airt-primary dark:text-white'>{`Instructions to deploy a new SaaS application: ${selectedApplication?.json_str.name}`}</h2>
+                    <ol className='list-decimal list-inside'>
+                      <li className='text-airt-primary dark:text-white mt-2'>
+                        {`Clone the base repository from `}
+                        <a href='https://github.com/airtai/fastagency-wasp-app-template'>{`here`}</a>
+                      </li>
+                      <li className='text-airt-primary dark:text-white mt-1'>
+                        {`Set the following environment variable in the GitHub actions`}
+                        <br />
+                        <pre className='ml-4 inline-block bg-airt-primary dark:bg-airt-primary p-2 rounded-md text-white'>{`FASTAGENCY_APPLICATION_UUID=${selectedApplication?.uuid}`}</pre>
+                      </li>
+                      <li className='text-airt-primary dark:text-white mt-1'>{`To be added...`}</li>
+                    </ol>
+                    <div className='flex justify-end mt-auto'>
                       <button
                         className='rounded-md px-3.5 py-2.5 text-sm border border-airt-error text-airt-primary hover:bg-opacity-10 hover:bg-airt-error shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
                         disabled={isLoading}
                         data-testid='form-cancel-button'
                         onClick={onCancelCallback}
                       >
-                        Cancel
+                        Close
                       </button>
                     </div>
                   </div>

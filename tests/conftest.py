@@ -78,14 +78,15 @@ def test_llm_config_fixture(llm_config: Dict[str, Any]) -> None:
 # FastAPI app for testing
 
 
+class Item(BaseModel):
+    name: str
+    description: Optional[str] = None
+    price: float
+    tax: Optional[float] = None
+
+
 def create_fastapi_app() -> FastAPI:
     app = FastAPI()
-
-    class Item(BaseModel):
-        name: str
-        description: Optional[str] = None
-        price: float
-        tax: Optional[float] = None
 
     @app.get("/")
     def read_root() -> Dict[str, str]:

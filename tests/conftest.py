@@ -86,8 +86,12 @@ class Item(BaseModel):
     tax: Optional[float] = None
 
 
-def create_fastapi_app() -> FastAPI:
-    app = FastAPI()
+def create_fastapi_app(host: str, port: int) -> FastAPI:
+    app = FastAPI(
+        servers=[
+            {"url": f"http://{host}:{port}", "description": "Local development server"}
+        ]
+    )
 
     @app.get("/")
     def read_root() -> Dict[str, str]:
@@ -124,7 +128,7 @@ def run_server(app: FastAPI, host: str = "127.0.0.1", port: int = 8000) -> None:
 def fastapi_openapi_url() -> Iterator[str]:
     host = "127.0.0.1"
     port = find_free_port()
-    app = create_fastapi_app()
+    app = create_fastapi_app(host, port)
     openapi_url = f"http://{host}:{port}/openapi.json"
 
     # Use multiprocess.Process instead of multiprocessing.Process to prevent failures because of pickle in mac and windows tests
@@ -144,5 +148,8 @@ def test_fastapi_openapi(fastapi_openapi_url: str) -> None:
 
     resp = httpx.get(fastapi_openapi_url)
     assert resp.status_code == 200
-    assert "openapi" in resp.json()
-    assert resp.json()["info"]["title"] == "FastAPI"
+    resp_json = resp.json()
+    assert "openapi" in resp_json
+    assert "servers" in resp_json
+    assert len(resp_json["servers"]) == 1
+    assert resp_json["info"]["title"] == "FastAPI"

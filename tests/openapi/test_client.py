@@ -14,7 +14,7 @@ class TestClient:
         assert client is not None
         assert isinstance(client, Client)
 
-        assert len(client.registered_funcs) == 1
+        assert len(client.registered_funcs) == 1, client.registered_funcs
         assert (
             client.registered_funcs[0].__name__
             == "update_item_items__item_id__ships__ship__put"

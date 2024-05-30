@@ -1,11 +1,13 @@
-from typing import Annotated, Any, Optional
+from typing import Annotated, Optional
 from uuid import UUID
 
+import httpx
 from asyncer import syncify
 from pydantic import AfterValidator, Field, HttpUrl
 from typing_extensions import TypeAlias
 
 from ...db.helpers import find_model_using_raw
+from ...openapi.client import Client
 from ..base import Model
 from ..registry import Registry
 from ..secrets import OpenAPIAuthRef  # type: ignore[attr-defined]
@@ -38,11 +40,20 @@ class Toolbox(Model):
     ] = None
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Client:
         my_model_dict = syncify(find_model_using_raw)(model_id, user_id)
-        my_model = cls(**my_model_dict["json_str"])  # noqa: F841
+        my_model = cls(**my_model_dict["json_str"])
 
-        # ToDo: Generate api spec client
+        # Download openapi spec to tmp file
+        with httpx.Client() as httpx_client:
+            response = httpx_client.get(my_model.openapi_url)  # type: ignore[arg-type]
+            response.raise_for_status()
+            openapi_spec = response.text
+
+        # ToDo: Check this is correct
+
+        client = Client.create(openapi_spec)
+        return client
 
 
 ToolboxRef: TypeAlias = Toolbox.get_reference_model()  # type: ignore[valid-type]

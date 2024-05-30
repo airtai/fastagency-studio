@@ -19,12 +19,3 @@ model Model {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
-
-model Application {
-  uuid              String   @id
-  user_uuid         String   @db.Uuid
-  team_uuid         String   @db.Uuid
-  json_str Json
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
-}

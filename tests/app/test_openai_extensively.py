@@ -223,9 +223,7 @@ class TestToolbox:
         assert actual == expected
 
     @pytest.mark.asyncio()
-    async def test_validate_toolbox(
-        self, user_uuid: str, fastapi_openapi_url: str
-    ) -> None:
+    async def test_validate_toolbox(self, fastapi_openapi_url: str) -> None:
         openapi_auth = OpenAPIAuth(
             name="openapi_auth_secret",
             username="test",
@@ -244,9 +242,7 @@ class TestToolbox:
         await validate_toolbox(toolbox)
 
     @pytest.mark.asyncio()
-    async def test_validate_toolbox_route(
-        self, user_uuid: str, fastapi_openapi_url: str
-    ) -> None:
+    async def test_validate_toolbox_route(self, fastapi_openapi_url: str) -> None:
         openapi_auth = OpenAPIAuth(
             name="openapi_auth_secret",
             username="test",

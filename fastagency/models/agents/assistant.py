@@ -28,6 +28,8 @@ class AssistantAgent(AgentBaseModel):
         llm_model = my_model.llm.get_data_model()(**llm_dict["json_str"])
         llm = llm_model.create_autogen(my_model.llm.uuid, user_id)
 
+        clients = my_model.get_clients_from_toolboxes(user_id)  # noqa: F841
+
         agent_name = my_model_dict["model_name"]
 
         agent = autogen.agentchat.AssistantAgent(

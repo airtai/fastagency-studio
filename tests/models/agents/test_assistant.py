@@ -94,6 +94,35 @@ class TestAssistantAgent:
                     "title": "OpenAIRef",
                     "type": "object",
                 },
+                "ToolboxRef": {
+                    "properties": {
+                        "type": {
+                            "const": "toolbox",
+                            "default": "toolbox",
+                            "description": "The name of the type of the data",
+                            "enum": ["toolbox"],
+                            "title": "Type",
+                            "type": "string",
+                        },
+                        "name": {
+                            "const": "Toolbox",
+                            "default": "Toolbox",
+                            "description": "The name of the data",
+                            "enum": ["Toolbox"],
+                            "title": "Name",
+                            "type": "string",
+                        },
+                        "uuid": {
+                            "description": "The unique identifier",
+                            "format": "uuid",
+                            "title": "UUID",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["uuid"],
+                    "title": "ToolboxRef",
+                    "type": "object",
+                },
             },
             "properties": {
                 "name": {
@@ -109,6 +138,24 @@ class TestAssistantAgent:
                     ],
                     "description": "LLM used by the agent for producing responses",
                     "title": "LLM",
+                },
+                "toolbox_1": {
+                    "anyOf": [{"$ref": "#/$defs/ToolboxRef"}, {"type": "null"}],
+                    "default": None,
+                    "description": "Toolbox used by the agent for producing responses",
+                    "title": "Toolbox",
+                },
+                "toolbox_2": {
+                    "anyOf": [{"$ref": "#/$defs/ToolboxRef"}, {"type": "null"}],
+                    "default": None,
+                    "description": "Toolbox used by the agent for producing responses",
+                    "title": "Toolbox",
+                },
+                "toolbox_3": {
+                    "anyOf": [{"$ref": "#/$defs/ToolboxRef"}, {"type": "null"}],
+                    "default": None,
+                    "description": "Toolbox used by the agent for producing responses",
+                    "title": "Toolbox",
                 },
                 "system_message": {
                     "description": "The system message of the agent. This message is used to inform the agent about his role in the conversation",

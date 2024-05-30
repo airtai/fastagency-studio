@@ -54,6 +54,8 @@ class WebSurferAgent(AgentBaseModel):
         llm_model = my_model.llm.get_data_model()(**llm_dict["json_str"])
         llm = llm_model.create_autogen(my_model.llm.uuid, user_id)
 
+        clients = my_model.get_clients_from_toolboxes(user_id)  # noqa: F841
+
         summarizer_llm_dict = syncify(find_model_using_raw)(
             my_model.summarizer_llm.uuid, user_id
         )

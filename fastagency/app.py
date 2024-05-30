@@ -9,7 +9,12 @@ from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from .db.helpers import find_model_using_raw, get_db_connection, get_wasp_db_url
+from .db.helpers import (
+    find_application_using_raw,
+    find_model_using_raw,
+    get_db_connection,
+    get_wasp_db_url,
+)
 from .models.registry import Registry, Schemas
 
 logging.basicConfig(level=logging.INFO)
@@ -276,3 +281,44 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
     }
 
     return default_response
+
+
+class ApplicationCreate(BaseModel):
+    team_uuid: str
+
+
+@app.post("/user/{user_uuid}/application/{application_uuid}")
+async def add_application(
+    user_uuid: str, application_uuid: str, application_create: ApplicationCreate
+) -> None:
+    team_uuid = application_create.team_uuid
+
+    await get_user(user_uuid=user_uuid)
+    async with get_db_connection() as db:
+        await db.application.create(  # type: ignore[attr-defined]
+            data={
+                "uuid": application_uuid,
+                "user_uuid": user_uuid,
+                "team_uuid": team_uuid,
+            }
+        )
+
+
+@app.post("/application/{application_uuid}/chat")
+async def application_chat(application_uuid: str) -> Dict[str, Any]:
+    # team_uuid = "a80cb6aa-8167-470d-83c1-1983c4e02d48"
+
+    found_application = await find_application_using_raw(
+        application_uuid=application_uuid
+    )
+    user_uuid = found_application["user_uuid"]
+    team_uuid = found_application["team_uuid"]
+    found_model = await find_model_using_raw(model_uuid=team_uuid, user_uuid=user_uuid)
+    team_name = found_model["json_str"]["name"]
+
+    return {
+        "team_status": "inprogress",
+        "team_name": team_name,
+        "team_uuid": team_uuid,
+        "conversation_name": "New Chat",
+    }

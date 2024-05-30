@@ -54,3 +54,23 @@ async def find_model_using_raw(
             detail=f"model_uuid {model_uuid} and user_uuid {user_uuid} not found",
         )
     return model
+
+
+async def find_application_using_raw(
+    application_uuid: Union[str, UUID],
+) -> Dict[str, Any]:
+    if isinstance(application_uuid, UUID):
+        application_uuid = str(application_uuid)
+
+    async with get_db_connection() as db:
+        application: Optional[Dict[str, Any]] = await db.query_first(
+            'SELECT * from "Application" where uuid='  # nosec: [B608]
+            + f"'{application_uuid}'"
+        )
+
+    if not application:
+        raise HTTPException(
+            status_code=404,
+            detail=f"application_uuid {application_uuid} not found",
+        )
+    return application

@@ -3,6 +3,7 @@ import random
 import socket
 import time
 import uuid
+from platform import system
 from typing import Any, AsyncIterator, Dict, Iterator, Optional
 
 import httpx
@@ -130,7 +131,7 @@ def fastapi_openapi_url() -> Iterator[str]:
     # https://stackoverflow.com/a/72776044/3664629
     p = mp.Process(target=run_server, args=(app, host, port))
     p.start()
-    time.sleep(1)  # let the server start
+    time.sleep(1 if system() != "Windows" else 5)  # let the server start
 
     yield openapi_url
 

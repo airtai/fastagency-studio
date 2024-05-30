@@ -3,10 +3,10 @@ import random
 import socket
 import time
 import uuid
-from multiprocessing import Process
 from typing import Any, AsyncIterator, Dict, Iterator, Optional
 
 import httpx
+import multiprocess as mp
 import openai
 import pytest
 import pytest_asyncio
@@ -125,7 +125,9 @@ def fastapi_openapi_url() -> Iterator[str]:
     app = create_fastapi_app()
     openapi_url = f"http://{host}:{port}/openapi.json"
 
-    p = Process(target=run_server, args=(app, host, port))
+    # Use multiprocess.Process instead of multiprocessing.Process to prevent failures because of pickle in mac and windows tests
+    # https://stackoverflow.com/a/72776044/3664629
+    p = mp.Process(target=run_server, args=(app, host, port))
     p.start()
     time.sleep(1)  # let the server start
 

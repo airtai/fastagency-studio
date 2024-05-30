@@ -178,6 +178,7 @@ def test_get_schemas() -> None:
 
 
 class TestToolbox:
+    @pytest.mark.db()
     @pytest.mark.asyncio()
     async def test_add_toolbox(self, user_uuid: str, fastapi_openapi_url: str) -> None:
         openapi_auth = OpenAPIAuth(

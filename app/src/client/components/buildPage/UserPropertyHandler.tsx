@@ -71,7 +71,8 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
         await addUserModels(filteredData);
       }
       refetchModels();
-      setShowAddModel(false);
+      const isApplicationAdded = propertyName === 'application';
+      !isApplicationAdded && setShowAddModel(false);
     } catch (error) {
       setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
     } finally {
@@ -112,7 +113,8 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
 
   const getFilteredProperties = () => {
     if (allUserProperties) {
-      return _.filter(allUserProperties, ['type_name', propertyName]);
+      const properties = _.filter(allUserProperties, ['type_name', propertyName]);
+      return _.sortBy(properties, ['created_at']);
     }
   };
 

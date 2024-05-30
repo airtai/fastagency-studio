@@ -114,16 +114,18 @@ def test_find_free_port() -> None:
     assert 1024 <= port <= 65535
 
 
+def run_server(app: FastAPI, host: str = "127.0.0.1", port: int = 8000) -> None:
+    uvicorn.run(app, host=host, port=port)
+
+
 @pytest.fixture(scope="session")
 def fastapi_openapi_url() -> Iterator[str]:
+    host = "127.0.0.1"
     port = find_free_port()
     app = create_fastapi_app()
-    openapi_url = f"http://127.0.0.1:{port}/openapi.json"
+    openapi_url = f"http://{host}:{port}/openapi.json"
 
-    def run_server() -> None:
-        uvicorn.run(app, host="127.0.0.1", port=port)
-
-    p = Process(target=run_server)
+    p = Process(target=run_server, args=(app, host, port))
     p.start()
     time.sleep(1)  # let the server start
 

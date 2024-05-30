@@ -308,10 +308,10 @@ page AdminUIButtonsPage {
 
 // 📝 Actions
 
-action stripePayment {
-  fn: import { stripePayment } from "@src/server/actions.js",
-  entities: [User]
-}
+// action stripePayment {
+//   fn: import { stripePayment } from "@src/server/actions.js",
+//   entities: [User]
+// }
 
 action updateCurrentUser {
   fn: import { updateCurrentUser } from "@src/server/actions.js",
@@ -435,12 +435,12 @@ query getChatFromUUID {
  * https://wasp-lang.dev/docs/advanced/apis
  */
 
-api stripeWebhook {
-  fn: import { stripeWebhook } from "@src/server/webhooks/stripe.js",
-  entities: [User],
-  middlewareConfigFn: import { stripeMiddlewareFn } from "@src/server/webhooks/stripe.js",
-  httpRoute: (POST, "/stripe-webhook")
-}
+// api stripeWebhook {
+//   fn: import { stripeWebhook } from "@src/server/webhooks/stripe.js",
+//   entities: [User],
+//   middlewareConfigFn: import { stripeMiddlewareFn } from "@src/server/webhooks/stripe.js",
+//   httpRoute: (POST, "/stripe-webhook")
+// }
 
 
 /* 🕵️‍♂️ These are the Wasp Jobs. Use them to set up recurring tasks and/or queues:

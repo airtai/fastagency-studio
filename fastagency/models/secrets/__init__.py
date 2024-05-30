@@ -1,1 +1,6 @@
-from .openapi_auth import OpenAPIAuth, OpenAPIAuthRef  # noqa: F401
+from .openapi_auth import OpenAPIAuth, OpenAPIAuthRef
+
+__all__ = [
+    "OpenAPIAuth",
+    "OpenAPIAuthRef",
+]

@@ -3,11 +3,14 @@ import uuid
 from typing import Any, Dict
 
 import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from fastagency.app import add_model, app
+from fastagency.app import add_model, app, validate_toolbox
 from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 from fastagency.models.registry import Schemas
+from fastagency.models.secrets import OpenAPIAuth
+from fastagency.models.toolboxes import Toolbox
 
 client = TestClient(app)
 
@@ -172,3 +175,167 @@ def test_get_schemas() -> None:
 
     schemas = Schemas(**response.json())
     assert len(schemas.list_of_schemas) >= 2
+
+
+class TestToolbox:
+    @pytest.mark.asyncio()
+    async def test_add_toolbox(self, user_uuid: str, fastapi_openapi_url: str) -> None:
+        openapi_auth = OpenAPIAuth(
+            name="openapi_auth_secret",
+            username="test",
+            password="password",  # pragma: allowlist secret
+        )
+        openapi_auth_model_uuid = str(uuid.uuid4())
+        response = client.post(
+            f"/user/{user_uuid}/models/secret/OpenAPIAuth/{openapi_auth_model_uuid}",
+            json=openapi_auth.model_dump(),
+        )
+        assert response.status_code == 200
+
+        model_uuid = str(uuid.uuid4())
+        toolbox = Toolbox(
+            name="test_toolbox_constructor",
+            openapi_url=fastapi_openapi_url,
+            openapi_auth=openapi_auth.get_reference_model()(
+                uuid=openapi_auth_model_uuid
+            ),
+        )
+        toolbox_dump = toolbox.model_dump()
+        toolbox_dump["openapi_auth"]["uuid"] = str(toolbox_dump["openapi_auth"]["uuid"])
+
+        response = client.post(
+            f"/user/{user_uuid}/models/toolbox/Toolbox/{model_uuid}",
+            json=toolbox_dump,
+        )
+
+        assert response.status_code == 200
+        expected = {
+            "name": "test_toolbox_constructor",
+            "openapi_url": fastapi_openapi_url,
+            "openapi_auth": {
+                "type": "secret",
+                "name": "OpenAPIAuth",
+                "uuid": str(openapi_auth_model_uuid),
+            },
+        }
+        actual = response.json()
+        assert actual == expected
+
+    @pytest.mark.asyncio()
+    async def test_validate_toolbox(
+        self, user_uuid: str, fastapi_openapi_url: str
+    ) -> None:
+        openapi_auth = OpenAPIAuth(
+            name="openapi_auth_secret",
+            username="test",
+            password="password",  # pragma: allowlist secret
+        )
+        openapi_auth_model_uuid = str(uuid.uuid4())
+
+        toolbox = Toolbox(
+            name="test_toolbox_constructor",
+            openapi_url=fastapi_openapi_url,
+            openapi_auth=openapi_auth.get_reference_model()(
+                uuid=openapi_auth_model_uuid
+            ),
+        )
+
+        await validate_toolbox(toolbox)
+
+    @pytest.mark.asyncio()
+    async def test_validate_toolbox_route(
+        self, user_uuid: str, fastapi_openapi_url: str
+    ) -> None:
+        openapi_auth = OpenAPIAuth(
+            name="openapi_auth_secret",
+            username="test",
+            password="password",  # pragma: allowlist secret
+        )
+        openapi_auth_model_uuid = str(uuid.uuid4())
+
+        toolbox = Toolbox(
+            name="test_toolbox_constructor",
+            openapi_url=fastapi_openapi_url,
+            openapi_auth=openapi_auth.get_reference_model()(
+                uuid=openapi_auth_model_uuid
+            ),
+        )
+        toolbox_dump = toolbox.model_dump()
+        toolbox_dump["openapi_auth"]["uuid"] = str(toolbox_dump["openapi_auth"]["uuid"])
+
+        response = client.post(
+            "/models/toolbox/Toolbox/validate",
+            json=toolbox_dump,
+        )
+        assert response.status_code == 200
+
+    @pytest.mark.asyncio()
+    async def test_validate_toolbox_with_404_url(self) -> None:
+        invalid_url = "http://i.dont.exist.airt.ai/openapi.json"
+
+        openapi_auth = OpenAPIAuth(
+            name="openapi_auth_secret",
+            username="test",
+            password="password",  # pragma: allowlist secret
+        )
+        openapi_auth_model_uuid = str(uuid.uuid4())
+
+        toolbox = Toolbox(
+            name="test_toolbox_constructor",
+            openapi_url=invalid_url,
+            openapi_auth=openapi_auth.get_reference_model()(
+                uuid=openapi_auth_model_uuid
+            ),
+        )
+
+        with pytest.raises(HTTPException) as e:
+            await validate_toolbox(toolbox)
+
+        assert e.value.status_code == 422
+        assert e.value.detail == "OpenAPI URL is invalid"
+
+    @pytest.mark.asyncio()
+    async def test_validate_toolbox_with_invalid_openapi_spec(self) -> None:
+        invalid_url = "http://echo.jsontest.com/key/value/one/two"
+
+        openapi_auth = OpenAPIAuth(
+            name="openapi_auth_secret",
+            username="test",
+            password="password",  # pragma: allowlist secret
+        )
+        openapi_auth_model_uuid = str(uuid.uuid4())
+
+        toolbox = Toolbox(
+            name="test_toolbox_constructor",
+            openapi_url=invalid_url,
+            openapi_auth=openapi_auth.get_reference_model()(
+                uuid=openapi_auth_model_uuid
+            ),
+        )
+
+        with pytest.raises(HTTPException) as e:
+            await validate_toolbox(toolbox)
+
+        assert e.value.status_code == 422
+        assert e.value.detail == "OpenAPI URL does not contain a valid OpenAPI spec"
+
+    @pytest.mark.asyncio()
+    async def test_validate_toolbox_with_yaml_openapi_spec(self) -> None:
+        invalid_url = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/examples/v3.0/petstore.yaml"
+
+        openapi_auth = OpenAPIAuth(
+            name="openapi_auth_secret",
+            username="test",
+            password="password",  # pragma: allowlist secret
+        )
+        openapi_auth_model_uuid = str(uuid.uuid4())
+
+        toolbox = Toolbox(
+            name="test_toolbox_constructor",
+            openapi_url=invalid_url,
+            openapi_auth=openapi_auth.get_reference_model()(
+                uuid=openapi_auth_model_uuid
+            ),
+        )
+
+        await validate_toolbox(toolbox)

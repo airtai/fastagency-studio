@@ -3,6 +3,7 @@ from uuid import UUID
 
 from asyncer import syncify
 from pydantic import AfterValidator, Field, HttpUrl
+from typing_extensions import TypeAlias
 
 from ...db.helpers import find_model_using_raw
 from ..base import Model
@@ -12,6 +13,11 @@ from ..secrets import OpenAPIAuthRef  # type: ignore[attr-defined]
 # Pydantic adds trailing slash automatically to URLs, so we need to remove it
 # https://github.com/pydantic/pydantic/issues/7186#issuecomment-1691594032
 URL = Annotated[HttpUrl, AfterValidator(lambda x: str(x).rstrip("/"))]
+
+__all__ = [
+    "Toolbox",
+    "ToolboxRef",
+]
 
 
 @Registry.get_default().register("toolbox")
@@ -37,3 +43,6 @@ class Toolbox(Model):
         my_model = cls(**my_model_dict["json_str"])  # noqa: F841
 
         # ToDo: Generate api spec client
+
+
+ToolboxRef: TypeAlias = Toolbox.get_reference_model()  # type: ignore[valid-type]

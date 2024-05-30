@@ -4,6 +4,8 @@ from os import environ
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
+import httpx
+import yaml
 from fastapi import FastAPI, HTTPException
 from openai import AsyncAzureOpenAI
 from prisma.models import Model
@@ -11,6 +13,7 @@ from pydantic import BaseModel, TypeAdapter, ValidationError
 
 from .db.helpers import find_model_using_raw, get_db_connection, get_wasp_db_url
 from .models.registry import Registry, Schemas
+from .models.toolboxes import Toolbox
 
 logging.basicConfig(level=logging.INFO)
 
@@ -23,10 +26,39 @@ async def get_models_schemas() -> Schemas:
     return schemas
 
 
+async def validate_toolbox(toolbox: Toolbox) -> None:
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(toolbox.openapi_url)  # type: ignore[arg-type]
+    except Exception as e:
+        raise HTTPException(status_code=422, detail="OpenAPI URL is invalid") from e
+
+    if not (resp.status_code >= 200 and resp.status_code < 400):
+        raise HTTPException(status_code=422, detail="OpenAPI URL is invalid")
+
+    try:
+        if "yaml" in toolbox.openapi_url or "yml" in toolbox.openapi_url:  # type: ignore [operator]
+            openapi_spec = yaml.safe_load(resp.text)
+        else:
+            openapi_spec = resp.json()
+
+        if "openapi" not in openapi_spec:
+            raise HTTPException(
+                status_code=422,
+                detail="OpenAPI URL does not contain a valid OpenAPI spec",
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=422, detail="OpenAPI URL does not contain a valid OpenAPI spec"
+        ) from e
+
+
 @app.post("/models/{type}/{name}/validate")
 async def validate_model(type: str, name: str, model: Dict[str, Any]) -> Dict[str, Any]:
     try:
         validated_model = Registry.get_default().validate(type, name, model)
+        if isinstance(validated_model, Toolbox):
+            await validate_toolbox(validated_model)
         return validated_model.model_dump()
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=json.loads(e.json())) from e

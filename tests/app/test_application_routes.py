@@ -16,7 +16,12 @@ class TestApplicationRoutes:
         team_uuid = str(uuid.uuid4())
         response = client.post(
             f"/user/{user_uuid}/application/{application_uuid}",
-            json={"team_uuid": team_uuid},
+            json={
+                "team_uuid": team_uuid,
+                "json_str": {
+                    "name": "whatever",
+                },
+            },
         )
         assert response.status_code == 200
 
@@ -30,6 +35,13 @@ class TestApplicationRoutes:
         assert response.json() == {
             "detail": f"application_uuid {application_uuid} not found"
         }
+
+    @pytest.mark.asyncio()
+    async def test_get_all_applications(self, user_uuid: str) -> None:
+        response = client.get(
+            f"/user/{user_uuid}/applications",
+        )
+        assert response.status_code == 200
 
     # @pytest.mark.asyncio()
     # async def test_application_chat(self, user_uuid, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -45,12 +57,12 @@ class TestApplicationRoutes:
     #         "fastagency.db.helpers.find_application_using_raw", mock_find_application
     #     )
 
-    #     # Mocking the find_model_using_raw function
+    #     # Mocking the find_model_with_uuid_only_using_raw function
     #     mock_find_model = AsyncMock(return_value={
     #         "json_str": {"name": "whatever"},
     #     })
     #     monkeypatch.setattr(
-    #         "fastagency.db.helpers.find_model_using_raw", mock_find_model
+    #         "fastagency.db.helpers.find_model_with_uuid_only_using_raw", mock_find_model
     #     )
 
     #     response = client.post(

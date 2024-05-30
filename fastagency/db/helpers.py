@@ -56,6 +56,25 @@ async def find_model_using_raw(
     return model
 
 
+async def find_model_with_uuid_only_using_raw(
+    model_uuid: Union[str, UUID],
+) -> Dict[str, Any]:
+    if isinstance(model_uuid, UUID):
+        model_uuid = str(model_uuid)
+    async with get_db_connection() as db:
+        model: Optional[Dict[str, Any]] = await db.query_first(
+            'SELECT * from "Model" where uuid='  # nosec: [B608]
+            + f"'{model_uuid}'"
+        )
+
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail=f"model_uuid {model_uuid} not found",
+        )
+    return model
+
+
 async def find_application_using_raw(
     application_uuid: Union[str, UUID],
 ) -> Dict[str, Any]:

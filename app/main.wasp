@@ -343,6 +343,11 @@ action deleteUserModels {
   entities: []
 }
 
+action addApplication {
+  fn: import { addApplication } from "@src/server/actions.js",
+  entities: []
+}
+
 action validateForm {
   fn: import { validateForm } from "@src/server/actions.js",
   entities: []
@@ -402,6 +407,11 @@ query getPaginatedUsers {
 
 query getModels {
   fn: import { getModels } from "@src/server/queries.js",
+  entities: [User]
+}
+
+query getApplications {
+  fn: import { getApplications } from "@src/server/queries.js",
   entities: [User]
 }
 

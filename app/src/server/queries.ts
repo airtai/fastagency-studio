@@ -5,6 +5,7 @@ import {
   type GetDailyStats,
   type GetPaginatedUsers,
   type GetModels,
+  type GetApplications,
   type PropertyDependencies,
   type GetChats,
   type GetConversations,
@@ -138,6 +139,38 @@ export const getModels: GetModels<GetModelsInput, PropertyValues[]> = async (_ar
     if (_.has(_args, 'type_name')) {
       url = `${url}?type_name=${_args.type_name}`;
     }
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
+
+    if (!response.ok) {
+      const errorMsg = json.detail || `HTTP error with status code ${response.status}`;
+      console.error('Server Error:', errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    return json;
+  } catch (error: any) {
+    throw new HttpError(500, error.message);
+  }
+};
+
+type applicationValues = {
+  uuid: string;
+  user_uuid: string;
+  team_uuid: string;
+  json_str: {
+    name: string;
+  };
+  created_at: string;
+  updated_at: string;
+};
+
+export const getApplications: GetApplications<void, applicationValues[]> = async (_args, context) => {
+  try {
+    let url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/applications`;
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },

@@ -12,6 +12,7 @@ from pydantic import BaseModel, TypeAdapter, ValidationError
 from .db.helpers import (
     find_application_using_raw,
     find_model_using_raw,
+    find_model_with_uuid_only_using_raw,
     get_db_connection,
     get_wasp_db_url,
 )
@@ -283,8 +284,24 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
     return default_response
 
 
+@app.get("/user/{user_uuid}/applications")
+async def get_all_applications(
+    user_uuid: str,
+) -> List[Any]:
+    filters: Dict[str, Any] = {"user_uuid": user_uuid}
+
+    async with get_db_connection() as db:
+        applications = await db.application.find_many(where=filters)  # type: ignore[attr-defined]
+
+    ta = TypeAdapter(List[Model])
+    ret_val = ta.dump_python(applications, serialize_as_any=True)  # type: ignore[call-arg]
+
+    return ret_val  # type: ignore[no-any-return]
+
+
 class ApplicationCreate(BaseModel):
     team_uuid: str
+    json_str: Dict[str, Any]
 
 
 @app.post("/user/{user_uuid}/application/{application_uuid}")
@@ -300,20 +317,18 @@ async def add_application(
                 "uuid": application_uuid,
                 "user_uuid": user_uuid,
                 "team_uuid": team_uuid,
+                "json_str": json.dumps(application_create.json_str),
             }
         )
 
 
 @app.post("/application/{application_uuid}/chat")
 async def application_chat(application_uuid: str) -> Dict[str, Any]:
-    # team_uuid = "a80cb6aa-8167-470d-83c1-1983c4e02d48"
-
     found_application = await find_application_using_raw(
         application_uuid=application_uuid
     )
-    user_uuid = found_application["user_uuid"]
     team_uuid = found_application["team_uuid"]
-    found_model = await find_model_using_raw(model_uuid=team_uuid, user_uuid=user_uuid)
+    found_model = await find_model_with_uuid_only_using_raw(model_uuid=team_uuid)
     team_name = found_model["json_str"]["name"]
 
     return {

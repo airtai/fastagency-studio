@@ -18,6 +18,7 @@ import {
   type GetAgentResponse,
   type DeleteLastConversationInChat,
   type RetryTeamChat,
+  type AddApplication,
 } from 'wasp/server/operations';
 import Stripe from 'stripe';
 import type { StripePaymentResult } from '../shared/types';
@@ -122,6 +123,37 @@ export const getAvailableModels: GetAvailableModels<void, any> = async (user, co
     }
 
     return json;
+  } catch (error: any) {
+    throw new HttpError(500, error.message);
+  }
+};
+
+export const addApplication: AddApplication<{ teamUUID: string; applicationName: string }, void> = async (
+  args,
+  context
+) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+
+  try {
+    const applicationUUID = uuidv4();
+    const payload = {
+      team_uuid: args.teamUUID,
+      json_str: { name: args.applicationName },
+    };
+    const response = await fetch(`${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/application/${applicationUUID}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
+
+    if (!response.ok) {
+      const errorMsg = json.detail || `HTTP error with status code ${response.status}`;
+      console.error('Server Error:', errorMsg);
+      throw new Error(errorMsg);
+    }
   } catch (error: any) {
     throw new HttpError(500, error.message);
   }

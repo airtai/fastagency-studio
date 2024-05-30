@@ -286,10 +286,11 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
 async def application_chat(application_uuid: str) -> Dict[str, Any]:
     found_model = await find_model_using_raw(model_uuid=application_uuid)
     team_name = found_model["json_str"]["name"]
+    team_uuid = found_model["json_str"]["team"]["uuid"]
 
     return {
         "team_status": "inprogress",
         "team_name": team_name,
-        "team_uuid": found_model["uuid"],
+        "team_uuid": team_uuid,
         "conversation_name": "New Chat",
     }

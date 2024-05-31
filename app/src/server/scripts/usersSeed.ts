@@ -1,7 +1,7 @@
 import { type User } from 'wasp/entities';
 import { faker } from '@faker-js/faker';
 import type { PrismaClient } from '@prisma/client';
-import { TierIds } from '../../shared/constants.js';
+// import { TierIds } from '../../shared/constants.js';
 
 // in a terminal window run `wasp db seed` to seed your dev database with mock user data
 export function createRandomUser() {
@@ -26,7 +26,7 @@ export function createRandomUser() {
     datePaid: faker.date.recent(),
     credits: faker.number.int({ min: 0, max: 3 }),
     checkoutSessionId: null,
-    subscriptionTier: faker.helpers.arrayElement([TierIds.HOBBY, TierIds.PRO]),
+    subscriptionTier: faker.helpers.arrayElement([]), //faker.helpers.arrayElement([TierIds.HOBBY, TierIds.PRO]),
     hasAcceptedTos: true,
     hasSubscribedToMarketingEmails: true,
     isSignUpComplete: true,

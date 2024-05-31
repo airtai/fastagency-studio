@@ -41,7 +41,7 @@ class Toolbox(Model):
 
     @classmethod
     def create_autogen(cls, model_id: UUID, user_id: UUID) -> Client:
-        my_model_dict = syncify(find_model_using_raw)(model_id, user_id)
+        my_model_dict = syncify(find_model_using_raw)(model_id)
         my_model = cls(**my_model_dict["json_str"])
 
         # Download openapi spec to tmp file

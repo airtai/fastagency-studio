@@ -149,7 +149,7 @@ class InitiateModel(BaseModel):
 
 # patch this is tests
 def create_team(team_id: UUID, user_id: UUID) -> Callable[[str], List[Dict[str, Any]]]:
-    team_dict = syncify(find_model_using_raw)(team_id, user_id)
+    team_dict = syncify(find_model_using_raw)(team_id)
 
     team_model: Union[TwoAgentTeam, MultiAgentTeam]
     if "initial_agent" in team_dict["json_str"]:

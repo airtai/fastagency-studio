@@ -14,7 +14,14 @@ class TestGetSchema:
         schemas = Schemas(**response.json())
 
         types = {schemas.name: schemas.schemas for schemas in schemas.list_of_schemas}
-        assert set(types.keys()) == {"secret", "llm", "agent", "team", "toolbox"}
+        assert set(types.keys()) == {
+            "secret",
+            "llm",
+            "agent",
+            "team",
+            "toolbox",
+            "application",
+        }
 
         model_names = {
             type_name: {model.name for model in model_schema_list}
@@ -26,5 +33,6 @@ class TestGetSchema:
             "agent": {"AssistantAgent", "WebSurferAgent", "UserProxyAgent"},
             "team": {"TwoAgentTeam", "MultiAgentTeam"},
             "toolbox": {"Toolbox"},
+            "application": {"Application"},
         }
         assert model_names == expected, f"{model_names}!={expected}"

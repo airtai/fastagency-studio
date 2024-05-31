@@ -29,7 +29,11 @@ const ModelItem: React.FC<ModelItemProps> = ({ model, onClick }) => {
   const propertyName = model.json_str.name ? model.json_str.name : model.model_name;
   const svgIcon = _.find(navLinkItems, ['componentName', model.type_name]).svgIcon;
   const svgClassName =
-    model.type_name === ('llm' || 'secret') ? 'text-airt-primary mt-1 ml-1' : 'text-airt-primary ml-1';
+    model.type_name === ('llm' || 'secret')
+      ? 'text-airt-primary mt-1 ml-1'
+      : model.type_name === 'application'
+        ? 'text-airt-primary mt-1 ml-2'
+        : 'text-airt-primary ml-1';
   return (
     <div
       className='group relative cursor-pointer overflow-hidden bg-airt-primary text-airt-font-base px-6 pt-10 pb-8 transition-all duration-300 hover:-translate-y-1 sm:max-w-sm sm:rounded-lg sm:pl-8 sm:pr-24'

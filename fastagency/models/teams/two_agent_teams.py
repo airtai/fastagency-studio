@@ -31,12 +31,10 @@ class TwoAgentTeam(TeamBaseModel):
 
     @classmethod
     def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
-        my_model_dict = syncify(find_model_using_raw)(model_id, user_id)
+        my_model_dict = syncify(find_model_using_raw)(model_id)
         my_model = cls(**my_model_dict["json_str"])
 
-        initial_agent_dict = syncify(find_model_using_raw)(
-            my_model.initial_agent.uuid, user_id
-        )
+        initial_agent_dict = syncify(find_model_using_raw)(my_model.initial_agent.uuid)
         initial_agent_model = my_model.initial_agent.get_data_model()(
             **initial_agent_dict["json_str"]
         )
@@ -45,7 +43,7 @@ class TwoAgentTeam(TeamBaseModel):
         )
 
         secondary_agent_dict = syncify(find_model_using_raw)(
-            my_model.secondary_agent.uuid, user_id
+            my_model.secondary_agent.uuid
         )
         secondary_agent_model = my_model.secondary_agent.get_data_model()(
             **secondary_agent_dict["json_str"]

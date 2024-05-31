@@ -11,6 +11,7 @@ export const getGoogleUserFields = defineUserSignupFields({
   },
   email: (data: any) => data.profile.email,
   isAdmin: (data: any) => adminEmails.includes(data.profile.email),
+  hasPaid: () => true,
 });
 
 export function getGoogleAuthConfig() {

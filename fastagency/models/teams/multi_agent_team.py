@@ -55,7 +55,7 @@ class MultiAgentTeam(TeamBaseModel):
 
     @classmethod
     def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
-        my_model_dict = syncify(find_model_using_raw)(model_id, user_id)
+        my_model_dict = syncify(find_model_using_raw)(model_id)
         my_model = cls(**my_model_dict["json_str"])
 
         agents = {}
@@ -65,7 +65,7 @@ class MultiAgentTeam(TeamBaseModel):
                 continue
 
             agent_dict = syncify(find_model_using_raw)(
-                getattr(my_model, f"agent_{i+1}").uuid, user_id
+                getattr(my_model, f"agent_{i+1}").uuid
             )
             agent_model = getattr(my_model, f"agent_{i+1}").get_data_model()(
                 **agent_dict["json_str"]

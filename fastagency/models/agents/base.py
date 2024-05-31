@@ -59,7 +59,7 @@ class AgentBaseModel(Model):
             if toolbox_property is None:
                 continue
 
-            toolbox_dict = syncify(find_model_using_raw)(toolbox_property.uuid, user_id)
+            toolbox_dict = syncify(find_model_using_raw)(toolbox_property.uuid)
             toolbox_model = toolbox_property.get_data_model()(
                 **toolbox_dict["json_str"]
             )

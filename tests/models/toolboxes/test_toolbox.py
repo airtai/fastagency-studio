@@ -71,9 +71,16 @@ class TestToolbox:
 
         assert isinstance(actual_client, Client)
         assert len(actual_client.registered_funcs) == 3, actual_client.registered_funcs
-        # print(dir(actual_client))
 
-        # resp = actual_client.get("/")
-        # print(resp)
+        actual = [x.__name__ for x in actual_client.registered_funcs]
+        expected = [
+            "read_root__get",
+            "create_item_items__post",
+            "read_item_items__item_id__get",
+        ]
+        assert actual == expected
 
         # ToDo: Add test case which makes request
+
+        # route_1_resp = actual_client.registered_funcs[0]()
+        # assert route_1_resp == {"Hello": "World"}

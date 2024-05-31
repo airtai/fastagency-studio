@@ -237,7 +237,7 @@ class TestToolbox:
         hostname = fastapi_openapi_url
 
         async with httpx.AsyncClient() as client:
-            resp = await client.head(hostname)
+            resp = await client.head(hostname, timeout=10)
         if resp.status_code == 200:
             print(f"{hostname} was found")  # noqa: T201
         else:

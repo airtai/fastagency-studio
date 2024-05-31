@@ -34,7 +34,9 @@ async def validate_toolbox(toolbox: Toolbox) -> None:
         raise HTTPException(status_code=422, detail="OpenAPI URL is invalid") from e
 
     if not (resp.status_code >= 200 and resp.status_code < 400):
-        raise HTTPException(status_code=422, detail="OpenAPI URL is invalid")
+        raise HTTPException(
+            status_code=422, detail=f"OpenAPI URL returns error code {resp.status_code}"
+        )
 
     try:
         if "yaml" in toolbox.openapi_url or "yml" in toolbox.openapi_url:  # type: ignore [operator]

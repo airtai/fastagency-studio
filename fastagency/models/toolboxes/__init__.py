@@ -1,6 +1,1 @@
-from .toolbox import Toolbox, ToolboxRef
-
-__all__ = [
-    "Toolbox",
-    "ToolboxRef",
-]
+from . import toolbox  # noqa: F401

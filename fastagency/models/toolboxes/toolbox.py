@@ -1,4 +1,4 @@
-from typing import Annotated, Optional
+from typing import Annotated, Optional, Tuple
 from uuid import UUID
 
 import httpx
@@ -10,16 +10,41 @@ from ...db.helpers import find_model_using_raw
 from ...openapi.client import Client
 from ..base import Model
 from ..registry import Registry
-from ..secrets import OpenAPIAuthRef  # type: ignore[attr-defined]
 
 # Pydantic adds trailing slash automatically to URLs, so we need to remove it
 # https://github.com/pydantic/pydantic/issues/7186#issuecomment-1691594032
 URL = Annotated[HttpUrl, AfterValidator(lambda x: str(x).rstrip("/"))]
 
 __all__ = [
+    "OpenAPIAuth",
     "Toolbox",
-    "ToolboxRef",
 ]
+
+
+@Registry.get_default().register("secret")
+class OpenAPIAuth(Model):
+    username: Annotated[
+        str,
+        Field(
+            description="username for openapi routes authentication",
+        ),
+    ]
+    password: Annotated[
+        str,
+        Field(
+            description="password for openapi routes authentication",
+        ),
+    ]
+
+    @classmethod
+    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Tuple[str, str]:
+        my_model_dict = syncify(find_model_using_raw)(model_id)
+        my_model = cls(**my_model_dict["json_str"])
+
+        return my_model.username, my_model.password
+
+
+OpenAPIAuthRef: TypeAlias = OpenAPIAuth.get_reference_model()  # type: ignore[valid-type]
 
 
 @Registry.get_default().register("toolbox")

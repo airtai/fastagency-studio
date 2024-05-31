@@ -42,7 +42,7 @@ async def validate_secret_model(
 ) -> Dict[str, Any]:
     type: str = "secret"
 
-    found_model = await find_model_using_raw(model_uuid=model_uuid, user_uuid=user_uuid)
+    found_model = await find_model_using_raw(model_uuid=model_uuid)
     model["api_key"] = found_model["json_str"]["api_key"]
     try:
         validated_model = Registry.get_default().validate(type, name, model)
@@ -131,9 +131,7 @@ async def update_model(
     validated_model = registry.validate(type_name, model_name, model)
 
     async with get_db_connection() as db:
-        found_model = await find_model_using_raw(
-            model_uuid=model_uuid, user_uuid=user_uuid
-        )
+        found_model = await find_model_using_raw(model_uuid=model_uuid)
 
         await db.model.update(
             where={"uuid": found_model["uuid"]},  # type: ignore[arg-type]
@@ -153,9 +151,7 @@ async def models_delete(
     user_uuid: str, type_name: str, model_uuid: str
 ) -> Dict[str, Any]:
     async with get_db_connection() as db:
-        found_model = await find_model_using_raw(
-            model_uuid=model_uuid, user_uuid=user_uuid
-        )
+        found_model = await find_model_using_raw(model_uuid=model_uuid)
         model = await db.model.delete(
             where={"uuid": found_model["uuid"]}  # type: ignore[arg-type]
         )

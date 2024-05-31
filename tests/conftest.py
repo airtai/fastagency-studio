@@ -155,7 +155,7 @@ def fastapi_openapi_url() -> Iterator[str]:
 
     # Use multiprocess.Process instead of multiprocessing.Process to prevent failures because of pickle in mac and windows tests
     # https://stackoverflow.com/a/72776044/3664629
-    p = DillProcess(target=run_server, args=(app, host, port))
+    p = DillProcess(target=run_server, args=(app, host, port), daemon=True)
     p.start()
     time.sleep(1 if system() != "Windows" else 5)  # let the server start
 

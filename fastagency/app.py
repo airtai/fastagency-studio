@@ -17,7 +17,7 @@ from .db.helpers import (
     get_wasp_db_url,
 )
 from .models.registry import Registry, Schemas
-from .models.toolboxes import Toolbox
+from .models.toolboxes.toolbox import Toolbox
 
 logging.basicConfig(level=logging.INFO)
 

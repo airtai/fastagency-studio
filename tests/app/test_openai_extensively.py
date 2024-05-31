@@ -9,8 +9,7 @@ from fastapi.testclient import TestClient
 from fastagency.app import add_model, app, validate_toolbox
 from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 from fastagency.models.registry import Schemas
-from fastagency.models.secrets import OpenAPIAuth
-from fastagency.models.toolboxes import Toolbox
+from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
 client = TestClient(app)
 

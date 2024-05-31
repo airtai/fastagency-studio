@@ -3,11 +3,14 @@ import random
 import socket
 import time
 import uuid
+
+# import multiprocess as mp
+from multiprocessing import Process
 from platform import system
 from typing import Any, AsyncIterator, Dict, Iterator, Optional
 
+import dill
 import httpx
-import multiprocess as mp
 import openai
 import pytest
 import pytest_asyncio
@@ -124,6 +127,25 @@ def run_server(app: FastAPI, host: str = "127.0.0.1", port: int = 8000) -> None:
     uvicorn.run(app, host=host, port=port)
 
 
+class DillProcess(Process):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Multiprocessing but with dill for pickling.
+
+        From https://stackoverflow.com/a/72776044/3664629
+        """
+        super().__init__(*args, **kwargs)
+        self._target = dill.dumps(
+            self._target  # type: ignore [has-type]
+        )
+
+    def run(self) -> None:
+        if self._target:
+            self._target = dill.loads(
+                self._target
+            )  # Unpickle the target function before executing
+            self._target(*self._args, **self._kwargs)  # type: ignore [attr-defined]
+
+
 @pytest.fixture(scope="session")
 def fastapi_openapi_url() -> Iterator[str]:
     host = "127.0.0.1"
@@ -133,7 +155,7 @@ def fastapi_openapi_url() -> Iterator[str]:
 
     # Use multiprocess.Process instead of multiprocessing.Process to prevent failures because of pickle in mac and windows tests
     # https://stackoverflow.com/a/72776044/3664629
-    p = mp.Process(target=run_server, args=(app, host, port))
+    p = DillProcess(target=run_server, args=(app, host, port))
     p.start()
     time.sleep(1 if system() != "Windows" else 5)  # let the server start
 

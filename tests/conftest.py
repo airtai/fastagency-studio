@@ -125,7 +125,7 @@ def run_server(app: FastAPI, host: str = "127.0.0.1", port: int = 8000) -> None:
     uvicorn.run(app, host=host, port=port)
 
 
-class Server(uvicorn.Server):
+class Server(uvicorn.Server):  # type: ignore [misc]
     def install_signal_handlers(self) -> None:
         pass
 

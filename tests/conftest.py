@@ -1,15 +1,13 @@
+import contextlib
 import os
 import random
 import socket
+import threading
 import time
 import uuid
-
-# import multiprocess as mp
-from multiprocessing import Process
 from platform import system
 from typing import Any, AsyncIterator, Dict, Iterator, Optional
 
-import dill
 import httpx
 import openai
 import pytest
@@ -127,23 +125,21 @@ def run_server(app: FastAPI, host: str = "127.0.0.1", port: int = 8000) -> None:
     uvicorn.run(app, host=host, port=port)
 
 
-class DillProcess(Process):
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Multiprocessing but with dill for pickling.
+class Server(uvicorn.Server):
+    def install_signal_handlers(self) -> None:
+        pass
 
-        From https://stackoverflow.com/a/72776044/3664629
-        """
-        super().__init__(*args, **kwargs)
-        self._target = dill.dumps(
-            self._target  # type: ignore [has-type]
-        )
-
-    def run(self) -> None:
-        if self._target:
-            self._target = dill.loads(
-                self._target
-            )  # Unpickle the target function before executing
-            self._target(*self._args, **self._kwargs)  # type: ignore [attr-defined]
+    @contextlib.contextmanager
+    def run_in_thread(self) -> Iterator[None]:
+        thread = threading.Thread(target=self.run)
+        thread.start()
+        try:
+            while not self.started:
+                time.sleep(1e-3)
+            yield
+        finally:
+            self.should_exit = True
+            thread.join()
 
 
 @pytest.fixture(scope="session")
@@ -153,16 +149,12 @@ def fastapi_openapi_url() -> Iterator[str]:
     app = create_fastapi_app(host, port)
     openapi_url = f"http://{host}:{port}/openapi.json"
 
-    # Use multiprocess.Process instead of multiprocessing.Process to prevent failures because of pickle in mac and windows tests
-    # https://stackoverflow.com/a/72776044/3664629
-    p = DillProcess(target=run_server, args=(app, host, port), daemon=True)
-    p.start()
-    time.sleep(1 if system() != "Windows" else 5)  # let the server start
+    config = uvicorn.Config(app, host=host, port=port, log_level="info")
+    server = Server(config=config)
+    with server.run_in_thread():
+        time.sleep(1 if system() != "Windows" else 5)  # let the server start
 
-    yield openapi_url
-
-    p.terminate()
-    p.join()
+        yield openapi_url
 
 
 def test_fastapi_openapi(fastapi_openapi_url: str) -> None:

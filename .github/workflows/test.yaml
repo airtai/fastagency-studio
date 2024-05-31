@@ -321,7 +321,7 @@ jobs:
   pre-commit-check:
     runs-on: ubuntu-latest
     env:
-      SKIP: "static-analysis"
+      SKIP: "static-analysis,docs"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

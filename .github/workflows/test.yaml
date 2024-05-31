@@ -177,8 +177,6 @@ jobs:
         run: pip install .[docs,testing]
       - name: Prisma
         run: prisma generate
-      - name: windows test debug
-        run:  pytest -s tests/conftest.py
       - name: Test
         run: bash scripts/test.sh -m "not db and not nats"
 

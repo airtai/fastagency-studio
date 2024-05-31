@@ -39,10 +39,17 @@ def test_fastapi_codegen_template(monkeypatch: MonkeyPatch) -> None:
             template_dir=TEMPLATE_DIR,
         )
 
+        main_path = td / "main.py"
+        with open(main_path) as f:  # noqa: PTH123
+            main_py_code = f.read()
+        main_py_code = main_py_code.replace("from .models import", "from models import")
+        with open(main_path, "w") as f:  # noqa: PTH123
+            f.write(main_py_code)
+
         # add td to sys.path
         try:
             sys.path.append(str(td))
-            main = importlib.import_module("main", package=td.name)
+            main = importlib.import_module("main", package=td.name)  # nosemgrep
         finally:
             sys.path.remove(str(td))
 

@@ -50,8 +50,6 @@ class Toolbox(Model):
             response.raise_for_status()
             openapi_spec = response.text
 
-        # ToDo: Check this is correct
-
         client = Client.create(openapi_spec)
         return client
 

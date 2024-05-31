@@ -70,6 +70,7 @@ class TestToolbox:
         )
 
         assert isinstance(actual_client, Client)
+        assert len(actual_client.registered_funcs) == 3, actual_client.registered_funcs
         # print(dir(actual_client))
 
         # resp = actual_client.get("/")

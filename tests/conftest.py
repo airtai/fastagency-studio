@@ -1,13 +1,14 @@
+import contextlib
 import os
 import random
 import socket
+import threading
 import time
 import uuid
 from platform import system
 from typing import Any, AsyncIterator, Dict, Iterator, Optional
 
 import httpx
-import multiprocess as mp
 import openai
 import pytest
 import pytest_asyncio
@@ -124,6 +125,23 @@ def run_server(app: FastAPI, host: str = "127.0.0.1", port: int = 8000) -> None:
     uvicorn.run(app, host=host, port=port)
 
 
+class Server(uvicorn.Server):  # type: ignore [misc]
+    def install_signal_handlers(self) -> None:
+        pass
+
+    @contextlib.contextmanager
+    def run_in_thread(self) -> Iterator[None]:
+        thread = threading.Thread(target=self.run)
+        thread.start()
+        try:
+            while not self.started:
+                time.sleep(1e-3)
+            yield
+        finally:
+            self.should_exit = True
+            thread.join()
+
+
 @pytest.fixture(scope="session")
 def fastapi_openapi_url() -> Iterator[str]:
     host = "127.0.0.1"
@@ -131,16 +149,12 @@ def fastapi_openapi_url() -> Iterator[str]:
     app = create_fastapi_app(host, port)
     openapi_url = f"http://{host}:{port}/openapi.json"
 
-    # Use multiprocess.Process instead of multiprocessing.Process to prevent failures because of pickle in mac and windows tests
-    # https://stackoverflow.com/a/72776044/3664629
-    p = mp.Process(target=run_server, args=(app, host, port))
-    p.start()
-    time.sleep(1 if system() != "Windows" else 5)  # let the server start
+    config = uvicorn.Config(app, host=host, port=port, log_level="info")
+    server = Server(config=config)
+    with server.run_in_thread():
+        time.sleep(1 if system() != "Windows" else 5)  # let the server start
 
-    yield openapi_url
-
-    p.terminate()
-    p.join()
+        yield openapi_url
 
 
 def test_fastapi_openapi(fastapi_openapi_url: str) -> None:

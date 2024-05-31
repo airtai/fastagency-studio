@@ -9,7 +9,11 @@ from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from .db.helpers import find_model_using_raw, get_db_connection, get_wasp_db_url
+from .db.helpers import (
+    find_model_using_raw,
+    get_db_connection,
+    get_wasp_db_url,
+)
 from .models.registry import Registry, Schemas
 
 logging.basicConfig(level=logging.INFO)
@@ -276,3 +280,17 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
     }
 
     return default_response
+
+
+@app.post("/application/{application_uuid}/chat")
+async def application_chat(application_uuid: str) -> Dict[str, Any]:
+    found_model = await find_model_using_raw(model_uuid=application_uuid)
+    team_name = found_model["json_str"]["name"]
+    team_uuid = found_model["json_str"]["team"]["uuid"]
+
+    return {
+        "team_status": "inprogress",
+        "team_name": team_name,
+        "team_uuid": team_uuid,
+        "conversation_name": "New Chat",
+    }

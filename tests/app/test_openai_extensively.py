@@ -1,7 +1,9 @@
 import json
 import uuid
+from platform import system
 from typing import Any, Dict
 
+import httpx
 import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
@@ -230,6 +232,19 @@ class TestToolbox:
             password="password",  # pragma: allowlist secret
         )
         openapi_auth_model_uuid = str(uuid.uuid4())
+
+        # hostname = fastapi_openapi_url.rsplit('/', 1)[0]
+        hostname = fastapi_openapi_url
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.head(hostname)
+        if resp.status_code == 200:
+            print(f"{hostname} was found")  # noqa: T201
+        else:
+            print(resp.status_code)  # noqa: T201
+            raise ValueError(
+                f"{hostname} not found in {system()} with status code {resp.status_code}"
+            )
 
         toolbox = Toolbox(
             name="test_toolbox_constructor",

@@ -52,7 +52,7 @@ class AgentBaseModel(Model):
         ),
     ] = None
 
-    def get_clients_from_toolboxes(self, user_id: UUID) -> Dict[str, Client]:
+    async def get_clients_from_toolboxes(self, user_id: UUID) -> Dict[str, Client]:
         clients = {}
         for i in range(3):
             toolbox_property = getattr(self, f"toolbox_{i+1}")
@@ -63,6 +63,6 @@ class AgentBaseModel(Model):
             toolbox_model = toolbox_property.get_data_model()(
                 **toolbox_dict["json_str"]
             )
-            client = toolbox_model.create_autogen(toolbox_property.uuid, user_id)
+            client = await toolbox_model.create_autogen(toolbox_property.uuid, user_id)
             clients[f"client_{i+1}"] = client
         return clients

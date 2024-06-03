@@ -2,7 +2,6 @@ from typing import Annotated, Any, Optional
 from uuid import UUID
 
 import autogen.agentchat.contrib.web_surfer
-from asyncer import syncify
 from pydantic import Field
 from typing_extensions import TypeAlias
 
@@ -19,8 +18,8 @@ class BingAPIKey(Model):
     api_key: Annotated[str, Field(description="The API Key from OpenAI")]
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:
+        my_model_dict = await find_model_using_raw(model_id)
         my_model = cls(**my_model_dict["json_str"])
 
         return my_model.api_key
@@ -46,23 +45,21 @@ class WebSurferAgent(AgentBaseModel):
     ] = None
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+        my_model_dict = await find_model_using_raw(model_id)
         my_model = cls(**my_model_dict["json_str"])
 
-        llm_dict = syncify(find_model_using_raw)(my_model.llm.uuid)
+        llm_dict = await find_model_using_raw(my_model.llm.uuid)
         llm_model = my_model.llm.get_data_model()(**llm_dict["json_str"])
-        llm = llm_model.create_autogen(my_model.llm.uuid, user_id)
+        llm = await llm_model.create_autogen(my_model.llm.uuid, user_id)
 
-        clients = my_model.get_clients_from_toolboxes(user_id)  # noqa: F841
+        clients = await my_model.get_clients_from_toolboxes(user_id)  # noqa: F841
 
-        summarizer_llm_dict = syncify(find_model_using_raw)(
-            my_model.summarizer_llm.uuid
-        )
+        summarizer_llm_dict = await find_model_using_raw(my_model.summarizer_llm.uuid)
         summarizer_llm_model = my_model.summarizer_llm.get_data_model()(
             **summarizer_llm_dict["json_str"]
         )
-        summarizer_llm = summarizer_llm_model.create_autogen(
+        summarizer_llm = await summarizer_llm_model.create_autogen(
             my_model.summarizer_llm.uuid, user_id
         )
 

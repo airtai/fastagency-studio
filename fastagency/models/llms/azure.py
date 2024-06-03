@@ -1,7 +1,6 @@
 from typing import Annotated, Any, Dict, Literal
 from uuid import UUID
 
-from asyncer import syncify
 from pydantic import AfterValidator, Field, HttpUrl
 from typing_extensions import TypeAlias
 
@@ -21,8 +20,8 @@ class AzureOAIAPIKey(Model):
     api_key: Annotated[str, Field(description="The API Key from Azure OpenAI")]
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:
+        my_model_dict = await find_model_using_raw(model_id)
         my_model = cls(**my_model_dict["json_str"])
 
         return my_model.api_key
@@ -63,13 +62,13 @@ class AzureOAI(Model):
     ] = "latest"
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Dict[str, Any]:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Dict[str, Any]:
+        my_model_dict = await find_model_using_raw(model_id)
         my_model = cls(**my_model_dict["json_str"])
 
-        api_key_dict = syncify(find_model_using_raw)(my_model.api_key.uuid)
+        api_key_dict = await find_model_using_raw(my_model.api_key.uuid)
         api_key_model = my_model.api_key.get_data_model()(**api_key_dict["json_str"])
-        api_key = api_key_model.create_autogen(my_model.api_key.uuid, user_id)
+        api_key = await api_key_model.create_autogen(my_model.api_key.uuid, user_id)
 
         config_list = [
             {

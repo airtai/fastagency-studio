@@ -6,7 +6,6 @@ from unittest.mock import MagicMock
 
 import autogen
 import pytest
-from asyncer import asyncify
 from autogen.io.console import IOConsole
 from pydantic import ValidationError
 
@@ -384,20 +383,26 @@ class TestMultiAgentTeam:
             get_forecast_for_city_mock(city)
             return f"The weather in {city} is sunny today."
 
+        async def weatherman_create_autogen(  # type: ignore [no-untyped-def]
+            cls, model_id, user_id
+        ) -> autogen.agentchat.AssistantAgent:
+            return weatherman_agent_1
+
+        async def user_proxy_create_autogen(  # type: ignore [no-untyped-def]
+            cls, model_id, user_id
+        ) -> autogen.agentchat.UserProxyAgent:
+            return user_proxy_agent
+
         if enable_monkeypatch:
             monkeypatch.setattr(
-                AssistantAgent,
-                "create_autogen",
-                lambda cls, model_id, user_id: weatherman_agent_1,
+                AssistantAgent, "create_autogen", weatherman_create_autogen
             )
 
             monkeypatch.setattr(
-                UserProxyAgent,
-                "create_autogen",
-                lambda cls, model_id, user_id: user_proxy_agent,
+                UserProxyAgent, "create_autogen", user_proxy_create_autogen
             )
 
-        team = await asyncify(MultiAgentTeam.create_autogen)(
+        team = await MultiAgentTeam.create_autogen(
             model_id=uuid.UUID(team_model_uuid), user_id=uuid.UUID(user_uuid)
         )
 

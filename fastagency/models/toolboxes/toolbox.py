@@ -2,7 +2,6 @@ from typing import Annotated, Optional, Tuple
 from uuid import UUID
 
 import httpx
-from asyncer import syncify
 from pydantic import AfterValidator, Field, HttpUrl
 from typing_extensions import TypeAlias
 
@@ -37,8 +36,8 @@ class OpenAPIAuth(Model):
     ]
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Tuple[str, str]:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Tuple[str, str]:
+        my_model_dict = await find_model_using_raw(model_id)
         my_model = cls(**my_model_dict["json_str"])
 
         return my_model.username, my_model.password
@@ -65,8 +64,8 @@ class Toolbox(Model):
     ] = None
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Client:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Client:
+        my_model_dict = await find_model_using_raw(model_id)
         my_model = cls(**my_model_dict["json_str"])
 
         # Download openapi spec to tmp file

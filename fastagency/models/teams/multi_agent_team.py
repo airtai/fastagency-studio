@@ -2,7 +2,6 @@ from typing import Annotated, Any, Dict, List, Optional
 from uuid import UUID
 
 import autogen
-from asyncer import syncify
 from autogen import GroupChat, GroupChatManager
 from pydantic import Field
 
@@ -54,8 +53,8 @@ class MultiAgentTeam(TeamBaseModel):
     ] = None
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+        my_model_dict = await find_model_using_raw(model_id)
         my_model = cls(**my_model_dict["json_str"])
 
         agents = {}
@@ -64,13 +63,13 @@ class MultiAgentTeam(TeamBaseModel):
             if agent_property is None:
                 continue
 
-            agent_dict = syncify(find_model_using_raw)(
+            agent_dict = await find_model_using_raw(
                 getattr(my_model, f"agent_{i+1}").uuid
             )
             agent_model = getattr(my_model, f"agent_{i+1}").get_data_model()(
                 **agent_dict["json_str"]
             )
-            agent = agent_model.create_autogen(
+            agent = await agent_model.create_autogen(
                 getattr(my_model, f"agent_{i+1}").uuid, user_id
             )
             agents[f"agent_{i+1}"] = agent

@@ -148,8 +148,10 @@ class InitiateModel(BaseModel):
 
 
 # patch this is tests
-def create_team(team_id: UUID, user_id: UUID) -> Callable[[str], List[Dict[str, Any]]]:
-    team_dict = syncify(find_model_using_raw)(team_id)
+async def create_team(
+    team_id: UUID, user_id: UUID
+) -> Callable[[str], List[Dict[str, Any]]]:
+    team_dict = await find_model_using_raw(team_id)
 
     team_model: Union[TwoAgentTeam, MultiAgentTeam]
     if "initial_agent" in team_dict["json_str"]:
@@ -159,7 +161,7 @@ def create_team(team_id: UUID, user_id: UUID) -> Callable[[str], List[Dict[str, 
     else:
         raise ValueError(f"Unknown team model {team_dict['json_str']}")
 
-    autogen_team = team_model.create_autogen(team_id, user_id)
+    autogen_team = await team_model.create_autogen(team_id, user_id)
 
     return autogen_team.initiate_chat  # type: ignore[no-any-return]
 
@@ -190,7 +192,7 @@ async def initiate_handler(
                 )
 
                 with IOStream.set_default(iostream):
-                    initiate_chat = create_team(
+                    initiate_chat = syncify(create_team)(
                         team_id=body.team_id, user_id=body.user_id
                     )
                     chat_result = initiate_chat(body.msg)

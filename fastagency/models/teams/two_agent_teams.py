@@ -2,7 +2,6 @@ from typing import Annotated, Any, Dict, List
 from uuid import UUID
 
 import autogen
-from asyncer import syncify
 from pydantic import Field
 
 from ...db.helpers import find_model_using_raw
@@ -30,25 +29,23 @@ class TwoAgentTeam(TeamBaseModel):
     ]
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+        my_model_dict = await find_model_using_raw(model_id)
         my_model = cls(**my_model_dict["json_str"])
 
-        initial_agent_dict = syncify(find_model_using_raw)(my_model.initial_agent.uuid)
+        initial_agent_dict = await find_model_using_raw(my_model.initial_agent.uuid)
         initial_agent_model = my_model.initial_agent.get_data_model()(
             **initial_agent_dict["json_str"]
         )
-        initial_agent = initial_agent_model.create_autogen(
+        initial_agent = await initial_agent_model.create_autogen(
             my_model.initial_agent.uuid, user_id
         )
 
-        secondary_agent_dict = syncify(find_model_using_raw)(
-            my_model.secondary_agent.uuid
-        )
+        secondary_agent_dict = await find_model_using_raw(my_model.secondary_agent.uuid)
         secondary_agent_model = my_model.secondary_agent.get_data_model()(
             **secondary_agent_dict["json_str"]
         )
-        secondary_agent = secondary_agent_model.create_autogen(
+        secondary_agent = await secondary_agent_model.create_autogen(
             my_model.secondary_agent.uuid, user_id
         )
 

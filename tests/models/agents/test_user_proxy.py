@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 import autogen
 import pytest
-from asyncer import asyncify
 
 from fastagency.app import add_model
 from fastagency.models.agents.user_proxy import UserProxyAgent
@@ -68,11 +67,12 @@ class TestUserProxyAgent:
             model=user_proxy_model.model_dump(),
         )
 
+        async def my_create_autogen(cls, model_id, user_id) -> Dict[str, Any]:  # type: ignore [no-untyped-def]
+            return llm_config
+
         # Monkeypatch llm and call create_autogen
-        monkeypatch.setattr(
-            AzureOAI, "create_autogen", lambda cls, model_id, user_id: llm_config
-        )
-        agent = await asyncify(UserProxyAgent.create_autogen)(
+        monkeypatch.setattr(AzureOAI, "create_autogen", my_create_autogen)
+        agent = await UserProxyAgent.create_autogen(
             model_id=uuid.UUID(user_proxy_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )

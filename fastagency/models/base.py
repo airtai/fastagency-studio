@@ -28,7 +28,7 @@ class Model(BaseModel, ABC):
 
     @classmethod
     @abstractmethod
-    def create_autogen(
+    async def create_autogen(
         cls, model_id: UUID, user_id: UUID
     ) -> Any: ...  # pragma: no cover
 

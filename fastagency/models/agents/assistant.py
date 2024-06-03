@@ -2,7 +2,6 @@ from typing import Annotated, Any
 from uuid import UUID
 
 import autogen
-from asyncer import syncify
 from pydantic import Field
 
 from ...db.helpers import find_model_using_raw
@@ -20,15 +19,15 @@ class AssistantAgent(AgentBaseModel):
     ]
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+        my_model_dict = await find_model_using_raw(model_id)
         my_model = cls(**my_model_dict["json_str"])
 
-        llm_dict = syncify(find_model_using_raw)(my_model.llm.uuid)
+        llm_dict = await find_model_using_raw(my_model.llm.uuid)
         llm_model = my_model.llm.get_data_model()(**llm_dict["json_str"])
-        llm = llm_model.create_autogen(my_model.llm.uuid, user_id)
+        llm = await llm_model.create_autogen(my_model.llm.uuid, user_id)
 
-        clients = my_model.get_clients_from_toolboxes(user_id)  # noqa: F841
+        clients = await my_model.get_clients_from_toolboxes(user_id)  # noqa: F841
 
         agent_name = my_model_dict["model_name"]
 

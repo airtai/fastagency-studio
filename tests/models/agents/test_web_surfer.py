@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 import autogen.agentchat.contrib.web_surfer
 import pytest
-from asyncer import asyncify
 from pydantic import ValidationError
 
 from fastagency.app import add_model
@@ -292,11 +291,13 @@ class TestWebSurferAgent:
             model=web_surfer_model.model_dump(),
         )
 
+        async def my_create_autogen(cls, model_id, user_id) -> Dict[str, Any]:  # type: ignore [no-untyped-def]
+            return llm_config
+
         # Monkeypatch llm and call create_autogen
-        monkeypatch.setattr(
-            AzureOAI, "create_autogen", lambda cls, model_id, user_id: llm_config
-        )
-        agent = await asyncify(WebSurferAgent.create_autogen)(
+        monkeypatch.setattr(AzureOAI, "create_autogen", my_create_autogen)
+
+        agent = await WebSurferAgent.create_autogen(
             model_id=uuid.UUID(web_surfer_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )
@@ -327,7 +328,7 @@ class TestBingAPIKey:
         )
 
         # Call create_autogen
-        actual_api_key = await asyncify(AzureOAIAPIKey.create_autogen)(
+        actual_api_key = await AzureOAIAPIKey.create_autogen(
             model_id=uuid.UUID(api_key_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )

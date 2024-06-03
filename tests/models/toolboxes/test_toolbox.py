@@ -1,7 +1,6 @@
 import uuid
 
 import pytest
-from asyncer import asyncify
 
 from fastagency.app import add_model
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, OpenAPIAuthRef, Toolbox
@@ -45,7 +44,7 @@ class TestOpenAPIAuth:
         )
 
         # Call create_autogen
-        actual = await asyncify(OpenAPIAuth.create_autogen)(
+        actual = await OpenAPIAuth.create_autogen(
             model_id=uuid.UUID(model_uuid),
             user_id=uuid.UUID(user_uuid),
         )
@@ -109,7 +108,7 @@ class TestToolbox:
             model=toolbox.model_dump(),
         )
 
-        actual_client = await asyncify(Toolbox.create_autogen)(
+        actual_client = await Toolbox.create_autogen(
             model_id=uuid.UUID(model_uuid),
             user_id=uuid.UUID(user_uuid),
         )

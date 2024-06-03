@@ -236,7 +236,8 @@ The deployment process consists of two main steps:
 2.9 Deploy the Application:
 <span class="ml-5">2.9.1 Go to the <b>Pull requests</b> tab in your forked repository on GitHub and merge the PR named "Add Fly.io configuration files".
 <span class="ml-5">2.9.2 It will trigger a new workflow to deploy the application. Wait for the workflow to complete.</span>
-<span class="ml-5">2.9.3 Once the workflow is completed, you can access your application at the Client App URL provided in the workflow logs.</span>
+<span class="ml-5">2.9.3 Once the workflow is completed, follow the below steps to open your application</span>
+<span class="ml-10">2.9.3.1 Go to fly dashboard and click on the client application. The hostname is the URL of your application.</span>
 
 <p class="text-xl underline">Troubleshooting: </p>
 If you encounter any issues during the deployment, check the following common problems:

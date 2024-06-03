@@ -5,6 +5,8 @@ from uuid import UUID
 from pydantic import BaseModel, Field, create_model, model_validator
 from typing_extensions import TypeAlias
 
+from ..db.helpers import find_model_using_raw
+
 M = TypeVar("M", bound="Model")
 
 __all__ = [
@@ -13,6 +15,9 @@ __all__ = [
     "get_reference_model",
     "Model",
 ]
+
+
+T = TypeVar("T", bound="Model")
 
 
 # abstract class
@@ -31,6 +36,13 @@ class Model(BaseModel, ABC):
     async def create_autogen(
         cls, model_id: UUID, user_id: UUID
     ) -> Any: ...  # pragma: no cover
+
+    @classmethod
+    async def from_db(cls: Type[T], model_id: UUID) -> T:
+        my_model_dict = await find_model_using_raw(model_id)
+        my_model = cls(**my_model_dict["json_str"])
+
+        return my_model
 
 
 class ObjectReference(BaseModel):

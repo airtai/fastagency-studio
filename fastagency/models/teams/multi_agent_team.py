@@ -5,7 +5,6 @@ import autogen
 from autogen import GroupChat, GroupChatManager
 from pydantic import Field
 
-from ...db.helpers import find_model_using_raw
 from ..registry import Registry
 from .base import TeamBaseModel, agent_type_refs
 
@@ -54,8 +53,7 @@ class MultiAgentTeam(TeamBaseModel):
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
-        my_model_dict = await find_model_using_raw(model_id)
-        my_model = cls(**my_model_dict["json_str"])
+        my_model = await cls.from_db(model_id)
 
         agents = {}
         for i in range(5):
@@ -63,12 +61,10 @@ class MultiAgentTeam(TeamBaseModel):
             if agent_property is None:
                 continue
 
-            agent_dict = await find_model_using_raw(
-                getattr(my_model, f"agent_{i+1}").uuid
+            agent_model = await agent_property.get_data_model().from_db(
+                agent_property.uuid
             )
-            agent_model = getattr(my_model, f"agent_{i+1}").get_data_model()(
-                **agent_dict["json_str"]
-            )
+
             agent = await agent_model.create_autogen(
                 getattr(my_model, f"agent_{i+1}").uuid, user_id
             )

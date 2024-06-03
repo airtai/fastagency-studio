@@ -4,7 +4,6 @@ from uuid import UUID
 import autogen
 from pydantic import Field
 
-from ...db.helpers import find_model_using_raw
 from ..registry import Registry
 from .base import TeamBaseModel, agent_type_refs
 
@@ -30,20 +29,17 @@ class TwoAgentTeam(TeamBaseModel):
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
-        my_model_dict = await find_model_using_raw(model_id)
-        my_model = cls(**my_model_dict["json_str"])
+        my_model = await cls.from_db(model_id)
 
-        initial_agent_dict = await find_model_using_raw(my_model.initial_agent.uuid)
-        initial_agent_model = my_model.initial_agent.get_data_model()(
-            **initial_agent_dict["json_str"]
+        initial_agent_model = await my_model.initial_agent.get_data_model().from_db(
+            my_model.initial_agent.uuid
         )
         initial_agent = await initial_agent_model.create_autogen(
             my_model.initial_agent.uuid, user_id
         )
 
-        secondary_agent_dict = await find_model_using_raw(my_model.secondary_agent.uuid)
-        secondary_agent_model = my_model.secondary_agent.get_data_model()(
-            **secondary_agent_dict["json_str"]
+        secondary_agent_model = await my_model.secondary_agent.get_data_model().from_db(
+            my_model.secondary_agent.uuid
         )
         secondary_agent = await secondary_agent_model.create_autogen(
             my_model.secondary_agent.uuid, user_id

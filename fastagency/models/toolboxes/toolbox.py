@@ -5,7 +5,6 @@ import httpx
 from pydantic import AfterValidator, Field, HttpUrl
 from typing_extensions import TypeAlias
 
-from ...db.helpers import find_model_using_raw
 from ...openapi.client import Client
 from ..base import Model
 from ..registry import Registry
@@ -37,8 +36,7 @@ class OpenAPIAuth(Model):
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Tuple[str, str]:
-        my_model_dict = await find_model_using_raw(model_id)
-        my_model = cls(**my_model_dict["json_str"])
+        my_model = await cls.from_db(model_id)
 
         return my_model.username, my_model.password
 
@@ -65,8 +63,7 @@ class Toolbox(Model):
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Client:
-        my_model_dict = await find_model_using_raw(model_id)
-        my_model = cls(**my_model_dict["json_str"])
+        my_model = await cls.from_db(model_id)
 
         # Download openapi spec to tmp file
         with httpx.Client() as httpx_client:

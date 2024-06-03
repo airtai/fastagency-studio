@@ -46,19 +46,18 @@ class WebSurferAgent(AgentBaseModel):
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
-        my_model_dict = await find_model_using_raw(model_id)
-        my_model = cls(**my_model_dict["json_str"])
+        my_model = await cls.from_db(model_id)
 
-        llm_dict = await find_model_using_raw(my_model.llm.uuid)
-        llm_model = my_model.llm.get_data_model()(**llm_dict["json_str"])
+        llm_model = await my_model.llm.get_data_model().from_db(my_model.llm.uuid)
+
         llm = await llm_model.create_autogen(my_model.llm.uuid, user_id)
 
         clients = await my_model.get_clients_from_toolboxes(user_id)  # noqa: F841
 
-        summarizer_llm_dict = await find_model_using_raw(my_model.summarizer_llm.uuid)
-        summarizer_llm_model = my_model.summarizer_llm.get_data_model()(
-            **summarizer_llm_dict["json_str"]
+        summarizer_llm_model = await my_model.summarizer_llm.get_data_model().from_db(
+            my_model.summarizer_llm.uuid
         )
+
         summarizer_llm = await summarizer_llm_model.create_autogen(
             my_model.summarizer_llm.uuid, user_id
         )
@@ -67,7 +66,7 @@ class WebSurferAgent(AgentBaseModel):
             "viewport_size": my_model.viewport_size,
             "bing_api_key": my_model.bing_api_key,
         }
-        agent_name = my_model_dict["model_name"]
+        agent_name = my_model.name
 
         agent = autogen.agentchat.contrib.web_surfer.WebSurferAgent(
             name=agent_name,
@@ -75,4 +74,5 @@ class WebSurferAgent(AgentBaseModel):
             summarizer_llm_config=summarizer_llm,
             browser_config=browser_config,
         )
+
         return agent

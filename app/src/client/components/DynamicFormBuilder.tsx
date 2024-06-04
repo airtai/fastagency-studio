@@ -174,10 +174,10 @@ Before you begin, ensure you have the following:
 <span class="text-l inline-block my-2 underline">Step 3: Set necessary GitHub action secrets:</span>
 <span class="ml-5">3.1 Create the below two "repository secrets" in your forked GitHub repository.</span>
 <span class="ml-10">Note: If you don't know how to create a secret, follow <a class="underline" href="https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository" target="_blank" rel="noopener noreferrer">this</a> guide.</span>
-<span class="ml-10">======================================================================</span>
-<span class="ml-10">FLY_API_TOKEN: <span class="ml-35">paste the value you copied from 2.3</span></span>
+<span class="ml-10">==================================================================================</span>
+<span class="ml-10">FLY_API_TOKEN: <span class="ml-35"><--- paste the value you copied from 2.3 ---></span></span>
 <span class="ml-10">FASTAGENCY_APPLICATION_UUID: <span class="ml-10">${instructionForApplication}</span></span>
-<span class="ml-10">======================================================================</span>
+<span class="ml-10">==================================================================================</span>
 <span class="text-l inline-block my-2 underline">Step 4: Set up applications Fly.io:</span>
 <span class="ml-5">4.1 Go to the <b>Actions</b> tab in your forked repository on GitHub and click the</span>
 <span class="ml-12"><b>I understand my workflows, go ahead and enable them</b> button.</span>
@@ -196,6 +196,15 @@ Before you begin, ensure you have the following:
 <span class="ml-5">5.4 Once the workflow is completed, you can access your application using the hostname provided in the Fly.io dashboard.</span>
 <span class="ml-5">5.5 Go to fly dashboard and click on the client application (similar to: fastagency-app-******-client). </span>
 <span class="ml-5">5.6 The hostname is the URL of your application. Open the URL in your browser to launch your application.</span>
+<span class="text-xl inline-block my-2 underline">Application customization (Optional): </span>
+<span class="ml-5">- You can perform basic customization such as changing the app name and adding a support email address in the generated application by</span>
+<span class="ml-9"> setting the below optional environment variables.</span>
+<span class="ml-10">==================================================================================</span>
+<span class="ml-10">REACT_APP_NAME: <span class="ml-35"> <--- Your App Name ---> </span></span>
+<span class="ml-10">REACT_APP_SUPPORT_EMAIL: <span class="ml-19"> <--- Your Support Email Address ---> </span></span>
+<span class="ml-10">==================================================================================</span>
+<span class="ml-5">- After setting the environment variables, you can manualy trigger the <b>Fly Deployment Pipeline</b> workflow (refer 4.2 and 4.3) to deploy the changes.</span>
+<span class="ml-5">- For further customization, you can refer to the <a class="underline" href="https://wasp-lang.dev/docs/" target="_blank" rel="noopener noreferrer">Wasp documentation</a>.</span>
 <span class="text-xl inline-block my-2 underline">Troubleshooting: </span>
 <span class="ml-5">If you encounter any issues during the deployment, check the following common problems:</span>
 <span class="ml-10 underline">Deployment Failures: </span>

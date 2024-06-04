@@ -12,13 +12,13 @@ weather_app = FastAPI()
 
 
 class HourlyForecast(BaseModel):
-    time: datetime.time
+    forecast_time: datetime.time
     temperature: int
     description: str
 
 
 class DailyForecast(BaseModel):
-    date: datetime.date
+    forecast_date: datetime.date
     temperature: int
     hourly_forecasts: List[HourlyForecast]
 
@@ -40,7 +40,7 @@ async def get_weather(city: str) -> Weather:
         for daily in weather.daily_forecasts:
             hourly_forecasts = [
                 HourlyForecast(
-                    time=hourly.time,
+                    forecast_time=hourly.time,
                     temperature=hourly.temperature,
                     description=hourly.description,
                 )
@@ -48,7 +48,7 @@ async def get_weather(city: str) -> Weather:
             ]
             daily_forecasts.append(
                 DailyForecast(
-                    date=daily.date,
+                    forecast_date=daily.date,
                     temperature=daily.temperature,
                     hourly_forecasts=hourly_forecasts,
                 )

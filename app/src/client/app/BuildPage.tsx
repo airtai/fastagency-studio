@@ -12,6 +12,7 @@ import LLMs from '../components/buildPage/LLMs';
 import Agents from '../components/buildPage/Agents';
 import Teams from '../components/buildPage/Teams';
 import ToolBoxes from '../components/buildPage/ToolBoxes';
+import Application from '../components/buildPage/Applications';
 import LoadingComponent from '../components/LoadingComponent';
 import { useBuildPage } from '../hooks/useBuildPage';
 import { filerOutComponentData } from '../utils/buildPageUtils';
@@ -30,6 +31,7 @@ const componentsMap: componentsMapType = {
   agent: Agents,
   team: Teams,
   toolbox: ToolBoxes,
+  application: Application,
 };
 
 interface HeaderProps {

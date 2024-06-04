@@ -3,7 +3,7 @@ import os
 import time
 import traceback
 from queue import Queue
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Union
 from uuid import UUID
 
 from asyncer import asyncify, syncify
@@ -17,6 +17,9 @@ from ..db.helpers import find_model_using_raw
 from ..models.teams.multi_agent_team import MultiAgentTeam
 from ..models.teams.two_agent_teams import TwoAgentTeam
 from .app import app, broker, stream  # noqa
+
+if TYPE_CHECKING:
+    from faststream.nats.subscriber.asyncapi import AsyncAPISubscriber
 
 
 class PrintModel(BaseModel):
@@ -54,6 +57,7 @@ class IONats(IOStream):  # type: ignore[misc]
         self.queue: Queue = Queue()  # type: ignore[type-arg]
         self._publisher = broker.publish
         self._thread_id = thread_id
+        self.subscriber: "AsyncAPISubscriber"
 
         self._input_request_subject = f"chat.client.messages.{thread_id}"
         self._input_receive_subject = f"chat.server.messages.{thread_id}"
@@ -65,15 +69,14 @@ class IONats(IOStream):  # type: ignore[misc]
         self = cls(thread_id)
 
         # dynamically subscribe to the chat server
-        subscriber = broker.subscriber(
+        self.subscriber = broker.subscriber(
             subject=self._input_receive_subject,
             stream=stream,
             deliver_policy=api.DeliverPolicy("all"),
         )
-        subscriber(self.handle_input)
-        broker.setup_subscriber(subscriber)
-
-        await subscriber.start()
+        self.subscriber(self.handle_input)
+        broker.setup_subscriber(self.subscriber)
+        await self.subscriber.start()
 
         return self
 
@@ -146,7 +149,7 @@ class InitiateModel(BaseModel):
 
 # patch this is tests
 def create_team(team_id: UUID, user_id: UUID) -> Callable[[str], List[Dict[str, Any]]]:
-    team_dict = syncify(find_model_using_raw)(team_id, user_id)
+    team_dict = syncify(find_model_using_raw)(team_id)
 
     team_model: Union[TwoAgentTeam, MultiAgentTeam]
     if "initial_agent" in team_dict["json_str"]:
@@ -192,11 +195,10 @@ async def initiate_handler(
                     )
                     chat_result = initiate_chat(body.msg)
 
-                    syncify(broker.publish)(
-                        terminate_chat_msg, iostream._input_request_subject
-                    )  # type: ignore [arg-type]
-
-                    return chat_result
+                syncify(broker.publish)(
+                    terminate_chat_msg, iostream._input_request_subject
+                )  # type: ignore [arg-type]
+                return chat_result
             except Exception as e:
                 logger.error(f"Error in chat: {e}")
                 logger.error(traceback.format_exc())
@@ -210,7 +212,12 @@ async def initiate_handler(
         background_tasks = set()
         task = asyncio.create_task(async_start_chat())  # type: ignore
         background_tasks.add(task)
-        task.add_done_callback(background_tasks.discard)
+
+        def callback(t: asyncio.Task[Any]) -> None:
+            background_tasks.discard(t)
+            syncify(iostream.subscriber.close)()
+
+        task.add_done_callback(callback)
 
     except Exception as e:
         logger.error(f"Error in handling initiate chat: {e}")

@@ -9,7 +9,11 @@ from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from .db.helpers import find_model_using_raw, get_db_connection, get_wasp_db_url
+from .db.helpers import (
+    find_model_using_raw,
+    get_db_connection,
+    get_wasp_db_url,
+)
 from .models.registry import Registry, Schemas
 
 logging.basicConfig(level=logging.INFO)
@@ -38,7 +42,7 @@ async def validate_secret_model(
 ) -> Dict[str, Any]:
     type: str = "secret"
 
-    found_model = await find_model_using_raw(model_uuid=model_uuid, user_uuid=user_uuid)
+    found_model = await find_model_using_raw(model_uuid=model_uuid)
     model["api_key"] = found_model["json_str"]["api_key"]
     try:
         validated_model = Registry.get_default().validate(type, name, model)
@@ -127,9 +131,7 @@ async def update_model(
     validated_model = registry.validate(type_name, model_name, model)
 
     async with get_db_connection() as db:
-        found_model = await find_model_using_raw(
-            model_uuid=model_uuid, user_uuid=user_uuid
-        )
+        found_model = await find_model_using_raw(model_uuid=model_uuid)
 
         await db.model.update(
             where={"uuid": found_model["uuid"]},  # type: ignore[arg-type]
@@ -149,9 +151,7 @@ async def models_delete(
     user_uuid: str, type_name: str, model_uuid: str
 ) -> Dict[str, Any]:
     async with get_db_connection() as db:
-        found_model = await find_model_using_raw(
-            model_uuid=model_uuid, user_uuid=user_uuid
-        )
+        found_model = await find_model_using_raw(model_uuid=model_uuid)
         model = await db.model.delete(
             where={"uuid": found_model["uuid"]}  # type: ignore[arg-type]
         )
@@ -276,3 +276,17 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
     }
 
     return default_response
+
+
+@app.post("/application/{application_uuid}/chat")
+async def application_chat(application_uuid: str) -> Dict[str, Any]:
+    found_model = await find_model_using_raw(model_uuid=application_uuid)
+    team_name = found_model["json_str"]["name"]
+    team_uuid = found_model["json_str"]["team"]["uuid"]
+
+    return {
+        "team_status": "inprogress",
+        "team_name": team_name,
+        "team_uuid": team_uuid,
+        "conversation_name": "New Chat",
+    }

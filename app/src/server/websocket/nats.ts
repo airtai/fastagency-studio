@@ -123,7 +123,7 @@ async function setupSubscription(
           const isChatTerminated = type === 'terminate' || type === 'error';
           message =
             type === 'error'
-              ? `${message} Unfortunately, you won't be able to continue this chat. Could you please create a new chat and give it another try? Thanks!`
+              ? `${message} \n\nUnfortunately, you won't be able to continue this chat. Could you please create a new chat and give it another try? Thanks!`
               : message;
           await updateDB(
             context,

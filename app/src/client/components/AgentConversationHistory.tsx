@@ -5,12 +5,14 @@ interface AgentConversationHistoryProps {
   agentConversationHistory: string;
   initialState?: boolean;
   isAgentWindow?: boolean;
+  isDeploymentInstructions?: boolean;
 }
 
 const AgentConversationHistory: React.FC<AgentConversationHistoryProps> = ({
   agentConversationHistory,
   initialState = false,
   isAgentWindow = false,
+  isDeploymentInstructions = false,
 }) => {
   const [showHistory, setShowHistory] = useState(initialState);
 
@@ -18,17 +20,25 @@ const AgentConversationHistory: React.FC<AgentConversationHistoryProps> = ({
     setShowHistory(!showHistory);
   };
 
+  const bg = isDeploymentInstructions ? '' : 'bg-airt-primary';
+  const maxH = isDeploymentInstructions ? 700 : 400;
+
   return (
-    <div data-testid='agent-loader' className={`flex items-center group flex-col bg-airt-primary pb-3`}>
+    <div data-testid='agent-loader' className={`flex items-center group flex-col ${isDeploymentInstructions} pb-3`}>
       <div
         style={{
-          maxWidth: `${isAgentWindow ? '745px' : '800px'}`,
-          left: `${isAgentWindow ? '15px' : '0px'}`,
+          ...(isDeploymentInstructions ? {} : { maxWidth: `${isAgentWindow ? '745px' : '800px'}` }),
+          ...(isDeploymentInstructions ? {} : { left: `${isAgentWindow ? '15px' : '0px'}` }),
           margin: '0 auto 20',
         }}
         className={`relative block w-full`}
       >
-        <TerminalDisplay messages={agentConversationHistory} maxHeight={400} isOpenOnLoad={isAgentWindow} />
+        <TerminalDisplay
+          messages={agentConversationHistory}
+          maxHeight={maxH}
+          isOpenOnLoad={isDeploymentInstructions ? isDeploymentInstructions : isAgentWindow}
+          theme={isDeploymentInstructions ? 'modelDeployment' : null}
+        />
       </div>
     </div>
   );

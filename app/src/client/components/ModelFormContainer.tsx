@@ -18,11 +18,12 @@ const ModelFormContainer: React.FC<ModelFormContainerProps> = ({
   updateExistingModel,
 }) => {
   const header = updateExistingModel ? `Update ${propertyHeader}` : `Add a new ${propertyHeader}`;
+  const modelsLength = modelSchemas.length;
   return (
     <div className='flex flex-col gap-9'>
       <div className='flex flex-col gap-5.5 px-6.5'>
         <h2 className='text-lg font-semibold text-airt-primary mt-6 '>{header}</h2>
-        {!updateExistingModel && (
+        {!updateExistingModel && modelsLength > 1 && (
           <>
             <label className='-mb-3 block text-black dark:text-white'>{`Select  ${propertyHeader}`}</label>
             <div className='relative z-20 bg-white dark:bg-form-input'>

@@ -185,6 +185,27 @@ export const navLinkItems: NavLinkItem[] = [
     ),
     componentName: 'toolbox',
   },
+  {
+    label: 'Applications',
+    svgIcon: (
+      <svg
+        width='26px'
+        height='26px'
+        viewBox='0 0 24 24'
+        id='team'
+        xmlns='http://www.w3.org/2000/svg'
+        className='custom-svg'
+      >
+        <style>{`.st0{fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}`}</style>
+        <rect x='1' y='3' className='st0' width='16' height='14' />
+        <line className='st0' x1='7' y1='5' x2='7' y2='5' />
+        <line className='st0' x1='5' y1='5' x2='5' y2='5' />
+        <line className='st0' x1='3' y1='5' x2='3' y2='5' />
+        <line className='st0' x1='1' y1='6' x2='17' y2='6' />
+      </svg>
+    ),
+    componentName: 'application',
+  },
 ];
 
 interface SidebarProps {

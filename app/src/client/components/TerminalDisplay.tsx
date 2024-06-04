@@ -4,12 +4,15 @@ interface TerminalDisplayProps {
   messages: string;
   maxHeight: number; // Maximum height in pixels
   isOpenOnLoad?: boolean; // Whether the terminal is open on load
+  theme?: string | null; // Title of the terminal
 }
 
-const TerminalDisplay: React.FC<TerminalDisplayProps> = ({ messages, maxHeight, isOpenOnLoad }) => {
+const TerminalDisplay: React.FC<TerminalDisplayProps> = ({ messages, maxHeight, isOpenOnLoad, theme }) => {
   const [isMinimized, setIsMinimized] = useState(isOpenOnLoad ? false : true); // Track if terminal is minimized
   const containerRef = useRef<HTMLDivElement | null>(null); // Reference to the scroll container
   const [isAutoScroll, setIsAutoScroll] = useState(true); // Track if auto-scroll is enabled
+  const isModelDeploymentTheme = theme === 'modelDeployment'; // Check if the theme is modelDeployment
+  const containerTitle = isModelDeploymentTheme ? 'Deployment Guide for Your Application' : 'Agent conversations'; // Title of the terminal
 
   // Convert ANSI codes to HTML with inline styles
   const convertAnsiToHtml = (text: string): string => {
@@ -50,7 +53,7 @@ const TerminalDisplay: React.FC<TerminalDisplayProps> = ({ messages, maxHeight, 
         } text-airt-font-base p-1 text-right bg-airt-secondary hover:cursor-pointer`}
         onClick={() => setIsMinimized(!isMinimized)}
       >
-        <p className='accordion-title text-sm text-left text-airt-primary'>Agent conversations</p>
+        <p className='accordion-title text-sm text-left text-airt-primary'>{containerTitle}</p>
         <button className={`absolute right-4 top-4 ${isMinimized ? '' : 'open'} text-sm text-airt-primary `}>
           {isMinimized ? (
             <svg
@@ -85,10 +88,16 @@ const TerminalDisplay: React.FC<TerminalDisplayProps> = ({ messages, maxHeight, 
         <div
           ref={containerRef}
           onScroll={handleUserScroll}
-          className={`accordion-content scroll-container bg-airt-font-base p-4 text-airt-primary font-mono text-xs overflow-y-auto overflow-x-hidden ${
+          className={`${
+            isModelDeploymentTheme ? 'text-airt-font-base bg-airt-primary' : 'bg-airt-font-base text-airt-primary'
+          } accordion-content scroll-container p-4 font-mono text-xs overflow-y-auto overflow-x-hidden ${
             isMinimized ? 'hidden' : ''
           }`}
-          style={{ maxHeight: `${maxHeight}px`, wordWrap: 'break-word' }}
+          style={{
+            ...(isModelDeploymentTheme
+              ? { wordWrap: 'break-word', maxHeight: `${maxHeight}px` }
+              : { maxHeight: `${maxHeight}px`, wordWrap: 'break-word' }),
+          }}
           dangerouslySetInnerHTML={{ __html: convertAnsiToHtml(messages) }} // nosemgrep
         />
       </div>

@@ -158,8 +158,8 @@ Before you begin, ensure you have the following:
 <span class="text-xl inline-block my-2 underline">Deployment Steps: </span>
 <span class="text-l inline-block my-2 underline">Step 1: Fork the GitHub Repository:</span>
 <span class="ml-5">1.1 Fork <a class="underline" href="https://github.com/airtai/fastagency-wasp-app-template" target="_blank" rel="noopener noreferrer">this</a> GitHub Repository to your account. Ensure the checkbox "Copy the main branch only" is checked.</span>
-<span class="text-l inline-block my-2 underline">Step 2: Generate Fly.io API Token::</span>
-<span class="ml-5">2.1 Go to your Fly.io dashboard and click on the <b>Tokens</b> tab.</span>
+<span class="text-l inline-block my-2 underline">Step 2: Generate Fly.io API Token:</span>
+<span class="ml-5">2.1 Go to your <a class="underline" href="https://fly.io/dashboard" target="_blank" rel="noopener noreferrer">Fly.io</a> dashboard and click on the <b>Tokens</b> tab (the one on the left side sidebar).</span>
 <span class="ml-5">2.2 Enter a name and set the <b>Optional Expiration</b> to 999999h, then click on <b>Create Organization Token</b> to generate a token.</span>
 <span class="ml-5">2.3 Copy the token, including the "FlyV1 " prefix and space at the beginning.</span>
 <span class="text-l inline-block my-2 underline">Step 3: Set necessary GitHub action secrets:</span>
@@ -174,7 +174,7 @@ Before you begin, ensure you have the following:
 <span class="ml-12"><b>I understand my workflows, go ahead and enable them</b> button.</span>
 <span class="ml-5">4.2 On the left-hand side, you will see options like: All workflows, Fly Deployment Pipeline, Pipeline.</span>
 <span class="ml-5">4.3 Click on the <b>Fly Deployment Pipeline</b> option and and then click the <b>Run workflow</b> button against the main branch.</span>
-<span class="ml-5">4.4 Wait for the workflow to complete. Once completed, you will see the Client, Server, and Database apps</span>
+<span class="ml-5">4.4 Wait for the workflow to complete (approx. 2 mins). Once completed, you will see the Client, Server, and Database apps</span>
 <span class="ml-13">created on <a class="underline" href="https://fly.io/dashboard/personal" target="_blank" rel="noopener noreferrer">Fly.io dashboard</a>.</span>
 <span class="ml-5">4.5 The workflow will only set up the applications in Fly.io and not deploy the actual application code which</span>
 <span class="ml-13">will be done in the next step.</span>
@@ -182,7 +182,7 @@ Before you begin, ensure you have the following:
 <span class="ml-5">5.1 The above workflow might have also created a pull request in your GitHub repository to update the <b>fly.toml</b> files.</span>
 <span class="ml-5">5.2 Go to the <b>Pull requests</b> tab in your forked repository on GitHub and merge the PR named "Add Fly.io configuration files".
 <span class="ml-5">5.3 It will trigger the below workflows in sequence:</span>
-<span class="ml-13">- Pipeline to run tests and verify the build</span>
+<span class="ml-13">- Pipeline to run tests and verify the build (approx. 2 mins).</span>
 <span class="ml-13">- Pipeline to deploy the tested application to Fly.io (approx. 5 - 10 mins).</span>
 <span class="ml-5">5.4 Once the workflow is completed, you can access your application using the hostname provided in the Fly.io dashboard.</span>
 <span class="ml-5">5.5 Go to fly dashboard and click on the client application (similar to: fastagency-app-******-client). </span>
@@ -193,7 +193,7 @@ Before you begin, ensure you have the following:
 <span class="ml-10">- Make sure you have added a payment method to your Fly.io account. Else, the deployment will fail.</span>
 <span class="ml-10">- Review the deployment logs on Fly.io for any error messages. You can access the logs by clicking on the</span>
 <span class="ml-15">server application on the Fly.io dashboard and then clicking on the Live Logs tab.</span>
-<span class="ml-5">- If you need any help, please reach out to us on <a class="underline" href="https://discord.gg/CJWmYpyFbc" target="_blank" rel="noopener noreferrer">discord</a>.</span>
+<span class="ml-5">- If you need any help, please reach out to us on <a class="underline" href="https://discord.gg/KgtGKbsh" target="_blank" rel="noopener noreferrer">discord</a>.</span>
 </div>
 `
     : '';

@@ -69,6 +69,6 @@ describe('TosAndMarketingEmailsModal', () => {
     const saveButton = screen.getByRole('button', { name: /Save/i });
     fireEvent.click(saveButton);
 
-    expect(mockHistoryPush).toHaveBeenCalledWith('/playground');
+    expect(mockHistoryPush).toHaveBeenCalledWith('/build');
   });
 });

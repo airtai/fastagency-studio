@@ -27,8 +27,9 @@ class TestUserProxyAgent:
             model=user_proxy_model.model_dump(),
         )
 
-        agent = await UserProxyAgent.create_autogen(
+        agent, functions = await UserProxyAgent.create_autogen(
             model_id=uuid.UUID(user_proxy_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )
         assert isinstance(agent, autogen.agentchat.UserProxyAgent)
+        assert functions == []

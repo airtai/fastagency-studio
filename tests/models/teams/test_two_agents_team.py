@@ -17,6 +17,7 @@ from fastagency.models.base import Model
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.llms.openai import OpenAI
 from fastagency.models.teams.two_agent_teams import TwoAgentTeam
+from fastagency.models.toolboxes.toolbox import FunctionInfo
 
 
 class TestTwoAgentTeam:
@@ -331,23 +332,24 @@ class TestTwoAgentTeam:
 
         get_forecast_for_city_mock = MagicMock()
 
-        @user_proxy_agent.register_for_execution()  # type: ignore [misc]
-        @weatherman_agent.register_for_llm(
-            description="Get weather forecast for a city"
-        )  # type: ignore [misc]
-        def get_forecast_for_city(city: str) -> str:
-            get_forecast_for_city_mock(city)
-            return f"The weather in {city} is sunny today."
-
         async def weatherman_create_autogen(
             cls: Model, model_id: uuid.UUID, user_id: uuid.UUID
         ) -> autogen.agentchat.AssistantAgent:
-            return weatherman_agent
+            def get_forecast_for_city(city: str) -> str:
+                get_forecast_for_city_mock(city)
+                return f"The weather in {city} is sunny today."
+
+            f_info = FunctionInfo(
+                name="get_forecast_for_city",
+                description="Get weather forecast for a city",
+                function=get_forecast_for_city,
+            )
+            return weatherman_agent, [f_info]
 
         async def user_proxy_create_autogen(
             cls: Model, model_id: uuid.UUID, user_id: uuid.UUID
         ) -> autogen.agentchat.UserProxyAgent:
-            return user_proxy_agent
+            return user_proxy_agent, []
 
         if enable_monkeypatch:
             monkeypatch.setattr(
@@ -383,8 +385,7 @@ class TestTwoAgentTeam:
         last_message = chat_result.chat_history[-1]
 
         if enable_monkeypatch:
-            # get_forecast_for_city_mock.assert_called_once_with("New York")
-            get_forecast_for_city_mock.assert_not_called()
+            get_forecast_for_city_mock.assert_called_once_with("New York")
             assert "sunny" in last_message["content"]
         else:
             # assert "sunny" not in last_message["content"]

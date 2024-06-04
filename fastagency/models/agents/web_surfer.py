@@ -75,4 +75,4 @@ class WebSurferAgent(AgentBaseModel):
             browser_config=browser_config,
         )
 
-        return agent
+        return agent, []

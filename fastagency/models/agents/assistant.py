@@ -25,7 +25,7 @@ class AssistantAgent(AgentBaseModel):
 
         llm = await llm_model.create_autogen(my_model.llm.uuid, user_id)
 
-        clients = await my_model.get_clients_from_toolboxes(user_id)  # noqa: F841
+        functions = await my_model.get_functions_from_toolboxes(user_id)
 
         agent_name = my_model.name
 
@@ -34,4 +34,4 @@ class AssistantAgent(AgentBaseModel):
             llm_config=llm,
             system_message=my_model.system_message,
         )
-        return agent
+        return agent, functions

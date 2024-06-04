@@ -27,4 +27,4 @@ class UserProxyAgent(Model):
             name=agent_name,
             max_consecutive_auto_reply=my_model.max_consecutive_auto_reply,
         )
-        return agent
+        return agent, []

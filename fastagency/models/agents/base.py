@@ -1,15 +1,13 @@
-from typing import Annotated, Dict, Optional, Union
+from typing import Annotated, Dict, List, Optional, Union
 from uuid import UUID
 
-from asyncer import syncify
 from pydantic import Field
 from typing_extensions import TypeAlias
 
 from ...db.helpers import find_model_using_raw
-from ...openapi.client import Client
 from ..base import Model
 from ..registry import Registry
-from ..toolboxes.toolbox import ToolboxRef
+from ..toolboxes.toolbox import FunctionInfo, ToolboxRef
 
 __all__ = ["AgentBaseModel"]
 
@@ -52,17 +50,25 @@ class AgentBaseModel(Model):
         ),
     ] = None
 
-    async def get_clients_from_toolboxes(self, user_id: UUID) -> Dict[str, Client]:
-        clients = {}
+    async def get_clients_from_toolboxes(
+        self, user_id: UUID
+    ) -> Dict[str, List[FunctionInfo]]:
+        clients: Dict[str, List[FunctionInfo]] = {}
         for i in range(3):
             toolbox_property = getattr(self, f"toolbox_{i+1}")
             if toolbox_property is None:
                 continue
 
-            toolbox_dict = syncify(find_model_using_raw)(toolbox_property.uuid)
+            toolbox_dict = await find_model_using_raw(toolbox_property.uuid)
             toolbox_model = toolbox_property.get_data_model()(
                 **toolbox_dict["json_str"]
             )
             client = await toolbox_model.create_autogen(toolbox_property.uuid, user_id)
             clients[f"client_{i+1}"] = client
         return clients
+
+    async def get_functions_from_toolboxes(self, user_id: UUID) -> List[FunctionInfo]:
+        clients = await self.get_clients_from_toolboxes(user_id)
+        functions = [x for _, xs in clients.items() for x in xs]
+
+        return functions

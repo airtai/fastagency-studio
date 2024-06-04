@@ -4,7 +4,6 @@ import pytest
 
 from fastagency.app import add_model
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, OpenAPIAuthRef, Toolbox
-from fastagency.openapi.client import Client
 
 
 class TestOpenAPIAuth:
@@ -108,23 +107,18 @@ class TestToolbox:
             model=toolbox.model_dump(),
         )
 
-        actual_client = await Toolbox.create_autogen(
+        function_infos = await Toolbox.create_autogen(
             model_id=uuid.UUID(model_uuid),
             user_id=uuid.UUID(user_uuid),
         )
 
-        assert isinstance(actual_client, Client)
-        assert len(actual_client.registered_funcs) == 3, actual_client.registered_funcs
+        assert len(function_infos) == 3, len(function_infos)
 
-        actual = [x.__name__ for x in actual_client.registered_funcs]
-        expected = [
-            "read_root__get",
-            "create_item_items__post",
-            "read_item_items__item_id__get",
-        ]
-        assert actual == expected
+        expected = {
+            "read_root__get": "Read Root",
+            "create_item_items__post": "Create Item",
+            "read_item_items__item_id__get": "Read Item",
+        }
+        actual = {x.name: x.description for x in function_infos}
 
-        # ToDo: Add test case which makes request
-
-        # route_1_resp = actual_client.registered_funcs[0]()
-        # assert route_1_resp == {"Hello": "World"}
+        assert actual == expected, actual

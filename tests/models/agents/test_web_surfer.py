@@ -297,11 +297,12 @@ class TestWebSurferAgent:
         # Monkeypatch llm and call create_autogen
         monkeypatch.setattr(AzureOAI, "create_autogen", my_create_autogen)
 
-        agent = await WebSurferAgent.create_autogen(
+        agent, functions = await WebSurferAgent.create_autogen(
             model_id=uuid.UUID(web_surfer_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )
         assert isinstance(agent, autogen.agentchat.contrib.web_surfer.WebSurferAgent)
+        assert functions == []
 
 
 class TestBingAPIKey:

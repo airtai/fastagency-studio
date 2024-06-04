@@ -160,11 +160,15 @@ Before you begin, ensure you have the following:
 <span class="ml-10">- If you don't have a Fly.io account, you can create one <a class="underline" href="https://fly.io/app/sign-up" target="_blank" rel="noopener noreferrer">here</a>.</span>
 <span class="ml-10">- Fly provides free allowances for up to 3 VMs (so deploying a Wasp app to a new account is free), <u><b>but all plans</b></u></span>
 <span class="ml-10"><u><b>require you to add your credit card information</b></u> before you can proceed. If you don't, the deployment will fail.</span>
+
+<span class="ml-10"><b><u>Important</u></b>: If you already have a Fly.io account and created more than one organization, make sure you choose "Personal" as the organization </span>
+<span class="ml-10"> while creating the Fly.io API Token in the deployment steps below.</span>
+
 <span class="text-xl inline-block my-2 underline">Deployment Steps: </span>
 <span class="text-l inline-block my-2 underline">Step 1: Fork the GitHub Repository:</span>
 <span class="ml-5">1.1 Fork <a class="underline" href="https://github.com/airtai/fastagency-wasp-app-template" target="_blank" rel="noopener noreferrer">this</a> GitHub Repository to your account. Ensure the checkbox "Copy the main branch only" is checked.</span>
 <span class="text-l inline-block my-2 underline">Step 2: Generate Fly.io API Token:</span>
-<span class="ml-5">2.1 Go to your <a class="underline" href="https://fly.io/dashboard" target="_blank" rel="noopener noreferrer">Fly.io</a> dashboard and click on the <b>Tokens</b> tab (the one on the left side sidebar).</span>
+<span class="ml-5">2.1 Go to your <a class="underline" href="https://fly.io/dashboard" target="_blank" rel="noopener noreferrer">Fly.io</a> dashboard and click on the <b>Tokens</b> tab (the one on the left sidebar).</span>
 <span class="ml-5">2.2 Enter a name and set the <b>Optional Expiration</b> to 999999h, then click on <b>Create Organization Token</b> to generate a token.</span>
 <span class="ml-5">2.3 Copy the token, including the "FlyV1 " prefix and space at the beginning.</span>
 <span class="text-l inline-block my-2 underline">Step 3: Set necessary GitHub action secrets:</span>

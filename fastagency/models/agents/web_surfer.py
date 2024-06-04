@@ -5,7 +5,6 @@ import autogen.agentchat.contrib.web_surfer
 from pydantic import Field
 from typing_extensions import TypeAlias
 
-from ...db.helpers import find_model_using_raw
 from ..base import Model
 from ..registry import register
 from .base import AgentBaseModel, llm_type_refs
@@ -19,8 +18,7 @@ class BingAPIKey(Model):
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:
-        my_model_dict = await find_model_using_raw(model_id)
-        my_model = cls(**my_model_dict["json_str"])
+        my_model = await cls.from_db(model_id)
 
         return my_model.api_key
 

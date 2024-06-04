@@ -145,108 +145,55 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   }, [showDeployInstructions]);
 
   const deploymentInstructions = showDeployInstructions
-    ? `<div class="leading-loose"><p class="text-xl underline">Introduction: </p>
-Congratulations! You are just one step away from deploying your application. This guide will walk you through the process to ensure
-a smooth deployment.
-
-The application is based on <a class="underline" href="https://wasp-lang.dev/" target="_blank" rel="noopener noreferrer">Wasp</a>, an open-source framework for building full-stack web apps. It includes:
-
-  - A simple landing page
-  - Google OAuth authentication
-  - Subscription-based payment system using <a class="underline" href="https://stripe.com/in" target="_blank" rel="noopener noreferrer">Stripe</a>.
-  - Automated deployment to <a class="underline" href="https://fly.io/" target="_blank" rel="noopener noreferrer">Fly.io</a> using GitHub Actions
-
-<u>Note</u>: The generated application will have default configurations, logo, page contents and payment plans. Please refer to the
-<a class="underline" href="https://docs.opensaas.sh/" target="_blank" rel="noopener noreferrer">Wasp OpenSaaS documentation</a> for customizing the application further.
-
-<p class="text-xl underline">Prerequisites: </p>
+    ? `<div class="leading-loose"><span class="text-xl inline-block my-2 underline">Introduction: </span>
+The application is based on <a class="underline" href="https://wasp-lang.dev/" target="_blank" rel="noopener noreferrer">Wasp</a>, an open-source framework for building full-stack web apps. The generated application includes:
+<span class="ml-5">- A landing page and a chat page</span>
+<span class="ml-5">- Username & Password based authentication</span>
+<span class="ml-5">- Automated deployment to <a class="underline" href="https://fly.io/" target="_blank" rel="noopener noreferrer">Fly.io</a> using GitHub Actions</span>
+<span class="text-xl inline-block my-2 underline">Prerequisites: </span>
 Before you begin, ensure you have the following:
-
-1. Google account
-2. Stripe account. If you don't have a Stripe account, you can create one by following <a class="underline" href="https://support.stripe.com/questions/getting-started-with-stripe-create-or-connect-an-account" target="_blank" rel="noopener noreferrer">this</a> instructions.
-3. Fly.io account.
-
-<p class="text-xl underline">Deployment Process: </p>
-The deployment process consists of two main steps:
-
-1. Setting up the applications on Fly.io
-2. Deploying the actual application code
-
-<p class="text-l underline">Step 1: Set Up the Applications on Fly.io: </p>
-1.1 Fork <a class="underline" href="https://github.com/airtai/fastagency-wasp-app-template" target="_blank" rel="noopener noreferrer">this</a> GitHub Repository to your account.
-1.2 Generate Fly.io API Token and Set It in GitHub Actions:
-<span class="ml-5">1.2.1 Go to your Fly.io dashboard and click on the <b>Tokens</b> tab.</span>
-<span class="ml-5">1.2.2 Enter a name and set the <b>Optional Expiration</b> to 999999h, then click on <b>Create Organization Token</b> to generate a token.</span>
-<span class="ml-5">1.2.3 Copy the token, including the "FlyV1 " prefix and space at the beginning.</span>
-<span class="ml-5">1.2.4 Create a new repository secret named <b>FLY_API_TOKEN</b> and paste the token. Follow <a class="underline" href="https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository" target="_blank" rel="noopener noreferrer">this</a> guide to learn how to set up a new GitHub Actions secret.</span>
-1.3 Create Client, Server, and Database Apps on Fly.io
-<span class="ml-5">1.3.1 Go to the <b>Actions</b> tab in your forked repository on GitHub and click the <b>I understand my workflows, go ahead and enable them</b> button.
-<span class="ml-5">1.3.2 On the left-hand side, you will see options like: All workflows, Fly Deployment Pipeline, Pipeline</span>
-<span class="ml-5">1.3.3 Click on the <b>Fly Deployment Pipeline</b> option and and then click the <b>Run workflow</b> button against the main branch.</span>
-<span class="ml-5">1.3.4 Wait for the workflow to complete. Once completed, you will see the Client, Server, and Database apps created on <a class="underline" href="https://fly.io/dashboard/personal" target="_blank" rel="noopener noreferrer">Fly.io dashboard</a>.</span>
-<span class="ml-5">1.3.5 The workflow might have also created a pull request to update the <b>fly.toml</b> file. <u>Do not merge it yet, we need to add a few environment variables first.</u></span>
-
-<p class="text-l underline">Step 2: Deploying the actual application code: </p>
-<b>Note:</b> All the environment variables mentioned below should be added as GitHub Actions repository secrets unless otherwise explicitly specified.
-
-2.1 Create a Google OAuth App:
-<span class="ml-5">2.1.1 Follow the instructions mentioned in <a class="underline" href="https://wasp-lang.dev/docs/auth/social-auth/google#3-creating-a-google-oauth-app" target="_blank" rel="noopener noreferrer">3. Creating a Google OAuth App</a> to create and setup up the Google OAuth App.
-<span class="ml-5">2.1.2 Ensure you add the correct "Authorized redirect URI". Follow these steps to get your API server URI:
-<span class="ml-10">2.1.2.1 Go to the Fly.io dashboard and click on the server application. The name will be similar to <b>fastagency-app-****-server</b>.
-<span class="ml-10">2.1.2.2 Copy the Hostname and add the relative URI <b>auth/google/callback</b> to the hostname. This is the URI you need to</span>
-<span class="ml-25">put in the Authorized redirect URI field. The URI will look something like: https://fastagency-app-***-server.fly.dev/auth/google/callback</span></span>
-<span class="ml-5">2.1.3 Once you have your Client ID and Client Secret, add them as repository secrets named <b>GOOGLE_CLIENT_ID</b> and <b>GOOGLE_CLIENT_SECRET</b>.</span>
-2.2 Create Test Stripe API Keys:
-<span class="ml-5">2.2.1 Navigate to <a class="underline" href="https://dashboard.stripe.com/test/apikeys" target="_blank" rel="noopener noreferrer">Stripe API Keys</a> or go to the Stripe Dashboard and click on Developers.</span>
-<span class="ml-5">2.2.2 Click on the <b>Reveal test key token</b> button, copy the Secret key, and set it as a repository secret named <b>STRIPE_KEY</b>.</span>
-2.3 Create a Stripe Test Product:
-<span class="ml-5">2.3.1 Go to the <a class="underline" href="https://dashboard.stripe.com/test/products" target="_blank" rel="noopener noreferrer">Stripe Test Products</a> page.
-<span class="ml-5">2.3.2 Click on the <b>Add a product</b> button and fill in the relevant information for your product.
-<span class="ml-5">2.3.3 If you are unsure which Product tax code to choose, select <b>Software as a service (SaaS)</b>.
-<span class="ml-5">2.3.4 Ensure you select <b>Recurring</b> as the billing type and enter an amount.
-<span class="ml-5">2.3.5 After saving the product, go to the product page.
-<span class="ml-5">2.3.6 Click on the newly created product, copy the API ID (under pricing), and set it as a repository secret named <b>PRO_SUBSCRIPTION_PRICE_ID</b>.</span>
-2.4 Set Up Stripe Webhooks
-<span class="ml-5">2.4.1 Go to <a class="underline" href="https://dashboard.stripe.com/test/webhooks" target="_blank" rel="noopener noreferrer">Stripe Webhooks</a></span>
-<span class="ml-5">2.4.2 Click on <b>Add endpoint</b> under <b>Hosted endpoints</b>.</span>
-<span class="ml-5">2.4.3 Add the /stripe-webhook Endpoint. The URL should look something like: <b>https://fastagency-app-***-server.fly.dev/stripe-webhook</b>.</span>
-<span class="ml-5">2.4.4 Add the following events to listen to: <b>checkout.session.completed</b>, <b>customer.subscription.deleted</b>, <b>customer.subscription.updated</b>, <b>invoice.paid</b>.
-<span class="ml-5">2.4.5 Add the endpoint.</span>
-<span class="ml-5">2.4.6 Click on <b>Reveal</b> under <b>Signing secret</b>. Copy the value and set it as a repository secret named <b>STRIPE_WEBHOOK_SECRET</b>.</span>
-2.5 Get Your Customer Portal Link
-<span class="ml-5">1. Go to the <a class="underline" href="https://dashboard.stripe.com/test/settings/billing/portal" target="_blank" rel="noopener noreferrer">Stripe Customer Portal Setings</a> in the Stripe Dashboard.</span>
-<span class="ml-5">2. Activate and copy the Customer portal link.</span>
-<span class="ml-5">3. Set the link as a repository variable named <b>REACT_APP_STRIPE_CUSTOMER_PORTAL</b> (this should be a repository variable, not a secret).</span>
-
-2.6 Add FastAgency Application Environment Secret
-<span class="ml-5">1. Add a new repository secret named <b>FASTAGENCY_APPLICATION_UUID</b> and set its value to ${instructionForApplication}.</span>
-
-2.7 Review all the repository secrets you have added. You should have the following secrets:
-<span class="ml-10">- FLY_API_TOKEN</span>
-<span class="ml-10">- GOOGLE_CLIENT_ID</span>
-<span class="ml-10">- GOOGLE_CLIENT_SECRET</span>
-<span class="ml-10">- STRIPE_KEY</span>
-<span class="ml-10">- PRO_SUBSCRIPTION_PRICE_ID</span>
-<span class="ml-10">- STRIPE_WEBHOOK_SECRET</span>
-<span class="ml-10">- FASTAGENCY_APPLICATION_UUID</span>
-
-2.8 Review the repository variables you have added. You should have the following variables:
-<span class="ml-10">- REACT_APP_STRIPE_CUSTOMER_PORTAL</span>
-
-2.9 Deploy the Application:
-<span class="ml-5">2.9.1 Go to the <b>Pull requests</b> tab in your forked repository on GitHub and merge the PR named "Add Fly.io configuration files".
-<span class="ml-5">2.9.2 It will trigger a new workflow to deploy the application. Wait for the workflow to complete.</span>
-<span class="ml-5">2.9.3 Once the workflow is completed, follow the below steps to open your application</span>
-<span class="ml-10">2.9.3.1 Go to fly dashboard and click on the client application. The hostname is the URL of your application.</span>
-
-<p class="text-xl underline">Troubleshooting: </p>
-If you encounter any issues during the deployment, check the following common problems:
-Incorrect Environment Secrets:
-<span class="ml-10">- Ensure all secrets are correctly set in GitHub.</span>
-<span class="ml-10">- Missing Account Information:</span>
-<span class="ml-10">- Verify that all prerequisite accounts (Google, Stripe, Fly.io) are properly set up and linked.</span>
-Deployment Failures:
-<span class="ml-10">- Review the deployment logs on Fly.io for any error messages and resolve them accordingly.</span>
+<span class="ml-5">1. Fly.io account:</span>
+<span class="ml-10">- Fly provides free allowances for up to 3 VMs (so deploying a Wasp app to a new account is free), but all plans</span>
+<span class="ml-10">require you to add your credit card information before you can proceed. If you don't, the deployment will fail.</span>
+<span class="text-xl inline-block my-2 underline">Deployment Steps: </span>
+<span class="text-l inline-block my-2 underline">Step 1: Fork the GitHub Repository:</span>
+<span class="ml-5">1.1 Fork <a class="underline" href="https://github.com/airtai/fastagency-wasp-app-template" target="_blank" rel="noopener noreferrer">this</a> GitHub Repository to your account. Ensure the checkbox "Copy the main branch only" is checked.</span>
+<span class="text-l inline-block my-2 underline">Step 2: Generate Fly.io API Token::</span>
+<span class="ml-5">2.1 Go to your Fly.io dashboard and click on the <b>Tokens</b> tab.</span>
+<span class="ml-5">2.2 Enter a name and set the <b>Optional Expiration</b> to 999999h, then click on <b>Create Organization Token</b> to generate a token.</span>
+<span class="ml-5">2.3 Copy the token, including the "FlyV1 " prefix and space at the beginning.</span>
+<span class="text-l inline-block my-2 underline">Step 3: Set necessary GitHub action secrets:</span>
+<span class="ml-5">3.1 Create the below two "repository secrets" in your forked GitHub repository.</span>
+<span class="ml-10">Note: If you don't know how to create a secret, follow <a class="underline" href="https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository" target="_blank" rel="noopener noreferrer">this</a> guide.</span>
+<span class="ml-10">======================================================================</span>
+<span class="ml-10">FLY_API_TOKEN: <span class="ml-35">paste the value you copied from 2.3</span></span>
+<span class="ml-10">FASTAGENCY_APPLICATION_UUID: <span class="ml-10">${instructionForApplication}</span></span>
+<span class="ml-10">======================================================================</span>
+<span class="text-l inline-block my-2 underline">Step 4: Set up applications Fly.io:</span>
+<span class="ml-5">4.1 Go to the <b>Actions</b> tab in your forked repository on GitHub and click the</span>
+<span class="ml-12"><b>I understand my workflows, go ahead and enable them</b> button.</span>
+<span class="ml-5">4.2 On the left-hand side, you will see options like: All workflows, Fly Deployment Pipeline, Pipeline.</span>
+<span class="ml-5">4.3 Click on the <b>Fly Deployment Pipeline</b> option and and then click the <b>Run workflow</b> button against the main branch.</span>
+<span class="ml-5">4.4 Wait for the workflow to complete. Once completed, you will see the Client, Server, and Database apps</span>
+<span class="ml-13">created on <a class="underline" href="https://fly.io/dashboard/personal" target="_blank" rel="noopener noreferrer">Fly.io dashboard</a>.</span>
+<span class="ml-5">4.5 The workflow will only set up the applications in Fly.io and not deploy the actual application code which</span>
+<span class="ml-13">will be done in the next step.</span>
+<span class="text-l inline-block my-2 underline">Step 5: Deploy the Application:</span>
+<span class="ml-5">5.1 The above workflow might have also created a pull request in your GitHub repository to update the <b>fly.toml</b> files.</span>
+<span class="ml-5">5.2 Go to the <b>Pull requests</b> tab in your forked repository on GitHub and merge the PR named "Add Fly.io configuration files".
+<span class="ml-5">5.3 It will trigger the below workflows in sequence:</span>
+<span class="ml-13">- Pipeline to run tests and verify the build</span>
+<span class="ml-13">- Pipeline to deploy the tested application to Fly.io (approx. 5 - 10 mins).</span>
+<span class="ml-5">5.4 Once the workflow is completed, you can access your application using the hostname provided in the Fly.io dashboard.</span>
+<span class="ml-5">5.5 Go to fly dashboard and click on the client application (similar to: fastagency-app-******-client). </span>
+<span class="ml-5">5.6 The hostname is the URL of your application. Open the URL in your browser to launch your application.</span>
+<span class="text-xl inline-block my-2 underline">Troubleshooting: </span>
+<span class="ml-5">If you encounter any issues during the deployment, check the following common problems:</span>
+<span class="ml-10 underline">Deployment Failures: </span>
+<span class="ml-10">- Make sure you have added a payment method to your Fly.io account. Else, the deployment will fail.</span>
+<span class="ml-10">- Review the deployment logs on Fly.io for any error messages. You can access the logs by clicking on the</span>
+<span class="ml-15">server application on the Fly.io dashboard and then clicking on the Live Logs tab.</span>
+<span class="ml-5">- If you need any help, please reach out to us on <a class="underline" href="https://discord.gg/CJWmYpyFbc" target="_blank" rel="noopener noreferrer">discord</a>.</span>
 </div>
 `
     : '';

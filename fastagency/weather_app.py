@@ -1,5 +1,6 @@
 import datetime
 import logging
+from os import environ
 from typing import List
 
 import python_weather
@@ -8,7 +9,12 @@ from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
 
-weather_app = FastAPI()
+host = environ.get("DOMAIN", "localhost")
+port = 9000
+
+weather_app = FastAPI(
+    servers=[{"url": f"http://{host}:{port}", "description": "Weather app server"}]
+)
 
 
 class HourlyForecast(BaseModel):

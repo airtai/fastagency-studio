@@ -1,12 +1,10 @@
 from typing import Annotated, Any, Dict, Literal
 from uuid import UUID
 
-from asyncer import syncify
 from pydantic import AfterValidator, Field, HttpUrl
 from typing_extensions import TypeAlias
 
 from ...constants import OPENAI_MODELS_LITERAL
-from ...db.helpers import find_model_using_raw
 from ..base import Model
 from ..registry import register
 
@@ -27,9 +25,8 @@ class OpenAIAPIKey(Model):
     ]
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
-        my_model = cls(**my_model_dict["json_str"])
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:
+        my_model: OpenAIAPIKey = await cls.from_db(model_id)
 
         return my_model.api_key
 
@@ -60,13 +57,14 @@ class OpenAI(Model):
     ] = "openai"
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Dict[str, Any]:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
-        my_model = cls(**my_model_dict["json_str"])
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Dict[str, Any]:
+        my_model: OpenAI = await cls.from_db(model_id)
 
-        api_key_dict = syncify(find_model_using_raw)(my_model.api_key.uuid)
-        api_key_model = my_model.api_key.get_data_model()(**api_key_dict["json_str"])
-        api_key = api_key_model.create_autogen(my_model.api_key.uuid, user_id)
+        api_key_model: OpenAIAPIKey = await my_model.api_key.get_data_model().from_db(
+            my_model.api_key.uuid
+        )
+
+        api_key = await api_key_model.create_autogen(my_model.api_key.uuid, user_id)
 
         config_list = [
             {

@@ -2,11 +2,9 @@ from typing import Annotated, Any, Optional
 from uuid import UUID
 
 import autogen.agentchat.contrib.web_surfer
-from asyncer import syncify
 from pydantic import Field
 from typing_extensions import TypeAlias
 
-from ...db.helpers import find_model_using_raw
 from ..base import Model
 from ..registry import register
 from .base import AgentBaseModel, llm_type_refs
@@ -19,9 +17,8 @@ class BingAPIKey(Model):
     api_key: Annotated[str, Field(description="The API Key from OpenAI")]
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
-        my_model = cls(**my_model_dict["json_str"])
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:
+        my_model = await cls.from_db(model_id)
 
         return my_model.api_key
 
@@ -46,23 +43,20 @@ class WebSurferAgent(AgentBaseModel):
     ] = None
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
-        my_model = cls(**my_model_dict["json_str"])
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+        my_model = await cls.from_db(model_id)
 
-        llm_dict = syncify(find_model_using_raw)(my_model.llm.uuid)
-        llm_model = my_model.llm.get_data_model()(**llm_dict["json_str"])
-        llm = llm_model.create_autogen(my_model.llm.uuid, user_id)
+        llm_model = await my_model.llm.get_data_model().from_db(my_model.llm.uuid)
 
-        clients = my_model.get_clients_from_toolboxes(user_id)  # noqa: F841
+        llm = await llm_model.create_autogen(my_model.llm.uuid, user_id)
 
-        summarizer_llm_dict = syncify(find_model_using_raw)(
+        clients = await my_model.get_clients_from_toolboxes(user_id)  # noqa: F841
+
+        summarizer_llm_model = await my_model.summarizer_llm.get_data_model().from_db(
             my_model.summarizer_llm.uuid
         )
-        summarizer_llm_model = my_model.summarizer_llm.get_data_model()(
-            **summarizer_llm_dict["json_str"]
-        )
-        summarizer_llm = summarizer_llm_model.create_autogen(
+
+        summarizer_llm = await summarizer_llm_model.create_autogen(
             my_model.summarizer_llm.uuid, user_id
         )
 
@@ -70,7 +64,7 @@ class WebSurferAgent(AgentBaseModel):
             "viewport_size": my_model.viewport_size,
             "bing_api_key": my_model.bing_api_key,
         }
-        agent_name = my_model_dict["model_name"]
+        agent_name = my_model.name
 
         agent = autogen.agentchat.contrib.web_surfer.WebSurferAgent(
             name=agent_name,
@@ -78,4 +72,5 @@ class WebSurferAgent(AgentBaseModel):
             summarizer_llm_config=summarizer_llm,
             browser_config=browser_config,
         )
-        return agent
+
+        return agent, []

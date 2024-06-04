@@ -1,12 +1,11 @@
-from typing import Annotated, Optional, Tuple
+from dataclasses import dataclass
+from typing import Annotated, Any, Callable, List, Optional, Tuple
 from uuid import UUID
 
 import httpx
-from asyncer import syncify
 from pydantic import AfterValidator, Field, HttpUrl
 from typing_extensions import TypeAlias
 
-from ...db.helpers import find_model_using_raw
 from ...openapi.client import Client
 from ..base import Model
 from ..registry import Registry
@@ -37,14 +36,20 @@ class OpenAPIAuth(Model):
     ]
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Tuple[str, str]:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
-        my_model = cls(**my_model_dict["json_str"])
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Tuple[str, str]:
+        my_model = await cls.from_db(model_id)
 
         return my_model.username, my_model.password
 
 
 OpenAPIAuthRef: TypeAlias = OpenAPIAuth.get_reference_model()  # type: ignore[valid-type]
+
+
+@dataclass
+class FunctionInfo:
+    name: str
+    description: Optional[str]
+    function: Callable[..., Any]
 
 
 @Registry.get_default().register("toolbox")
@@ -60,23 +65,32 @@ class Toolbox(Model):
         Optional[OpenAPIAuthRef],
         Field(
             title="openapi auth",
-            description="Authentication info for the api mentioned in openapi spec",
+            description="Authentication info for the API mentioned in the OpenAPI spec",
         ),
     ] = None
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Client:
-        my_model_dict = syncify(find_model_using_raw)(model_id)
-        my_model = cls(**my_model_dict["json_str"])
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> List[FunctionInfo]:
+        my_model = await cls.from_db(model_id)
 
-        # Download openapi spec to tmp file
+        # Download OpenAPI spec
         with httpx.Client() as httpx_client:
             response = httpx_client.get(my_model.openapi_url)  # type: ignore[arg-type]
             response.raise_for_status()
             openapi_spec = response.text
 
         client = Client.create(openapi_spec)
-        return client
+
+        function_infos = [
+            FunctionInfo(
+                name=f.__name__.strip(),
+                description=f.__doc__.strip() if f.__doc__ else None,
+                function=f,
+            )
+            for f in client.registered_funcs
+        ]
+
+        return function_infos
 
 
 ToolboxRef: TypeAlias = Toolbox.get_reference_model()  # type: ignore[valid-type]

@@ -75,12 +75,16 @@ search:
             - teams
                 - base
                     - [TeamBaseModel](api/fastagency/models/teams/base/TeamBaseModel.md)
+                    - [register_toolbox_functions](api/fastagency/models/teams/base/register_toolbox_functions.md)
                 - multi_agent_team
+                    - [AutogenMultiAgentTeam](api/fastagency/models/teams/multi_agent_team/AutogenMultiAgentTeam.md)
                     - [MultiAgentTeam](api/fastagency/models/teams/multi_agent_team/MultiAgentTeam.md)
                 - two_agent_teams
+                    - [AutogenTwoAgentTeam](api/fastagency/models/teams/two_agent_teams/AutogenTwoAgentTeam.md)
                     - [TwoAgentTeam](api/fastagency/models/teams/two_agent_teams/TwoAgentTeam.md)
             - toolboxes
                 - toolbox
+                    - [FunctionInfo](api/fastagency/models/toolboxes/toolbox/FunctionInfo.md)
                     - [OpenAPIAuth](api/fastagency/models/toolboxes/toolbox/OpenAPIAuth.md)
                     - [Toolbox](api/fastagency/models/toolboxes/toolbox/Toolbox.md)
         - openapi

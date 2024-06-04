@@ -102,7 +102,7 @@ def create_fastapi_app(host: str, port: int) -> FastAPI:
     def read_item(item_id: int, q: Optional[str] = None) -> Dict[str, Any]:
         return {"item_id": item_id, "q": q}
 
-    @app.post("/items/")
+    @app.post("/items")
     async def create_item(item: Item) -> Item:
         return item
 

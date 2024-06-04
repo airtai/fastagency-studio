@@ -1,6 +1,8 @@
 import uuid
+from typing import Optional
 
 import pytest
+from pydantic import BaseModel
 
 from fastagency.app import add_model
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, OpenAPIAuthRef, Toolbox
@@ -115,10 +117,28 @@ class TestToolbox:
         assert len(function_infos) == 3, len(function_infos)
 
         expected = {
-            "read_root__get": "Read Root",
-            "create_item_items__post": "Create Item",
+            "create_item_items_post": "Create Item",
             "read_item_items__item_id__get": "Read Item",
+            "read_root__get": "Read Root",
         }
         actual = {x.name: x.description for x in function_infos}
 
+        assert actual == expected, actual
+
+        actual = function_infos[0].function()
+        expected = {"Hello": "World"}
+        assert actual == expected, actual
+
+        actual = function_infos[2].function(item_id=1, q="test")
+        expected = {"item_id": 1, "q": "test"}  # type: ignore[dict-item]
+        assert actual == expected, actual
+
+        class Item(BaseModel):
+            name: str
+            description: Optional[str] = None
+            price: float
+            tax: Optional[float] = None
+
+        actual = function_infos[1].function(body=Item(name="item", price=1.0))
+        expected = {"name": "item", "description": None, "price": 1.0, "tax": None}  # type: ignore[dict-item]
         assert actual == expected, actual

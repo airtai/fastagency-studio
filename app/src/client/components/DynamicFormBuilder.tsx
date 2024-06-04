@@ -62,6 +62,10 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    // Avoid creating duplicate applications
+    if (instructionForApplication && !updateExistingModel) {
+      return;
+    }
     setIsLoading(true);
     const isSecretUpdate = type_name === 'secret' && !!updateExistingModel;
     let formDataToSubmit: any = {};
@@ -153,8 +157,9 @@ The application is based on <a class="underline" href="https://wasp-lang.dev/" t
 <span class="text-xl inline-block my-2 underline">Prerequisites: </span>
 Before you begin, ensure you have the following:
 <span class="ml-5">1. Fly.io account:</span>
-<span class="ml-10">- Fly provides free allowances for up to 3 VMs (so deploying a Wasp app to a new account is free), but all plans</span>
-<span class="ml-10">require you to add your credit card information before you can proceed. If you don't, the deployment will fail.</span>
+<span class="ml-10">- If you don't have a Fly.io account, you can create one <a class="underline" href="https://fly.io/app/sign-up" target="_blank" rel="noopener noreferrer">here</a>.</span>
+<span class="ml-10">- Fly provides free allowances for up to 3 VMs (so deploying a Wasp app to a new account is free), <u><b>but all plans</b></u></span>
+<span class="ml-10"><u><b>require you to add your credit card information</b></u> before you can proceed. If you don't, the deployment will fail.</span>
 <span class="text-xl inline-block my-2 underline">Deployment Steps: </span>
 <span class="text-l inline-block my-2 underline">Step 1: Fork the GitHub Repository:</span>
 <span class="ml-5">1.1 Fork <a class="underline" href="https://github.com/airtai/fastagency-wasp-app-template" target="_blank" rel="noopener noreferrer">this</a> GitHub Repository to your account. Ensure the checkbox "Copy the main branch only" is checked.</span>

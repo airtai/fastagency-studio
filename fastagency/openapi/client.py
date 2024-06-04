@@ -57,7 +57,7 @@ class Client:
                 if hasattr(kwargs[body], "model_dump")
                 else kwargs[body].dict()
             }
-            if body
+            if body and body in kwargs
             else {}
         )
         body_dict["headers"] = {"Content-Type": "application/json"}
@@ -70,13 +70,15 @@ class Client:
         self, method: Literal["put", "get", "post", "delete"], path: str, **kwargs: Any
     ) -> Callable[..., Dict[str, Any]]:
         def decorator(func: Callable[..., Any]) -> Callable[..., Dict[str, Any]]:
-            self.registered_funcs.append(func)
+            # self.registered_funcs.append(func)
 
             @wraps(func)
             def wrapper(*args: Any, **kwargs: Any) -> Dict[str, Any]:
                 url, params, body_dict = self._process_params(path, func, **kwargs)
                 response = getattr(requests, method)(url, params=params, **body_dict)
                 return response.json()  # type: ignore [no-any-return]
+
+            self.registered_funcs.append(wrapper)
 
             return wrapper
 

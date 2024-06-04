@@ -14,7 +14,7 @@ from .base import AgentBaseModel, llm_type_refs
 
 @register("secret")
 class BingAPIKey(Model):
-    api_key: Annotated[str, Field(description="The API Key from OpenAI")]
+    api_key: Annotated[str, Field(description="The API Key from Bing")]
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:

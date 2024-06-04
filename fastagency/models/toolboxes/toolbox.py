@@ -57,8 +57,8 @@ class Toolbox(Model):
     openapi_url: Annotated[
         URL,
         Field(
-            title="OpenAPI Url",
-            description="Url of OpenAPI specification file",
+            title="OpenAPI URL",
+            description="The URL of OpenAPI specification file",
         ),
     ]
     openapi_auth: Annotated[

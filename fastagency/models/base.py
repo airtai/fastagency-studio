@@ -22,7 +22,7 @@ T = TypeVar("T", bound="Model")
 
 # abstract class
 class Model(BaseModel, ABC):
-    name: Annotated[str, Field(..., description="The name of the model", min_length=1)]
+    name: Annotated[str, Field(..., description="The name of the item", min_length=1)]
     _reference_model: "Optional[Type[ObjectReference]]" = None
 
     @classmethod

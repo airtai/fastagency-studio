@@ -156,7 +156,7 @@ class TestWebSurferAgent:
             },
             "properties": {
                 "name": {
-                    "description": "The name of the model",
+                    "description": "The name of the item",
                     "minLength": 1,
                     "title": "Name",
                     "type": "string",

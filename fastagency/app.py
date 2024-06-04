@@ -77,7 +77,8 @@ async def validate_secret_model(
     type: str = "secret"
 
     found_model = await find_model_using_raw(model_uuid=model_uuid)
-    model["api_key"] = found_model["json_str"]["api_key"]
+    if "api_key" in found_model["json_str"]:
+        model["api_key"] = found_model["json_str"]["api_key"]
     try:
         validated_model = Registry.get_default().validate(type, name, model)
         return validated_model.model_dump()
@@ -122,7 +123,8 @@ async def get_all_models(
     ret_val = []
     for model in ret_val_without_mask:
         if model["type_name"] == "secret":
-            model["json_str"]["api_key"] = await mask(model["json_str"]["api_key"])
+            if "api_key" in model["json_str"]:
+                model["json_str"]["api_key"] = await mask(model["json_str"]["api_key"])
         ret_val.append(model)
 
     return ret_val  # type: ignore[no-any-return]

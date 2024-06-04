@@ -145,40 +145,56 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   }, [showDeployInstructions]);
 
   const deploymentInstructions = showDeployInstructions
-    ? `Congrats! You are one step away from deploying your application.
-
-The app will be based on <a class="underline" href="https://wasp-lang.dev/" target="_blank" rel="noopener noreferrer">wasp</a>, a open-source framework for building full-stack web apps.
-
-<u>Prerequisites:</u>
-
-1) A Google account to create a Google OAuth app. Please follow instructions from <a class="underline" href="https://wasp-lang.dev/docs/auth/social-auth/google#3-creating-a-google-oauth-app" target="_blank" rel="noopener noreferrer">here</a> to create the OAuth app.
-2) A stripe account. Please follow the instructions from <a class="underline" href="https://docs.opensaas.sh/guides/stripe-integration/" target="_blank" rel="noopener noreferrer">here</a> to get the API keys.
-3) A <a class="underline" href="https://fly.io/" target="_blank" rel="noopener noreferrer">fly.io</a> account. So make sure you have a fly.io account. Fly provides free allowances
-for up to 3 VMs (so deploying a Wasp app to a new account is free), but all plans require you to add your credit card information before
-you can proceed. If you don't, the deployment will fail.
-
-Once you have the prerequisites ready, follow the steps below to deploy your application:
-
-1) Please fork the base GitHub repository from <a class="underline" href="https://github.com/airtai/fastagency-wasp-app-template" target="_blank" rel="noopener noreferrer">here</a>
-2) Go to the forked repository and create the following environment secrets in the repository settings:
-
-<u>FastAgency secret:</u>
-
-<span class="ml-3">- FASTAGENCY_APPLICATION_UUID: ${instructionForApplication}</span>
-
-<u>Stripe secrets:</u>
-
-<span class="ml-3">- PRO_SUBSCRIPTION_PRICE_ID</span>
-<span class="ml-3">- STRIPE_KEY</span>
-<span class="ml-3">- STRIPE_WEBHOOK_SECRET</span>
-<span class="ml-3">- REACT_APP_STRIPE_CUSTOMER_PORTAL</span>
-
-<u>Google OAuth secrets:</u>
-
-<span class="ml-3">- GOOGLE_CLIENT_ID</span>
-<span class="ml-3">- GOOGLE_CLIENT_SECRET</span>
-
-3) To be written once we have the deployment instructions ready.....
+    ? `<div class="leading-loose"><span class="text-xl inline-block my-2 underline">Introduction: </span>
+The application is based on <a class="underline" href="https://wasp-lang.dev/" target="_blank" rel="noopener noreferrer">Wasp</a>, an open-source framework for building full-stack web apps. The generated application includes:
+<span class="ml-5">- A landing page and a chat page</span>
+<span class="ml-5">- Username & Password based authentication</span>
+<span class="ml-5">- Automated deployment to <a class="underline" href="https://fly.io/" target="_blank" rel="noopener noreferrer">Fly.io</a> using GitHub Actions</span>
+<span class="text-xl inline-block my-2 underline">Prerequisites: </span>
+Before you begin, ensure you have the following:
+<span class="ml-5">1. Fly.io account:</span>
+<span class="ml-10">- Fly provides free allowances for up to 3 VMs (so deploying a Wasp app to a new account is free), but all plans</span>
+<span class="ml-10">require you to add your credit card information before you can proceed. If you don't, the deployment will fail.</span>
+<span class="text-xl inline-block my-2 underline">Deployment Steps: </span>
+<span class="text-l inline-block my-2 underline">Step 1: Fork the GitHub Repository:</span>
+<span class="ml-5">1.1 Fork <a class="underline" href="https://github.com/airtai/fastagency-wasp-app-template" target="_blank" rel="noopener noreferrer">this</a> GitHub Repository to your account. Ensure the checkbox "Copy the main branch only" is checked.</span>
+<span class="text-l inline-block my-2 underline">Step 2: Generate Fly.io API Token::</span>
+<span class="ml-5">2.1 Go to your Fly.io dashboard and click on the <b>Tokens</b> tab.</span>
+<span class="ml-5">2.2 Enter a name and set the <b>Optional Expiration</b> to 999999h, then click on <b>Create Organization Token</b> to generate a token.</span>
+<span class="ml-5">2.3 Copy the token, including the "FlyV1 " prefix and space at the beginning.</span>
+<span class="text-l inline-block my-2 underline">Step 3: Set necessary GitHub action secrets:</span>
+<span class="ml-5">3.1 Create the below two "repository secrets" in your forked GitHub repository.</span>
+<span class="ml-10">Note: If you don't know how to create a secret, follow <a class="underline" href="https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository" target="_blank" rel="noopener noreferrer">this</a> guide.</span>
+<span class="ml-10">======================================================================</span>
+<span class="ml-10">FLY_API_TOKEN: <span class="ml-35">paste the value you copied from 2.3</span></span>
+<span class="ml-10">FASTAGENCY_APPLICATION_UUID: <span class="ml-10">${instructionForApplication}</span></span>
+<span class="ml-10">======================================================================</span>
+<span class="text-l inline-block my-2 underline">Step 4: Set up applications Fly.io:</span>
+<span class="ml-5">4.1 Go to the <b>Actions</b> tab in your forked repository on GitHub and click the</span>
+<span class="ml-12"><b>I understand my workflows, go ahead and enable them</b> button.</span>
+<span class="ml-5">4.2 On the left-hand side, you will see options like: All workflows, Fly Deployment Pipeline, Pipeline.</span>
+<span class="ml-5">4.3 Click on the <b>Fly Deployment Pipeline</b> option and and then click the <b>Run workflow</b> button against the main branch.</span>
+<span class="ml-5">4.4 Wait for the workflow to complete. Once completed, you will see the Client, Server, and Database apps</span>
+<span class="ml-13">created on <a class="underline" href="https://fly.io/dashboard/personal" target="_blank" rel="noopener noreferrer">Fly.io dashboard</a>.</span>
+<span class="ml-5">4.5 The workflow will only set up the applications in Fly.io and not deploy the actual application code which</span>
+<span class="ml-13">will be done in the next step.</span>
+<span class="text-l inline-block my-2 underline">Step 5: Deploy the Application:</span>
+<span class="ml-5">5.1 The above workflow might have also created a pull request in your GitHub repository to update the <b>fly.toml</b> files.</span>
+<span class="ml-5">5.2 Go to the <b>Pull requests</b> tab in your forked repository on GitHub and merge the PR named "Add Fly.io configuration files".
+<span class="ml-5">5.3 It will trigger the below workflows in sequence:</span>
+<span class="ml-13">- Pipeline to run tests and verify the build</span>
+<span class="ml-13">- Pipeline to deploy the tested application to Fly.io (approx. 5 - 10 mins).</span>
+<span class="ml-5">5.4 Once the workflow is completed, you can access your application using the hostname provided in the Fly.io dashboard.</span>
+<span class="ml-5">5.5 Go to fly dashboard and click on the client application (similar to: fastagency-app-******-client). </span>
+<span class="ml-5">5.6 The hostname is the URL of your application. Open the URL in your browser to launch your application.</span>
+<span class="text-xl inline-block my-2 underline">Troubleshooting: </span>
+<span class="ml-5">If you encounter any issues during the deployment, check the following common problems:</span>
+<span class="ml-10 underline">Deployment Failures: </span>
+<span class="ml-10">- Make sure you have added a payment method to your Fly.io account. Else, the deployment will fail.</span>
+<span class="ml-10">- Review the deployment logs on Fly.io for any error messages. You can access the logs by clicking on the</span>
+<span class="ml-15">server application on the Fly.io dashboard and then clicking on the Live Logs tab.</span>
+<span class="ml-5">- If you need any help, please reach out to us on <a class="underline" href="https://discord.gg/CJWmYpyFbc" target="_blank" rel="noopener noreferrer">discord</a>.</span>
+</div>
 `
     : '';
 

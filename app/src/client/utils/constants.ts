@@ -17,6 +17,7 @@ function deepFreeze(object: any) {
 export const propertyDependencyMap: PropertyDependencyMapProps = deepFreeze({
   secret: [''],
   llm: ['secret'],
+  toolbox: [''],
   agent: ['secret', 'llm'],
   team: ['secret', 'llm', 'agent'],
   application: ['secret', 'llm', 'agent', 'team'],

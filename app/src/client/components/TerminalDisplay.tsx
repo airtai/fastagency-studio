@@ -12,7 +12,7 @@ const TerminalDisplay: React.FC<TerminalDisplayProps> = ({ messages, maxHeight, 
   const containerRef = useRef<HTMLDivElement | null>(null); // Reference to the scroll container
   const [isAutoScroll, setIsAutoScroll] = useState(true); // Track if auto-scroll is enabled
   const isModelDeploymentTheme = theme === 'modelDeployment'; // Check if the theme is modelDeployment
-  const containerTitle = isModelDeploymentTheme ? 'Deployment Instructions' : 'Agent conversations'; // Title of the terminal
+  const containerTitle = isModelDeploymentTheme ? 'Deployment Guide for Your Application' : 'Agent conversations'; // Title of the terminal
 
   // Convert ANSI codes to HTML with inline styles
   const convertAnsiToHtml = (text: string): string => {
@@ -95,7 +95,7 @@ const TerminalDisplay: React.FC<TerminalDisplayProps> = ({ messages, maxHeight, 
           }`}
           style={{
             ...(isModelDeploymentTheme
-              ? { wordWrap: 'break-word' }
+              ? { wordWrap: 'break-word', maxHeight: `${maxHeight}px` }
               : { maxHeight: `${maxHeight}px`, wordWrap: 'break-word' }),
           }}
           dangerouslySetInnerHTML={{ __html: convertAnsiToHtml(messages) }} // nosemgrep

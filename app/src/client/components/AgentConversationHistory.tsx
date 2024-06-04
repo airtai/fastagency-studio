@@ -21,6 +21,7 @@ const AgentConversationHistory: React.FC<AgentConversationHistoryProps> = ({
   };
 
   const bg = isDeploymentInstructions ? '' : 'bg-airt-primary';
+  const maxH = isDeploymentInstructions ? 700 : 400;
 
   return (
     <div data-testid='agent-loader' className={`flex items-center group flex-col ${isDeploymentInstructions} pb-3`}>
@@ -34,7 +35,7 @@ const AgentConversationHistory: React.FC<AgentConversationHistoryProps> = ({
       >
         <TerminalDisplay
           messages={agentConversationHistory}
-          maxHeight={400}
+          maxHeight={maxH}
           isOpenOnLoad={isDeploymentInstructions ? isDeploymentInstructions : isAgentWindow}
           theme={isDeploymentInstructions ? 'modelDeployment' : null}
         />

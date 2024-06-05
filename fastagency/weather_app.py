@@ -11,9 +11,12 @@ logging.basicConfig(level=logging.INFO)
 
 host = environ.get("DOMAIN", "localhost")
 port = 9000
+protocol = "http" if host == "localhost" else "https"
 
 weather_app = FastAPI(
-    servers=[{"url": f"https://{host}:{port}", "description": "Weather app server"}]
+    servers=[
+        {"url": f"{protocol}://{host}:{port}", "description": "Weather app server"}
+    ]
 )
 
 

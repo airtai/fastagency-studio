@@ -198,12 +198,12 @@ Before you begin, ensure you have the following:
 <span class="ml-5">5.6 The hostname is the URL of your application. Open the URL in your browser to launch your application.</span>
 <span class="text-xl inline-block my-2 underline">Application customization (Optional): </span>
 <span class="ml-5">- You can perform basic customization such as changing the app name and adding a support email address in the generated application by</span>
-<span class="ml-9"> setting the below optional environment variables.</span>
+<span class="ml-9"> setting the below optional "repository variables" (not repository secrets). Click <a class="underline" href="https://docs.github.com/en/actions/learn-github-actions/variables" target="_blank" rel="noopener noreferrer">here</a> to learn how to set repository variables.</span>
 <span class="ml-10">==================================================================================</span>
 <span class="ml-10">REACT_APP_NAME: <span class="ml-35"> <--- Your App Name ---> </span></span>
 <span class="ml-10">REACT_APP_SUPPORT_EMAIL: <span class="ml-19"> <--- Your Support Email Address ---> </span></span>
 <span class="ml-10">==================================================================================</span>
-<span class="ml-5">- After setting the environment variables, you can manualy trigger the <b>Fly Deployment Pipeline</b> workflow (refer 4.2 and 4.3) to deploy the changes.</span>
+<span class="ml-5">- After setting the repository variables, you can manualy trigger the <b>Fly Deployment Pipeline</b> workflow (refer 4.2 and 4.3) to deploy the changes.</span>
 <span class="ml-5">- For further customization, you can refer to the <a class="underline" href="https://wasp-lang.dev/docs/" target="_blank" rel="noopener noreferrer">Wasp documentation</a>.</span>
 <span class="text-xl inline-block my-2 underline">Troubleshooting: </span>
 <span class="ml-5">If you encounter any issues during the deployment, check the following common problems:</span>

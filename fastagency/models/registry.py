@@ -28,7 +28,7 @@ __all__ = [
 
 
 class ModelSchema(BaseModel):
-    name: Annotated[str, Field(description="The name of the model")]
+    name: Annotated[str, Field(description="The name of the item")]
     json_schema: Annotated[
         Dict[str, Any], Field(description="The schema for the model")
     ]

@@ -107,7 +107,7 @@ class TestRegistry:
             json_schema={
                 "properties": {
                     "name": {
-                        "description": "The name of the model",
+                        "description": "The name of the item",
                         "minLength": 1,
                         "title": "Name",
                         "type": "string",
@@ -174,7 +174,7 @@ class TestRegistry:
                 },
                 "properties": {
                     "name": {
-                        "description": "The name of the model",
+                        "description": "The name of the item",
                         "minLength": 1,
                         "title": "Name",
                         "type": "string",

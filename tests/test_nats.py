@@ -86,7 +86,7 @@ class TestAutogen:
     @pytest.mark.azure_oai()
     @pytest.mark.nats()
     @pytest.mark.asyncio()
-    async def test_ionats(  # noqa: C901
+    async def test_ionats_success(  # noqa: C901
         self, llm_config: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
     ) -> None:
         user_id = uuid.uuid4()
@@ -128,7 +128,7 @@ class TestAutogen:
 
         get_forecast_for_city_mock = MagicMock()
 
-        def create_team(
+        async def create_team(
             team_id: uuid.UUID, user_id: uuid.UUID
         ) -> Callable[[str], List[Dict[str, Any]]]:
             weather_man = autogen.agentchat.AssistantAgent(
@@ -272,7 +272,7 @@ class TestAutogen:
 
         ### end sending inputs to server
 
-        def create_team(
+        async def create_team(
             team_id: uuid.UUID, user_id: uuid.UUID
         ) -> Callable[[str], List[Dict[str, Any]]]:
             raise ValueError("Triggering error in test")
@@ -314,8 +314,8 @@ class TestAutogen:
         user_uuid: str,
         llm_model: Model,
         api_key_model: Model,
-        llm_config: Dict[str, Any],
-        monkeypatch: pytest.MonkeyPatch,
+        # llm_config: Dict[str, Any],
+        # monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         thread_id = uuid.uuid4()
 

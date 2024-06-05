@@ -4,6 +4,8 @@ from os import environ
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
+import httpx
+import yaml
 from fastapi import FastAPI, HTTPException
 from openai import AsyncAzureOpenAI
 from prisma.models import Model
@@ -15,6 +17,7 @@ from .db.helpers import (
     get_wasp_db_url,
 )
 from .models.registry import Registry, Schemas
+from .models.toolboxes.toolbox import Toolbox
 
 logging.basicConfig(level=logging.INFO)
 
@@ -27,10 +30,41 @@ async def get_models_schemas() -> Schemas:
     return schemas
 
 
+async def validate_toolbox(toolbox: Toolbox) -> None:
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(toolbox.openapi_url)  # type: ignore[arg-type]
+    except Exception as e:
+        raise HTTPException(status_code=422, detail="OpenAPI URL is invalid") from e
+
+    if not (resp.status_code >= 200 and resp.status_code < 400):
+        raise HTTPException(
+            status_code=422, detail=f"OpenAPI URL returns error code {resp.status_code}"
+        )
+
+    try:
+        if "yaml" in toolbox.openapi_url or "yml" in toolbox.openapi_url:  # type: ignore [operator]
+            openapi_spec = yaml.safe_load(resp.text)
+        else:
+            openapi_spec = resp.json()
+
+        if "openapi" not in openapi_spec:
+            raise HTTPException(
+                status_code=422,
+                detail="OpenAPI URL does not contain a valid OpenAPI spec",
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=422, detail="OpenAPI URL does not contain a valid OpenAPI spec"
+        ) from e
+
+
 @app.post("/models/{type}/{name}/validate")
 async def validate_model(type: str, name: str, model: Dict[str, Any]) -> Dict[str, Any]:
     try:
         validated_model = Registry.get_default().validate(type, name, model)
+        if isinstance(validated_model, Toolbox):
+            await validate_toolbox(validated_model)
         return validated_model.model_dump()
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=json.loads(e.json())) from e
@@ -43,7 +77,8 @@ async def validate_secret_model(
     type: str = "secret"
 
     found_model = await find_model_using_raw(model_uuid=model_uuid)
-    model["api_key"] = found_model["json_str"]["api_key"]
+    if "api_key" in found_model["json_str"]:
+        model["api_key"] = found_model["json_str"]["api_key"]
     try:
         validated_model = Registry.get_default().validate(type, name, model)
         return validated_model.model_dump()
@@ -88,7 +123,8 @@ async def get_all_models(
     ret_val = []
     for model in ret_val_without_mask:
         if model["type_name"] == "secret":
-            model["json_str"]["api_key"] = await mask(model["json_str"]["api_key"])
+            if "api_key" in model["json_str"]:
+                model["json_str"]["api_key"] = await mask(model["json_str"]["api_key"])
         ret_val.append(model)
 
     return ret_val  # type: ignore[no-any-return]

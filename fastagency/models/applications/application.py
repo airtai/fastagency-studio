@@ -26,5 +26,5 @@ class Application(Model):
     ]
 
     @classmethod
-    def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
         raise NotImplementedError

@@ -8,6 +8,7 @@ search:
         - app
             - [ChatRequest](api/fastagency/app/ChatRequest.md)
             - [add_model](api/fastagency/app/add_model.md)
+            - [application_chat](api/fastagency/app/application_chat.md)
             - [chat](api/fastagency/app/chat.md)
             - [generate_chat_name](api/fastagency/app/generate_chat_name.md)
             - [get_all_models](api/fastagency/app/get_all_models.md)
@@ -18,6 +19,7 @@ search:
             - [update_model](api/fastagency/app/update_model.md)
             - [validate_model](api/fastagency/app/validate_model.md)
             - [validate_secret_model](api/fastagency/app/validate_secret_model.md)
+            - [validate_toolbox](api/fastagency/app/validate_toolbox.md)
         - db
             - helpers
                 - [find_model_using_raw](api/fastagency/db/helpers/find_model_using_raw.md)
@@ -27,6 +29,7 @@ search:
             - [ping_handler](api/fastagency/faststream_app/ping_handler.md)
         - io
             - ionats
+                - [ErrorResoponseModel](api/fastagency/io/ionats/ErrorResoponseModel.md)
                 - [IONats](api/fastagency/io/ionats/IONats.md)
                 - [InitiateModel](api/fastagency/io/ionats/InitiateModel.md)
                 - [InputRequestModel](api/fastagency/io/ionats/InputRequestModel.md)
@@ -47,6 +50,9 @@ search:
                 - web_surfer
                     - [BingAPIKey](api/fastagency/models/agents/web_surfer/BingAPIKey.md)
                     - [WebSurferAgent](api/fastagency/models/agents/web_surfer/WebSurferAgent.md)
+            - applications
+                - application
+                    - [Application](api/fastagency/models/applications/application/Application.md)
             - base
                 - [Model](api/fastagency/models/base/Model.md)
                 - [ModelTypeFinder](api/fastagency/models/base/ModelTypeFinder.md)
@@ -69,10 +75,18 @@ search:
             - teams
                 - base
                     - [TeamBaseModel](api/fastagency/models/teams/base/TeamBaseModel.md)
+                    - [register_toolbox_functions](api/fastagency/models/teams/base/register_toolbox_functions.md)
                 - multi_agent_team
+                    - [AutogenMultiAgentTeam](api/fastagency/models/teams/multi_agent_team/AutogenMultiAgentTeam.md)
                     - [MultiAgentTeam](api/fastagency/models/teams/multi_agent_team/MultiAgentTeam.md)
                 - two_agent_teams
+                    - [AutogenTwoAgentTeam](api/fastagency/models/teams/two_agent_teams/AutogenTwoAgentTeam.md)
                     - [TwoAgentTeam](api/fastagency/models/teams/two_agent_teams/TwoAgentTeam.md)
+            - toolboxes
+                - toolbox
+                    - [FunctionInfo](api/fastagency/models/toolboxes/toolbox/FunctionInfo.md)
+                    - [OpenAPIAuth](api/fastagency/models/toolboxes/toolbox/OpenAPIAuth.md)
+                    - [Toolbox](api/fastagency/models/toolboxes/toolbox/Toolbox.md)
         - openapi
             - client
                 - [Client](api/fastagency/openapi/client/Client.md)

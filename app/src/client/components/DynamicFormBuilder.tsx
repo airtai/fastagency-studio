@@ -106,7 +106,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
         setIsLoading(true);
         for (const [key, property] of Object.entries(jsonSchema.properties)) {
           const propertyHasRef = _.has(property, '$ref') && property['$ref'];
-          const propertyHasAnyOf = _.has(property, 'anyOf') && _.has(jsonSchema, '$defs');
+          const propertyHasAnyOf = (_.has(property, 'anyOf') || _.has(property, 'allOf')) && _.has(jsonSchema, '$defs');
           if (propertyHasRef || propertyHasAnyOf) {
             const allRefList = propertyHasRef ? [property['$ref']] : getAllRefs(property);
             const refUserProperties = getMatchedUserProperties(allUserProperties, allRefList);
@@ -227,7 +227,7 @@ Before you begin, ensure you have the following:
           const inputValue = formData[key] || '';
 
           let formElementsObject = property;
-          if (_.has(property, '$ref') || _.has(property, 'anyOf')) {
+          if (_.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf')) {
             if (refValues[key]) {
               formElementsObject = refValues[key].htmlSchema;
             }

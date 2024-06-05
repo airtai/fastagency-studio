@@ -170,7 +170,12 @@ export function getMatchedUserProperties(allUserProperties: any, ref: string[]) 
 }
 
 export function getAllRefs(property: any): any[] {
-  return _.map(_.get(property, 'anyOf'), (o: any) => o['$ref'] || o['type']);
+  if (property.hasOwnProperty('anyOf')) {
+    return _.map(property.anyOf, (o: any) => o['$ref'] || o['type']);
+  } else if (property.hasOwnProperty('allOf')) {
+    return _.map(property.allOf, (o: any) => o['$ref'] || o['type']);
+  }
+  return [];
 }
 
 export function checkForDependency(userPropertyData: object[], allRefList: string[]): string[] {

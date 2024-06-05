@@ -18,7 +18,7 @@ services:
     container_name: ${container_name}
     ports:
       - "8000:8000"
-      - "9000:9000"
+      - "9001:9001"
     environment:
       - DOMAIN=${DOMAIN}
       - DATABASE_URL=${DATABASE_URL}

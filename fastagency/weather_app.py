@@ -13,7 +13,7 @@ host = environ.get("DOMAIN", "localhost")
 port = 9000
 
 weather_app = FastAPI(
-    servers=[{"url": f"http://{host}:{port}", "description": "Weather app server"}]
+    servers=[{"url": f"https://{host}:{port}", "description": "Weather app server"}]
 )
 
 

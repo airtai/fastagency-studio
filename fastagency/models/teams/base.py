@@ -1,10 +1,12 @@
-from typing import Annotated, Literal, Union
+from typing import Annotated, List, Literal, Union
 
+from autogen.agentchat import ConversableAgent
 from pydantic import Field
 from typing_extensions import TypeAlias
 
 from ..base import Model
 from ..registry import Registry
+from ..toolboxes.toolbox import FunctionInfo
 
 __all__ = ["TeamBaseModel", "agent_type_refs"]
 
@@ -29,3 +31,18 @@ class TeamBaseModel(Model):
             description="Mode for human input",
         ),
     ] = "ALWAYS"
+
+
+def register_toolbox_functions(
+    agent: ConversableAgent,
+    execution_agents: List[ConversableAgent],
+    function_infos: List[FunctionInfo],
+) -> None:
+    for function_info in function_infos:
+        agent.register_for_llm(
+            name=function_info.name,
+            description=function_info.description,
+        )(function_info.function)
+
+        for execution_agent in execution_agents:
+            execution_agent.register_for_execution()(function_info.function)

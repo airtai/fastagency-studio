@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import re
+import shutil
 import sys
 import tempfile
 from functools import wraps
@@ -56,7 +57,7 @@ class Client:
                 if hasattr(kwargs[body], "model_dump")
                 else kwargs[body].dict()
             }
-            if body
+            if body and body in kwargs
             else {}
         )
         body_dict["headers"] = {"Content-Type": "application/json"}
@@ -69,13 +70,15 @@ class Client:
         self, method: Literal["put", "get", "post", "delete"], path: str, **kwargs: Any
     ) -> Callable[..., Dict[str, Any]]:
         def decorator(func: Callable[..., Any]) -> Callable[..., Dict[str, Any]]:
-            self.registered_funcs.append(func)
+            # self.registered_funcs.append(func)
 
             @wraps(func)
             def wrapper(*args: Any, **kwargs: Any) -> Dict[str, Any]:
                 url, params, body_dict = self._process_params(path, func, **kwargs)
                 response = getattr(requests, method)(url, params=params, **body_dict)
                 return response.json()  # type: ignore [no-any-return]
+
+            self.registered_funcs.append(wrapper)
 
             return wrapper
 
@@ -115,10 +118,29 @@ class Client:
                 output_dir=td,
                 template_dir=cls._get_template_dir(),
             )
+            # Use unique file name for main.py
+            main_name = f"main_{td.name}"
+            main_path = td / f"{main_name}.py"
+            shutil.move(td / "main.py", main_path)
+
+            # Change "from models import" to "from models_unique_name import"
+            with open(main_path) as f:  # noqa: PTH123
+                main_py_code = f.read()
+            main_py_code = main_py_code.replace(
+                "from .models import", f"from models_{td.name} import"
+            )
+            with open(main_path, "w") as f:  # noqa: PTH123
+                f.write(main_py_code)
+
+            # Use unique file name for models.py
+            models_name = f"models_{td.name}"
+            models_path = td / f"{models_name}.py"
+            shutil.move(td / "models.py", models_path)
+
             # add td to sys.path
             try:
                 sys.path.append(str(td))
-                main = importlib.import_module("main", package=td.name)
+                main = importlib.import_module(main_name, package=td.name)  # nosemgrep
             finally:
                 sys.path.remove(str(td))
 

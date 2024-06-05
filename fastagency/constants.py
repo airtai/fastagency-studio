@@ -11,4 +11,4 @@ OPENAI_MODELS_LITERAL = Literal["gpt-4", "gpt-3.5-turbo"]
 
 ### Azure OpenAI
 
-AZURE_API_VERSIONS_LITERAL = Literal["2024-02-15-preview", "latest"]
+AZURE_API_VERSIONS_LITERAL = Literal["2024-02-15-preview"]

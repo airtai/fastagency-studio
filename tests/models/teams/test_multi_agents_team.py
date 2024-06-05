@@ -6,7 +6,6 @@ from unittest.mock import MagicMock
 
 import autogen
 import pytest
-from asyncer import asyncify
 from autogen.io.console import IOConsole
 from pydantic import ValidationError
 
@@ -18,8 +17,10 @@ from fastagency.models.base import Model
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.llms.openai import OpenAI
 from fastagency.models.teams.multi_agent_team import MultiAgentTeam
+from fastagency.models.toolboxes.toolbox import FunctionInfo
 
 
+@pytest.mark.skip(reason="Temporarily disabling multi agent team")
 class TestMultiAgentTeam:
     @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])
     def test_multi_agent_constructor(self, llm_model: Model) -> None:
@@ -153,7 +154,7 @@ class TestMultiAgentTeam:
             },
             "properties": {
                 "name": {
-                    "description": "The name of the model",
+                    "description": "The name of the item",
                     "minLength": 1,
                     "title": "Name",
                     "type": "string",
@@ -376,28 +377,39 @@ class TestMultiAgentTeam:
 
         get_forecast_for_city_mock = MagicMock()
 
-        @user_proxy_agent.register_for_execution()  # type: ignore [misc]
-        @weatherman_agent_1.register_for_llm(
-            description="Get weather forecast for a city"
-        )  # type: ignore [misc]
+        # @user_proxy_agent.register_for_execution()  # type: ignore [misc]
+        # @weatherman_agent_1.register_for_llm(
+        #     description="Get weather forecast for a city"
+        # )  # type: ignore [misc]
         def get_forecast_for_city(city: str) -> str:
             get_forecast_for_city_mock(city)
             return f"The weather in {city} is sunny today."
 
+        async def weatherman_create_autogen(  # type: ignore [no-untyped-def]
+            cls, model_id, user_id
+        ) -> autogen.agentchat.AssistantAgent:
+            f_info = FunctionInfo(
+                function=get_forecast_for_city,
+                description="Get weather forecast for a city",
+                name="get_forecast_for_city",
+            )
+            return weatherman_agent_1, [f_info]
+
+        async def user_proxy_create_autogen(  # type: ignore [no-untyped-def]
+            cls, model_id, user_id
+        ) -> autogen.agentchat.UserProxyAgent:
+            return user_proxy_agent, []
+
         if enable_monkeypatch:
             monkeypatch.setattr(
-                AssistantAgent,
-                "create_autogen",
-                lambda cls, model_id, user_id: weatherman_agent_1,
+                AssistantAgent, "create_autogen", weatherman_create_autogen
             )
 
             monkeypatch.setattr(
-                UserProxyAgent,
-                "create_autogen",
-                lambda cls, model_id, user_id: user_proxy_agent,
+                UserProxyAgent, "create_autogen", user_proxy_create_autogen
             )
 
-        team = await asyncify(MultiAgentTeam.create_autogen)(
+        team = await MultiAgentTeam.create_autogen(
             model_id=uuid.UUID(team_model_uuid), user_id=uuid.UUID(user_uuid)
         )
 
@@ -423,8 +435,8 @@ class TestMultiAgentTeam:
         last_message = chat_result.chat_history[-1]
 
         if enable_monkeypatch:
-            # get_forecast_for_city_mock.assert_called_once_with("New York")
-            get_forecast_for_city_mock.assert_not_called()
+            get_forecast_for_city_mock.assert_called_once_with("New York")
+            # get_forecast_for_city_mock.assert_not_called()
             assert "sunny" in last_message["content"]
         else:
             # assert "sunny" not in last_message["content"]

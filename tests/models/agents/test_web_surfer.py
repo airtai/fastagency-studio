@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 import autogen.agentchat.contrib.web_surfer
 import pytest
-from asyncer import asyncify
 from pydantic import ValidationError
 
 from fastagency.app import add_model
@@ -125,10 +124,39 @@ class TestWebSurferAgent:
                     "title": "OpenAIRef",
                     "type": "object",
                 },
+                "ToolboxRef": {
+                    "properties": {
+                        "type": {
+                            "const": "toolbox",
+                            "default": "toolbox",
+                            "description": "The name of the type of the data",
+                            "enum": ["toolbox"],
+                            "title": "Type",
+                            "type": "string",
+                        },
+                        "name": {
+                            "const": "Toolbox",
+                            "default": "Toolbox",
+                            "description": "The name of the data",
+                            "enum": ["Toolbox"],
+                            "title": "Name",
+                            "type": "string",
+                        },
+                        "uuid": {
+                            "description": "The unique identifier",
+                            "format": "uuid",
+                            "title": "UUID",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["uuid"],
+                    "title": "ToolboxRef",
+                    "type": "object",
+                },
             },
             "properties": {
                 "name": {
-                    "description": "The name of the model",
+                    "description": "The name of the item",
                     "minLength": 1,
                     "title": "Name",
                     "type": "string",
@@ -140,6 +168,24 @@ class TestWebSurferAgent:
                     ],
                     "description": "LLM used by the agent for producing responses",
                     "title": "LLM",
+                },
+                "toolbox_1": {
+                    "anyOf": [{"$ref": "#/$defs/ToolboxRef"}, {"type": "null"}],
+                    "default": None,
+                    "description": "Toolbox used by the agent for producing responses",
+                    "title": "Toolbox",
+                },
+                "toolbox_2": {
+                    "anyOf": [{"$ref": "#/$defs/ToolboxRef"}, {"type": "null"}],
+                    "default": None,
+                    "description": "Toolbox used by the agent for producing responses",
+                    "title": "Toolbox",
+                },
+                "toolbox_3": {
+                    "anyOf": [{"$ref": "#/$defs/ToolboxRef"}, {"type": "null"}],
+                    "default": None,
+                    "description": "Toolbox used by the agent for producing responses",
+                    "title": "Toolbox",
                 },
                 "summarizer_llm": {
                     "anyOf": [
@@ -245,15 +291,18 @@ class TestWebSurferAgent:
             model=web_surfer_model.model_dump(),
         )
 
+        async def my_create_autogen(cls, model_id, user_id) -> Dict[str, Any]:  # type: ignore [no-untyped-def]
+            return llm_config
+
         # Monkeypatch llm and call create_autogen
-        monkeypatch.setattr(
-            AzureOAI, "create_autogen", lambda cls, model_id, user_id: llm_config
-        )
-        agent = await asyncify(WebSurferAgent.create_autogen)(
+        monkeypatch.setattr(AzureOAI, "create_autogen", my_create_autogen)
+
+        agent, functions = await WebSurferAgent.create_autogen(
             model_id=uuid.UUID(web_surfer_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )
         assert isinstance(agent, autogen.agentchat.contrib.web_surfer.WebSurferAgent)
+        assert functions == []
 
 
 class TestBingAPIKey:
@@ -280,7 +329,7 @@ class TestBingAPIKey:
         )
 
         # Call create_autogen
-        actual_api_key = await asyncify(AzureOAIAPIKey.create_autogen)(
+        actual_api_key = await AzureOAIAPIKey.create_autogen(
             model_id=uuid.UUID(api_key_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )

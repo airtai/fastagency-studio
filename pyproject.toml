@@ -53,6 +53,8 @@ dependencies = [
     "fastapi-code-generator==0.5.0",
     "asyncer==0.0.7",
     "markdownify==0.12.1", # Needed by autogen.WebSurferAgent but not included
+    "httpx==0.27.0",
+    "python-weather==2.0.3",
 ]
 
 [project.optional-dependencies]
@@ -102,8 +104,8 @@ test-core = [
 
 testing = [
     "fastagency[test-core]",
+    "fastagency[server]", # Uvicorn is needed for testing
     "pydantic-settings==2.2.1",
-    "httpx==0.27.0",
     "PyYAML==6.0.1",
     "watchfiles==0.21.0",
     "email-validator==2.1.1",

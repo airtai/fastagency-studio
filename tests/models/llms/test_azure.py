@@ -3,7 +3,6 @@ import uuid
 from typing import Any, Dict
 
 import pytest
-from asyncer import asyncify
 
 from fastagency.app import add_model
 from fastagency.models.base import Model
@@ -35,7 +34,7 @@ class TestAzureOAI:
             },
             "base_url": "https://my-model.openai.azure.com",
             "api_type": "azure",
-            "api_version": "latest",
+            "api_version": "2024-02-15-preview",
         }
         assert model.model_dump() == expected
 
@@ -75,7 +74,7 @@ class TestAzureOAI:
             },
             "properties": {
                 "name": {
-                    "description": "The name of the model",
+                    "description": "The name of the item",
                     "minLength": 1,
                     "title": "Name",
                     "type": "string",
@@ -105,9 +104,10 @@ class TestAzureOAI:
                     "type": "string",
                 },
                 "api_version": {
-                    "default": "latest",
-                    "description": "The version of the Azure OpenAI API, e.g. '2024-02-15-preview' or 'latest",
-                    "enum": ["2024-02-15-preview", "latest"],
+                    "const": "2024-02-15-preview",
+                    "default": "2024-02-15-preview",
+                    "description": "The version of the Azure OpenAI API, e.g. '2024-02-15-preview'",
+                    "enum": ["2024-02-15-preview"],
                     "title": "Api Version",
                     "type": "string",
                 },
@@ -159,13 +159,13 @@ class TestAzureOAI:
             model=llm.model_dump(),
         )
 
+        async def my_create_autogen(cls, model_id, user_id) -> Any:  # type: ignore [no-untyped-def]
+            return api_key.api_key
+
         # Monkeypatch api_key and call create_autogen
-        monkeypatch.setattr(
-            AzureOAIAPIKey,
-            "create_autogen",
-            lambda cls, model_id, user_id: api_key.api_key,
-        )
-        actual_llm_config = await asyncify(AzureOAI.create_autogen)(
+        monkeypatch.setattr(AzureOAIAPIKey, "create_autogen", my_create_autogen)
+
+        actual_llm_config = await AzureOAI.create_autogen(
             model_id=uuid.UUID(llm_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )
@@ -199,7 +199,7 @@ class TestAzureOAIAPIKey:
         )
 
         # Call create_autogen
-        actual_api_key = await asyncify(AzureOAIAPIKey.create_autogen)(
+        actual_api_key = await AzureOAIAPIKey.create_autogen(
             model_id=uuid.UUID(api_key_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )

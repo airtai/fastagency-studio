@@ -5,6 +5,8 @@ from uuid import UUID
 from pydantic import BaseModel, Field, create_model, model_validator
 from typing_extensions import TypeAlias
 
+from ..db.helpers import find_model_using_raw
+
 M = TypeVar("M", bound="Model")
 
 __all__ = [
@@ -15,9 +17,12 @@ __all__ = [
 ]
 
 
+T = TypeVar("T", bound="Model")
+
+
 # abstract class
 class Model(BaseModel, ABC):
-    name: Annotated[str, Field(..., description="The name of the model", min_length=1)]
+    name: Annotated[str, Field(..., description="The name of the item", min_length=1)]
     _reference_model: "Optional[Type[ObjectReference]]" = None
 
     @classmethod
@@ -28,9 +33,16 @@ class Model(BaseModel, ABC):
 
     @classmethod
     @abstractmethod
-    def create_autogen(
+    async def create_autogen(
         cls, model_id: UUID, user_id: UUID
     ) -> Any: ...  # pragma: no cover
+
+    @classmethod
+    async def from_db(cls: Type[T], model_id: UUID) -> T:
+        my_model_dict = await find_model_using_raw(model_id)
+        my_model = cls(**my_model_dict["json_str"])
+
+        return my_model
 
 
 class ObjectReference(BaseModel):

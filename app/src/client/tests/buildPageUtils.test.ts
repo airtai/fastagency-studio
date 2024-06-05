@@ -1599,6 +1599,20 @@ describe('buildPageUtils', () => {
       const actual = getAllRefs(input);
       expect(actual).toEqual(expected);
     });
+    test('getAllRefs - with allOf only', () => {
+      const input = {
+        allOf: [
+          {
+            $ref: '#/$defs/TwoAgentTeamRef',
+          },
+        ],
+        description: 'The team that is used in the application',
+        title: 'Team name',
+      };
+      const expected = ['#/$defs/TwoAgentTeamRef'];
+      const actual = getAllRefs(input);
+      expect(actual).toEqual(expected);
+    });
   });
   describe('checkForDependency', () => {
     test('checkForDependency - with empty userPropertyData', () => {

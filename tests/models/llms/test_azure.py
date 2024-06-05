@@ -34,7 +34,7 @@ class TestAzureOAI:
             },
             "base_url": "https://my-model.openai.azure.com",
             "api_type": "azure",
-            "api_version": "latest",
+            "api_version": "2024-02-15-preview",
         }
         assert model.model_dump() == expected
 
@@ -104,9 +104,10 @@ class TestAzureOAI:
                     "type": "string",
                 },
                 "api_version": {
-                    "default": "latest",
-                    "description": "The version of the Azure OpenAI API, e.g. '2024-02-15-preview' or 'latest",
-                    "enum": ["2024-02-15-preview", "latest"],
+                    "const": "2024-02-15-preview",
+                    "default": "2024-02-15-preview",
+                    "description": "The version of the Azure OpenAI API, e.g. '2024-02-15-preview'",
+                    "enum": ["2024-02-15-preview"],
                     "title": "Api Version",
                     "type": "string",
                 },

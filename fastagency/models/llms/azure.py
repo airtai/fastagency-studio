@@ -55,9 +55,9 @@ class AzureOAI(Model):
     api_version: Annotated[
         AZURE_API_VERSIONS_LITERAL,
         Field(
-            description="The version of the Azure OpenAI API, e.g. '2024-02-15-preview' or 'latest"
+            description="The version of the Azure OpenAI API, e.g. '2024-02-15-preview'"
         ),
-    ] = "latest"
+    ] = "2024-02-15-preview"
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Dict[str, Any]:

@@ -31,7 +31,8 @@ class TestGetSchema:
             "secret": {"AzureOAIAPIKey", "OpenAIAPIKey", "BingAPIKey", "OpenAPIAuth"},
             "llm": {"AzureOAI", "OpenAI"},
             "agent": {"AssistantAgent", "WebSurferAgent", "UserProxyAgent"},
-            "team": {"TwoAgentTeam", "MultiAgentTeam"},
+            # "team": {"TwoAgentTeam", "MultiAgentTeam"},
+            "team": {"TwoAgentTeam"},
             "toolbox": {"Toolbox"},
             "application": {"Application"},
         }

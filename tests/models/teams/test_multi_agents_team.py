@@ -20,6 +20,7 @@ from fastagency.models.teams.multi_agent_team import MultiAgentTeam
 from fastagency.models.toolboxes.toolbox import FunctionInfo
 
 
+@pytest.mark.skip(reason="Temporarily disabling multi agent team")
 class TestMultiAgentTeam:
     @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])
     def test_multi_agent_constructor(self, llm_model: Model) -> None:

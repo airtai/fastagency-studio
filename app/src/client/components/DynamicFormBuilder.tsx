@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import _ from 'lodash';
 
 import { useForm } from '../hooks/useForm';
@@ -26,6 +26,7 @@ import {
 import { set } from 'zod';
 import { NumericStepperWithClearButton } from './form/NumericStepperWithClearButton';
 import AgentConversationHistory from './AgentConversationHistory';
+import { DISCORD_URL } from '../../shared/constants';
 
 interface DynamicFormBuilderProps {
   allUserProperties: any;
@@ -57,6 +58,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const [refValues, setRefValues] = useState<Record<string, any>>({});
   const [missingDependency, setMissingDependency] = useState<string[]>([]);
   const [instructionForApplication, setInstructionForApplication] = useState<string | null>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
   const showDeployInstructions = type_name === 'application';
 
@@ -148,6 +150,15 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     updateExistingModel && type_name === 'application' && setInstructionForApplication(updateExistingModel.uuid);
   }, [showDeployInstructions]);
 
+  useEffect(() => {
+    const keyHandler = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      cancelButtonRef.current?.click();
+    };
+    document.addEventListener('keydown', keyHandler);
+    return () => document.removeEventListener('keydown', keyHandler);
+  });
+
   const deploymentInstructions = showDeployInstructions
     ? `<div class="leading-loose"><span class="text-xl inline-block my-2 underline">Introduction: </span>
 The application is based on <a class="underline" href="https://wasp-lang.dev/" target="_blank" rel="noopener noreferrer">Wasp</a>, an open-source framework for building full-stack web apps. The generated application includes:
@@ -211,7 +222,7 @@ Before you begin, ensure you have the following:
 <span class="ml-10">- Make sure you have added a payment method to your Fly.io account. Else, the deployment will fail.</span>
 <span class="ml-10">- Review the deployment logs on Fly.io for any error messages. You can access the logs by clicking on the</span>
 <span class="ml-15">server application on the Fly.io dashboard and then clicking on the Live Logs tab.</span>
-<span class="ml-5">- If you need any help, please reach out to us on <a class="underline" href="https://discord.gg/KgtGKbsh" target="_blank" rel="noopener noreferrer">discord</a>.</span>
+<span class="ml-5">- If you need any help, please reach out to us on <a class="underline" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">discord</a>.</span>
 </div>
 `
     : '';
@@ -290,6 +301,7 @@ Before you begin, ensure you have the following:
               disabled={isLoading}
               data-testid='form-cancel-button'
               onClick={onCancelCallback}
+              ref={cancelButtonRef}
             >
               Cancel
             </button>

@@ -4,9 +4,28 @@ from uuid import UUID
 from pydantic import AfterValidator, Field, HttpUrl
 from typing_extensions import TypeAlias
 
-from ...constants import OPENAI_MODELS_LITERAL
 from ..base import Model
 from ..registry import register
+
+OpenAIModels: TypeAlias = Literal[
+    "gpt-4o",
+    "gpt-4-turbo",
+    "gpt-4",
+    "gpt-3.5-turbo",
+    "gpt-4o-2024-05-13",
+    "gpt-4-32k",
+    "gpt-4-turbo-2024-04-09",
+    "gpt-4-turbo-preview",
+    "gpt-4-0125-preview",
+    "gpt-4-1106-preview",
+    "gpt-4-vision-preview",
+    "gpt-4-1106-vision-preview",
+    "gpt-4-0613",
+    "gpt-4-32k-0613",
+    "gpt-3.5-turbo-0125",
+    "gpt-3.5-turbo-1106",
+    #    "gpt-3.5-turbo-instruct"  Compatible with legacy Completions endpoint and not Chat Completions.
+]
 
 __all__ = [
     "OpenAIAPIKey",
@@ -41,7 +60,7 @@ URL = Annotated[HttpUrl, AfterValidator(lambda x: str(x).rstrip("/"))]
 @register("llm")
 class OpenAI(Model):
     model: Annotated[  # type: ignore[valid-type]
-        Literal[OPENAI_MODELS_LITERAL],
+        OpenAIModels,
         Field(description="The model to use for the OpenAI API, e.g. 'gpt-3.5-turbo'"),
     ] = "gpt-3.5-turbo"
 
@@ -55,6 +74,15 @@ class OpenAI(Model):
         Literal["openai"],
         Field(title="API Type", description="The type of the API, must be 'openai'"),
     ] = "openai"
+
+    temperature: Annotated[
+        float,
+        Field(
+            description="The temperature to use for the model, must be between 0 and 2",
+            ge=0.0,
+            le=2.0,
+        ),
+    ] = 0.8
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Dict[str, Any]:
@@ -77,7 +105,7 @@ class OpenAI(Model):
 
         llm_config = {
             "config_list": config_list,
-            "temperature": 0,
+            "temperature": my_model.temperature,
         }
 
         return llm_config

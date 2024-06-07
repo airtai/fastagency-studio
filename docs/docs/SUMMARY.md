@@ -12,6 +12,7 @@ search:
             - [chat](api/fastagency/app/chat.md)
             - [generate_chat_name](api/fastagency/app/generate_chat_name.md)
             - [get_all_models](api/fastagency/app/get_all_models.md)
+            - [get_azure_llm_client](api/fastagency/app/get_azure_llm_client.md)
             - [get_models_schemas](api/fastagency/app/get_models_schemas.md)
             - [get_user](api/fastagency/app/get_user.md)
             - [mask](api/fastagency/app/mask.md)

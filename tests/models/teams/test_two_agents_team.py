@@ -324,6 +324,7 @@ class TestTwoAgentTeam:
             name="weather_man",
             system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
             llm_config=llm_config,
+            code_execution_config=False,
         )
 
         user_proxy_agent = autogen.agentchat.UserProxyAgent(

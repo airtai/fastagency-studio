@@ -93,6 +93,8 @@ class TestAutogen:
         thread_id = uuid.uuid4()
         team_id = uuid.uuid4()
 
+        llm_config["temperature"] = 0.0
+
         ### begin sending inputs to server
 
         d = {"count": 0}

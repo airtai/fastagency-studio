@@ -325,6 +325,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SKIP: "static-analysis"
+      TOGETHER_API_KEY: ${{ github.ref_name == 'main' && secrets.PROD_TOGETHER_API_KEY || secrets.STAGING_TOGETHER_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

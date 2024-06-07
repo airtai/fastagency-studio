@@ -46,7 +46,7 @@ class TestRegisterToolboxFunctions:
         agent = AssistantAgent(name="agent 007", llm_config=llm_config)
         execution_agents = [
             AssistantAgent(name="agent 008", llm_config=llm_config),
-            UserProxyAgent(name="agent 009"),
+            UserProxyAgent(name="agent 009", code_execution_config=False),
         ]
 
         register_toolbox_functions(agent, execution_agents, function_infos)

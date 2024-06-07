@@ -328,6 +328,7 @@ class TestTwoAgentTeam:
 
         user_proxy_agent = autogen.agentchat.UserProxyAgent(
             "user_proxy",
+            code_execution_config=False,
         )
 
         get_forecast_for_city_mock = MagicMock()

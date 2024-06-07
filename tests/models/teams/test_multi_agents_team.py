@@ -367,6 +367,7 @@ class TestMultiAgentTeam:
         # Then create autogen agents by monkeypatching create_autogen method
         user_proxy_agent = autogen.agentchat.UserProxyAgent(
             "user_proxy",
+            code_execution_config=False,
         )
 
         weatherman_agent_1 = autogen.agentchat.AssistantAgent(

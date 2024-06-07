@@ -60,6 +60,7 @@ class TestAutogen:
 
         user_proxy = autogen.agentchat.UserProxyAgent(
             "user_proxy",
+            code_execution_config=False,
         )
 
         get_forecast_for_city_mock = MagicMock()
@@ -141,6 +142,7 @@ class TestAutogen:
 
             user_proxy = autogen.agentchat.UserProxyAgent(
                 "user_proxy",
+                code_execution_config=False,
             )
 
             @user_proxy.register_for_execution()  # type: ignore [misc]

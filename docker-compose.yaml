@@ -27,6 +27,7 @@ services:
       - AZURE_API_ENDPOINT=${AZURE_API_ENDPOINT}
       - AZURE_GPT35_MODEL=${AZURE_GPT35_MODEL}
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - TOGETHER_API_KEY=${TOGETHER_API_KEY}
     logging: *default-logging
     networks:
       - fastagency

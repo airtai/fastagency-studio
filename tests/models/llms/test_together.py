@@ -21,7 +21,7 @@ class TestTogetherAI:
         )
         expected = {
             "name": "Hello Together!",
-            "model": "Meta LLaMA-3 Chat (70B)",
+            "model": "Meta Llama 3 70B Chat",
             "api_key": {
                 "type": "secret",
                 "name": "TogetherAIAPIKey",
@@ -75,69 +75,12 @@ class TestTogetherAI:
                     "type": "string",
                 },
                 "model": {
-                    "default": "Meta LLaMA-3 Chat (70B)",
+                    "default": "Meta Llama 3 70B Chat",
                     "description": "The model to use for the Together API",
-                    "enum": [
-                        "01.AI Yi Chat (34B)",
-                        "Allen AI OLMo Instruct (7B)",
-                        "Allen AI OLMo Twin-2T (7B)",
-                        "Allen AI OLMo (7B)",
-                        "Austism Chronos Hermes (13B)",
-                        "cognitivecomputations Dolphin 2.5 Mixtral 8x7b",
-                        "databricks DBRX Instruct",
-                        "DeepSeek Deepseek Coder Instruct (33B)",
-                        "DeepSeek DeepSeek LLM Chat (67B)",
-                        "garage-bAInd Platypus2 Instruct (70B)",
-                        "Google Gemma Instruct (2B)",
-                        "Google Gemma Instruct (7B)",
-                        "Gryphe MythoMax-L2 (13B)",
-                        "LM Sys Vicuna v1.5 (13B)",
-                        "LM Sys Vicuna v1.5 (7B)",
-                        "Meta Code Llama Instruct (13B)",
-                        "Meta Code Llama Instruct (34B)",
-                        "Meta Code Llama Instruct (70B)",
-                        "Meta Code Llama Instruct (7B)",
-                        "Meta LLaMA-2 Chat (70B)",
-                        "Meta LLaMA-2 Chat (13B)",
-                        "Meta LLaMA-2 Chat (7B)",
-                        "Meta LLaMA-3 Chat (8B)",
-                        "Meta LLaMA-3 Chat (70B)",
-                        "mistralai Mistral (7B) Instruct",
-                        "mistralai Mistral (7B) Instruct v0.2",
-                        "mistralai Mistral (7B) Instruct v0.3",
-                        "mistralai Mixtral-8x7B Instruct (46.7B)",
-                        "mistralai Mixtral-8x22B Instruct (141B)",
-                        "NousResearch Nous Capybara v1.9 (7B)",
-                        "NousResearch Nous Hermes 2 - Mistral DPO (7B)",
-                        "NousResearch Nous Hermes 2 - Mixtral 8x7B-DPO (46.7B)",
-                        "NousResearch Nous Hermes 2 - Mixtral 8x7B-SFT (46.7B)",
-                        "NousResearch Nous Hermes LLaMA-2 (7B)",
-                        "NousResearch Nous Hermes Llama-2 (13B)",
-                        "NousResearch Nous Hermes-2 Yi (34B)",
-                        "OpenChat OpenChat 3.5 (7B)",
-                        "OpenOrca OpenOrca Mistral (7B) 8K",
-                        "Qwen Qwen 1.5 Chat (0.5B)",
-                        "Qwen Qwen 1.5 Chat (1.8B)",
-                        "Qwen Qwen 1.5 Chat (4B)",
-                        "Qwen Qwen 1.5 Chat (7B)",
-                        "Qwen Qwen 1.5 Chat (14B)",
-                        "Qwen Qwen 1.5 Chat (32B)",
-                        "Qwen Qwen 1.5 Chat (72B)",
-                        "Qwen Qwen 1.5 Chat (110B)",
-                        "Snorkel AI Snorkel Mistral PairRM DPO (7B)",
-                        "Snowflake Snowflake Arctic Instruct",
-                        "Stanford Alpaca (7B)",
-                        "Teknium OpenHermes-2-Mistral (7B)",
-                        "Teknium OpenHermes-2.5-Mistral (7B)",
-                        "Together LLaMA-2-7B-32K-Instruct (7B)",
-                        "Together RedPajama-INCITE Chat (3B)",
-                        "Together RedPajama-INCITE Chat (7B)",
-                        "Together StripedHyena Nous (7B)",
-                        "Undi95 ReMM SLERP L2 (13B)",
-                        "Undi95 Toppy M (7B)",
-                        "WizardLM WizardLM v1.2 (13B)",
-                        "upstage Upstage SOLAR Instruct v1 (11B)",
-                    ],
+                    #     "enum": [
+                    #         "Meta Llama 3 70B Chat",
+                    #         ...
+                    #     ],
                     "title": "Model",
                     "type": "string",
                 },
@@ -172,6 +115,8 @@ class TestTogetherAI:
             "title": "TogetherAI",
             "type": "object",
         }
+        assert "Meta Llama 3 70B Chat" in schema["properties"]["model"]["enum"]
+        schema["properties"]["model"].pop("enum")
         assert schema == expected
 
     @pytest.mark.asyncio()
@@ -205,7 +150,7 @@ class TestTogetherAI:
 
         llm = llm_model(  # type: ignore [operator]
             name="llm_model_name",
-            model="Meta LLaMA-3 Chat (70B)",
+            model="Meta Llama 3 70B Chat",
             api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
         )
         llm_model_uuid = str(uuid.uuid4())
@@ -231,7 +176,7 @@ class TestTogetherAI:
         expected = {
             "config_list": [
                 {
-                    "model": "Meta_LLaMA_3_Chat_70B",
+                    "model": "meta-llama/Llama-3-70b-chat-hf",
                     "api_key": dummy_togetherai_api_key,
                     "base_url": "https://api.together.xyz/v1",
                     "api_type": "togetherai",

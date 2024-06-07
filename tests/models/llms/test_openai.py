@@ -22,15 +22,11 @@ class TestOpenAI:
         expected = {
             "name": "Hello World!",
             "model": "gpt-3.5-turbo",
-            "api_key": {
-                "type": "secret",
-                "name": "OpenAIAPIKey",
-                "uuid": api_key_uuid,
-            },
+            "api_key": {"type": "secret", "name": "OpenAIAPIKey", "uuid": api_key_uuid},
             "base_url": Url("https://api.openai.com/v1"),
             "api_type": "openai",
+            "temperature": 0.8,
         }
-
         assert model.model_dump() == expected
 
     def test_openai_schema(self) -> None:
@@ -77,7 +73,24 @@ class TestOpenAI:
                 "model": {
                     "default": "gpt-3.5-turbo",
                     "description": "The model to use for the OpenAI API, e.g. 'gpt-3.5-turbo'",
-                    "enum": ["gpt-4", "gpt-3.5-turbo"],
+                    "enum": [
+                        "gpt-4o",
+                        "gpt-4-turbo",
+                        "gpt-4",
+                        "gpt-3.5-turbo",
+                        "gpt-4o-2024-05-13",
+                        "gpt-4-32k",
+                        "gpt-4-turbo-2024-04-09",
+                        "gpt-4-turbo-preview",
+                        "gpt-4-0125-preview",
+                        "gpt-4-1106-preview",
+                        "gpt-4-vision-preview",
+                        "gpt-4-1106-vision-preview",
+                        "gpt-4-0613",
+                        "gpt-4-32k-0613",
+                        "gpt-3.5-turbo-0125",
+                        "gpt-3.5-turbo-1106",
+                    ],
                     "title": "Model",
                     "type": "string",
                 },
@@ -98,6 +111,14 @@ class TestOpenAI:
                     "enum": ["openai"],
                     "title": "API Type",
                     "type": "string",
+                },
+                "temperature": {
+                    "default": 0.8,
+                    "description": "The temperature to use for the model, must be between 0 and 2",
+                    "minimum": 0.0,
+                    "maximum": 2.0,
+                    "title": "Temperature",
+                    "type": "number",
                 },
             },
             "required": ["name", "api_key"],
@@ -167,7 +188,7 @@ class TestOpenAI:
                     "api_type": "openai",
                 }
             ],
-            "temperature": 0,
+            "temperature": 0.8,
         }
 
         assert actual_llm_config == expected

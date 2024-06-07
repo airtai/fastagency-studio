@@ -4,13 +4,23 @@ from uuid import UUID
 from pydantic import AfterValidator, Field, HttpUrl
 from typing_extensions import TypeAlias
 
-from ...constants import AZURE_API_VERSIONS_LITERAL
 from ..base import Model
 from ..registry import register
 
 __all__ = [
     "AzureOAIAPIKey",
     "AzureOAI",
+]
+
+AzureApiVersionsLiteral: TypeAlias = Literal[
+    "2023-05-15",
+    "2023-06-01-preview",
+    "2023-10-01-preview",
+    "2024-02-15-preview",
+    "2024-03-01-preview",
+    "2024-04-01-preview",
+    "2024-05-01-preview",
+    "2024-02-01",
 ]
 
 
@@ -53,11 +63,20 @@ class AzureOAI(Model):
     ] = "azure"
 
     api_version: Annotated[
-        AZURE_API_VERSIONS_LITERAL,
+        AzureApiVersionsLiteral,
         Field(
             description="The version of the Azure OpenAI API, e.g. '2024-02-15-preview'"
         ),
     ] = "2024-02-15-preview"
+
+    temperature: Annotated[
+        float,
+        Field(
+            description="The temperature to use for the model, must be between 0 and 2",
+            ge=0.0,
+            le=2.0,
+        ),
+    ] = 0.8
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Dict[str, Any]:
@@ -80,7 +99,7 @@ class AzureOAI(Model):
 
         llm_config = {
             "config_list": config_list,
-            "temperature": 0,
+            "temperature": my_model.temperature,
         }
 
         return llm_config

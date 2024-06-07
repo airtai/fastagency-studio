@@ -28,8 +28,14 @@ class TestGetSchema:
             for type_name, model_schema_list in types.items()
         }
         expected = {
-            "secret": {"AzureOAIAPIKey", "OpenAIAPIKey", "BingAPIKey", "OpenAPIAuth"},
-            "llm": {"AzureOAI", "OpenAI"},
+            "secret": {
+                "AzureOAIAPIKey",
+                "OpenAIAPIKey",
+                "BingAPIKey",
+                "OpenAPIAuth",
+                "TogetherAIAPIKey",
+            },
+            "llm": {"AzureOAI", "OpenAI", "TogetherAI"},
             "agent": {"AssistantAgent", "WebSurferAgent", "UserProxyAgent"},
             # "team": {"TwoAgentTeam", "MultiAgentTeam"},
             "team": {"TwoAgentTeam"},

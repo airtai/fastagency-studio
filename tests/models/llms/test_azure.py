@@ -35,6 +35,7 @@ class TestAzureOAI:
             "base_url": "https://my-model.openai.azure.com",
             "api_type": "azure",
             "api_version": "2024-02-15-preview",
+            "temperature": 0.8,
         }
         assert model.model_dump() == expected
 
@@ -118,6 +119,14 @@ class TestAzureOAI:
                     ],
                     "title": "Api Version",
                     "type": "string",
+                },
+                "temperature": {
+                    "default": 0.8,
+                    "description": "The temperature to use for the model, must be between 0 and 2",
+                    "minimum": 0.0,
+                    "maximum": 2.0,
+                    "title": "Temperature",
+                    "type": "number",
                 },
             },
             "required": ["name", "api_key"],

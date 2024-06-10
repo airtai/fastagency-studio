@@ -2,6 +2,7 @@ import logging
 import shutil
 import subprocess  # nosec B404
 import tempfile
+from os import environ
 from pathlib import Path
 
 import requests
@@ -15,6 +16,16 @@ class GitHubManager:
     def __init__(self) -> None:
         """GitHubManager class."""
         self.template_repo_url = GitHubManager.TEMPLATE_REPO_URL
+        self.fly_api_token = GitHubManager._get_env_var("FLY_API_TOKEN")
+        self.fastagency_application_uuid = GitHubManager._get_env_var(
+            "FASTAGENCY_APPLICATION_UUID"
+        )
+
+    @staticmethod
+    def _get_env_var(var_name: str) -> str:
+        if var_name not in environ:
+            raise OSError(f"{var_name} not set in the environment")
+        return environ[var_name]
 
     def _download_template_repo(self, temp_dir: str) -> None:
         owner, repo = self.template_repo_url.rstrip("/").rsplit("/", 2)[-2:]

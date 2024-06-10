@@ -9,8 +9,18 @@ from fastagency.github_manager import GitHubManager
 
 
 @pytest.fixture()
-def github_manager() -> GitHubManager:
-    return GitHubManager()
+def github_manager(monkeypatch: pytest.MonkeyPatch) -> GitHubManager:
+    with monkeypatch.context() as mp:
+        # Set environment variables
+        mp.setenv("FLY_API_TOKEN", "some-token")
+        mp.setenv("FASTAGENCY_APPLICATION_UUID", "some-uuid")
+
+        return GitHubManager()
+
+
+def test_github_manager_without_env_vars() -> None:
+    with pytest.raises(OSError, match="FLY_API_TOKEN not set in the environment"):
+        GitHubManager()
 
 
 @patch("requests.get")

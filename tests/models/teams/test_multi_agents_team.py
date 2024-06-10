@@ -367,12 +367,14 @@ class TestMultiAgentTeam:
         # Then create autogen agents by monkeypatching create_autogen method
         user_proxy_agent = autogen.agentchat.UserProxyAgent(
             "user_proxy",
+            code_execution_config=False,
         )
 
         weatherman_agent_1 = autogen.agentchat.AssistantAgent(
             name="weather_man_1",
             system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
             llm_config=llm_config,
+            code_execution_config=False,
         )
 
         get_forecast_for_city_mock = MagicMock()

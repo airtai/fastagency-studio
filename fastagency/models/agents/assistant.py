@@ -33,5 +33,6 @@ class AssistantAgent(AgentBaseModel):
             name=agent_name,
             llm_config=llm,
             system_message=my_model.system_message,
+            code_execution_config=False,
         )
         return agent, functions

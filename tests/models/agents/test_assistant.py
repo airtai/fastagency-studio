@@ -94,6 +94,35 @@ class TestAssistantAgent:
                     "title": "OpenAIRef",
                     "type": "object",
                 },
+                "TogetherAIRef": {
+                    "properties": {
+                        "type": {
+                            "const": "llm",
+                            "default": "llm",
+                            "description": "The name of the type of the data",
+                            "enum": ["llm"],
+                            "title": "Type",
+                            "type": "string",
+                        },
+                        "name": {
+                            "const": "TogetherAI",
+                            "default": "TogetherAI",
+                            "description": "The name of the data",
+                            "enum": ["TogetherAI"],
+                            "title": "Name",
+                            "type": "string",
+                        },
+                        "uuid": {
+                            "description": "The unique identifier",
+                            "format": "uuid",
+                            "title": "UUID",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["uuid"],
+                    "title": "TogetherAIRef",
+                    "type": "object",
+                },
                 "ToolboxRef": {
                     "properties": {
                         "type": {
@@ -135,6 +164,7 @@ class TestAssistantAgent:
                     "anyOf": [
                         {"$ref": "#/$defs/AzureOAIRef"},
                         {"$ref": "#/$defs/OpenAIRef"},
+                        {"$ref": "#/$defs/TogetherAIRef"},
                     ],
                     "description": "LLM used by the agent for producing responses",
                     "title": "LLM",

@@ -1,49 +1,43 @@
-import os
 import uuid
 from typing import Any, Dict
 
 import pytest
+from pydantic_core import Url
 
 from fastagency.app import add_model
 from fastagency.models.base import Model
-from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
+from fastagency.models.llms.together import TogetherAI, TogetherAIAPIKey
 
 
-class TestAzureOAI:
-    def test_azure_constructor(self) -> None:
-        # create reference to key
+class TestTogetherAI:
+    def test_togetherai_model(self) -> None:
         api_key_uuid = uuid.uuid4()
+        OpenAIAPIKeyRef = TogetherAIAPIKey.get_reference_model()  # noqa: N806
+        api_key = OpenAIAPIKeyRef(uuid=api_key_uuid)
 
-        AzureOAIAPIKeyRef = AzureOAIAPIKey.get_reference_model()  # noqa: N806
-        api_key_ref = AzureOAIAPIKeyRef(uuid=api_key_uuid)
-
-        # create data
-        model = AzureOAI(
-            api_key=api_key_ref,
-            base_url="https://my-model.openai.azure.com",
-            name="who cares?",
+        model = TogetherAI(
+            api_key=api_key,
+            name="Hello Together!",
         )
-
         expected = {
-            "name": "who cares?",
-            "model": "gpt-3.5-turbo",
+            "name": "Hello Together!",
+            "model": "Meta Llama 3 70B Chat",
             "api_key": {
                 "type": "secret",
-                "name": "AzureOAIAPIKey",
+                "name": "TogetherAIAPIKey",
                 "uuid": api_key_uuid,
             },
-            "base_url": "https://my-model.openai.azure.com",
-            "api_type": "azure",
-            "api_version": "2024-02-15-preview",
+            "base_url": Url("https://api.together.xyz/v1"),
+            "api_type": "togetherai",
             "temperature": 0.8,
         }
         assert model.model_dump() == expected
 
-    def test_azure_model_schema(self) -> None:
-        schema = AzureOAI.model_json_schema()
+    def test_togetherai_schema(self) -> None:
+        schema = TogetherAI.model_json_schema()
         expected = {
             "$defs": {
-                "AzureOAIAPIKeyRef": {
+                "TogetherAIAPIKeyRef": {
                     "properties": {
                         "type": {
                             "const": "secret",
@@ -54,10 +48,10 @@ class TestAzureOAI:
                             "type": "string",
                         },
                         "name": {
-                            "const": "AzureOAIAPIKey",
-                            "default": "AzureOAIAPIKey",
+                            "const": "TogetherAIAPIKey",
+                            "default": "TogetherAIAPIKey",
                             "description": "The name of the data",
-                            "enum": ["AzureOAIAPIKey"],
+                            "enum": ["TogetherAIAPIKey"],
                             "title": "Name",
                             "type": "string",
                         },
@@ -69,7 +63,7 @@ class TestAzureOAI:
                         },
                     },
                     "required": ["uuid"],
-                    "title": "AzureOAIAPIKeyRef",
+                    "title": "TogetherAIAPIKeyRef",
                     "type": "object",
                 }
             },
@@ -81,15 +75,19 @@ class TestAzureOAI:
                     "type": "string",
                 },
                 "model": {
-                    "default": "gpt-3.5-turbo",
-                    "description": "The model to use for the Azure OpenAI API, e.g. 'gpt-3.5-turbo'",
+                    "default": "Meta Llama 3 70B Chat",
+                    "description": "The model to use for the Together API",
+                    #     "enum": [
+                    #         "Meta Llama 3 70B Chat",
+                    #         ...
+                    #     ],
                     "title": "Model",
                     "type": "string",
                 },
-                "api_key": {"$ref": "#/$defs/AzureOAIAPIKeyRef"},
+                "api_key": {"$ref": "#/$defs/TogetherAIAPIKeyRef"},
                 "base_url": {
-                    "default": "https://api.openai.com/v1",
-                    "description": "The base URL of the Azure OpenAI API",
+                    "default": "https://api.together.xyz/v1",
+                    "description": "The base URL of the OpenAI API",
                     "format": "uri",
                     "maxLength": 2083,
                     "minLength": 1,
@@ -97,48 +95,36 @@ class TestAzureOAI:
                     "type": "string",
                 },
                 "api_type": {
-                    "const": "azure",
-                    "default": "azure",
-                    "description": "The type of the API, must be 'azure'",
-                    "enum": ["azure"],
-                    "title": "API type",
-                    "type": "string",
-                },
-                "api_version": {
-                    "default": "2024-02-15-preview",
-                    "description": "The version of the Azure OpenAI API, e.g. '2024-02-15-preview'",
-                    "enum": [
-                        "2023-05-15",
-                        "2023-06-01-preview",
-                        "2023-10-01-preview",
-                        "2024-02-15-preview",
-                        "2024-03-01-preview",
-                        "2024-04-01-preview",
-                        "2024-05-01-preview",
-                        "2024-02-01",
-                    ],
-                    "title": "Api Version",
+                    "const": "togetherai",
+                    "default": "togetherai",
+                    "description": "The type of the API, must be 'togetherai'",
+                    "enum": ["togetherai"],
+                    "title": "API Type",
                     "type": "string",
                 },
                 "temperature": {
                     "default": 0.8,
                     "description": "The temperature to use for the model, must be between 0 and 2",
-                    "minimum": 0.0,
                     "maximum": 2.0,
+                    "minimum": 0.0,
                     "title": "Temperature",
                     "type": "number",
                 },
             },
             "required": ["name", "api_key"],
-            "title": "AzureOAI",
+            "title": "TogetherAI",
             "type": "object",
         }
+        assert "Meta Llama 3 70B Chat" in schema["properties"]["model"]["enum"]
+        schema["properties"]["model"].pop("enum")
         assert schema == expected
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
-    @pytest.mark.parametrize("llm_model,api_key_model", [(AzureOAI, AzureOAIAPIKey)])  # noqa: PT006
-    async def test_azure_model_create_autogen(
+    @pytest.mark.parametrize(
+        ("llm_model", "api_key_model"), [(TogetherAI, TogetherAIAPIKey)]
+    )
+    async def test_togetherai_model_create_autogen(
         self,
         llm_model: Model,
         api_key_model: Model,
@@ -146,9 +132,11 @@ class TestAzureOAI:
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        dummy_togetherai_api_key = "*" * 64  # pragma: allowlist secret
+
         # Add secret, llm to database
         api_key = api_key_model(  # type: ignore [operator]
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            api_key=dummy_togetherai_api_key,
             name="api_key_model_name",
         )
         api_key_model_uuid = str(uuid.uuid4())
@@ -162,10 +150,8 @@ class TestAzureOAI:
 
         llm = llm_model(  # type: ignore [operator]
             name="llm_model_name",
-            model=os.getenv("AZURE_GPT35_MODEL"),
+            model="Meta Llama 3 70B Chat",
             api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
-            base_url=os.getenv("AZURE_API_ENDPOINT"),
-            api_version=os.getenv("AZURE_API_VERSION"),
         )
         llm_model_uuid = str(uuid.uuid4())
         await add_model(
@@ -176,34 +162,65 @@ class TestAzureOAI:
             model=llm.model_dump(),
         )
 
+        # Monkeypatch api_key and call create_autogen
         async def my_create_autogen(cls, model_id, user_id) -> Any:  # type: ignore [no-untyped-def]
             return api_key.api_key
 
-        # Monkeypatch api_key and call create_autogen
-        monkeypatch.setattr(AzureOAIAPIKey, "create_autogen", my_create_autogen)
+        monkeypatch.setattr(TogetherAIAPIKey, "create_autogen", my_create_autogen)
 
-        actual_llm_config = await AzureOAI.create_autogen(
+        actual_llm_config = await TogetherAI.create_autogen(
             model_id=uuid.UUID(llm_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )
         assert isinstance(actual_llm_config, dict)
-        assert actual_llm_config == llm_config
+        expected = {
+            "config_list": [
+                {
+                    "model": "meta-llama/Llama-3-70b-chat-hf",
+                    "api_key": dummy_togetherai_api_key,
+                    "base_url": "https://api.together.xyz/v1",
+                    "api_type": "togetherai",
+                }
+            ],
+            "temperature": 0.8,
+        }
+        assert actual_llm_config == expected
 
 
-class TestAzureOAIAPIKey:
+class TestTogetherAIAPIKey:
+    def test_constructor_success(self) -> None:
+        api_key = TogetherAIAPIKey(
+            api_key="*" * 64,  # pragma: allowlist secret
+            name="Hello World!",
+        )  # pragma: allowlist secret
+        assert (
+            api_key.api_key == "*" * 64  # pragma: allowlist secret
+        )  # pragma: allowlist secret
+
+    def test_constructor_failure(self) -> None:
+        with pytest.raises(
+            ValueError, match="String should have at least 64 characters"
+        ):
+            TogetherAIAPIKey(
+                api_key="not a proper key",  # pragma: allowlist secret
+                name="Hello World!",
+            )  # pragma: allowlist secret
+
     @pytest.mark.asyncio()
     @pytest.mark.db()
-    @pytest.mark.parametrize("api_key_model", [(AzureOAIAPIKey)])
-    async def test_azure_api_key_model_create_autogen(
+    @pytest.mark.parametrize("api_key_model", [(TogetherAIAPIKey)])
+    async def test_togetherai_api_key_model_create_autogen(
         self,
         api_key_model: Model,
         llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        dummy_togetherai_api_key = "*" * 64  # pragma: allowlist secret
+
         # Add secret to database
         api_key = api_key_model(  # type: ignore [operator]
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            api_key=dummy_togetherai_api_key,
             name="api_key_model_name",
         )
         api_key_model_uuid = str(uuid.uuid4())
@@ -216,7 +233,7 @@ class TestAzureOAIAPIKey:
         )
 
         # Call create_autogen
-        actual_api_key = await AzureOAIAPIKey.create_autogen(
+        actual_api_key = await TogetherAIAPIKey.create_autogen(
             model_id=uuid.UUID(api_key_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )

@@ -1,7 +1,7 @@
 import json
 import logging
 from os import environ
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
 import httpx
@@ -122,9 +122,8 @@ async def get_all_models(
 
     ret_val = []
     for model in ret_val_without_mask:
-        if model["type_name"] == "secret":
-            if "api_key" in model["json_str"]:
-                model["json_str"]["api_key"] = await mask(model["json_str"]["api_key"])
+        if model["type_name"] == "secret" and "api_key" in model["json_str"]:
+            model["json_str"]["api_key"] = await mask(model["json_str"]["api_key"])
         ret_val.append(model)
 
     return ret_val  # type: ignore[no-any-return]
@@ -195,18 +194,27 @@ async def models_delete(
     return model.json_str  # type: ignore
 
 
-# Load environment variable
-AZURE_GPT35_MODEL = environ.get("AZURE_GPT35_MODEL")
-AZURE_OPENAI_API_KEY = environ.get("AZURE_OPENAI_API_KEY")
-AZURE_API_ENDPOINT = environ.get("AZURE_API_ENDPOINT")
-AZURE_API_VERSION = environ.get("AZURE_API_VERSION")
+def get_azure_llm_client() -> Tuple[AsyncAzureOpenAI, str]:
+    azure_gpt35_model = environ["AZURE_GPT35_MODEL"]
+    api_key = environ["AZURE_OPENAI_API_KEY"]
+    azure_endpoint = environ["AZURE_API_ENDPOINT"]
+    api_version = environ["AZURE_API_VERSION"]
 
-# Setting up Azure OpenAI instance
-aclient = AsyncAzureOpenAI(
-    api_key=AZURE_OPENAI_API_KEY,
-    azure_endpoint=AZURE_API_ENDPOINT,  # type: ignore
-    api_version=AZURE_API_VERSION,
-)
+    aclient = AsyncAzureOpenAI(
+        api_key=api_key,
+        azure_endpoint=azure_endpoint,  # type: ignore
+        api_version=api_version,
+    )
+
+    return aclient, azure_gpt35_model
+
+
+# todo: fix monkeypatching in testing and remove global variables
+try:
+    aclient, azure_gpt35_model = get_azure_llm_client()
+except Exception:
+    aclient = None  # type: ignore[assignment]
+    azure_gpt35_model = None  # type: ignore[assignment]
 
 SYSTEM_PROMPT = """I am developing a chat application where users specify a task for the application to accomplish.
 Generate a concise, professional name for the chat that directly reflects the essence of the task.
@@ -278,7 +286,7 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
             {"role": "system", "content": SYSTEM_PROMPT.format(task_name=message)}
         ]
         completion = await aclient.chat.completions.create(
-            model=AZURE_GPT35_MODEL,
+            model=azure_gpt35_model,
             messages=messages,
             tools=TOOLS,
             tool_choice={

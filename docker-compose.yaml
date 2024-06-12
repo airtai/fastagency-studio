@@ -18,7 +18,6 @@ services:
     container_name: ${container_name}
     ports:
       - "8000:8000"
-      - "9001:9001"
     environment:
       - DOMAIN=${DOMAIN}
       - DATABASE_URL=${DATABASE_URL}
@@ -27,6 +26,7 @@ services:
       - AZURE_API_ENDPOINT=${AZURE_API_ENDPOINT}
       - AZURE_GPT35_MODEL=${AZURE_GPT35_MODEL}
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - TOGETHER_API_KEY=${TOGETHER_API_KEY}
     logging: *default-logging
     networks:
       - fastagency

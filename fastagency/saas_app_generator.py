@@ -6,26 +6,31 @@ import subprocess  # nosec B404
 import tempfile
 from os import environ
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 import requests
 
 logging.basicConfig(level=logging.INFO)
 
 
-class GitHubManager:
+class SaasAppGenerator:
     TEMPLATE_REPO_URL = "https://github.com/airtai/fastagency-wasp-app-template"
     EXTRACTED_TEMPLATE_DIR_NAME = "fastagency-wasp-app-template-main"
     ARTIFACTS_DIR = ".tmp_fastagency_setup_artifacts"
 
     def __init__(
-        self, fly_api_token: str, fastagency_application_uuid: str, github_token: str
+        self,
+        fly_api_token: str,
+        fastagency_application_uuid: str,
+        github_token: str,
+        app_name: str,
     ) -> None:
         """GitHubManager class."""
-        self.template_repo_url = GitHubManager.TEMPLATE_REPO_URL
+        self.template_repo_url = SaasAppGenerator.TEMPLATE_REPO_URL
         self.fly_api_token = fly_api_token
         self.fastagency_application_uuid = fastagency_application_uuid
         self.github_token = github_token
+        self.app_name = app_name
 
     @staticmethod
     def _get_env_var(var_name: str) -> str:
@@ -46,14 +51,18 @@ class GitHubManager:
             zip_path.unlink()
 
             command = (
-                f"ls -la {temp_dir_path}/{GitHubManager.EXTRACTED_TEMPLATE_DIR_NAME}"
+                f"ls -la {temp_dir_path}/{SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME}"
             )
-            self._run_cli_command(command)
+            self._run_cli_command(command, print_output=True)
         else:
             raise Exception(f"Error downloading repository: {response.status_code}")
 
     def _run_cli_command(
-        self, command: str, cwd: Optional[str] = None, print_output: bool = False
+        self,
+        command: str,
+        cwd: Optional[str] = None,
+        print_output: bool = False,
+        env: Optional[Dict[str, str]] = None,
     ) -> None:
         try:
             logging.info(f"Running command: {command}")
@@ -64,13 +73,16 @@ class GitHubManager:
                 capture_output=True,
                 shell=True,
                 text=True,
-                cwd=cwd,  # nosec B602
+                cwd=cwd,
+                env=env,  # nosec B602
             )
             if print_output:
                 logging.info(result.stdout)
             logging.info("Command executed successfully")
         except subprocess.CalledProcessError as e:
             logging.error(f"Command '{command}' failed with error: {e.output}")
+            logging.error(f"Stderr output:\n{e.stderr}")
+            logging.exception("Exception occurred")
             raise
 
     def _login(self) -> None:
@@ -81,11 +93,26 @@ class GitHubManager:
         command = "gh auth logout"
         self._run_cli_command(command)
 
-    def _create_new_repository(self, temp_dir_path: Path, max_retries: int) -> None:
-        repo_name = "test-fastagency-template"
-        setup_artifacts_path = temp_dir_path / GitHubManager.ARTIFACTS_DIR
-        setup_artifacts_path.mkdir(parents=True, exist_ok=True)
+    def _setup_app_in_fly(self, repo_name: str, temp_dir_path: Path) -> None:
+        cwd = f"{temp_dir_path}/{SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME}"
 
+        command = "cd app"
+        self._run_cli_command(command, cwd=cwd)
+
+        env = environ.copy()
+        env["FLY_API_TOKEN"] = self.fly_api_token
+
+        cwd_app = f"{cwd}/app"
+        command = f"wasp deploy fly setup {repo_name} mia"
+        self._run_cli_command(command, cwd=cwd_app, env=env)
+
+        command = "echo | wasp deploy fly create-db mia"
+        self._run_cli_command(command, cwd=cwd_app, env=env)
+
+    def _create_new_repository(self, temp_dir_path: Path, max_retries: int) -> str:
+        setup_artifacts_path = temp_dir_path / SaasAppGenerator.ARTIFACTS_DIR
+        setup_artifacts_path.mkdir(parents=True, exist_ok=True)
+        repo_name = f"{self.app_name.replace(' ', '-')}".lower()
         for attempt in range(max_retries):
             try:
                 command = f"gh repo create {repo_name} --public > {setup_artifacts_path}/create-repo.txt"
@@ -95,15 +122,14 @@ class GitHubManager:
                 # check if error contains "Name already exists on this account" string
                 if attempt < max_retries - 1:
                     # add random 5 digit number to the repo name
-                    repo_name = (
-                        f"test-fastagency-template-{random.randint(10000, 99999)}"  # nosec B311
-                    )
+                    repo_name = f"{repo_name}-{random.randint(10000, 99999)}"  # nosec B311
                     logging.info(
                         f"Repository name already exists. Retrying with a new name: {repo_name}"
                     )
                 else:
                     logging.error(e)
                     raise
+        return repo_name
 
     @staticmethod
     def _get_account_name_and_repo_name(create_cmd_output_file_path: Path) -> str:
@@ -113,7 +139,7 @@ class GitHubManager:
         return account_and_repo_name.strip()
 
     def _initialize_git_and_push(self, temp_dir_path: Path) -> None:
-        cwd = str(temp_dir_path / GitHubManager.EXTRACTED_TEMPLATE_DIR_NAME)
+        cwd = str(temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME)
 
         # initialize a git repository
         command = "git init"
@@ -133,7 +159,7 @@ class GitHubManager:
 
         # get the account name and repo name
         create_cmd_output_file_path = Path(
-            f"{temp_dir_path}/{GitHubManager.ARTIFACTS_DIR}/create-repo.txt"
+            f"{temp_dir_path}/{SaasAppGenerator.ARTIFACTS_DIR}/create-repo.txt"
         )
         account_and_repo_name = self._get_account_name_and_repo_name(
             create_cmd_output_file_path
@@ -171,9 +197,12 @@ class GitHubManager:
             self._login()
 
             # Create a new repository
-            self._create_new_repository(temp_dir_path, max_retries)
+            repo_name = self._create_new_repository(temp_dir_path, max_retries)
 
-            # Initialize the git repository
+            # Setup the app in fly
+            self._setup_app_in_fly(repo_name, temp_dir_path)
+
+            # Initialize the git repository and push the changes
             self._initialize_git_and_push(temp_dir_path)
 
             # logout from GitHub
@@ -185,9 +214,10 @@ def main() -> None:
     parser.add_argument("fly_token", help="Fly.io token")
     parser.add_argument("uuid", help="Application UUID")
     parser.add_argument("gh_token", help="GitHub token")
+    parser.add_argument("app_name", help="Application name")
     args = parser.parse_args()
 
-    manager = GitHubManager(args.fly_token, args.uuid, args.gh_token)
+    manager = SaasAppGenerator(args.fly_token, args.uuid, args.gh_token, args.app_name)
     manager.execute()
 
 

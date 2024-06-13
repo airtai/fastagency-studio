@@ -4,6 +4,7 @@ import random
 import shutil
 import subprocess  # nosec B404
 import tempfile
+import uuid
 from os import environ
 from pathlib import Path
 from typing import Dict, Optional
@@ -93,7 +94,7 @@ class SaasAppGenerator:
         command = "gh auth logout"
         self._run_cli_command(command)
 
-    def _setup_app_in_fly(self, repo_name: str, temp_dir_path: Path) -> None:
+    def _setup_app_in_fly(self, temp_dir_path: Path) -> None:
         cwd = f"{temp_dir_path}/{SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME}"
 
         command = "cd app"
@@ -103,13 +104,15 @@ class SaasAppGenerator:
         env["FLY_API_TOKEN"] = self.fly_api_token
 
         cwd_app = f"{cwd}/app"
+
+        repo_name = f"{self.app_name.replace(' ', '-').lower()}-{uuid.uuid4()}"
         command = f"wasp deploy fly setup {repo_name} mia"
         self._run_cli_command(command, cwd=cwd_app, env=env)
 
         command = "echo | wasp deploy fly create-db mia"
         self._run_cli_command(command, cwd=cwd_app, env=env)
 
-    def _create_new_repository(self, temp_dir_path: Path, max_retries: int) -> str:
+    def _create_new_repository(self, temp_dir_path: Path, max_retries: int) -> None:
         setup_artifacts_path = temp_dir_path / SaasAppGenerator.ARTIFACTS_DIR
         setup_artifacts_path.mkdir(parents=True, exist_ok=True)
         repo_name = f"{self.app_name.replace(' ', '-')}".lower()
@@ -129,7 +132,6 @@ class SaasAppGenerator:
                 else:
                     logging.error(e)
                     raise
-        return repo_name
 
     @staticmethod
     def _get_account_name_and_repo_name(create_cmd_output_file_path: Path) -> str:
@@ -193,20 +195,26 @@ class SaasAppGenerator:
             # Download the public repository
             self._download_template_repo(temp_dir_path)
 
-            # authenticate to GitHub
-            self._login()
-
-            # Create a new repository
-            repo_name = self._create_new_repository(temp_dir_path, max_retries)
-
             # Setup the app in fly
-            self._setup_app_in_fly(repo_name, temp_dir_path)
+            self._setup_app_in_fly(temp_dir_path)
 
-            # Initialize the git repository and push the changes
-            self._initialize_git_and_push(temp_dir_path)
+            try:
+                # authenticate to GitHub
+                self._login()
 
-            # logout from GitHub
-            self._logout()
+                # Create a new repository
+                self._create_new_repository(temp_dir_path, max_retries)
+
+                # Initialize the git repository and push the changes
+                self._initialize_git_and_push(temp_dir_path)
+
+            except Exception as e:
+                logging.error(e)
+                raise
+
+            finally:
+                # logout from GitHub
+                self._logout()
 
 
 def main() -> None:

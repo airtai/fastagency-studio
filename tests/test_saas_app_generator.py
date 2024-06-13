@@ -3,6 +3,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
+from uuid import UUID
 
 import pytest
 
@@ -241,19 +242,20 @@ def test_initialize_git_and_push(
 
 @patch("subprocess.run")
 @patch.dict("os.environ", {"FLY_API_TOKEN": "some-token"}, clear=True)
+@patch("uuid.uuid4", return_value=UUID(int=0))  # Patch uuid4 to return a static UUID
 def test_setup_app_in_fly(
-    mock_run: MagicMock, saas_app_generator: SaasAppGenerator
+    mock_uuid4: MagicMock, mock_run: MagicMock, saas_app_generator: SaasAppGenerator
 ) -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir_path = Path(temp_dir)
-        repo_name = "test-fastagency-template"
         extracted_template_dir = (
             temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
         )
         extracted_template_dir.mkdir(parents=True, exist_ok=True)
 
-        saas_app_generator._setup_app_in_fly(repo_name, temp_dir_path)
+        saas_app_generator._setup_app_in_fly(temp_dir_path)
 
+        repo_name = f"{saas_app_generator.app_name.replace(' ', '-').lower()}-{mock_uuid4.return_value}"
         expected_commands = [
             "cd app",
             f"wasp deploy fly setup {repo_name} mia",
@@ -270,7 +272,9 @@ def test_setup_app_in_fly(
                 cwd=f"{extracted_template_dir}"
                 if index == 0
                 else f"{extracted_template_dir}/app",
-                env=None if index == 0 else {"FLY_API_TOKEN": "some-token"},
+                env=None
+                if index == 0
+                else {"FLY_API_TOKEN": saas_app_generator.fly_api_token},
             )
 
 

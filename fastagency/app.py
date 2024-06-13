@@ -129,6 +129,15 @@ async def get_all_models(
     return ret_val  # type: ignore[no-any-return]
 
 
+def _set_tokens_to_empty_string(
+    model: Dict[str, Any], tokens_to_set_empty_value: List[str]
+) -> Dict[str, Any]:
+    return {k: "" if k in tokens_to_set_empty_value else v for k, v in model.items()}
+
+
+TOKENS_TO_SET_EMPTY_VALUE = ["gh_token", "fly_token"]
+
+
 @app.post("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")
 async def add_model(
     user_uuid: str,
@@ -138,6 +147,7 @@ async def add_model(
     model: Dict[str, Any],
 ) -> Dict[str, Any]:
     registry = Registry.get_default()
+    model = _set_tokens_to_empty_string(model, TOKENS_TO_SET_EMPTY_VALUE)
     validated_model = registry.validate(type_name, model_name, model)
 
     await get_user(user_uuid=user_uuid)
@@ -163,6 +173,7 @@ async def update_model(
     model: Dict[str, Any],
 ) -> Dict[str, Any]:
     registry = Registry.get_default()
+    model = _set_tokens_to_empty_string(model, TOKENS_TO_SET_EMPTY_VALUE)
     validated_model = registry.validate(type_name, model_name, model)
 
     async with get_db_connection() as db:

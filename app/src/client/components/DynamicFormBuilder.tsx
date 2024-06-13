@@ -39,6 +39,8 @@ interface DynamicFormBuilderProps {
   onDeleteCallback: (data: any) => void;
 }
 
+const SECRETS_TO_MASK = ['api_key', 'gh_token', 'fly_token'];
+
 const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   allUserProperties,
   type_name,
@@ -276,7 +278,7 @@ Before you begin, ensure you have the following:
               ) : (
                 <TextInput
                   id={key}
-                  type={key === 'api_key' && typeof inputValue === 'string' ? 'password' : 'text'}
+                  type={_.includes(SECRETS_TO_MASK, key) && typeof inputValue === 'string' ? 'password' : 'text'}
                   value={inputValue}
                   placeholder={formElementsObject.description || ''}
                   onChange={(value) => handleChange(key, value)}

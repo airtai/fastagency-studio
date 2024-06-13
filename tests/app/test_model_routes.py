@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi.testclient import TestClient
 
-from fastagency.app import app, mask
+from fastagency.app import _set_tokens_to_empty_string, app, mask
 from fastagency.models.llms.azure import AzureOAIAPIKey
 
 client = TestClient(app)
@@ -52,6 +52,17 @@ class MockChatCompletion:
         """MockChatCompletion class."""
         self.id = id
         self.choices = choices
+
+
+def test_set_tokens_to_empty_string() -> None:
+    model = {"token1": "value1", "token2": "value2", "token3": "value3"}
+    tokens_to_set_empty = ["token1", "token3"]
+
+    result = _set_tokens_to_empty_string(model, tokens_to_set_empty)
+
+    assert result["token1"] == ""
+    assert result["token3"] == ""
+    assert result["token2"] == "value2"
 
 
 @pytest.mark.asyncio()
@@ -120,6 +131,37 @@ class TestModelRoutes:
         assert actual == expected
 
     @pytest.mark.asyncio()
+    async def test_add_model_application(self, user_uuid: str) -> None:
+        team_uuid = str(uuid.uuid4())
+        application_uuid = str(uuid.uuid4())
+        model = {
+            "name": "Test",
+            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
+            "gh_token": "Test",
+            "fly_token": "Test",
+            "uuid": application_uuid,
+            "type_name": "application",
+            "model_name": "Application",
+        }
+
+        model_uuid = str(uuid.uuid4())
+        response = client.post(
+            f"/user/{user_uuid}/models/application/Application/{model_uuid}",
+            json=model,
+        )
+
+        assert response.status_code == 200
+        expected = {
+            "name": "Test",
+            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
+            "gh_token": "",
+            "fly_token": "",
+        }
+
+        actual = response.json()
+        assert actual == expected
+
+    @pytest.mark.asyncio()
     async def test_update_model(
         self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
@@ -145,6 +187,60 @@ class TestModelRoutes:
             "api_key": "who cares",  # pragma: allowlist secret
             "name": "whatever",
         }
+        actual = response.json()
+        assert actual == expected
+
+    @pytest.mark.asyncio()
+    async def test_update_model_application(self, user_uuid: str) -> None:
+        team_uuid = str(uuid.uuid4())
+        application_uuid = str(uuid.uuid4())
+        model = {
+            "name": "Test",
+            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
+            "gh_token": "Test",
+            "fly_token": "Test",
+            "uuid": application_uuid,
+            "type_name": "application",
+            "model_name": "Application",
+        }
+
+        model_uuid = str(uuid.uuid4())
+        # Create application
+        response = client.post(
+            f"/user/{user_uuid}/models/application/Application/{model_uuid}",
+            json=model,
+        )
+        assert response.status_code == 200
+        expected = {
+            "name": "Test",
+            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
+            "gh_token": "",
+            "fly_token": "",
+        }
+
+        # Update application
+        model = {
+            "name": "Test",
+            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
+            "gh_token": "Updated Test Token",
+            "fly_token": "Updated Test Token",
+            "uuid": application_uuid,
+            "type_name": "application",
+            "model_name": "Application",
+        }
+        response = client.put(
+            f"/user/{user_uuid}/models/application/Application/{model_uuid}",
+            json=model,
+        )
+
+        assert response.status_code == 200
+        expected = {
+            "name": "Test",
+            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
+            "gh_token": "",
+            "fly_token": "",
+        }
+
         actual = response.json()
         assert actual == expected
 

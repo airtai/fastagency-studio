@@ -87,12 +87,12 @@ class SaasAppGenerator:
             raise
 
     def _setup_app_in_fly(self, temp_dir_path: Path, env: Dict[str, Any]) -> None:
-        cwd = f"{temp_dir_path}/{SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME}"
+        cwd = temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
 
         command = "cd app"
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=str(cwd))
 
-        cwd_app = f"{cwd}/app"
+        cwd_app = str(cwd / "app")
 
         # Add FLY_API_TOKEN to the environment variables to pass to the subprocess
         env["FLY_API_TOKEN"] = self.fly_api_token

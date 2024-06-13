@@ -24,6 +24,20 @@ class Application(Model):
             description="The team that is used in the application",
         ),
     ]
+    gh_token: Annotated[
+        str,
+        Field(
+            title="GitHub token",
+            description="The GitHub token to use for creating a new repository",
+        ),
+    ]
+    fly_token: Annotated[
+        str,
+        Field(
+            title="Fly.io token",
+            description="The Fly.io token to use for deploying the application",
+        ),
+    ]
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:

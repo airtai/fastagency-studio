@@ -20,8 +20,7 @@ class TestApplication:
 
         try:
             application = Application(
-                team=team,
-                name="Test Application",
+                team=team, name="Test Application", gh_token="", fly_token=""
             )
         except ValidationError:
             # print(f"{e.errors()=}")
@@ -75,8 +74,18 @@ class TestApplication:
                     "description": "The team that is used in the application",
                     "title": "Team name",
                 },
+                "gh_token": {
+                    "description": "The GitHub token to use for creating a new repository",
+                    "title": "GitHub token",
+                    "type": "string",
+                },
+                "fly_token": {
+                    "description": "The Fly.io token to use for deploying the application",
+                    "title": "Fly.io token",
+                    "type": "string",
+                },
             },
-            "required": ["name", "team"],
+            "required": ["name", "team", "gh_token", "fly_token"],
             "title": "Application",
             "type": "object",
         }
@@ -92,8 +101,7 @@ class TestApplication:
         team = team_model.get_reference_model()(uuid=team_uuid)
 
         application = Application(
-            team=team,
-            name="Test Application",
+            team=team, name="Test Application", gh_token="", fly_token=""
         )
 
         application_json = application.model_dump_json()

@@ -124,6 +124,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
       if (filteredProperties) {
         const selectedModel = filteredProperties[index];
         setSelectedModel(selectedModel.model_name);
+        // @ts-ignore
         setUpdateExistingModel({ ...selectedModel.json_str, ...{ uuid: selectedModel.uuid } });
         setShowAddModel(true);
       }

@@ -112,7 +112,8 @@ class SaasAppGenerator:
         repo_name = f"{self.app_name.replace(' ', '-')}".lower()
         for attempt in range(max_retries):
             try:
-                command = f"gh repo create {repo_name} --public > {setup_artifacts_path}/create-repo.txt"
+                log_file = setup_artifacts_path / "create-repo.txt"
+                command = f"gh repo create {repo_name} --public > {log_file}"
                 self._run_cli_command(command, cwd=str(temp_dir_path), env=env)
                 break
             except Exception as e:

@@ -94,6 +94,9 @@ search:
         - openapi
             - client
                 - [Client](api/fastagency/openapi/client/Client.md)
+        - saas_app_generator
+            - [SaasAppGenerator](api/fastagency/saas_app_generator/SaasAppGenerator.md)
+            - [main](api/fastagency/saas_app_generator/main.md)
 - Contributing
     - [Development](getting-started/contributing/CONTRIBUTING.md)
     - [Documentation](getting-started/contributing/docs.md)

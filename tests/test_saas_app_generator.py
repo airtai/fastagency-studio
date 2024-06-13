@@ -105,7 +105,12 @@ def test_create_new_repository(
         temp_dir_path = Path(temp_dir)
         temp_dir_path.mkdir(parents=True, exist_ok=True)
         saas_app_generator._create_new_repository(temp_dir_path, max_retries=1, env={})
-        expected_command = f"gh repo create test-fastagency-template --public > {temp_dir_path}/{SaasAppGenerator.ARTIFACTS_DIR}/create-repo.txt"
+        artifacts_path = (
+            Path(temp_dir_path) / SaasAppGenerator.ARTIFACTS_DIR / "create-repo.txt"
+        )
+        expected_command = (
+            f"gh repo create test-fastagency-template --public > {artifacts_path}"
+        )
         mock_run.assert_called_once_with(
             expected_command,
             check=True,
@@ -256,9 +261,9 @@ def test_setup_app_in_fly(
                 capture_output=True,
                 shell=True,
                 text=True,
-                cwd=f"{extracted_template_dir}"
+                cwd=str(extracted_template_dir)
                 if index == 0
-                else f"{extracted_template_dir}/app",
+                else str(extracted_template_dir / "app"),
                 env=None
                 if index == 0
                 else {"FLY_API_TOKEN": saas_app_generator.fly_api_token},

@@ -26,5 +26,6 @@ class UserProxyAgent(Model):
         agent = autogen.agentchat.UserProxyAgent(
             name=agent_name,
             max_consecutive_auto_reply=my_model.max_consecutive_auto_reply,
+            code_execution_config=False,
         )
         return agent, []

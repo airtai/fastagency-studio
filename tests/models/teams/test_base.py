@@ -43,10 +43,14 @@ class TestRegisterToolboxFunctions:
     def test_register_toolbox_functions(
         self, function_infos: List[FunctionInfo], llm_config: Dict[str, Any]
     ) -> None:
-        agent = AssistantAgent(name="agent 007", llm_config=llm_config)
+        agent = AssistantAgent(
+            name="agent 007", llm_config=llm_config, code_execution_config=False
+        )
         execution_agents = [
-            AssistantAgent(name="agent 008", llm_config=llm_config),
-            UserProxyAgent(name="agent 009"),
+            AssistantAgent(
+                name="agent 008", llm_config=llm_config, code_execution_config=False
+            ),
+            UserProxyAgent(name="agent 009", code_execution_config=False),
         ]
 
         register_toolbox_functions(agent, execution_agents, function_infos)

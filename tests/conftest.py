@@ -61,7 +61,7 @@ def llm_config() -> Dict[str, Any]:
 
     llm_config = {
         "config_list": config_list,
-        "temperature": 0,
+        "temperature": 0.8,
     }
 
     return llm_config

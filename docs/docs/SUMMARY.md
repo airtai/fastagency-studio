@@ -12,6 +12,7 @@ search:
             - [chat](api/fastagency/app/chat.md)
             - [generate_chat_name](api/fastagency/app/generate_chat_name.md)
             - [get_all_models](api/fastagency/app/get_all_models.md)
+            - [get_azure_llm_client](api/fastagency/app/get_azure_llm_client.md)
             - [get_models_schemas](api/fastagency/app/get_models_schemas.md)
             - [get_user](api/fastagency/app/get_user.md)
             - [mask](api/fastagency/app/mask.md)
@@ -66,6 +67,9 @@ search:
                 - openai
                     - [OpenAI](api/fastagency/models/llms/openai/OpenAI.md)
                     - [OpenAIAPIKey](api/fastagency/models/llms/openai/OpenAIAPIKey.md)
+                - together
+                    - [TogetherAI](api/fastagency/models/llms/together/TogetherAI.md)
+                    - [TogetherAIAPIKey](api/fastagency/models/llms/together/TogetherAIAPIKey.md)
             - registry
                 - [ModelSchema](api/fastagency/models/registry/ModelSchema.md)
                 - [ModelSchemas](api/fastagency/models/registry/ModelSchemas.md)

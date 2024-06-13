@@ -7,7 +7,7 @@ import tempfile
 import uuid
 from os import environ
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 import requests
 
@@ -86,24 +86,16 @@ class SaasAppGenerator:
             logging.exception("Exception occurred")
             raise
 
-    def _login(self) -> None:
-        command = f"echo {self.github_token} | gh auth login --with-token"
-        self._run_cli_command(command)
-
-    def _logout(self) -> None:
-        command = "gh auth logout"
-        self._run_cli_command(command)
-
-    def _setup_app_in_fly(self, temp_dir_path: Path) -> None:
+    def _setup_app_in_fly(self, temp_dir_path: Path, env: Dict[str, Any]) -> None:
         cwd = f"{temp_dir_path}/{SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME}"
 
         command = "cd app"
         self._run_cli_command(command, cwd=cwd)
 
-        env = environ.copy()
-        env["FLY_API_TOKEN"] = self.fly_api_token
-
         cwd_app = f"{cwd}/app"
+
+        # Add FLY_API_TOKEN to the environment variables to pass to the subprocess
+        env["FLY_API_TOKEN"] = self.fly_api_token
 
         repo_name = f"{self.app_name.replace(' ', '-').lower()}-{uuid.uuid4()}"
         command = f"wasp deploy fly setup {repo_name} mia"
@@ -112,14 +104,16 @@ class SaasAppGenerator:
         command = "echo | wasp deploy fly create-db mia"
         self._run_cli_command(command, cwd=cwd_app, env=env)
 
-    def _create_new_repository(self, temp_dir_path: Path, max_retries: int) -> None:
+    def _create_new_repository(
+        self, temp_dir_path: Path, max_retries: int, env: Dict[str, Any]
+    ) -> None:
         setup_artifacts_path = temp_dir_path / SaasAppGenerator.ARTIFACTS_DIR
         setup_artifacts_path.mkdir(parents=True, exist_ok=True)
         repo_name = f"{self.app_name.replace(' ', '-')}".lower()
         for attempt in range(max_retries):
             try:
                 command = f"gh repo create {repo_name} --public > {setup_artifacts_path}/create-repo.txt"
-                self._run_cli_command(command, cwd=str(temp_dir_path))
+                self._run_cli_command(command, cwd=str(temp_dir_path), env=env)
                 break
             except Exception as e:
                 # check if error contains "Name already exists on this account" string
@@ -140,7 +134,9 @@ class SaasAppGenerator:
             account_and_repo_name = "/".join(url_parts[-2:])
         return account_and_repo_name.strip()
 
-    def _initialize_git_and_push(self, temp_dir_path: Path) -> None:
+    def _initialize_git_and_push(
+        self, temp_dir_path: Path, env: Dict[str, Any]
+    ) -> None:
         cwd = str(temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME)
 
         # initialize a git repository
@@ -172,13 +168,13 @@ class SaasAppGenerator:
         self._run_cli_command(command, cwd=cwd)
 
         # Set GitHub Actions secrets
-        self._set_github_actions_secrets(cwd)
+        self._set_github_actions_secrets(cwd, env=env)
 
         # push the changes
         command = "git push -u origin main"
         self._run_cli_command(command, cwd=cwd)
 
-    def _set_github_actions_secrets(self, cwd: str) -> None:
+    def _set_github_actions_secrets(self, cwd: str, env: Dict[str, Any]) -> None:
         secrets = {
             "FLY_API_TOKEN": self.fly_api_token,
             "FASTAGENCY_APPLICATION_UUID": self.fastagency_application_uuid,
@@ -186,7 +182,7 @@ class SaasAppGenerator:
 
         for key, value in secrets.items():
             command = f'gh secret set {key} --body "{value}" --app actions'
-            self._run_cli_command(command, cwd=cwd, print_output=True)
+            self._run_cli_command(command, cwd=cwd, env=env, print_output=True)
 
     def execute(self, max_retries: int = 5) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -195,26 +191,20 @@ class SaasAppGenerator:
             # Download the public repository
             self._download_template_repo(temp_dir_path)
 
+            # copy the environment variables to pass to the subprocess
+            env = environ.copy()
+
             # Setup the app in fly
-            self._setup_app_in_fly(temp_dir_path)
+            self._setup_app_in_fly(temp_dir_path, env=env)
 
-            try:
-                # authenticate to GitHub
-                self._login()
+            # Add the GitHub token to the environment variables to pass to the subprocess
+            env["GH_TOKEN"] = self.github_token
 
-                # Create a new repository
-                self._create_new_repository(temp_dir_path, max_retries)
+            # Create a new repository
+            self._create_new_repository(temp_dir_path, max_retries, env=env)
 
-                # Initialize the git repository and push the changes
-                self._initialize_git_and_push(temp_dir_path)
-
-            except Exception as e:
-                logging.error(e)
-                raise
-
-            finally:
-                # logout from GitHub
-                self._logout()
+            # Initialize the git repository and push the changes
+            self._initialize_git_and_push(temp_dir_path, env=env)
 
 
 def main() -> None:

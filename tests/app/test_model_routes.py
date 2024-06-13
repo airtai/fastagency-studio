@@ -1,6 +1,6 @@
 import uuid
 from typing import List, Optional
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -145,10 +145,15 @@ class TestModelRoutes:
         }
 
         model_uuid = str(uuid.uuid4())
-        response = client.post(
-            f"/user/{user_uuid}/models/application/Application/{model_uuid}",
-            json=model,
-        )
+        # Mock the background task
+        with patch("fastagency.app._create_and_deploy_saas_app") as mock_task:
+            response = client.post(
+                f"/user/{user_uuid}/models/application/Application/{model_uuid}",
+                json=model,
+            )
+
+            # Check if the task was called with the expected value
+            mock_task.assert_called_once_with(model)
 
         assert response.status_code == 200
         expected = {
@@ -206,10 +211,14 @@ class TestModelRoutes:
 
         model_uuid = str(uuid.uuid4())
         # Create application
-        response = client.post(
-            f"/user/{user_uuid}/models/application/Application/{model_uuid}",
-            json=model,
-        )
+        with patch("fastagency.app._create_and_deploy_saas_app") as mock_task:
+            response = client.post(
+                f"/user/{user_uuid}/models/application/Application/{model_uuid}",
+                json=model,
+            )
+            # Check if the task was called with the expected value
+            mock_task.assert_called_once_with(model)
+
         assert response.status_code == 200
         expected = {
             "name": "Test",

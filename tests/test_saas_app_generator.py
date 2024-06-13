@@ -105,8 +105,8 @@ def test_create_new_repository(
         temp_dir_path = Path(temp_dir)
         temp_dir_path.mkdir(parents=True, exist_ok=True)
         saas_app_generator._create_new_repository(temp_dir_path, max_retries=1, env={})
-        artifacts_path = (
-            Path(temp_dir_path) / SaasAppGenerator.ARTIFACTS_DIR / "create-repo.txt"
+        artifacts_path = Path(
+            temp_dir_path, SaasAppGenerator.ARTIFACTS_DIR, "create-repo.txt"
         )
         expected_command = (
             f"gh repo create test-fastagency-template --public > {artifacts_path}"

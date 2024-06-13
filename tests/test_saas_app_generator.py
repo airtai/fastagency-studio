@@ -61,8 +61,8 @@ def test_download_template_repo(
         repo_main_dir.mkdir()
         (repo_main_dir / "dummy_file.txt").touch()
 
-        zip_path = f"{temp_dir_path}/{repo_name}.zip"
-        with zipfile.ZipFile(zip_path, "w") as zip_file:
+        zip_path = temp_dir_path / f"{repo_name}.zip"
+        with zipfile.ZipFile(str(zip_path), "w") as zip_file:
             zip_file.writestr(f"{repo_name}-main", "dummy content")
 
         with patch.object(Path, "open", mock_open()) as mocked_file:

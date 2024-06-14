@@ -11,6 +11,8 @@ from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
+from fastagency.saas_app_generator import SaasAppGenerator
+
 from .db.helpers import (
     find_model_using_raw,
     get_db_connection,
@@ -131,39 +133,54 @@ async def get_all_models(
     return ret_val  # type: ignore[no-any-return]
 
 
-async def _create_saas_app(
+async def _create_gh_repo(
     model: Dict[str, Any],
+    model_uuid: str,
+) -> SaasAppGenerator:
+    async with get_db_connection():
+        found_gh_token = await find_model_using_raw(
+            model_uuid=model["gh_token"]["uuid"]
+        )
+        found_fly_token = await find_model_using_raw(
+            model_uuid=model["fly_token"]["uuid"]
+        )
+
+    found_gh_token_uuid = found_gh_token["json_str"]["gh_token"]
+    found_fly_token_uuid = found_fly_token["json_str"]["fly_token"]
+
+    saas_app = SaasAppGenerator(
+        fly_api_token=found_fly_token_uuid,
+        github_token=found_gh_token_uuid,
+        app_name=model["name"],
+        fastagency_application_uuid=model_uuid,
+    )
+    saas_app.create_new_repository()
+    return saas_app
+
+
+async def _deploy_saas_app(
+    saas_app: SaasAppGenerator,
     user_uuid: str,
     model_uuid: str,
     type_name: str,
     model_name: str,
 ) -> None:
-    pass
+    flyio_app_url = saas_app.execute()
 
-    # saas_app = SaasAppGenerator(
-    #     fly_api_token=model["fly_token"],
-    #     github_token=model["gh_token"],
-    #     app_name=model["name"],
-    #     fastagency_application_uuid=model["uuid"],
-    # )
-    # application_github_url, application_repo_name, flyio_app_name = saas_app.execute()
+    async with get_db_connection() as db:
+        found_model = await find_model_using_raw(model_uuid=model_uuid)
+        found_model["json_str"]["flyio_app_url"] = flyio_app_url
+        found_model["json_str"]["app_deploy_status"] = "completed"
 
-    # registry = Registry.get_default()
-    # validated_model = registry.validate(type_name, model_name, model)
-
-    # # Add application_github_url, application_repo_name to the validated model and save it in the database
-    # async with get_db_connection() as db:
-    #     found_model = await find_model_using_raw(model_uuid=model_uuid)
-
-    #     await db.model.update(
-    #         where={"uuid": found_model["uuid"]},  # type: ignore[arg-type]
-    #         data={  # type: ignore[typeddict-unknown-key]
-    #             "type_name": type_name,
-    #             "model_name": model_name,
-    #             "json_str": validated_model.model_dump_json(),  # type: ignore[typeddict-item]
-    #             "user_uuid": user_uuid,
-    #         },
-    #     )
+        await db.model.update(
+            where={"uuid": found_model["uuid"]},  # type: ignore[arg-type]
+            data={  # type: ignore[typeddict-unknown-key]
+                "type_name": type_name,
+                "model_name": model_name,
+                "json_str": json.dumps(found_model["json_str"]),  # type: ignore[typeddict-item]
+                "user_uuid": user_uuid,
+            },
+        )
 
 
 @app.post("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")
@@ -182,20 +199,24 @@ async def add_model(
     validated_model_json = validated_model.model_dump_json()
 
     if type_name == "application":
+        saas_app = await _create_gh_repo(validated_model_dict, model_uuid)
+
         background_tasks.add_task(
-            _create_saas_app,
-            model,
+            _deploy_saas_app,
+            saas_app,
             user_uuid,
             model_uuid,
             type_name,
             model_name,
         )
 
-        # validated_model_dict["app_deploy_status"] = "inprogress"
+        validated_model_dict["app_deploy_status"] = "inprogress"
+        validated_model_dict["gh_repo_url"] = saas_app.gh_repo_url
 
-        # updated_validated_model_dict = json.loads(validated_model_json)
-        # updated_validated_model_dict["app_deploy_status"] = "inprogress"
-        # validated_model_json = json.dumps(updated_validated_model_dict)
+        updated_validated_model_dict = json.loads(validated_model_json)
+        updated_validated_model_dict["app_deploy_status"] = "inprogress"
+        updated_validated_model_dict["gh_repo_url"] = saas_app.gh_repo_url
+        validated_model_json = json.dumps(updated_validated_model_dict)
 
     await get_user(user_uuid=user_uuid)
     async with get_db_connection() as db:

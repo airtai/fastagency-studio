@@ -34,26 +34,6 @@ class Application(Model):
     ]
     gh_token: GitHubTokenRef
     fly_token: FlyTokenRef
-    # app_deployment_status: Annotated[
-    #     Optional[str],
-    #     Field(
-    #         title="Application deployment status",
-    #         description="The status of the application deployment",
-    #         json_schema_extra={"editable": False, "show_in_form": False},
-    #     ),
-    # ] = None
-
-    # @field_validator('app_deployment_status')
-    # @classmethod
-    # def check_app_deployment_status(cls, v: str) -> str:
-    #     cls.schema_extra = {
-    #             "app_deployment_status": {
-    #                 "json_schema_extra": {"editable": False, "show_in_form": True}
-    #             }
-    #         }
-    #     if v is None:
-    #         return "In Progress"
-    #     return v
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:

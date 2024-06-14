@@ -58,7 +58,8 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     setSelectedModel(newModel);
   };
 
-  const onSuccessCallback = async (payload: any) => {
+  const onSuccessCallback = async (payload: any): Promise<{ addUserModelResponse: any }> => {
+    let addUserModelResponse;
     try {
       setIsLoading(true);
       const mergedData = { ...payload, type_name: propertyName, model_name: selectedModel, uuid: payload.uuid };
@@ -68,7 +69,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
         setUpdateExistingModel(null);
       } else {
         //@ts-ignore
-        await addUserModels(filteredData);
+        addUserModelResponse = await addUserModels(filteredData);
       }
       refetchModels();
       const isNewApplicationAdded = propertyName === 'application' && !updateExistingModel;
@@ -78,6 +79,8 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     } finally {
       setIsLoading(false);
     }
+
+    return addUserModelResponse;
   };
 
   const onCancelCallback = (event: React.FormEvent) => {

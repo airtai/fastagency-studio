@@ -41,6 +41,34 @@ interface DynamicFormBuilderProps {
 
 const SECRETS_TO_MASK = ['api_key', 'gh_token', 'fly_token'];
 
+const deploymentInprogressInstructions = `<div class="leading-loose ml-2 mr-2">
+- Appication deployment status: <b>In Progress</b>
+
+<span class="text-l inline-block my-2 underline">GitHub Repository Created</span>
+<span class="ml-5">- We have created a new <a class="underline" href="<gh_repo_url>" target="_blank" rel="noopener noreferrer">GitHub repository</a> in your GitHub account.</span>
+<span class="ml-5">- The application code will be pushed to this repository in a few minutes.</span>
+<span class="text-l inline-block my-2 underline">Checking Deployment Status</span>
+<span class="ml-5">- You can either check the status on the GitHub repository page or come back to this page after a few minutes.</span>
+<span class="text-l inline-block my-2 underline">Troubleshooting: </span>
+<span class="ml-5"><b>Common Issues:</b></span>
+<span class="ml-10">- In Progress Status for Too Long: </span>
+<span class="ml-13">- Ensure you have entered the correct gh_token and fly_token.</span>
+<span class="ml-13">- Verify that you have added a payment method to your Fly.io account; otherwise, the deployment will fail.</span>
+<span class="ml-13">- Review the deployment logs on Fly.io for any error messages. Access the logs by clicking on the server application</span>
+<span class="ml-17"> on the <a class="underline" href="https://fly.io/dashboard" target="_blank" rel="noopener noreferrer">Fly.io dashboard</a>, then clicking on the "Live Logs" tab.</span>
+<span class="ml-5"><b>Need Help?</b></span>
+<span class="ml-10">- If you encounter any issues or need assistance, please reach out to us on <a class="underline" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">discord</a>.</span>
+</div>
+`;
+
+const deploymentCompleteInstructions = `<div class="leading-loose ml-2 mr-2">- Hurrah! Your application has been successfully pushed to the GitHub repository.
+
+- A new workflow has been triggered to deploy the application to Fly.io. You can check the status on the GitHub repository <a class="underline" href="<gh_repo_url>/actions" target="_blank" rel="noopener noreferrer">actions</a> page.
+
+- Once the deployment workflow is completed (approx 5 - 10 mins), you can access your application using this <a class="underline" href="<flyio_app_url>" target="_blank" rel="noopener noreferrer">link</a>
+</div>
+`;
+
 const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   allUserProperties,
   type_name,
@@ -59,10 +87,10 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const [showNotification, setShowNotification] = useState(false);
   const [refValues, setRefValues] = useState<Record<string, any>>({});
   const [missingDependency, setMissingDependency] = useState<string[]>([]);
-  const [instructionForApplication, setInstructionForApplication] = useState<string | null>(null);
+  const [instructionForApplication, setInstructionForApplication] = useState<Record<string, string> | null>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
-  const showDeployInstructions = type_name === 'application';
+  const isApplication = type_name === 'application';
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -81,8 +109,16 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     }
     try {
       const response = await validateForm(formDataToSubmit, validationURL, isSecretUpdate);
-      onSuccessCallback(response);
-      showDeployInstructions && !updateExistingModel && setInstructionForApplication(response.uuid);
+      const onSuccessCallbackResponse = await onSuccessCallback(response);
+
+      isApplication &&
+        !updateExistingModel &&
+        setInstructionForApplication((prevState) => ({
+          ...prevState,
+          gh_repo_url: response.gh_repo_url,
+          // @ts-ignore
+          instruction: deploymentInprogressInstructions.replace('<gh_repo_url>', onSuccessCallbackResponse.gh_repo_url),
+        }));
     } catch (error: any) {
       try {
         const errorMsgObj = JSON.parse(error.message);
@@ -149,8 +185,20 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   }, [missingDependency?.length]);
 
   useEffect(() => {
-    updateExistingModel && type_name === 'application' && setInstructionForApplication(updateExistingModel.uuid);
-  }, [showDeployInstructions]);
+    updateExistingModel &&
+      type_name === 'application' &&
+      //@ts-ignore
+      setInstructionForApplication((prevState) => ({
+        ...prevState,
+        gh_repo_url: updateExistingModel.gh_repo_url,
+        flyio_app_url: updateExistingModel.flyio_app_url,
+        instruction: deploymentCompleteInstructions
+          //@ts-ignore
+          .replace('<gh_repo_url>', updateExistingModel.gh_repo_url)
+          //@ts-ignore
+          .replace('<flyio_app_url>', updateExistingModel.flyio_app_url),
+      }));
+  }, [isApplication]);
 
   useEffect(() => {
     const keyHandler = (event: KeyboardEvent) => {
@@ -185,22 +233,9 @@ Before you begin, ensure you have the following:
 </div>
 `;
 
-  const deploymentInstructions = showDeployInstructions
-    ? `<div class="leading-loose ml-2 mr-2"> - We are generating your application code and deploying it to Fly.io. This process may take a couple of minutes. Please refresh the page after a couple of minutes to see the status of the deployment.</div>
-<span class="text-l inline-block my-2 underline">Troubleshooting: </span>
-<span class="ml-5">- If you encounter any issues during the deployment, check the following common problems:</span>
-<span class="ml-10">- Deployment Failures: </span>
-<span class="ml-13">- Make sure you have added a payment method to your Fly.io account. Else, the deployment will fail.</span>
-<span class="ml-13">- Review the deployment logs on Fly.io for any error messages. You can access the logs by clicking on the</span>
-<span class="ml-17">server application on the <a class="underline" href="https://fly.io/dashboard" target="_blank" rel="noopener noreferrer">Fly.io dashboard</a> and then clicking on the Live Logs tab.</span>
-<span class="ml-5">- If you need any help, please reach out to us on <a class="underline" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">discord</a>.</span>
-</div>
-`
-    : '';
-
   return (
     <>
-      {!instructionForApplication && showDeployInstructions && (
+      {!instructionForApplication && isApplication && (
         <div className='w-full mt-8 px-6.5 py-2'>
           <AgentConversationHistory
             agentConversationHistory={appDeploymentPrerequisites}
@@ -266,10 +301,10 @@ Before you begin, ensure you have the following:
             </div>
           );
         })}
-        {instructionForApplication && (
+        {instructionForApplication && instructionForApplication.instruction && (
           <div className='w-full mt-8'>
             <AgentConversationHistory
-              agentConversationHistory={deploymentInstructions}
+              agentConversationHistory={instructionForApplication.instruction}
               isDeploymentInstructions={true}
               containerTitle='Application Details and Next Steps'
             />

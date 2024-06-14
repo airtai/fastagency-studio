@@ -3,7 +3,7 @@ import tempfile
 import uuid
 import zipfile
 from pathlib import Path
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import ANY, MagicMock, mock_open, patch
 
 import pytest
 
@@ -23,20 +23,10 @@ def saas_app_generator() -> SaasAppGenerator:
 
 
 def test_get_account_name_and_repo_name() -> None:
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_dir_path = Path(temp_dir)
-        artifacts_dir = temp_dir_path / SaasAppGenerator.ARTIFACTS_DIR
-        artifacts_dir.mkdir()
-
-        create_cmd_output_file_path = artifacts_dir / "create-repo.txt"
-        with create_cmd_output_file_path.open("w") as f:
-            f.write("https://github.com/account-name/repo-name")
-
-        expected = "account-name/repo-name"
-        actual = SaasAppGenerator._get_account_name_and_repo_name(
-            create_cmd_output_file_path
-        )
-        assert actual == expected
+    fixture = "https://github.com/account-name/repo-name"
+    expected = "account-name/repo-name"
+    actual = SaasAppGenerator._get_account_name_and_repo_name(fixture)
+    assert actual == expected
 
 
 @patch("requests.get")
@@ -98,38 +88,41 @@ def test_run_cli_command(
 
 
 @patch("subprocess.run")
+@patch.dict("os.environ", {}, clear=True)
 def test_create_new_repository(
     mock_run: MagicMock, saas_app_generator: SaasAppGenerator
 ) -> None:
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_dir_path = Path(temp_dir)
-        temp_dir_path.mkdir(parents=True, exist_ok=True)
-        saas_app_generator._create_new_repository(temp_dir_path, max_retries=1, env={})
-        artifacts_path = Path(
-            temp_dir_path, SaasAppGenerator.ARTIFACTS_DIR, "create-repo.txt"
-        )
-        expected_command = (
-            f"gh repo create test-fastagency-template --public > {artifacts_path}"
-        )
-        mock_run.assert_called_once_with(
-            expected_command,
-            check=True,
-            capture_output=True,
-            shell=True,
-            text=True,
-            cwd=str(temp_dir_path),
-            env={},
-        )
+    with patch.object(Path, "open", mock_open()):
+        saas_app_generator.create_new_repository(max_retries=1)
+
+    expected_command = "gh repo create test-fastagency-template --public > "
+
+    # Get the actual command that was called
+    actual_command = mock_run.call_args[0][0]
+
+    # Assert that the actual command starts with the expected command
+    assert actual_command.startswith(
+        expected_command
+    ), f"Command {actual_command} does not start with {expected_command}"
+
+    # Assert the other call parameters
+    mock_run.assert_called_once_with(
+        ANY,
+        check=True,
+        capture_output=True,
+        shell=True,
+        text=True,
+        cwd=ANY,
+        env={"GH_TOKEN": saas_app_generator.github_token},
+    )
 
 
 @patch("subprocess.run")
+@patch.dict("os.environ", {}, clear=True)
 def test_create_new_repository_retry(
     mock_run: MagicMock, saas_app_generator: SaasAppGenerator
 ) -> None:
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_dir_path = Path(temp_dir)
-        temp_dir_path.mkdir(parents=True, exist_ok=True)
-
+    with patch.object(Path, "open", mock_open()):
         # Simulate "Name already exists on this account" error for the first two attempts
         mock_run.side_effect = [
             subprocess.CalledProcessError(
@@ -138,7 +131,7 @@ def test_create_new_repository_retry(
         ] * 2 + [None]
 
         # Call the method
-        saas_app_generator._create_new_repository(temp_dir_path, max_retries=3, env={})
+        saas_app_generator.create_new_repository(max_retries=3)
 
         # Check that the method was called three times
         assert mock_run.call_count == 3
@@ -148,27 +141,21 @@ def test_create_new_repository_retry(
 def test_create_new_repository_retry_fail(
     mock_run: MagicMock, saas_app_generator: SaasAppGenerator
 ) -> None:
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_dir_path = Path(temp_dir)
-        temp_dir_path.mkdir(parents=True, exist_ok=True)
+    # Simulate "Name already exists on this account" error for all attempts
+    mock_run.side_effect = subprocess.CalledProcessError(
+        1, "gh", "Name already exists on this account"
+    )
 
-        # Simulate "Name already exists on this account" error for all attempts
-        mock_run.side_effect = subprocess.CalledProcessError(
-            1, "gh", "Name already exists on this account"
-        )
+    # Call the method and expect an exception
+    with pytest.raises(
+        Exception, match="Command 'gh' returned non-zero exit status 1."
+    ) as e:
+        saas_app_generator.create_new_repository(max_retries=3)
 
-        # Call the method and expect an exception
-        with pytest.raises(
-            Exception, match="Command 'gh' returned non-zero exit status 1."
-        ) as e:
-            saas_app_generator._create_new_repository(
-                temp_dir_path, max_retries=3, env={}
-            )
+    assert "Name already exists on this account" in str(e)
 
-        assert "Name already exists on this account" in str(e)
-
-        # Check that the method was called three times
-        assert mock_run.call_count == 3
+    # Check that the method was called three times
+    assert mock_run.call_count == 3
 
 
 @patch("subprocess.run")
@@ -241,7 +228,9 @@ def test_initialize_git_and_push(
             "_get_account_name_and_repo_name",
             return_value="account/repo",
         ):
-            saas_app_generator._initialize_git_and_push(temp_dir_path, env={})
+            with patch.object(Path, "open", mock_open()):
+                saas_app_generator.create_new_repository(max_retries=1)
+                saas_app_generator._initialize_git_and_push(temp_dir_path, env={})
             # mock_set_gh_actions_to_create_pr.assert_called_once()
 
             expected_commands = [
@@ -308,12 +297,10 @@ def test_setup_app_in_fly(
 @patch("fastagency.saas_app_generator.SaasAppGenerator._initialize_git_and_push")
 @patch("fastagency.saas_app_generator.SaasAppGenerator._download_template_repo")
 @patch("fastagency.saas_app_generator.SaasAppGenerator._setup_app_in_fly")
-@patch("fastagency.saas_app_generator.SaasAppGenerator._create_new_repository")
 @patch.dict("os.environ", {}, clear=True)
 @patch("tempfile.TemporaryDirectory", new_callable=MagicMock)
 def test_execute(
     mock_tempdir: MagicMock,
-    mock_create_repo: MagicMock,
     mock_setup_app_in_fly: MagicMock,
     mock_download: MagicMock,
     mock_init_git: MagicMock,
@@ -322,13 +309,11 @@ def test_execute(
     temp_dir_path = Path("/mock/temp/dir")
     mock_tempdir.return_value.__enter__.return_value = temp_dir_path
 
-    saas_app_generator.execute(max_retries=1)
+    saas_app_generator.gh_repo_url = ""
+    saas_app_generator.execute()
 
     mock_download.assert_called_once_with(temp_dir_path)
     mock_setup_app_in_fly.assert_called_once()
-    mock_create_repo.assert_called_once_with(
-        temp_dir_path, 1, env={"GH_TOKEN": "some-github-token"}
-    )
     mock_init_git.assert_called_once_with(
         temp_dir_path, env={"GH_TOKEN": "some-github-token"}
     )

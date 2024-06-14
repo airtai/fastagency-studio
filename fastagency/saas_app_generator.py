@@ -7,7 +7,7 @@ import tempfile
 import uuid
 from os import environ
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import requests
 
@@ -106,35 +106,47 @@ class SaasAppGenerator:
 
         return repo_name
 
-    def _create_new_repository(
-        self, temp_dir_path: Path, max_retries: int, env: Dict[str, Any]
+    def create_new_repository(
+        self,
+        max_retries: int = 5,
     ) -> None:
-        setup_artifacts_path = temp_dir_path / SaasAppGenerator.ARTIFACTS_DIR
-        setup_artifacts_path.mkdir(parents=True, exist_ok=True)
-        repo_name = f"{self.app_name.replace(' ', '-')}".lower()
-        for attempt in range(max_retries):
-            try:
-                log_file = setup_artifacts_path / "create-repo.txt"
-                command = f"gh repo create {repo_name} --public > {log_file}"
-                self._run_cli_command(command, cwd=str(temp_dir_path), env=env)
-                break
-            except Exception as e:
-                # check if error contains "Name already exists on this account" string
-                if attempt < max_retries - 1:
-                    # add random 5 digit number to the repo name
-                    repo_name = f"{repo_name}-{random.randint(10000, 99999)}"  # nosec B311
-                    logging.info(
-                        f"Repository name already exists. Retrying with a new name: {repo_name}"
-                    )
-                else:
-                    logging.error(e)
-                    raise
+        # copy the environment variables to pass to the subprocess
+        env = environ.copy()
+
+        # Add the GitHub token to the environment variables to pass to the subprocess
+        env["GH_TOKEN"] = self.github_token
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_dir_path = Path(temp_dir)
+
+            repo_name = f"{self.app_name.replace(' ', '-')}".lower()
+            for attempt in range(max_retries):
+                try:
+                    log_file = temp_dir_path / "log_file.txt"
+                    command = f"gh repo create {repo_name} --public > {log_file}"
+                    self._run_cli_command(command, cwd=str(temp_dir_path), env=env)
+
+                    # Open the log file and read its contents
+                    with log_file.open("r") as file:
+                        self.gh_repo_url = file.read().strip()
+
+                    break
+                except Exception as e:
+                    # check if error contains "Name already exists on this account" string
+                    if attempt < max_retries - 1:
+                        # add random 5 digit number to the repo name
+                        repo_name = f"{repo_name}-{random.randint(10000, 99999)}"  # nosec B311
+                        logging.info(
+                            f"Repository name already exists. Retrying with a new name: {repo_name}"
+                        )
+                    else:
+                        logging.error(e)
+                        raise
 
     @staticmethod
-    def _get_account_name_and_repo_name(create_cmd_output_file_path: Path) -> str:
-        with create_cmd_output_file_path.open("r") as file:
-            url_parts = file.read().split("/")
-            account_and_repo_name = "/".join(url_parts[-2:])
+    def _get_account_name_and_repo_name(gh_repo_url: str) -> str:
+        url_parts = gh_repo_url.split("/")
+        account_and_repo_name = "/".join(url_parts[-2:])
         return account_and_repo_name.strip()
 
     #     def _set_gh_actions_to_create_pr(
@@ -149,7 +161,9 @@ class SaasAppGenerator:
     # """
     #         self._run_cli_command(command, cwd=cwd, env=env)
 
-    def _initialize_git_and_push(self, temp_dir_path: Path, env: Dict[str, Any]) -> str:
+    def _initialize_git_and_push(
+        self, temp_dir_path: Path, env: Dict[str, Any]
+    ) -> None:
         cwd = str(temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME)
 
         # initialize a git repository
@@ -169,12 +183,10 @@ class SaasAppGenerator:
         self._run_cli_command(command, cwd=cwd)
 
         # get the account name and repo name
-        create_cmd_output_file_path = Path(
-            f"{temp_dir_path}/{SaasAppGenerator.ARTIFACTS_DIR}/create-repo.txt"
-        )
-        account_and_repo_name = self._get_account_name_and_repo_name(
-            create_cmd_output_file_path
-        )
+        # create_cmd_output_file_path = Path(
+        #     f"{temp_dir_path}/{SaasAppGenerator.ARTIFACTS_DIR}/create-repo.txt"
+        # )
+        account_and_repo_name = self._get_account_name_and_repo_name(self.gh_repo_url)
 
         # set the remote origin
         command = f"git remote add origin git@github.com:{account_and_repo_name}.git"
@@ -190,8 +202,6 @@ class SaasAppGenerator:
         command = "git push -u origin main"
         self._run_cli_command(command, cwd=cwd)
 
-        return account_and_repo_name
-
     def _set_github_actions_secrets(self, cwd: str, env: Dict[str, Any]) -> None:
         secrets = {
             "FLY_API_TOKEN": self.fly_api_token,
@@ -202,7 +212,7 @@ class SaasAppGenerator:
             command = f'gh secret set {key} --body "{value}" --app actions'
             self._run_cli_command(command, cwd=cwd, env=env, print_output=True)
 
-    def execute(self, max_retries: int = 5) -> Tuple[str, str, str]:
+    def execute(self) -> str:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = Path(temp_dir)
 
@@ -219,16 +229,14 @@ class SaasAppGenerator:
             env["GH_TOKEN"] = self.github_token
 
             # Create a new repository
-            self._create_new_repository(temp_dir_path, max_retries, env=env)
+            # self.create_new_repository(temp_dir_path, max_retries, env=env)
 
             # Initialize the git repository and push the changes
-            account_and_repo_name = self._initialize_git_and_push(
-                temp_dir_path, env=env
-            )
-            application_github_url = f"https://github.com/{account_and_repo_name}"
-            application_repo_name = account_and_repo_name.split("/")[-1]
+            self._initialize_git_and_push(temp_dir_path, env=env)
 
-            return application_github_url, application_repo_name, flyio_app_name
+            flyio_app_url = f"https://{flyio_app_name}-client.fly.dev"
+
+            return flyio_app_url
 
 
 def main() -> None:
@@ -240,7 +248,12 @@ def main() -> None:
     args = parser.parse_args()
 
     manager = SaasAppGenerator(args.fly_token, args.uuid, args.gh_token, args.app_name)
-    manager.execute()
+
+    manager.create_new_repository()
+    logging.info(f"{manager.gh_repo_url=}")
+
+    flyio_app_url = manager.execute()
+    logging.info(f"{flyio_app_url=}")
 
 
 if __name__ == "__main__":

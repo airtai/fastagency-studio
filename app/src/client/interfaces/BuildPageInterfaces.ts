@@ -60,6 +60,9 @@ export interface SelectedModelSchema {
   updated_at: string;
   name?: string;
   api_key?: string;
+  app_deploy_status?: string;
+  gh_repo_url?: string;
+  flyio_app_url?: string;
 }
 
 export interface SecretsProps {

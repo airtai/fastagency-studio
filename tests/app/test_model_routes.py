@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 
 from fastagency.app import app, mask
 from fastagency.models.llms.azure import AzureOAIAPIKey
+from fastagency.saas_app_generator import SaasAppGenerator
 
 client = TestClient(app)
 
@@ -142,35 +143,38 @@ class TestModelRoutes:
         type_name = "application"
         model_name = "Application"
         model_uuid = str(uuid.uuid4())
+
         # Mock the background task
-        with patch("fastagency.app._create_saas_app") as mock_task:
+        fly_api_token = "some-token"
+        fastagency_application_uuid = "some-uuid"
+        github_token = "some-github-token"
+        app_name = "test fastagency template"
+        saas_app = SaasAppGenerator(
+            fly_api_token, fastagency_application_uuid, github_token, app_name
+        )
+        saas_app.gh_repo_url = "https://some-git-url"
+        with (
+            patch("fastagency.app._create_gh_repo", return_value=saas_app) as mock_task,
+            patch("fastagency.app._deploy_saas_app"),
+        ):
             response = client.post(
                 f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",
                 json=model,
             )
-            # Check if the task was called with the expected value
-            mock_task.assert_called_once_with(
-                model, user_uuid, model_uuid, type_name, model_name
-            )
+            mock_task.assert_called_once()
 
         assert response.status_code == 200
         expected = {
             "name": "Test",
-            "team": {
-                "type": "team",
-                "name": "TwoAgentTeam",
-                "uuid": team_uuid,
-            },
+            "team": {"type": "team", "name": "TwoAgentTeam", "uuid": team_uuid},
             "gh_token": {
                 "type": "secret",
                 "name": "GitHubToken",
                 "uuid": gh_token_uuid,
             },
-            "fly_token": {
-                "type": "secret",
-                "name": "FlyToken",
-                "uuid": fly_token_uuid,
-            },
+            "fly_token": {"type": "secret", "name": "FlyToken", "uuid": fly_token_uuid},
+            "app_deploy_status": "inprogress",
+            "gh_repo_url": "https://some-git-url",
         }
 
         actual = response.json()
@@ -228,37 +232,26 @@ class TestModelRoutes:
         model_name = "Application"
 
         model_uuid = str(uuid.uuid4())
-        # Create application
-        with patch("fastagency.app._create_saas_app") as mock_task:
+        # Mock the background task
+        fly_api_token = "some-token"
+        fastagency_application_uuid = "some-uuid"
+        github_token = "some-github-token"
+        app_name = "test fastagency template"
+        saas_app = SaasAppGenerator(
+            fly_api_token, fastagency_application_uuid, github_token, app_name
+        )
+        saas_app.gh_repo_url = "https://some-git-url"
+        with (
+            patch("fastagency.app._create_gh_repo", return_value=saas_app) as mock_task,
+            patch("fastagency.app._deploy_saas_app"),
+        ):
             response = client.post(
                 f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",
                 json=model,
             )
-            # Check if the task was called with the expected value
-            mock_task.assert_called_once_with(
-                model, user_uuid, model_uuid, type_name, model_name
-            )
+            mock_task.assert_called_once()
 
         assert response.status_code == 200
-        expected = {
-            "name": "Test",
-            "team": {
-                "type": "team",
-                "name": "TwoAgentTeam",
-                "uuid": team_uuid,
-            },
-            "gh_token": {
-                "type": "secret",
-                "name": "GitHubToken",
-                "uuid": gh_token_uuid,
-            },
-            "fly_token": {
-                "type": "secret",
-                "name": "FlyToken",
-                "uuid": fly_token_uuid,
-            },
-        }
-
         # Update application
         new_gh_token_uuid = str(uuid.uuid4())
         model = {

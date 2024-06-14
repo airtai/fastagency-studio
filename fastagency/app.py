@@ -122,8 +122,10 @@ async def get_all_models(
 
     ret_val = []
     for model in ret_val_without_mask:
-        if model["type_name"] == "secret" and "api_key" in model["json_str"]:
-            model["json_str"]["api_key"] = await mask(model["json_str"]["api_key"])
+        if model["type_name"] == "secret":
+            for k in ["api_key", "gh_token", "fly_token"]:
+                if k in model["json_str"]:
+                    model["json_str"][k] = await mask(model["json_str"][k])
         ret_val.append(model)
 
     return ret_val  # type: ignore[no-any-return]

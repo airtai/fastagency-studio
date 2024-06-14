@@ -123,11 +123,18 @@ class TestModelRoutes:
     async def test_add_model_application(self, user_uuid: str) -> None:
         team_uuid = str(uuid.uuid4())
         application_uuid = str(uuid.uuid4())
+        gh_token_uuid = str(uuid.uuid4())
+        fly_token_uuid = str(uuid.uuid4())
+
         model = {
             "name": "Test",
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
-            "gh_token": "Test",
-            "fly_token": "Test",
+            "gh_token": {
+                "uuid": gh_token_uuid,
+                "type": "secret",
+                "name": "GitHubToken",
+            },
+            "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
             "uuid": application_uuid,
             "type_name": "application",
             "model_name": "Application",
@@ -149,9 +156,21 @@ class TestModelRoutes:
         assert response.status_code == 200
         expected = {
             "name": "Test",
-            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
-            "gh_token": "Test",
-            "fly_token": "Test",
+            "team": {
+                "type": "team",
+                "name": "TwoAgentTeam",
+                "uuid": team_uuid,
+            },
+            "gh_token": {
+                "type": "secret",
+                "name": "GitHubToken",
+                "uuid": gh_token_uuid,
+            },
+            "fly_token": {
+                "type": "secret",
+                "name": "FlyToken",
+                "uuid": fly_token_uuid,
+            },
         }
 
         actual = response.json()
@@ -190,11 +209,17 @@ class TestModelRoutes:
     async def test_update_model_application(self, user_uuid: str) -> None:
         team_uuid = str(uuid.uuid4())
         application_uuid = str(uuid.uuid4())
+        gh_token_uuid = str(uuid.uuid4())
+        fly_token_uuid = str(uuid.uuid4())
         model = {
             "name": "Test",
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
-            "gh_token": "Test",
-            "fly_token": "Test",
+            "gh_token": {
+                "uuid": gh_token_uuid,
+                "type": "secret",
+                "name": "GitHubToken",
+            },
+            "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
             "uuid": application_uuid,
             "type_name": "application",
             "model_name": "Application",
@@ -217,17 +242,34 @@ class TestModelRoutes:
         assert response.status_code == 200
         expected = {
             "name": "Test",
-            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
-            "gh_token": "",
-            "fly_token": "",
+            "team": {
+                "type": "team",
+                "name": "TwoAgentTeam",
+                "uuid": team_uuid,
+            },
+            "gh_token": {
+                "type": "secret",
+                "name": "GitHubToken",
+                "uuid": gh_token_uuid,
+            },
+            "fly_token": {
+                "type": "secret",
+                "name": "FlyToken",
+                "uuid": fly_token_uuid,
+            },
         }
 
         # Update application
+        new_gh_token_uuid = str(uuid.uuid4())
         model = {
             "name": "Test",
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
-            "gh_token": "Updated Test Token",
-            "fly_token": "Updated Test Token",
+            "gh_token": {
+                "uuid": new_gh_token_uuid,
+                "type": "secret",
+                "name": "GitHubToken",
+            },
+            "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
             "uuid": application_uuid,
             "type_name": "application",
             "model_name": "Application",
@@ -240,9 +282,21 @@ class TestModelRoutes:
         assert response.status_code == 200
         expected = {
             "name": "Test",
-            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
-            "gh_token": "Updated Test Token",
-            "fly_token": "Updated Test Token",
+            "team": {
+                "type": "team",
+                "name": "TwoAgentTeam",
+                "uuid": team_uuid,
+            },
+            "gh_token": {
+                "type": "secret",
+                "name": "GitHubToken",
+                "uuid": new_gh_token_uuid,
+            },
+            "fly_token": {
+                "type": "secret",
+                "name": "FlyToken",
+                "uuid": fly_token_uuid,
+            },
         }
 
         actual = response.json()

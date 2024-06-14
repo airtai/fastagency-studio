@@ -6,7 +6,7 @@ from uuid import UUID
 
 import httpx
 import yaml
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException
 from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
@@ -130,7 +130,7 @@ async def get_all_models(
     return ret_val  # type: ignore[no-any-return]
 
 
-def _create_and_deploy_saas_app(model: Dict[str, Any]) -> None:
+def _create_saas_app(model: Dict[str, Any]) -> None:
     saas_app = SaasAppGenerator(
         fly_api_token=model["fly_token"],
         github_token=model["gh_token"],
@@ -156,7 +156,6 @@ async def add_model(
     model_name: str,
     model_uuid: str,
     model: Dict[str, Any],
-    background_tasks: BackgroundTasks,
 ) -> Dict[str, Any]:
     registry = Registry.get_default()
     model_original = model.copy()
@@ -176,7 +175,7 @@ async def add_model(
         )
 
     if type_name == "application":
-        background_tasks.add_task(_create_and_deploy_saas_app, model_original)
+        _create_saas_app(model_original)
 
     return validated_model.model_dump()
 

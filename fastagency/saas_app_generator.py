@@ -4,7 +4,6 @@ import random
 import shutil
 import subprocess  # nosec B404
 import tempfile
-import uuid
 from os import environ
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -86,23 +85,23 @@ class SaasAppGenerator:
             logging.exception("Exception occurred")
             raise
 
-    def _setup_app_in_fly(self, temp_dir_path: Path, env: Dict[str, Any]) -> None:
-        cwd = temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
+    # def _setup_app_in_fly(self, temp_dir_path: Path, env: Dict[str, Any]) -> None:
+    #     cwd = temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
 
-        command = "cd app"
-        self._run_cli_command(command, cwd=str(cwd))
+    #     command = "cd app"
+    #     self._run_cli_command(command, cwd=str(cwd))
 
-        cwd_app = str(cwd / "app")
+    #     cwd_app = str(cwd / "app")
 
-        # Add FLY_API_TOKEN to the environment variables to pass to the subprocess
-        env["FLY_API_TOKEN"] = self.fly_api_token
+    #     # Add FLY_API_TOKEN to the environment variables to pass to the subprocess
+    #     env["FLY_API_TOKEN"] = self.fly_api_token
 
-        repo_name = f"{self.app_name.replace(' ', '-').lower()}-{uuid.uuid4()}"
-        command = f"wasp deploy fly setup {repo_name} mia"
-        self._run_cli_command(command, cwd=cwd_app, env=env)
+    #     repo_name = f"{self.app_name.replace(' ', '-').lower()}-{uuid.uuid4()}"
+    #     command = f"wasp deploy fly setup {repo_name} mia"
+    #     self._run_cli_command(command, cwd=cwd_app, env=env)
 
-        command = "echo | wasp deploy fly create-db mia"
-        self._run_cli_command(command, cwd=cwd_app, env=env)
+    #     command = "echo | wasp deploy fly create-db mia"
+    #     self._run_cli_command(command, cwd=cwd_app, env=env)
 
     def _create_new_repository(
         self, temp_dir_path: Path, max_retries: int, env: Dict[str, Any]
@@ -196,7 +195,7 @@ class SaasAppGenerator:
             env = environ.copy()
 
             # Setup the app in fly
-            self._setup_app_in_fly(temp_dir_path, env=env)
+            # self._setup_app_in_fly(temp_dir_path, env=env)
 
             # Add the GitHub token to the environment variables to pass to the subprocess
             env["GH_TOKEN"] = self.github_token

@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 import autogen.agentchat.contrib.web_surfer
 import pytest
-from fastapi import BackgroundTasks
 from pydantic import ValidationError
 
 from fastagency.app import add_model
@@ -291,7 +290,6 @@ class TestWebSurferAgent:
             model_name=api_key_model.__name__,  # type: ignore [attr-defined]
             model_uuid=api_key_model_uuid,
             model=api_key.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         llm = llm_model(  # type: ignore [operator]
@@ -308,7 +306,6 @@ class TestWebSurferAgent:
             model_name=llm_model.__name__,  # type: ignore [attr-defined]
             model_uuid=llm_model_uuid,
             model=llm.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         web_surfer_model = WebSurferAgent(
@@ -323,7 +320,6 @@ class TestWebSurferAgent:
             model_name=WebSurferAgent.__name__,
             model_uuid=web_surfer_model_uuid,
             model=web_surfer_model.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         async def my_create_autogen(cls, model_id, user_id) -> Dict[str, Any]:  # type: ignore [no-untyped-def]
@@ -361,7 +357,6 @@ class TestBingAPIKey:
             model_name=BingAPIKey.__name__,  # type: ignore [attr-defined]
             model_uuid=api_key_model_uuid,
             model=api_key.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         # Call create_autogen

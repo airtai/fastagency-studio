@@ -146,7 +146,7 @@ class TestModelRoutes:
 
         model_uuid = str(uuid.uuid4())
         # Mock the background task
-        with patch("fastagency.app._create_and_deploy_saas_app") as mock_task:
+        with patch("fastagency.app._create_saas_app") as mock_task:
             response = client.post(
                 f"/user/{user_uuid}/models/application/Application/{model_uuid}",
                 json=model,
@@ -211,7 +211,7 @@ class TestModelRoutes:
 
         model_uuid = str(uuid.uuid4())
         # Create application
-        with patch("fastagency.app._create_and_deploy_saas_app") as mock_task:
+        with patch("fastagency.app._create_saas_app") as mock_task:
             response = client.post(
                 f"/user/{user_uuid}/models/application/Application/{model_uuid}",
                 json=model,

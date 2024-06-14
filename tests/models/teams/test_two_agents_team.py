@@ -7,7 +7,6 @@ from unittest.mock import MagicMock
 import autogen
 import pytest
 from autogen.io.console import IOConsole
-from fastapi import BackgroundTasks
 from pydantic import ValidationError
 
 from fastagency.app import add_model
@@ -255,7 +254,6 @@ class TestTwoAgentTeam:
             model_name=api_key_model.__name__,  # type: ignore [attr-defined]
             model_uuid=api_key_model_uuid,
             model=api_key.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         llm = llm_model(  # type: ignore [operator]
@@ -272,7 +270,6 @@ class TestTwoAgentTeam:
             model_name=llm_model.__name__,  # type: ignore [attr-defined]
             model_uuid=llm_model_uuid,
             model=llm.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         weatherman_assistant_model = AssistantAgent(
@@ -287,7 +284,6 @@ class TestTwoAgentTeam:
             model_name=AssistantAgent.__name__,
             model_uuid=weatherman_assistant_model_uuid,
             model=weatherman_assistant_model.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         user_proxy_model = UserProxyAgent(
@@ -301,7 +297,6 @@ class TestTwoAgentTeam:
             model_name=UserProxyAgent.__name__,
             model_uuid=user_proxy_model_uuid,
             model=user_proxy_model.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         team_model_uuid = str(uuid.uuid4())
@@ -322,7 +317,6 @@ class TestTwoAgentTeam:
             model_name=TwoAgentTeam.__name__,
             model_uuid=team_model_uuid,
             model=team.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         # Then create autogen agents by monkeypatching create_autogen method

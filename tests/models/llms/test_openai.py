@@ -2,7 +2,6 @@ import uuid
 from typing import Any, Dict
 
 import pytest
-from fastapi import BackgroundTasks
 from pydantic_core import Url
 
 from fastagency.app import add_model
@@ -153,7 +152,6 @@ class TestOpenAI:
             model_name=api_key_model.__name__,  # type: ignore [attr-defined]
             model_uuid=api_key_model_uuid,
             model=api_key.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         llm = llm_model(  # type: ignore [operator]
@@ -168,7 +166,6 @@ class TestOpenAI:
             model_name=llm_model.__name__,  # type: ignore [attr-defined]
             model_uuid=llm_model_uuid,
             model=llm.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         # Monkeypatch api_key and call create_autogen
@@ -239,7 +236,6 @@ class TestOpenAIAPIKey:
             model_name=api_key_model.__name__,  # type: ignore [attr-defined]
             model_uuid=api_key_model_uuid,
             model=api_key.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         # Call create_autogen

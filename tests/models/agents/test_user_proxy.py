@@ -2,7 +2,6 @@ import uuid
 
 import autogen
 import pytest
-from fastapi import BackgroundTasks
 
 from fastagency.app import add_model
 from fastagency.models.agents.user_proxy import UserProxyAgent
@@ -26,7 +25,6 @@ class TestUserProxyAgent:
             model_name=UserProxyAgent.__name__,
             model_uuid=user_proxy_model_uuid,
             model=user_proxy_model.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
         agent, functions = await UserProxyAgent.create_autogen(

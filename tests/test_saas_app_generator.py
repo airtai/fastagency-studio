@@ -193,8 +193,40 @@ def test_set_github_actions_secrets(
 
 
 @patch("subprocess.run")
-def test_initialize_git_and_push(
+def test_set_gh_actions_to_create_pr(
     mock_run: MagicMock, saas_app_generator: SaasAppGenerator
+) -> None:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        account_and_repo_name = "account/repo"
+        saas_app_generator._set_gh_actions_to_create_pr(
+            account_and_repo_name=account_and_repo_name, cwd=temp_dir, env={}
+        )
+
+        expected_command = f"""gh api \
+  --method PUT \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  /repos/{account_and_repo_name}/actions/permissions/workflow \
+   -f "default_workflow_permissions=read" -F "can_approve_pull_request_reviews=true"
+"""
+
+        mock_run.assert_any_call(
+            expected_command,
+            check=True,
+            capture_output=True,
+            shell=True,
+            text=True,
+            cwd=temp_dir,
+            env={},
+        )
+
+
+@patch("fastagency.saas_app_generator.SaasAppGenerator._set_gh_actions_to_create_pr")
+@patch("subprocess.run")
+def test_initialize_git_and_push(
+    mock_run: MagicMock,
+    mock_set_gh_actions_to_create_pr: MagicMock,
+    saas_app_generator: SaasAppGenerator,
 ) -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir_path = Path(temp_dir)
@@ -209,6 +241,7 @@ def test_initialize_git_and_push(
             return_value="account/repo",
         ):
             saas_app_generator._initialize_git_and_push(temp_dir_path, env={})
+            mock_set_gh_actions_to_create_pr.assert_called_once()
 
             expected_commands = [
                 "git init",

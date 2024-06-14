@@ -134,6 +134,18 @@ class SaasAppGenerator:
             account_and_repo_name = "/".join(url_parts[-2:])
         return account_and_repo_name.strip()
 
+    def _set_gh_actions_to_create_pr(
+        self, account_and_repo_name: str, cwd: str, env: Dict[str, Any]
+    ) -> None:
+        command = f"""gh api \
+  --method PUT \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  /repos/{account_and_repo_name}/actions/permissions/workflow \
+   -f "default_workflow_permissions=read" -F "can_approve_pull_request_reviews=true"
+"""
+        self._run_cli_command(command, cwd=cwd, env=env)
+
     def _initialize_git_and_push(
         self, temp_dir_path: Path, env: Dict[str, Any]
     ) -> None:
@@ -169,6 +181,9 @@ class SaasAppGenerator:
 
         # Set GitHub Actions secrets
         self._set_github_actions_secrets(cwd, env=env)
+
+        # Update repo settings to allow GitHub Actions to create and approve pull requests
+        self._set_gh_actions_to_create_pr(account_and_repo_name, cwd=cwd, env=env)
 
         # push the changes
         command = "git push -u origin main"

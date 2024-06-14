@@ -12,6 +12,7 @@ from fastagency.models.base import Model
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.llms.openai import OpenAI
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
+from fastagency.openapi.client import Client
 
 
 class TestAssistantAgent:
@@ -316,10 +317,12 @@ class TestAssistantAgent:
         # Monkeypatch llm and call create_autogen
         monkeypatch.setattr(AzureOAI, "create_autogen", my_create_autogen)
 
-        agent, functions = await AssistantAgent.create_autogen(
+        agent, clients = await AssistantAgent.create_autogen(
             model_id=uuid.UUID(weatherman_assistant_model_uuid),
             user_id=uuid.UUID(user_uuid),
         )
         assert isinstance(agent, autogen.agentchat.AssistantAgent)
-        assert isinstance(functions, list)
-        assert len(functions) == 3
+        assert len(clients) == 1
+        client = clients[0]
+        assert isinstance(client, Client)
+        assert len(client.registered_funcs) == 3

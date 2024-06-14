@@ -5,7 +5,7 @@ from autogen import ConversableAgent
 from pydantic import Field
 
 from ..registry import Registry
-from ..toolboxes.toolbox import FunctionInfo
+from ..toolboxes.toolbox import Client
 from .base import TeamBaseModel, agent_type_refs, register_toolbox_functions
 
 __all__ = ["TwoAgentTeam"]
@@ -15,18 +15,18 @@ class AutogenTwoAgentTeam:
     def __init__(
         self,
         initial_agent: ConversableAgent,
-        initial_agent_functions: List[FunctionInfo],
+        initial_agent_clients: List[Client],
         secondary_agent: ConversableAgent,
-        secondary_agent_functions: List[FunctionInfo],
+        secondary_agent_clients: List[Client],
     ) -> None:
         self.initial_agent = initial_agent
         self.secondary_agent = secondary_agent
 
         register_toolbox_functions(
-            initial_agent, [secondary_agent], initial_agent_functions
+            initial_agent, [secondary_agent], initial_agent_clients
         )
         register_toolbox_functions(
-            secondary_agent, [initial_agent], secondary_agent_functions
+            secondary_agent, [initial_agent], secondary_agent_clients
         )
 
     def initiate_chat(self, message: str) -> List[Dict[str, Any]]:
@@ -61,7 +61,7 @@ class TwoAgentTeam(TeamBaseModel):
         )
         (
             initial_agent,
-            initial_agent_functions,
+            initial_agent_clients,
         ) = await initial_agent_model.create_autogen(
             my_model.initial_agent.uuid, user_id
         )
@@ -71,14 +71,14 @@ class TwoAgentTeam(TeamBaseModel):
         )
         (
             secondary_agent,
-            secondary_agent_functions,
+            secondary_agent_clients,
         ) = await secondary_agent_model.create_autogen(
             my_model.secondary_agent.uuid, user_id
         )
 
         return AutogenTwoAgentTeam(
             initial_agent,
-            initial_agent_functions,
+            initial_agent_clients,
             secondary_agent,
-            secondary_agent_functions,
+            secondary_agent_clients,
         )

@@ -6,7 +6,7 @@ from typing_extensions import TypeAlias
 
 from ..base import Model
 from ..registry import Registry
-from ..toolboxes.toolbox import FunctionInfo
+from ..toolboxes.toolbox import Client
 
 __all__ = ["TeamBaseModel", "agent_type_refs"]
 
@@ -36,13 +36,9 @@ class TeamBaseModel(Model):
 def register_toolbox_functions(
     agent: ConversableAgent,
     execution_agents: List[ConversableAgent],
-    function_infos: List[FunctionInfo],
+    clients: List[Client],
 ) -> None:
-    for function_info in function_infos:
-        agent.register_for_llm(
-            name=function_info.name,
-            description=function_info.description,
-        )(function_info.function)
-
+    for client in clients:
+        client.register_for_llm(agent)
         for execution_agent in execution_agents:
-            execution_agent.register_for_execution()(function_info.function)
+            client.register_for_execution(execution_agent)

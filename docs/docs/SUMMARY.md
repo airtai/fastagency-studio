@@ -28,6 +28,10 @@ search:
                 - [get_wasp_db_url](api/fastagency/db/helpers/get_wasp_db_url.md)
         - faststream_app
             - [ping_handler](api/fastagency/faststream_app/ping_handler.md)
+        - helpers
+            - [create_model_ref](api/fastagency/helpers/create_model_ref.md)
+            - [get_model_by_ref](api/fastagency/helpers/get_model_by_ref.md)
+            - [get_model_by_uuid](api/fastagency/helpers/get_model_by_uuid.md)
         - io
             - ionats
                 - [ErrorResoponseModel](api/fastagency/io/ionats/ErrorResoponseModel.md)
@@ -88,12 +92,16 @@ search:
                     - [TwoAgentTeam](api/fastagency/models/teams/two_agent_teams/TwoAgentTeam.md)
             - toolboxes
                 - toolbox
-                    - [FunctionInfo](api/fastagency/models/toolboxes/toolbox/FunctionInfo.md)
+                    - [Client](api/fastagency/models/toolboxes/toolbox/Client.md)
                     - [OpenAPIAuth](api/fastagency/models/toolboxes/toolbox/OpenAPIAuth.md)
                     - [Toolbox](api/fastagency/models/toolboxes/toolbox/Toolbox.md)
         - openapi
             - client
                 - [Client](api/fastagency/openapi/client/Client.md)
+                - [add_to_globals](api/fastagency/openapi/client/add_to_globals.md)
+            - fastapi_code_generator_helpers
+                - [ArgumentWithDescription](api/fastagency/openapi/fastapi_code_generator_helpers/ArgumentWithDescription.md)
+                - [patch_get_parameter_type](api/fastagency/openapi/fastapi_code_generator_helpers/patch_get_parameter_type.md)
 - Contributing
     - [Development](getting-started/contributing/CONTRIBUTING.md)
     - [Documentation](getting-started/contributing/docs.md)

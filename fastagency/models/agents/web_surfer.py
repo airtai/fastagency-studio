@@ -1,10 +1,11 @@
-from typing import Annotated, Any, Optional
+from typing import Annotated, List, Optional, Tuple
 from uuid import UUID
 
 import autogen.agentchat.contrib.web_surfer
 from pydantic import Field
 from typing_extensions import TypeAlias
 
+from ...openapi.client import Client
 from ..base import Model
 from ..registry import register
 from .base import AgentBaseModel, llm_type_refs
@@ -43,7 +44,9 @@ class WebSurferAgent(AgentBaseModel):
     ] = None
 
     @classmethod
-    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+    async def create_autogen(
+        cls, model_id: UUID, user_id: UUID
+    ) -> Tuple[autogen.agentchat.AssistantAgent, List[Client]]:
         my_model = await cls.from_db(model_id)
 
         llm_model = await my_model.llm.get_data_model().from_db(my_model.llm.uuid)

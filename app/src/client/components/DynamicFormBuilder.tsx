@@ -186,17 +186,7 @@ Before you begin, ensure you have the following:
 `;
 
   const deploymentInstructions = showDeployInstructions
-    ? `<div class="leading-loose ml-2 mr-2"> - A new GitHub repository has been created with the generated application code in your GitHub account.</span>
-- The repository contains the application code, tests, and Fly.io configuration files.
-<span class="text-l inline-block my-2 underline">Next Steps (only for the first time deployment):</span>
-<span class="ml-5">- Please follow the below steps only for the first time deployment. You can skip these steps for subsequent deployments.</span>
-<span class="ml-10">- In the newly created GitHub repository, a workflow named "Fly Deployment Pipeline" has been triggered to setup the application to Fly.io.</span>
-<span class="ml-10">- Wait for the workflow to complete. It will take approximately 2 - 3 minutes to complete.</span>
-<span class="ml-10">- Once completed, go to the <b>Pull requests</b> tab in the repository on GitHub and merge the PR named "Add Fly.io configuration files".
-<span class="ml-10">- It will again trigger the "Fly Deployment Pipeline" workflow to deploy the application to Fly.io.</span>
-<span class="ml-10">- Wait for the workflow to complete. It will take approximately 5 - 10 minutes to complete.</span>
-<span class="text-l inline-block my-2 underline">Accessing the Application:</span>
-<span class="ml-5">- Once the above deployment workflow is completed, you can access your application using <a class="underline" href="https://fly.io/dashboard" target="_blank" rel="noopener noreferrer">this</a> URL.</span>
+    ? `<div class="leading-loose ml-2 mr-2"> - We are generating your application code and deploying it to Fly.io. This process may take a couple of minutes. Please refresh the page after a couple of minutes to see the status of the deployment.</div>
 <span class="text-l inline-block my-2 underline">Troubleshooting: </span>
 <span class="ml-5">- If you encounter any issues during the deployment, check the following common problems:</span>
 <span class="ml-10">- Deployment Failures: </span>
@@ -210,7 +200,7 @@ Before you begin, ensure you have the following:
 
   return (
     <>
-      {!updateExistingModel && type_name === 'application' && (
+      {!instructionForApplication && (
         <div className='w-full mt-8 px-6.5 py-2'>
           <AgentConversationHistory
             agentConversationHistory={appDeploymentPrerequisites}

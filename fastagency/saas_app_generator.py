@@ -4,9 +4,10 @@ import random
 import shutil
 import subprocess  # nosec B404
 import tempfile
+import uuid
 from os import environ
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 import requests
 
@@ -85,23 +86,25 @@ class SaasAppGenerator:
             logging.exception("Exception occurred")
             raise
 
-    # def _setup_app_in_fly(self, temp_dir_path: Path, env: Dict[str, Any]) -> None:
-    #     cwd = temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
+    def _setup_app_in_fly(self, temp_dir_path: Path, env: Dict[str, Any]) -> str:
+        cwd = temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
 
-    #     command = "cd app"
-    #     self._run_cli_command(command, cwd=str(cwd))
+        command = "cd app"
+        self._run_cli_command(command, cwd=str(cwd))
 
-    #     cwd_app = str(cwd / "app")
+        cwd_app = str(cwd / "app")
 
-    #     # Add FLY_API_TOKEN to the environment variables to pass to the subprocess
-    #     env["FLY_API_TOKEN"] = self.fly_api_token
+        # Add FLY_API_TOKEN to the environment variables to pass to the subprocess
+        env["FLY_API_TOKEN"] = self.fly_api_token
 
-    #     repo_name = f"{self.app_name.replace(' ', '-').lower()}-{uuid.uuid4()}"
-    #     command = f"wasp deploy fly setup {repo_name} mia"
-    #     self._run_cli_command(command, cwd=cwd_app, env=env)
+        repo_name = f"{self.app_name.replace(' ', '-').lower()}-{uuid.uuid4()}"
+        command = f"wasp deploy fly setup {repo_name} mia"
+        self._run_cli_command(command, cwd=cwd_app, env=env)
 
-    #     command = "echo | wasp deploy fly create-db mia"
-    #     self._run_cli_command(command, cwd=cwd_app, env=env)
+        command = "echo | wasp deploy fly create-db mia"
+        self._run_cli_command(command, cwd=cwd_app, env=env)
+
+        return repo_name
 
     def _create_new_repository(
         self, temp_dir_path: Path, max_retries: int, env: Dict[str, Any]
@@ -134,21 +137,19 @@ class SaasAppGenerator:
             account_and_repo_name = "/".join(url_parts[-2:])
         return account_and_repo_name.strip()
 
-    def _set_gh_actions_to_create_pr(
-        self, account_and_repo_name: str, cwd: str, env: Dict[str, Any]
-    ) -> None:
-        command = f"""gh api \
-  --method PUT \
-  -H "Accept: application/vnd.github+json" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  /repos/{account_and_repo_name}/actions/permissions/workflow \
-   -f "default_workflow_permissions=read" -F "can_approve_pull_request_reviews=true"
-"""
-        self._run_cli_command(command, cwd=cwd, env=env)
+    #     def _set_gh_actions_to_create_pr(
+    #         self, account_and_repo_name: str, cwd: str, env: Dict[str, Any]
+    #     ) -> None:
+    #         command = f"""gh api \
+    #   --method PUT \
+    #   -H "Accept: application/vnd.github+json" \
+    #   -H "X-GitHub-Api-Version: 2022-11-28" \
+    #   /repos/{account_and_repo_name}/actions/permissions/workflow \
+    #    -f "default_workflow_permissions=read" -F "can_approve_pull_request_reviews=true"
+    # """
+    #         self._run_cli_command(command, cwd=cwd, env=env)
 
-    def _initialize_git_and_push(
-        self, temp_dir_path: Path, env: Dict[str, Any]
-    ) -> None:
+    def _initialize_git_and_push(self, temp_dir_path: Path, env: Dict[str, Any]) -> str:
         cwd = str(temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME)
 
         # initialize a git repository
@@ -183,11 +184,13 @@ class SaasAppGenerator:
         self._set_github_actions_secrets(cwd, env=env)
 
         # Update repo settings to allow GitHub Actions to create and approve pull requests
-        self._set_gh_actions_to_create_pr(account_and_repo_name, cwd=cwd, env=env)
+        # self._set_gh_actions_to_create_pr(account_and_repo_name, cwd=cwd, env=env)
 
         # push the changes
         command = "git push -u origin main"
         self._run_cli_command(command, cwd=cwd)
+
+        return account_and_repo_name
 
     def _set_github_actions_secrets(self, cwd: str, env: Dict[str, Any]) -> None:
         secrets = {
@@ -199,7 +202,7 @@ class SaasAppGenerator:
             command = f'gh secret set {key} --body "{value}" --app actions'
             self._run_cli_command(command, cwd=cwd, env=env, print_output=True)
 
-    def execute(self, max_retries: int = 5) -> None:
+    def execute(self, max_retries: int = 5) -> Tuple[str, str, str]:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = Path(temp_dir)
 
@@ -210,7 +213,7 @@ class SaasAppGenerator:
             env = environ.copy()
 
             # Setup the app in fly
-            # self._setup_app_in_fly(temp_dir_path, env=env)
+            flyio_app_name = self._setup_app_in_fly(temp_dir_path, env=env)
 
             # Add the GitHub token to the environment variables to pass to the subprocess
             env["GH_TOKEN"] = self.github_token
@@ -219,7 +222,13 @@ class SaasAppGenerator:
             self._create_new_repository(temp_dir_path, max_retries, env=env)
 
             # Initialize the git repository and push the changes
-            self._initialize_git_and_push(temp_dir_path, env=env)
+            account_and_repo_name = self._initialize_git_and_push(
+                temp_dir_path, env=env
+            )
+            application_github_url = f"https://github.com/{account_and_repo_name}"
+            application_repo_name = account_and_repo_name.split("/")[-1]
+
+            return application_github_url, application_repo_name, flyio_app_name
 
 
 def main() -> None:

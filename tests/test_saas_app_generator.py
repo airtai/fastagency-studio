@@ -1,5 +1,6 @@
 import subprocess
 import tempfile
+import uuid
 import zipfile
 from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
@@ -192,40 +193,40 @@ def test_set_github_actions_secrets(
             )
 
 
-@patch("subprocess.run")
-def test_set_gh_actions_to_create_pr(
-    mock_run: MagicMock, saas_app_generator: SaasAppGenerator
-) -> None:
-    with tempfile.TemporaryDirectory() as temp_dir:
-        account_and_repo_name = "account/repo"
-        saas_app_generator._set_gh_actions_to_create_pr(
-            account_and_repo_name=account_and_repo_name, cwd=temp_dir, env={}
-        )
+# @patch("subprocess.run")
+# def test_set_gh_actions_to_create_pr(
+#     mock_run: MagicMock, saas_app_generator: SaasAppGenerator
+# ) -> None:
+#     with tempfile.TemporaryDirectory() as temp_dir:
+#         account_and_repo_name = "account/repo"
+#         saas_app_generator._set_gh_actions_to_create_pr(
+#             account_and_repo_name=account_and_repo_name, cwd=temp_dir, env={}
+#         )
 
-        expected_command = f"""gh api \
-  --method PUT \
-  -H "Accept: application/vnd.github+json" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  /repos/{account_and_repo_name}/actions/permissions/workflow \
-   -f "default_workflow_permissions=read" -F "can_approve_pull_request_reviews=true"
-"""
+#         expected_command = f"""gh api \
+#   --method PUT \
+#   -H "Accept: application/vnd.github+json" \
+#   -H "X-GitHub-Api-Version: 2022-11-28" \
+#   /repos/{account_and_repo_name}/actions/permissions/workflow \
+#    -f "default_workflow_permissions=read" -F "can_approve_pull_request_reviews=true"
+# """
 
-        mock_run.assert_any_call(
-            expected_command,
-            check=True,
-            capture_output=True,
-            shell=True,
-            text=True,
-            cwd=temp_dir,
-            env={},
-        )
+# mock_run.assert_any_call(
+#     expected_command,
+#     check=True,
+#     capture_output=True,
+#     shell=True,
+#     text=True,
+#     cwd=temp_dir,
+#     env={},
+# )
 
 
-@patch("fastagency.saas_app_generator.SaasAppGenerator._set_gh_actions_to_create_pr")
+# @patch("fastagency.saas_app_generator.SaasAppGenerator._set_gh_actions_to_create_pr")
 @patch("subprocess.run")
 def test_initialize_git_and_push(
     mock_run: MagicMock,
-    mock_set_gh_actions_to_create_pr: MagicMock,
+    # mock_set_gh_actions_to_create_pr: MagicMock,
     saas_app_generator: SaasAppGenerator,
 ) -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -241,7 +242,7 @@ def test_initialize_git_and_push(
             return_value="account/repo",
         ):
             saas_app_generator._initialize_git_and_push(temp_dir_path, env={})
-            mock_set_gh_actions_to_create_pr.assert_called_once()
+            # mock_set_gh_actions_to_create_pr.assert_called_once()
 
             expected_commands = [
                 "git init",
@@ -264,54 +265,56 @@ def test_initialize_git_and_push(
                 )
 
 
-# @patch("subprocess.run")
-# @patch.dict("os.environ", {"FLY_API_TOKEN": "some-token"}, clear=True)
-# @patch("uuid.uuid4", return_value=UUID(int=0))  # Patch uuid4 to return a static UUID
-# def test_setup_app_in_fly(
-#     mock_uuid4: MagicMock, mock_run: MagicMock, saas_app_generator: SaasAppGenerator
-# ) -> None:
-#     with tempfile.TemporaryDirectory() as temp_dir:
-#         temp_dir_path = Path(temp_dir)
-#         extracted_template_dir = (
-#             temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
-#         )
-#         extracted_template_dir.mkdir(parents=True, exist_ok=True)
+@patch("subprocess.run")
+@patch.dict("os.environ", {"FLY_API_TOKEN": "some-token"}, clear=True)
+@patch(
+    "uuid.uuid4", return_value=uuid.UUID(int=0)
+)  # Patch uuid4 to return a static UUID
+def test_setup_app_in_fly(
+    mock_uuid4: MagicMock, mock_run: MagicMock, saas_app_generator: SaasAppGenerator
+) -> None:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_dir_path = Path(temp_dir)
+        extracted_template_dir = (
+            temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
+        )
+        extracted_template_dir.mkdir(parents=True, exist_ok=True)
 
-#         saas_app_generator._setup_app_in_fly(temp_dir_path, env={})
+        saas_app_generator._setup_app_in_fly(temp_dir_path, env={})
 
-#         repo_name = f"{saas_app_generator.app_name.replace(' ', '-').lower()}-{mock_uuid4.return_value}"
-#         expected_commands = [
-#             "cd app",
-#             f"wasp deploy fly setup {repo_name} mia",
-#             "echo | wasp deploy fly create-db mia",
-#         ]
+        repo_name = f"{saas_app_generator.app_name.replace(' ', '-').lower()}-{mock_uuid4.return_value}"
+        expected_commands = [
+            "cd app",
+            f"wasp deploy fly setup {repo_name} mia",
+            "echo | wasp deploy fly create-db mia",
+        ]
 
-#         for command, index in zip(expected_commands, range(len(expected_commands))):
-#             mock_run.assert_any_call(
-#                 command,
-#                 check=True,
-#                 capture_output=True,
-#                 shell=True,
-#                 text=True,
-#                 cwd=str(extracted_template_dir)
-#                 if index == 0
-#                 else str(extracted_template_dir / "app"),
-#                 env=None
-#                 if index == 0
-#                 else {"FLY_API_TOKEN": saas_app_generator.fly_api_token},
-#             )
+        for command, index in zip(expected_commands, range(len(expected_commands))):
+            mock_run.assert_any_call(
+                command,
+                check=True,
+                capture_output=True,
+                shell=True,
+                text=True,
+                cwd=str(extracted_template_dir)
+                if index == 0
+                else str(extracted_template_dir / "app"),
+                env=None
+                if index == 0
+                else {"FLY_API_TOKEN": saas_app_generator.fly_api_token},
+            )
 
 
 @patch("fastagency.saas_app_generator.SaasAppGenerator._initialize_git_and_push")
 @patch("fastagency.saas_app_generator.SaasAppGenerator._download_template_repo")
-# @patch("fastagency.saas_app_generator.SaasAppGenerator._setup_app_in_fly")
+@patch("fastagency.saas_app_generator.SaasAppGenerator._setup_app_in_fly")
 @patch("fastagency.saas_app_generator.SaasAppGenerator._create_new_repository")
 @patch.dict("os.environ", {}, clear=True)
 @patch("tempfile.TemporaryDirectory", new_callable=MagicMock)
 def test_execute(
     mock_tempdir: MagicMock,
     mock_create_repo: MagicMock,
-    # mock_setup_app_in_fly: MagicMock,
+    mock_setup_app_in_fly: MagicMock,
     mock_download: MagicMock,
     mock_init_git: MagicMock,
     saas_app_generator: SaasAppGenerator,
@@ -322,7 +325,7 @@ def test_execute(
     saas_app_generator.execute(max_retries=1)
 
     mock_download.assert_called_once_with(temp_dir_path)
-    # mock_setup_app_in_fly.assert_called_once()
+    mock_setup_app_in_fly.assert_called_once()
     mock_create_repo.assert_called_once_with(
         temp_dir_path, 1, env={"GH_TOKEN": "some-github-token"}
     )

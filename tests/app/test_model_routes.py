@@ -143,17 +143,19 @@ class TestModelRoutes:
             "type_name": "application",
             "model_name": "Application",
         }
-
+        type_name = "application"
+        model_name = "Application"
         model_uuid = str(uuid.uuid4())
         # Mock the background task
         with patch("fastagency.app._create_saas_app") as mock_task:
             response = client.post(
-                f"/user/{user_uuid}/models/application/Application/{model_uuid}",
+                f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",
                 json=model,
             )
-
             # Check if the task was called with the expected value
-            mock_task.assert_called_once_with(model)
+            mock_task.assert_called_once_with(
+                model, user_uuid, model_uuid, type_name, model_name
+            )
 
         assert response.status_code == 200
         expected = {
@@ -208,16 +210,20 @@ class TestModelRoutes:
             "type_name": "application",
             "model_name": "Application",
         }
+        type_name = "application"
+        model_name = "Application"
 
         model_uuid = str(uuid.uuid4())
         # Create application
         with patch("fastagency.app._create_saas_app") as mock_task:
             response = client.post(
-                f"/user/{user_uuid}/models/application/Application/{model_uuid}",
+                f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",
                 json=model,
             )
             # Check if the task was called with the expected value
-            mock_task.assert_called_once_with(model)
+            mock_task.assert_called_once_with(
+                model, user_uuid, model_uuid, type_name, model_name
+            )
 
         assert response.status_code == 200
         expected = {

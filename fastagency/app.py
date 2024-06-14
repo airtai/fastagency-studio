@@ -6,7 +6,7 @@ from uuid import UUID
 
 import httpx
 import yaml
-from fastapi import FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
@@ -18,7 +18,6 @@ from .db.helpers import (
 )
 from .models.registry import Registry, Schemas
 from .models.toolboxes.toolbox import Toolbox
-from .saas_app_generator import SaasAppGenerator
 
 logging.basicConfig(level=logging.INFO)
 
@@ -130,14 +129,39 @@ async def get_all_models(
     return ret_val  # type: ignore[no-any-return]
 
 
-def _create_saas_app(model: Dict[str, Any]) -> None:
-    saas_app = SaasAppGenerator(
-        fly_api_token=model["fly_token"],
-        github_token=model["gh_token"],
-        app_name=model["name"],
-        fastagency_application_uuid=model["uuid"],
-    )
-    saas_app.execute()
+async def _create_saas_app(
+    model: Dict[str, Any],
+    user_uuid: str,
+    model_uuid: str,
+    type_name: str,
+    model_name: str,
+) -> None:
+    pass
+
+    # saas_app = SaasAppGenerator(
+    #     fly_api_token=model["fly_token"],
+    #     github_token=model["gh_token"],
+    #     app_name=model["name"],
+    #     fastagency_application_uuid=model["uuid"],
+    # )
+    # application_github_url, application_repo_name, flyio_app_name = saas_app.execute()
+
+    # registry = Registry.get_default()
+    # validated_model = registry.validate(type_name, model_name, model)
+
+    # # Add application_github_url, application_repo_name to the validated model and save it in the database
+    # async with get_db_connection() as db:
+    #     found_model = await find_model_using_raw(model_uuid=model_uuid)
+
+    #     await db.model.update(
+    #         where={"uuid": found_model["uuid"]},  # type: ignore[arg-type]
+    #         data={  # type: ignore[typeddict-unknown-key]
+    #             "type_name": type_name,
+    #             "model_name": model_name,
+    #             "json_str": validated_model.model_dump_json(),  # type: ignore[typeddict-item]
+    #             "user_uuid": user_uuid,
+    #         },
+    #     )
 
 
 def _set_tokens_to_empty_string(
@@ -156,11 +180,31 @@ async def add_model(
     model_name: str,
     model_uuid: str,
     model: Dict[str, Any],
+    background_tasks: BackgroundTasks,
 ) -> Dict[str, Any]:
     registry = Registry.get_default()
     model_original = model.copy()
     model = _set_tokens_to_empty_string(model, TOKENS_TO_SET_EMPTY_VALUE)
     validated_model = registry.validate(type_name, model_name, model)
+
+    validated_model_dict = validated_model.model_dump()
+    validated_model_json = validated_model.model_dump_json()
+
+    if type_name == "application":
+        background_tasks.add_task(
+            _create_saas_app,
+            model_original,
+            user_uuid,
+            model_uuid,
+            type_name,
+            model_name,
+        )
+
+        validated_model_dict["app_deploy_status"] = "inprogress"
+
+        updated_validated_model_dict = json.loads(validated_model_json)
+        updated_validated_model_dict["app_deploy_status"] = "inprogress"
+        validated_model_json = json.dumps(updated_validated_model_dict)
 
     await get_user(user_uuid=user_uuid)
     async with get_db_connection() as db:
@@ -170,14 +214,11 @@ async def add_model(
                 "user_uuid": user_uuid,
                 "type_name": type_name,
                 "model_name": model_name,
-                "json_str": validated_model.model_dump_json(),  # type: ignore[typeddict-item]
+                "json_str": validated_model_json,  # type: ignore[typeddict-item]
             }
         )
 
-    if type_name == "application":
-        _create_saas_app(model_original)
-
-    return validated_model.model_dump()
+    return validated_model_dict
 
 
 @app.put("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")

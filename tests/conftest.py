@@ -25,7 +25,7 @@ from fastagency.models.base import ObjectReference
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")  # type: ignore[misc]
 async def user_uuid() -> AsyncIterator[str]:
     try:
         random_id = random.randint(1, 1_000_000)
@@ -221,7 +221,7 @@ def test_weather_fastapi_openapi(weather_fastapi_openapi_url: str) -> None:
     assert resp_json["info"]["title"] == "Weather"
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture()  # type: ignore[misc]
 async def toolbox_ref(user_uuid: str, fastapi_openapi_url: str) -> ObjectReference:
     openapi_auth = await create_model_ref(
         OpenAPIAuth,
@@ -244,7 +244,7 @@ async def toolbox_ref(user_uuid: str, fastapi_openapi_url: str) -> ObjectReferen
     return toolbox
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture()  # type: ignore[misc]
 async def weather_toolbox_ref(
     user_uuid: str, weather_fastapi_openapi_url: str
 ) -> ObjectReference:

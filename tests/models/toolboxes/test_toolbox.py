@@ -61,6 +61,7 @@ class TestOpenAPIAuth:
 
 
 class TestToolbox:
+    @pytest.mark.db()
     @pytest.mark.asyncio()
     async def test_toolbox_fixture(
         self, toolbox_ref: ObjectReference, fastapi_openapi_url: str, user_uuid: str

@@ -4,7 +4,7 @@ from typing import Any, AsyncGenerator, Dict, Optional, Union
 from uuid import UUID
 
 from fastapi import HTTPException
-from prisma import Prisma
+from prisma import Prisma  # type: ignore[attr-defined]
 
 
 @asynccontextmanager

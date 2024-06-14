@@ -76,6 +76,11 @@ search:
                 - [Registry](api/fastagency/models/registry/Registry.md)
                 - [Schemas](api/fastagency/models/registry/Schemas.md)
                 - [register](api/fastagency/models/registry/register.md)
+            - secrets
+                - fly_token
+                    - [FlyToken](api/fastagency/models/secrets/fly_token/FlyToken.md)
+                - github_token
+                    - [GitHubToken](api/fastagency/models/secrets/github_token/GitHubToken.md)
             - teams
                 - base
                     - [TeamBaseModel](api/fastagency/models/teams/base/TeamBaseModel.md)

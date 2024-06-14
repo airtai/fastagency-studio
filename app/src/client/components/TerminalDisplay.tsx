@@ -2,17 +2,24 @@ import React, { useEffect, useRef, useState } from 'react';
 
 interface TerminalDisplayProps {
   messages: string;
-  maxHeight: number; // Maximum height in pixels
-  isOpenOnLoad?: boolean; // Whether the terminal is open on load
-  theme?: string | null; // Title of the terminal
+  maxHeight: number;
+  isOpenOnLoad?: boolean;
+  theme?: string | null;
+  containerTitle?: string;
 }
 
-const TerminalDisplay: React.FC<TerminalDisplayProps> = ({ messages, maxHeight, isOpenOnLoad, theme }) => {
+const TerminalDisplay: React.FC<TerminalDisplayProps> = ({
+  messages,
+  maxHeight,
+  isOpenOnLoad,
+  theme,
+  containerTitle,
+}) => {
   const [isMinimized, setIsMinimized] = useState(isOpenOnLoad ? false : true); // Track if terminal is minimized
   const containerRef = useRef<HTMLDivElement | null>(null); // Reference to the scroll container
   const [isAutoScroll, setIsAutoScroll] = useState(true); // Track if auto-scroll is enabled
   const isModelDeploymentTheme = theme === 'modelDeployment'; // Check if the theme is modelDeployment
-  const containerTitle = isModelDeploymentTheme ? 'Deployment Guide for Your Application' : 'Agent conversations'; // Title of the terminal
+  const title = containerTitle ? containerTitle : 'Agent conversations'; // Title of the terminal
 
   // Convert ANSI codes to HTML with inline styles
   const convertAnsiToHtml = (text: string): string => {
@@ -53,7 +60,7 @@ const TerminalDisplay: React.FC<TerminalDisplayProps> = ({ messages, maxHeight, 
         } text-airt-font-base p-1 text-right bg-airt-secondary hover:cursor-pointer`}
         onClick={() => setIsMinimized(!isMinimized)}
       >
-        <p className='accordion-title text-sm text-left text-airt-primary'>{containerTitle}</p>
+        <p className='accordion-title text-sm text-left text-airt-primary'>{title}</p>
         <button className={`absolute right-4 top-4 ${isMinimized ? '' : 'open'} text-sm text-airt-primary `}>
           {isMinimized ? (
             <svg

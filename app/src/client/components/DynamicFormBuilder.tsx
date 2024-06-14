@@ -200,7 +200,7 @@ Before you begin, ensure you have the following:
 
   return (
     <>
-      {!instructionForApplication && (
+      {!instructionForApplication && showDeployInstructions && (
         <div className='w-full mt-8 px-6.5 py-2'>
           <AgentConversationHistory
             agentConversationHistory={appDeploymentPrerequisites}

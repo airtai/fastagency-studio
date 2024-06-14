@@ -164,15 +164,6 @@ async def _create_saas_app(
     #     )
 
 
-def _set_tokens_to_empty_string(
-    model: Dict[str, Any], tokens_to_set_empty_value: List[str]
-) -> Dict[str, Any]:
-    return {k: "" if k in tokens_to_set_empty_value else v for k, v in model.items()}
-
-
-TOKENS_TO_SET_EMPTY_VALUE = ["gh_token", "fly_token"]
-
-
 @app.post("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")
 async def add_model(
     user_uuid: str,
@@ -183,8 +174,6 @@ async def add_model(
     background_tasks: BackgroundTasks,
 ) -> Dict[str, Any]:
     registry = Registry.get_default()
-    model_original = model.copy()
-    model = _set_tokens_to_empty_string(model, TOKENS_TO_SET_EMPTY_VALUE)
     validated_model = registry.validate(type_name, model_name, model)
 
     validated_model_dict = validated_model.model_dump()
@@ -193,18 +182,18 @@ async def add_model(
     if type_name == "application":
         background_tasks.add_task(
             _create_saas_app,
-            model_original,
+            model,
             user_uuid,
             model_uuid,
             type_name,
             model_name,
         )
 
-        validated_model_dict["app_deploy_status"] = "inprogress"
+        # validated_model_dict["app_deploy_status"] = "inprogress"
 
-        updated_validated_model_dict = json.loads(validated_model_json)
-        updated_validated_model_dict["app_deploy_status"] = "inprogress"
-        validated_model_json = json.dumps(updated_validated_model_dict)
+        # updated_validated_model_dict = json.loads(validated_model_json)
+        # updated_validated_model_dict["app_deploy_status"] = "inprogress"
+        # validated_model_json = json.dumps(updated_validated_model_dict)
 
     await get_user(user_uuid=user_uuid)
     async with get_db_connection() as db:
@@ -230,7 +219,6 @@ async def update_model(
     model: Dict[str, Any],
 ) -> Dict[str, Any]:
     registry = Registry.get_default()
-    model = _set_tokens_to_empty_string(model, TOKENS_TO_SET_EMPTY_VALUE)
     validated_model = registry.validate(type_name, model_name, model)
 
     async with get_db_connection() as db:

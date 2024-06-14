@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from fastagency.app import _set_tokens_to_empty_string, app, mask
+from fastagency.app import app, mask
 from fastagency.models.llms.azure import AzureOAIAPIKey
 
 client = TestClient(app)
@@ -52,17 +52,6 @@ class MockChatCompletion:
         """MockChatCompletion class."""
         self.id = id
         self.choices = choices
-
-
-def test_set_tokens_to_empty_string() -> None:
-    model = {"token1": "value1", "token2": "value2", "token3": "value3"}
-    tokens_to_set_empty = ["token1", "token3"]
-
-    result = _set_tokens_to_empty_string(model, tokens_to_set_empty)
-
-    assert result["token1"] == ""
-    assert result["token3"] == ""
-    assert result["token2"] == "value2"
 
 
 @pytest.mark.asyncio()
@@ -161,8 +150,8 @@ class TestModelRoutes:
         expected = {
             "name": "Test",
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
-            "gh_token": "",
-            "fly_token": "",
+            "gh_token": "Test",
+            "fly_token": "Test",
         }
 
         actual = response.json()
@@ -252,8 +241,8 @@ class TestModelRoutes:
         expected = {
             "name": "Test",
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
-            "gh_token": "",
-            "fly_token": "",
+            "gh_token": "Updated Test Token",
+            "fly_token": "Updated Test Token",
         }
 
         actual = response.json()

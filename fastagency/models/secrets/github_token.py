@@ -2,7 +2,6 @@ from typing import Annotated
 from uuid import UUID
 
 from pydantic import Field
-from typing_extensions import TypeAlias
 
 from ..base import Model
 from ..registry import register
@@ -21,6 +20,3 @@ class GitHubToken(Model):
         my_model = await cls.from_db(model_id)
 
         return my_model.gh_token
-
-
-GitHubTokenRef: TypeAlias = GitHubToken.get_reference_model()  # type: ignore[valid-type]

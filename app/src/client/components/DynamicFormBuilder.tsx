@@ -39,6 +39,36 @@ interface DynamicFormBuilderProps {
   onDeleteCallback: (data: any) => void;
 }
 
+const SECRETS_TO_MASK = ['api_key', 'gh_token', 'fly_token'];
+
+const deploymentInprogressInstructions = `<div class="leading-loose ml-2 mr-2">
+- Appication deployment status: <b>In Progress</b>
+
+<span class="text-l inline-block my-2 underline">GitHub Repository Created</span>
+<span class="ml-5">- We have created a new <a class="underline" href="<gh_repo_url>" target="_blank" rel="noopener noreferrer">GitHub repository</a> in your GitHub account.</span>
+<span class="ml-5">- The application code will be pushed to this repository in a few minutes.</span>
+<span class="text-l inline-block my-2 underline">Checking Deployment Status</span>
+<span class="ml-5">- You can either check the status on the GitHub repository page or come back to this page after a few minutes.</span>
+<span class="text-l inline-block my-2 underline">Troubleshooting: </span>
+<span class="ml-5"><b>Common Issues:</b></span>
+<span class="ml-10">- In Progress Status for Too Long: </span>
+<span class="ml-13">- Ensure you have entered the correct gh_token and fly_token.</span>
+<span class="ml-13">- Verify that you have added a payment method to your Fly.io account; otherwise, the deployment will fail.</span>
+<span class="ml-13">- Review the deployment logs on Fly.io for any error messages. Access the logs by clicking on the server application</span>
+<span class="ml-17"> on the <a class="underline" href="https://fly.io/dashboard" target="_blank" rel="noopener noreferrer">Fly.io dashboard</a>, then clicking on the "Live Logs" tab.</span>
+<span class="ml-5"><b>Need Help?</b></span>
+<span class="ml-10">- If you encounter any issues or need assistance, please reach out to us on <a class="underline" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">discord</a>.</span>
+</div>
+`;
+
+const deploymentCompleteInstructions = `<div class="leading-loose ml-2 mr-2">- Hurrah! Your application has been successfully pushed to the GitHub repository.
+
+- A new workflow has been triggered to deploy the application to Fly.io. You can check the status on the GitHub repository <a class="underline" href="<gh_repo_url>/actions" target="_blank" rel="noopener noreferrer">actions</a> page.
+
+- Once the deployment workflow is completed (approx 5 - 10 mins), you can access your application using this <a class="underline" href="<flyio_app_url>" target="_blank" rel="noopener noreferrer">link</a>
+</div>
+`;
+
 const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   allUserProperties,
   type_name,
@@ -57,10 +87,10 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const [showNotification, setShowNotification] = useState(false);
   const [refValues, setRefValues] = useState<Record<string, any>>({});
   const [missingDependency, setMissingDependency] = useState<string[]>([]);
-  const [instructionForApplication, setInstructionForApplication] = useState<string | null>(null);
+  const [instructionForApplication, setInstructionForApplication] = useState<Record<string, string> | null>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
-  const showDeployInstructions = type_name === 'application';
+  const isApplication = type_name === 'application';
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -79,8 +109,16 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     }
     try {
       const response = await validateForm(formDataToSubmit, validationURL, isSecretUpdate);
-      onSuccessCallback(response);
-      showDeployInstructions && !updateExistingModel && setInstructionForApplication(response.uuid);
+      const onSuccessCallbackResponse = await onSuccessCallback(response);
+
+      isApplication &&
+        !updateExistingModel &&
+        setInstructionForApplication((prevState) => ({
+          ...prevState,
+          gh_repo_url: response.gh_repo_url,
+          // @ts-ignore
+          instruction: deploymentInprogressInstructions.replace('<gh_repo_url>', onSuccessCallbackResponse.gh_repo_url),
+        }));
     } catch (error: any) {
       try {
         const errorMsgObj = JSON.parse(error.message);
@@ -147,8 +185,20 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   }, [missingDependency?.length]);
 
   useEffect(() => {
-    updateExistingModel && type_name === 'application' && setInstructionForApplication(updateExistingModel.uuid);
-  }, [showDeployInstructions]);
+    updateExistingModel &&
+      type_name === 'application' &&
+      //@ts-ignore
+      setInstructionForApplication((prevState) => ({
+        ...prevState,
+        gh_repo_url: updateExistingModel.gh_repo_url,
+        flyio_app_url: updateExistingModel.flyio_app_url,
+        instruction: deploymentCompleteInstructions
+          //@ts-ignore
+          .replace('<gh_repo_url>', updateExistingModel.gh_repo_url)
+          //@ts-ignore
+          .replace('<flyio_app_url>', updateExistingModel.flyio_app_url),
+      }));
+  }, [isApplication]);
 
   useEffect(() => {
     const keyHandler = (event: KeyboardEvent) => {
@@ -159,76 +209,41 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     return () => document.removeEventListener('keydown', keyHandler);
   });
 
-  const deploymentInstructions = showDeployInstructions
-    ? `<div class="leading-loose"><span class="text-xl inline-block my-2 underline">Introduction: </span>
-The application is based on <a class="underline" href="https://wasp-lang.dev/" target="_blank" rel="noopener noreferrer">Wasp</a>, an open-source framework for building full-stack web apps. The generated application includes:
-<span class="ml-5">- A landing page and a chat page</span>
-<span class="ml-5">- Username & Password based authentication</span>
-<span class="ml-5">- Automated deployment to <a class="underline" href="https://fly.io/" target="_blank" rel="noopener noreferrer">Fly.io</a> using GitHub Actions</span>
+  const appDeploymentPrerequisites = `<div class="ml-2 mr-2 leading-loose">We've automated the application generation and deployment process so you can focus on building your application without worrying about deployment complexities.
+The deployment process includes:
+<span class="ml-5">- Automatically creating a new GitHub repository with the generated application code in your GitHub account.</span>
+<span class="ml-5">- Automatically deploying the application to Fly.io using GitHub Actions.</span>
 <span class="text-xl inline-block my-2 underline">Prerequisites: </span>
 Before you begin, ensure you have the following:
-<span class="ml-5">1. Fly.io account:</span>
-<span class="ml-10">- If you don't have a Fly.io account, you can create one <a class="underline" href="https://fly.io/app/sign-up" target="_blank" rel="noopener noreferrer">here</a>.</span>
-<span class="ml-10">- Fly provides free allowances for up to 3 VMs (so deploying a Wasp app to a new account is free), <u><b>but all plans</b></u></span>
-<span class="ml-10"><u><b>require you to add your credit card information</b></u> before you can proceed. If you don't, the deployment will fail.</span>
+<span class="ml-5">1. GitHub account:</span>
+<span class="ml-10">- If you don't have a GitHub account, you can create one <a class="underline" href="https://github.com/signup" target="_blank" rel="noopener noreferrer">here</a>.</span>
+<span class="ml-10">- A GitHub personal access token. If you don't have one, you can generate it by following this <a class="underline" href="https://docs.github.com/github/authenticating-to-github/creating-a-personal-access-token" target="_blank" rel="noopener noreferrer">guide</a>.</span>
+<span class="ml-10"><b><u>Note</u></b>: The minimum required scopes for the token are: <b>repo</b>, <b>read:org</b>, and <b>gist</b>.</span>
 
-<span class="ml-10"><b><u>Important</u></b>: If you already have a Fly.io account and created more than one organization, make sure you choose "Personal" as the organization </span>
+<span class="ml-5">2. Fly.io account:</span>
+<span class="ml-10">- If you don't have a Fly.io account, you can create one <a class="underline" href="https://fly.io/app/sign-up" target="_blank" rel="noopener noreferrer">here</a>. Fly provides free allowances for up to 3 VMs, so deploying a Wasp app </b></u></span>
+<span class="ml-12">to a new account is free <u><b>but all plans require you to add your credit card information</b></u></span>
+<span class="ml-10">- A Fly.io API token. If you don't have one, you can generate it by following the steps below.</span>
+<span class="ml-15">- Go to your <a class="underline" href="https://fly.io/dashboard" target="_blank" rel="noopener noreferrer">Fly.io</a> dashboard and click on the <b>Tokens</b> tab (the one on the left sidebar).</span>
+<span class="ml-15">- Enter a name and set the <b>Optional Expiration</b> to 999999h, then click on <b>Create Organization Token</b> to generate a token.</span>
+<span class="ml-10"><b><u>Note</u></b>: If you already have a Fly.io account and created more than one organization, make sure you choose "Personal" as the organization </span>
 <span class="ml-10"> while creating the Fly.io API Token in the deployment steps below.</span>
 
-<span class="text-xl inline-block my-2 underline">Deployment Steps: </span>
-<span class="text-l inline-block my-2 underline">Step 1: Fork the GitHub Repository:</span>
-<span class="ml-5">1.1 Fork <a class="underline" href="https://github.com/airtai/fastagency-wasp-app-template" target="_blank" rel="noopener noreferrer">this</a> GitHub Repository to your account. Ensure the checkbox "Copy the main branch only" is checked.</span>
-<span class="text-l inline-block my-2 underline">Step 2: Generate Fly.io API Token:</span>
-<span class="ml-5">2.1 Go to your <a class="underline" href="https://fly.io/dashboard" target="_blank" rel="noopener noreferrer">Fly.io</a> dashboard and click on the <b>Tokens</b> tab (the one on the left sidebar).</span>
-<span class="ml-5">2.2 Enter a name and set the <b>Optional Expiration</b> to 999999h, then click on <b>Create Organization Token</b> to generate a token.</span>
-<span class="ml-5">2.3 Copy the token, including the "FlyV1 " prefix and space at the beginning.</span>
-<span class="text-l inline-block my-2 underline">Step 3: Set necessary GitHub action secrets:</span>
-<span class="ml-5">3.1 Create the below two "repository secrets" in your forked GitHub repository.</span>
-<span class="ml-10">Note: If you don't know how to create a secret, follow <a class="underline" href="https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository" target="_blank" rel="noopener noreferrer">this</a> guide.</span>
-<span class="ml-10">==================================================================================</span>
-<span class="ml-10">FLY_API_TOKEN: <span class="ml-35"><--- paste the value you copied from 2.3 ---></span></span>
-<span class="ml-10">FASTAGENCY_APPLICATION_UUID: <span class="ml-10">${instructionForApplication}</span></span>
-<span class="ml-10">==================================================================================</span>
-<span class="text-l inline-block my-2 underline">Step 4: Set up applications Fly.io:</span>
-<span class="ml-5">4.1 Go to the <b>Actions</b> tab in your forked repository on GitHub and click the</span>
-<span class="ml-12"><b>I understand my workflows, go ahead and enable them</b> button.</span>
-<span class="ml-5">4.2 On the left-hand side, you will see options like: All workflows, Fly Deployment Pipeline, Pipeline.</span>
-<span class="ml-5">4.3 Click on the <b>Fly Deployment Pipeline</b> option and and then click the <b>Run workflow</b> button against the main branch.</span>
-<span class="ml-5">4.4 Wait for the workflow to complete (approx. 2 mins). Once completed, you will see the Client, Server, and Database apps</span>
-<span class="ml-13">created on <a class="underline" href="https://fly.io/dashboard/personal" target="_blank" rel="noopener noreferrer">Fly.io dashboard</a>.</span>
-<span class="ml-5">4.5 The workflow will only set up the applications in Fly.io and not deploy the actual application code which</span>
-<span class="ml-13">will be done in the next step.</span>
-<span class="text-l inline-block my-2 underline">Step 5: Deploy the Application:</span>
-<span class="ml-5">5.1 The above workflow might have also created a pull request in your GitHub repository to update the <b>fly.toml</b> files.</span>
-<span class="ml-5">5.2 Go to the <b>Pull requests</b> tab in your forked repository on GitHub and merge the PR named "Add Fly.io configuration files".
-<span class="ml-5">5.3 It will trigger the below workflows in sequence:</span>
-<span class="ml-13">- Pipeline to run tests and verify the build (approx. 2 mins).</span>
-<span class="ml-13">- Pipeline to deploy the tested application to Fly.io (approx. 5 - 10 mins).</span>
-<span class="ml-5">5.4 Once the workflow is completed, you can access your application using the hostname provided in the Fly.io dashboard.</span>
-<span class="ml-5">5.5 Go to fly dashboard and click on the client application (similar to: fastagency-app-******-client). </span>
-<span class="ml-5">5.6 The hostname is the URL of your application. Open the URL in your browser to launch your application.</span>
-<span class="text-xl inline-block my-2 underline">Application customization (Optional): </span>
-<span class="ml-5">- You can perform basic customization such as changing the app name and adding a support email address in the generated application by</span>
-<span class="ml-9"> setting the below optional "repository variables" (not repository secrets). Click <a class="underline" href="https://docs.github.com/en/actions/learn-github-actions/variables" target="_blank" rel="noopener noreferrer">here</a> to learn how to set repository variables.</span>
-<span class="ml-10">==================================================================================</span>
-<span class="ml-10">REACT_APP_NAME: <span class="ml-35"> <--- Your App Name ---> </span></span>
-<span class="ml-10">REACT_APP_SUPPORT_EMAIL: <span class="ml-19"> <--- Your Support Email Address ---> </span></span>
-<span class="ml-10">==================================================================================</span>
-<span class="ml-5">- After setting the repository variables, you can manualy trigger the <b>Fly Deployment Pipeline</b> workflow (refer 4.2 and 4.3) to deploy the changes.</span>
-<span class="ml-5">- For further customization, you can refer to the <a class="underline" href="https://wasp-lang.dev/docs/" target="_blank" rel="noopener noreferrer">Wasp documentation</a>.</span>
-<span class="text-xl inline-block my-2 underline">Troubleshooting: </span>
-<span class="ml-5">If you encounter any issues during the deployment, check the following common problems:</span>
-<span class="ml-10 underline">Deployment Failures: </span>
-<span class="ml-10">- Make sure you have added a payment method to your Fly.io account. Else, the deployment will fail.</span>
-<span class="ml-10">- Review the deployment logs on Fly.io for any error messages. You can access the logs by clicking on the</span>
-<span class="ml-15">server application on the Fly.io dashboard and then clicking on the Live Logs tab.</span>
-<span class="ml-5">- If you need any help, please reach out to us on <a class="underline" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">discord</a>.</span>
+<span class="text-l inline-block my-2"><b><u>Note</u></b>: <b>We do not store your GitHub personal access token or Fly.io API token. So you need to provide them each time you deploy an application.</b></span>
 </div>
-`
-    : '';
+`;
 
   return (
     <>
+      {!instructionForApplication && isApplication && (
+        <div className='w-full mt-8 px-6.5 py-2'>
+          <AgentConversationHistory
+            agentConversationHistory={appDeploymentPrerequisites}
+            isDeploymentInstructions={true}
+            containerTitle='Prerequisites for Application Generation and Deployment'
+          />
+        </div>
+      )}
       {/* <form onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 gap-9 px-6.5 py-2'> */}
       <form onSubmit={handleSubmit} className='px-6.5 py-2'>
         {Object.entries(jsonSchema.properties).map(([key, property]) => {
@@ -276,7 +291,7 @@ Before you begin, ensure you have the following:
               ) : (
                 <TextInput
                   id={key}
-                  type={key === 'api_key' && typeof inputValue === 'string' ? 'password' : 'text'}
+                  type={_.includes(SECRETS_TO_MASK, key) && typeof inputValue === 'string' ? 'password' : 'text'}
                   value={inputValue}
                   placeholder={formElementsObject.description || ''}
                   onChange={(value) => handleChange(key, value)}
@@ -286,11 +301,12 @@ Before you begin, ensure you have the following:
             </div>
           );
         })}
-        {instructionForApplication && (
+        {instructionForApplication && instructionForApplication.instruction && (
           <div className='w-full mt-8'>
             <AgentConversationHistory
-              agentConversationHistory={deploymentInstructions}
+              agentConversationHistory={instructionForApplication.instruction}
               isDeploymentInstructions={true}
+              containerTitle='Application Details and Next Steps'
             />
           </div>
         )}

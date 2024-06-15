@@ -32,6 +32,8 @@ class TestGetSchema:
                 "AzureOAIAPIKey",
                 "OpenAIAPIKey",
                 "BingAPIKey",
+                "FlyToken",
+                "GitHubToken",
                 "OpenAPIAuth",
                 "TogetherAIAPIKey",
             },

@@ -1,12 +1,13 @@
 import uuid
 from typing import List, Optional
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
 
 from fastagency.app import app, mask
 from fastagency.models.llms.azure import AzureOAIAPIKey
+from fastagency.saas_app_generator import SaasAppGenerator
 
 client = TestClient(app)
 
@@ -120,6 +121,66 @@ class TestModelRoutes:
         assert actual == expected
 
     @pytest.mark.asyncio()
+    async def test_add_model_application(self, user_uuid: str) -> None:
+        team_uuid = str(uuid.uuid4())
+        application_uuid = str(uuid.uuid4())
+        gh_token_uuid = str(uuid.uuid4())
+        fly_token_uuid = str(uuid.uuid4())
+
+        model = {
+            "name": "Test",
+            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
+            "gh_token": {
+                "uuid": gh_token_uuid,
+                "type": "secret",
+                "name": "GitHubToken",
+            },
+            "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
+            "uuid": application_uuid,
+            "type_name": "application",
+            "model_name": "Application",
+        }
+        type_name = "application"
+        model_name = "Application"
+        model_uuid = str(uuid.uuid4())
+
+        # Mock the background task
+        fly_api_token = "some-token"
+        fastagency_application_uuid = "some-uuid"
+        github_token = "some-github-token"
+        app_name = "test fastagency template"
+        saas_app = SaasAppGenerator(
+            fly_api_token, fastagency_application_uuid, github_token, app_name
+        )
+        saas_app.gh_repo_url = "https://some-git-url"
+        with (
+            patch("fastagency.app._create_gh_repo", return_value=saas_app) as mock_task,
+            patch("fastagency.app._deploy_saas_app"),
+        ):
+            response = client.post(
+                f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",
+                json=model,
+            )
+            mock_task.assert_called_once()
+
+        assert response.status_code == 200
+        expected = {
+            "name": "Test",
+            "team": {"type": "team", "name": "TwoAgentTeam", "uuid": team_uuid},
+            "gh_token": {
+                "type": "secret",
+                "name": "GitHubToken",
+                "uuid": gh_token_uuid,
+            },
+            "fly_token": {"type": "secret", "name": "FlyToken", "uuid": fly_token_uuid},
+            "app_deploy_status": "inprogress",
+            "gh_repo_url": "https://some-git-url",
+        }
+
+        actual = response.json()
+        assert actual == expected
+
+    @pytest.mark.asyncio()
     async def test_update_model(
         self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
@@ -145,6 +206,92 @@ class TestModelRoutes:
             "api_key": "who cares",  # pragma: allowlist secret
             "name": "whatever",
         }
+        actual = response.json()
+        assert actual == expected
+
+    @pytest.mark.asyncio()
+    async def test_update_model_application(self, user_uuid: str) -> None:
+        team_uuid = str(uuid.uuid4())
+        application_uuid = str(uuid.uuid4())
+        gh_token_uuid = str(uuid.uuid4())
+        fly_token_uuid = str(uuid.uuid4())
+        model = {
+            "name": "Test",
+            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
+            "gh_token": {
+                "uuid": gh_token_uuid,
+                "type": "secret",
+                "name": "GitHubToken",
+            },
+            "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
+            "uuid": application_uuid,
+            "type_name": "application",
+            "model_name": "Application",
+        }
+        type_name = "application"
+        model_name = "Application"
+
+        model_uuid = str(uuid.uuid4())
+        # Mock the background task
+        fly_api_token = "some-token"
+        fastagency_application_uuid = "some-uuid"
+        github_token = "some-github-token"
+        app_name = "test fastagency template"
+        saas_app = SaasAppGenerator(
+            fly_api_token, fastagency_application_uuid, github_token, app_name
+        )
+        saas_app.gh_repo_url = "https://some-git-url"
+        with (
+            patch("fastagency.app._create_gh_repo", return_value=saas_app) as mock_task,
+            patch("fastagency.app._deploy_saas_app"),
+        ):
+            response = client.post(
+                f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",
+                json=model,
+            )
+            mock_task.assert_called_once()
+
+        assert response.status_code == 200
+        # Update application
+        new_gh_token_uuid = str(uuid.uuid4())
+        model = {
+            "name": "Test",
+            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
+            "gh_token": {
+                "uuid": new_gh_token_uuid,
+                "type": "secret",
+                "name": "GitHubToken",
+            },
+            "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
+            "uuid": application_uuid,
+            "type_name": "application",
+            "model_name": "Application",
+        }
+        response = client.put(
+            f"/user/{user_uuid}/models/application/Application/{model_uuid}",
+            json=model,
+        )
+
+        assert response.status_code == 200
+        expected = {
+            "name": "Test",
+            "team": {
+                "type": "team",
+                "name": "TwoAgentTeam",
+                "uuid": team_uuid,
+            },
+            "gh_token": {
+                "type": "secret",
+                "name": "GitHubToken",
+                "uuid": new_gh_token_uuid,
+            },
+            "fly_token": {
+                "type": "secret",
+                "name": "FlyToken",
+                "uuid": fly_token_uuid,
+            },
+        }
+
         actual = response.json()
         assert actual == expected
 

@@ -151,7 +151,7 @@ type AddUserModelsPayload = {
   uuid: string;
 };
 
-export const addUserModels: AddUserModels<AddUserModelsPayload, void> = async (args, context) => {
+export const addUserModels: AddUserModels<AddUserModelsPayload, any> = async (args, context) => {
   if (!context.user) {
     throw new HttpError(401);
   }
@@ -169,6 +169,8 @@ export const addUserModels: AddUserModels<AddUserModelsPayload, void> = async (a
       console.error('Server Error:', errorMsg);
       throw new Error(errorMsg);
     }
+
+    return json;
   } catch (error: any) {
     throw new HttpError(500, error.message);
   }

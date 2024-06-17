@@ -84,7 +84,7 @@ class SaasAppGenerator:
             logging.error(f"Command '{command}' failed with error: {e.output}")
             logging.error(f"Stderr output:\n{e.stderr}")
             logging.exception("Exception occurred")
-            raise Exception(f"Error: {e.stderr!s}") from e
+            raise RuntimeError(f"Error: {e.stderr!s}") from e
 
     def _setup_app_in_fly(self, temp_dir_path: Path, env: Dict[str, Any]) -> str:
         cwd = temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME

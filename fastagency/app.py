@@ -198,18 +198,13 @@ async def add_model(
 
         validated_model_dict = validated_model.model_dump()
         validated_model_json = validated_model.model_dump_json()
+        saas_app = None
 
         if type_name == "application":
-            saas_app = await _create_gh_repo(validated_model_dict, model_uuid)
-
-            background_tasks.add_task(
-                _deploy_saas_app,
-                saas_app,
-                user_uuid,
-                model_uuid,
-                type_name,
-                model_name,
-            )
+            try:
+                saas_app = await _create_gh_repo(validated_model_dict, model_uuid)
+            except RuntimeError as e:
+                raise HTTPException(status_code=422, detail=str(e)) from e
 
             validated_model_dict["app_deploy_status"] = "inprogress"
             validated_model_dict["gh_repo_url"] = saas_app.gh_repo_url
@@ -231,10 +226,24 @@ async def add_model(
                 }
             )
 
+        if saas_app is not None:
+            background_tasks.add_task(
+                _deploy_saas_app,
+                saas_app,
+                user_uuid,
+                model_uuid,
+                type_name,
+                model_name,
+            )
+
         return validated_model_dict
 
+    except HTTPException:
+        raise
+
     except Exception as e:
-        raise HTTPException(status_code=422, detail=str(e)) from e
+        msg = "Oops! Something went wrong. Please try again later."
+        raise HTTPException(status_code=422, detail=msg) from e
 
 
 @app.put("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")

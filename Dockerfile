@@ -45,8 +45,10 @@ RUN (type -p wget >/dev/null || (apt update && apt-get install wget -y)) \
 ENV PATH="${PATH}:/root/.local/bin"
 # Install flyctl
 RUN curl -L https://fly.io/install.sh | sh
-ENV PATH="${PATH}:/root/.fly/bin"
-Run which flyctl
+ENV FLYCTL_INSTALL="/root/.fly"
+ENV PATH="${PATH}:${FLYCTL_INSTALL}/bin"
+RUN which flyctl
+RUN env
 
 EXPOSE ${PORT}
 

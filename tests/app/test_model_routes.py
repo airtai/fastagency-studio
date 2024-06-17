@@ -181,6 +181,43 @@ class TestModelRoutes:
         assert actual == expected
 
     @pytest.mark.asyncio()
+    async def test_background_task_not_called_on_error(self, user_uuid: str) -> None:
+        team_uuid = str(uuid.uuid4())
+        application_uuid = str(uuid.uuid4())
+        gh_token_uuid = str(uuid.uuid4())
+        fly_token_uuid = str(uuid.uuid4())
+
+        model = {
+            "name": "Test",
+            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
+            "gh_token": {
+                "uuid": gh_token_uuid,
+                "type": "secret",
+                "name": "GitHubToken",
+            },
+            "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
+            "uuid": application_uuid,
+            "type_name": "application",
+            "model_name": "Application",
+        }
+        type_name = "application"
+        model_name = "Application"
+        model_uuid = str(uuid.uuid4())
+
+        with (
+            patch("fastagency.app.get_user", side_effect=Exception()),
+            patch("fastagency.db.helpers.get_db_connection", side_effect=Exception()),
+            patch("fastagency.app._deploy_saas_app") as mock_task,
+        ):
+            response = client.post(
+                f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",
+                json=model,
+            )
+
+        mock_task.assert_not_called()
+        assert response.status_code != 200
+
+    @pytest.mark.asyncio()
     async def test_update_model(
         self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:

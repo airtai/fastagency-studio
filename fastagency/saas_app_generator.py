@@ -14,6 +14,13 @@ import requests
 logging.basicConfig(level=logging.INFO)
 
 
+class CreateGHRepoError(Exception):
+    def __init__(self, message: str):
+        """Exception raised when an error occurs while creating a GitHub repository."""
+        self.message = message
+        super().__init__(self.message)
+
+
 class SaasAppGenerator:
     TEMPLATE_REPO_URL = "https://github.com/airtai/fastagency-wasp-app-template"
     EXTRACTED_TEMPLATE_DIR_NAME = "fastagency-wasp-app-template-main"
@@ -84,7 +91,7 @@ class SaasAppGenerator:
             logging.error(f"Command '{command}' failed with error: {e.output}")
             logging.error(f"Stderr output:\n{e.stderr}")
             logging.exception("Exception occurred")
-            raise
+            raise RuntimeError(f"Error: {e.stderr!s}") from e
 
     def _setup_app_in_fly(self, temp_dir_path: Path, env: Dict[str, Any]) -> str:
         cwd = temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
@@ -132,8 +139,10 @@ class SaasAppGenerator:
 
                     break
                 except Exception as e:
-                    # check if error contains "Name already exists on this account" string
-                    if attempt < max_retries - 1:
+                    if (
+                        "name already exists" in str(e).lower()
+                        and attempt < max_retries - 1
+                    ):
                         # add random 5 digit number to the repo name
                         repo_name = f"{repo_name}-{random.randint(10000, 99999)}"  # nosec B311
                         logging.info(
@@ -141,7 +150,7 @@ class SaasAppGenerator:
                         )
                     else:
                         logging.error(e)
-                        raise
+                        raise CreateGHRepoError(str(e)) from e
 
     @staticmethod
     def _get_account_name_and_repo_name(gh_repo_url: str) -> str:

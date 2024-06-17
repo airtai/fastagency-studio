@@ -75,7 +75,9 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
       const isNewApplicationAdded = propertyName === 'application' && !updateExistingModel;
       !isNewApplicationAdded && setShowAddModel(false);
     } catch (error) {
-      setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
+      console.log('error: ', error, 'error.message: ');
+      // setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -170,7 +172,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
         <NotificationBox type='error' onClick={onClick} message={notificationErrorMessage} />
       )}
       {isLoading && (
-        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
+        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 h-screen'>
           <Loader />
         </div>
       )}

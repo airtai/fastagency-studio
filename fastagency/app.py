@@ -11,7 +11,7 @@ from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from fastagency.saas_app_generator import SaasAppGenerator
+from fastagency.saas_app_generator import CreateGHRepoError, SaasAppGenerator
 
 from .db.helpers import (
     find_model_using_raw,
@@ -192,45 +192,55 @@ async def add_model(
     model: Dict[str, Any],
     background_tasks: BackgroundTasks,
 ) -> Dict[str, Any]:
-    registry = Registry.get_default()
-    validated_model = registry.validate(type_name, model_name, model)
+    try:
+        registry = Registry.get_default()
+        validated_model = registry.validate(type_name, model_name, model)
 
-    validated_model_dict = validated_model.model_dump()
-    validated_model_json = validated_model.model_dump_json()
+        validated_model_dict = validated_model.model_dump()
+        validated_model_json = validated_model.model_dump_json()
+        saas_app = None
 
-    if type_name == "application":
-        saas_app = await _create_gh_repo(validated_model_dict, model_uuid)
+        if type_name == "application":
+            saas_app = await _create_gh_repo(validated_model_dict, model_uuid)
 
-        background_tasks.add_task(
-            _deploy_saas_app,
-            saas_app,
-            user_uuid,
-            model_uuid,
-            type_name,
-            model_name,
-        )
+            validated_model_dict["app_deploy_status"] = "inprogress"
+            validated_model_dict["gh_repo_url"] = saas_app.gh_repo_url
 
-        validated_model_dict["app_deploy_status"] = "inprogress"
-        validated_model_dict["gh_repo_url"] = saas_app.gh_repo_url
+            updated_validated_model_dict = json.loads(validated_model_json)
+            updated_validated_model_dict["app_deploy_status"] = "inprogress"
+            updated_validated_model_dict["gh_repo_url"] = saas_app.gh_repo_url
+            validated_model_json = json.dumps(updated_validated_model_dict)
 
-        updated_validated_model_dict = json.loads(validated_model_json)
-        updated_validated_model_dict["app_deploy_status"] = "inprogress"
-        updated_validated_model_dict["gh_repo_url"] = saas_app.gh_repo_url
-        validated_model_json = json.dumps(updated_validated_model_dict)
+        await get_user(user_uuid=user_uuid)
+        async with get_db_connection() as db:
+            await db.model.create(
+                data={
+                    "uuid": model_uuid,
+                    "user_uuid": user_uuid,
+                    "type_name": type_name,
+                    "model_name": model_name,
+                    "json_str": validated_model_json,  # type: ignore[typeddict-item]
+                }
+            )
 
-    await get_user(user_uuid=user_uuid)
-    async with get_db_connection() as db:
-        await db.model.create(
-            data={
-                "uuid": model_uuid,
-                "user_uuid": user_uuid,
-                "type_name": type_name,
-                "model_name": model_name,
-                "json_str": validated_model_json,  # type: ignore[typeddict-item]
-            }
-        )
+        if saas_app is not None:
+            background_tasks.add_task(
+                _deploy_saas_app,
+                saas_app,
+                user_uuid,
+                model_uuid,
+                type_name,
+                model_name,
+            )
 
-    return validated_model_dict
+        return validated_model_dict
+
+    except CreateGHRepoError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
+
+    except Exception as e:
+        msg = "Oops! Something went wrong. Please try again later."
+        raise HTTPException(status_code=422, detail=msg) from e
 
 
 @app.put("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")

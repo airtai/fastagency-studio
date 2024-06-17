@@ -1,13 +1,15 @@
-from typing import Annotated, Dict, List, Optional, Union
+from typing import Annotated, List, Optional, Union
 from uuid import UUID
 
 from pydantic import Field
 from typing_extensions import TypeAlias
 
+from fastagency.openapi.client import Client
+
 from ...db.helpers import find_model_using_raw
 from ..base import Model
 from ..registry import Registry
-from ..toolboxes.toolbox import FunctionInfo, ToolboxRef
+from ..toolboxes.toolbox import ToolboxRef
 
 __all__ = ["AgentBaseModel"]
 
@@ -50,10 +52,8 @@ class AgentBaseModel(Model):
         ),
     ] = None
 
-    async def get_clients_from_toolboxes(
-        self, user_id: UUID
-    ) -> Dict[str, List[FunctionInfo]]:
-        clients: Dict[str, List[FunctionInfo]] = {}
+    async def get_clients_from_toolboxes(self, user_id: UUID) -> List[Client]:
+        clients: List[Client] = []
         for i in range(3):
             toolbox_property = getattr(self, f"toolbox_{i+1}")
             if toolbox_property is None:
@@ -64,11 +64,5 @@ class AgentBaseModel(Model):
                 **toolbox_dict["json_str"]
             )
             client = await toolbox_model.create_autogen(toolbox_property.uuid, user_id)
-            clients[f"client_{i+1}"] = client
+            clients.append(client)
         return clients
-
-    async def get_functions_from_toolboxes(self, user_id: UUID) -> List[FunctionInfo]:
-        clients = await self.get_clients_from_toolboxes(user_id)
-        functions = [x for _, xs in clients.items() for x in xs]
-
-        return functions

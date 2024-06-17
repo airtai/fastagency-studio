@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from typing import Annotated, Any, Callable, List, Optional, Tuple
+from typing import Annotated, Optional, Tuple
 from uuid import UUID
 
 import httpx
@@ -15,6 +14,7 @@ from ..registry import Registry
 URL = Annotated[HttpUrl, AfterValidator(lambda x: str(x).rstrip("/"))]
 
 __all__ = [
+    "Client",
     "OpenAPIAuth",
     "Toolbox",
 ]
@@ -45,13 +45,6 @@ class OpenAPIAuth(Model):
 OpenAPIAuthRef: TypeAlias = OpenAPIAuth.get_reference_model()  # type: ignore[valid-type]
 
 
-@dataclass
-class FunctionInfo:
-    name: str
-    description: Optional[str]
-    function: Callable[..., Any]
-
-
 @Registry.get_default().register("toolbox")
 class Toolbox(Model):
     openapi_url: Annotated[
@@ -70,7 +63,7 @@ class Toolbox(Model):
     ] = None
 
     @classmethod
-    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> List[FunctionInfo]:
+    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Client:
         my_model = await cls.from_db(model_id)
 
         # Download OpenAPI spec
@@ -81,16 +74,7 @@ class Toolbox(Model):
 
         client = Client.create(openapi_spec)
 
-        function_infos = [
-            FunctionInfo(
-                name=f.__name__.strip(),
-                description=f.__doc__.strip() if f.__doc__ else None,
-                function=f,
-            )
-            for f in client.registered_funcs
-        ]
-
-        return function_infos
+        return client
 
 
 ToolboxRef: TypeAlias = Toolbox.get_reference_model()  # type: ignore[valid-type]

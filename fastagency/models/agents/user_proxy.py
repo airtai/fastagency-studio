@@ -1,9 +1,10 @@
-from typing import Annotated, Any, Optional
+from typing import Annotated, List, Optional, Tuple
 from uuid import UUID
 
 import autogen
 from pydantic import Field
 
+from ...openapi.client import Client
 from ..base import Model
 from ..registry import register
 
@@ -18,7 +19,9 @@ class UserProxyAgent(Model):
     ] = None
 
     @classmethod
-    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+    async def create_autogen(
+        cls, model_id: UUID, user_id: UUID
+    ) -> Tuple[autogen.agentchat.AssistantAgent, List[Client]]:
         my_model = await cls.from_db(model_id)
 
         agent_name = my_model.name

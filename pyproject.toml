@@ -67,12 +67,12 @@ server = [
 
 # dev dependencies
 devdocs = [
-    "mkdocs-material==9.5.25",
-    "mkdocs-static-i18n==1.2.2",
+    "mkdocs-material==9.5.26",
+    "mkdocs-static-i18n==1.2.3",
     "mdx-include==1.4.2",
     "mkdocstrings[python]==0.25.1",
     "mkdocs-literate-nav==0.6.1",
-    "mkdocs-git-revision-date-localized-plugin==1.2.4",
+    "mkdocs-git-revision-date-localized-plugin==1.2.6",
     "mike==2.1.1",  # versioning
     "mkdocs-minify-plugin==0.8.0",
     "mkdocs-macros-plugin==1.0.5",  # includes with variables
@@ -106,7 +106,7 @@ test-core = [
 testing = [
     "fastagency[test-core]",
     "fastagency[server]", # Uvicorn is needed for testing
-    "pydantic-settings==2.2.1",
+    "pydantic-settings==2.3.1",
     "PyYAML==6.0.1",
     "watchfiles==0.21.0",
     "email-validator==2.1.1",

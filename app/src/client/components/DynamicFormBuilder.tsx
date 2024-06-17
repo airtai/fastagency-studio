@@ -348,7 +348,7 @@ Before you begin, ensure you have the following:
         </div>
       </form>
       {isLoading && (
-        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
+        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 h-screen'>
           <Loader />
         </div>
       )}

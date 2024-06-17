@@ -11,7 +11,7 @@ from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from fastagency.saas_app_generator import SaasAppGenerator
+from fastagency.saas_app_generator import CreateGHRepoError, SaasAppGenerator
 
 from .db.helpers import (
     find_model_using_raw,
@@ -201,10 +201,7 @@ async def add_model(
         saas_app = None
 
         if type_name == "application":
-            try:
-                saas_app = await _create_gh_repo(validated_model_dict, model_uuid)
-            except RuntimeError as e:
-                raise HTTPException(status_code=422, detail=str(e)) from e
+            saas_app = await _create_gh_repo(validated_model_dict, model_uuid)
 
             validated_model_dict["app_deploy_status"] = "inprogress"
             validated_model_dict["gh_repo_url"] = saas_app.gh_repo_url
@@ -238,8 +235,8 @@ async def add_model(
 
         return validated_model_dict
 
-    except HTTPException:
-        raise
+    except CreateGHRepoError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
 
     except Exception as e:
         msg = "Oops! Something went wrong. Please try again later."

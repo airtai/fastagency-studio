@@ -14,6 +14,13 @@ import requests
 logging.basicConfig(level=logging.INFO)
 
 
+class CreateGHRepoError(Exception):
+    def __init__(self, message: str):
+        """Exception raised when an error occurs while creating a GitHub repository."""
+        self.message = message
+        super().__init__(self.message)
+
+
 class SaasAppGenerator:
     TEMPLATE_REPO_URL = "https://github.com/airtai/fastagency-wasp-app-template"
     EXTRACTED_TEMPLATE_DIR_NAME = "fastagency-wasp-app-template-main"
@@ -143,7 +150,7 @@ class SaasAppGenerator:
                         )
                     else:
                         logging.error(e)
-                        raise
+                        raise CreateGHRepoError(str(e)) from e
 
     @staticmethod
     def _get_account_name_and_repo_name(gh_repo_url: str) -> str:

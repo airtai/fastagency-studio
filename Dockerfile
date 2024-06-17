@@ -43,6 +43,7 @@ RUN (type -p wget >/dev/null || (apt update && apt-get install wget -y)) \
     && apt install gh -y \
     && rm -rf /var/lib/apt/lists/*
 ENV PATH="${PATH}:/root/.local/bin"
+RUN which wasp
 # Install flyctl
 RUN curl -L https://fly.io/install.sh | sh
 

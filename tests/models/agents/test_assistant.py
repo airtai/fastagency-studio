@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 import autogen
 import pytest
+from fastapi import BackgroundTasks
 from pydantic import ValidationError
 
 from fastagency.app import add_model
@@ -244,6 +245,7 @@ class TestAssistantAgent:
             model_name=api_key_model.__name__,  # type: ignore [attr-defined]
             model_uuid=api_key_model_uuid,
             model=api_key.model_dump(),
+            background_tasks=BackgroundTasks(),
         )
 
         llm = llm_model(  # type: ignore [operator]
@@ -260,6 +262,7 @@ class TestAssistantAgent:
             model_name=llm_model.__name__,  # type: ignore [attr-defined]
             model_uuid=llm_model_uuid,
             model=llm.model_dump(),
+            background_tasks=BackgroundTasks(),
         )
 
         # add toolbox to database
@@ -276,6 +279,7 @@ class TestAssistantAgent:
             model_name=OpenAPIAuth.__name__,  # type: ignore [attr-defined]
             model_uuid=openapi_auth_model_uuid,
             model=openapi_auth.model_dump(),
+            background_tasks=BackgroundTasks(),
         )
 
         toolbox_uuid = str(uuid.uuid4())
@@ -293,6 +297,7 @@ class TestAssistantAgent:
             model_name=Toolbox.__name__,  # type: ignore [attr-defined]
             model_uuid=toolbox_uuid,
             model=toolbox.model_dump(),
+            background_tasks=BackgroundTasks(),
         )
 
         # add agent to database
@@ -309,6 +314,7 @@ class TestAssistantAgent:
             model_name=AssistantAgent.__name__,
             model_uuid=weatherman_assistant_model_uuid,
             model=weatherman_assistant_model.model_dump(),
+            background_tasks=BackgroundTasks(),
         )
 
         async def my_create_autogen(cls, model_id, user_id) -> Dict[str, Any]:  # type: ignore [no-untyped-def]

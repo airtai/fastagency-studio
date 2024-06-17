@@ -1,6 +1,8 @@
 import uuid
-from typing import Any, Type, TypeVar, Union
+from typing import Any, Optional, Type, TypeVar, Union
 from uuid import UUID
+
+from fastapi import BackgroundTasks
 
 from fastagency.app import add_model
 
@@ -29,7 +31,11 @@ async def get_model_by_ref(model_ref: ObjectReference) -> Model:
 
 
 async def create_model_ref(
-    cls: Type[T], type_name: str, user_uuid: Union[str, UUID], **kwargs: Any
+    cls: Type[T],
+    type_name: str,
+    user_uuid: Union[str, UUID],
+    background_tasks: Optional[BackgroundTasks] = None,
+    **kwargs: Any,
 ) -> ObjectReference:
     model = cls(**kwargs)
     model_uuid = uuid.uuid4()
@@ -40,6 +46,7 @@ async def create_model_ref(
         model_name=cls.__name__,  # type: ignore [attr-defined]
         model_uuid=str(model_uuid),
         model=model.model_dump(),
+        background_tasks=background_tasks,  # type: ignore[arg-type]
     )
 
     model_ref = cls.get_reference_model()(uuid=model_uuid)

@@ -3,7 +3,7 @@ import uuid
 from typing import Any, Dict
 
 import pytest
-from fastapi import HTTPException
+from fastapi import BackgroundTasks, HTTPException
 from fastapi.testclient import TestClient
 
 from fastagency.app import add_model, app, validate_toolbox
@@ -65,6 +65,7 @@ class TestValidateOpenAIKey:
             model_name=OpenAIAPIKey.__name__,  # type: ignore [attr-defined]
             model_uuid=api_key_model_uuid,
             model=api_key.model_dump(),
+            background_tasks=BackgroundTasks(),
         )
 
         # Remove api_key and send name alone to validate route

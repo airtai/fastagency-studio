@@ -6,6 +6,7 @@ interface AgentConversationHistoryProps {
   initialState?: boolean;
   isAgentWindow?: boolean;
   isDeploymentInstructions?: boolean;
+  containerTitle?: string;
 }
 
 const AgentConversationHistory: React.FC<AgentConversationHistoryProps> = ({
@@ -13,6 +14,7 @@ const AgentConversationHistory: React.FC<AgentConversationHistoryProps> = ({
   initialState = false,
   isAgentWindow = false,
   isDeploymentInstructions = false,
+  containerTitle,
 }) => {
   const [showHistory, setShowHistory] = useState(initialState);
 
@@ -38,6 +40,7 @@ const AgentConversationHistory: React.FC<AgentConversationHistoryProps> = ({
           maxHeight={maxH}
           isOpenOnLoad={isDeploymentInstructions ? isDeploymentInstructions : isAgentWindow}
           theme={isDeploymentInstructions ? 'modelDeployment' : null}
+          containerTitle={containerTitle}
         />
       </div>
     </div>

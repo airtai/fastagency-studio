@@ -2,6 +2,7 @@ import uuid
 from typing import Optional
 
 import pytest
+from fastapi import BackgroundTasks
 from pydantic import BaseModel
 
 from fastagency.app import add_model
@@ -48,6 +49,7 @@ class TestOpenAPIAuth:
             model_name=OpenAPIAuth.__name__,  # type: ignore [attr-defined]
             model_uuid=model_uuid,
             model=openapi_auth.model_dump(),
+            background_tasks=BackgroundTasks(),
         )
 
         # Call create_autogen

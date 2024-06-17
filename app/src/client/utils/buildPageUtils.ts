@@ -199,6 +199,7 @@ type filterDataToValidateType = {
 };
 
 export function filterDataToValidate(data: filterDataToValidateType): filterDataToValidateType {
+  // @ts-ignore
   return _.mapValues(data, function (o: string | dataObject) {
     return o !== null && typeof o === 'object' ? { uuid: o.uuid, type: o.type_name, name: o.model_name } : o;
   });

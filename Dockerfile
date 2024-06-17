@@ -47,9 +47,6 @@ RUN curl -L https://fly.io/install.sh | sh
 # Include wasp and flyctl in PATH
 ENV FLYCTL_INSTALL="/root/.fly"
 ENV PATH="${PATH}:/root/.local/bin:${FLYCTL_INSTALL}/bin"
-RUN which flyctl
-RUN env
-RUn which wasp
 
 EXPOSE ${PORT}
 

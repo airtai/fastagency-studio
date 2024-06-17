@@ -46,6 +46,9 @@ ENV PATH="${PATH}:/root/.local/bin"
 # Install flyctl
 RUN curl -L https://fly.io/install.sh | sh
 
+ENV FLYCTL_INSTALL="/root/.fly"
+ENV PATH="$FLYCTL_INSTALL/bin:$PATH"
+
 EXPOSE ${PORT}
 
 ENTRYPOINT []

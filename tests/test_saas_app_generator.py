@@ -126,7 +126,10 @@ def test_create_new_repository_retry(
         # Simulate "Name already exists on this account" error for the first two attempts
         mock_run.side_effect = [
             subprocess.CalledProcessError(
-                1, "gh", "Name already exists on this account"
+                1,
+                "gh",
+                output="Name already exists on this account",
+                stderr="Name already exists on this account",
             )
         ] * 2 + [None]
 
@@ -143,19 +146,39 @@ def test_create_new_repository_retry_fail(
 ) -> None:
     # Simulate "Name already exists on this account" error for all attempts
     mock_run.side_effect = subprocess.CalledProcessError(
-        1, "gh", "Name already exists on this account"
+        1,
+        "gh",
+        output="Name already exists on this account",
+        stderr="Name already exists on this account",
     )
 
     # Call the method and expect an exception
-    with pytest.raises(
-        Exception, match="Command 'gh' returned non-zero exit status 1."
-    ) as e:
+    with pytest.raises(Exception, match="Name already exists on this account") as e:
         saas_app_generator.create_new_repository(max_retries=3)
 
     assert "Name already exists on this account" in str(e)
 
     # Check that the method was called three times
     assert mock_run.call_count == 3
+
+
+@patch("subprocess.run")
+def test_create_new_repository_with_non_retry_exception(
+    mock_run: MagicMock, saas_app_generator: SaasAppGenerator
+) -> None:
+    # Simulate "Name already exists on this account" error for all attempts
+    mock_run.side_effect = subprocess.CalledProcessError(
+        1, "gh", output="Bad credentials", stderr="Bad credentials"
+    )
+
+    # Call the method and expect an exception
+    with pytest.raises(Exception, match="Bad credentials") as e:
+        saas_app_generator.create_new_repository(max_retries=3)
+
+    assert "Bad credentials" in str(e)
+
+    # Check that the method was called three times
+    assert mock_run.call_count == 1
 
 
 @patch("subprocess.run")

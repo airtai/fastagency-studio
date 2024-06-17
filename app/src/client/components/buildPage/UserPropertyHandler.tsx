@@ -75,7 +75,9 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
       const isNewApplicationAdded = propertyName === 'application' && !updateExistingModel;
       !isNewApplicationAdded && setShowAddModel(false);
     } catch (error) {
-      setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
+      console.log('error: ', error, 'error.message: ');
+      // setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
+      throw error;
     } finally {
       setIsLoading(false);
     }

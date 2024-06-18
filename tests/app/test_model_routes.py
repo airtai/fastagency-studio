@@ -200,8 +200,10 @@ class TestModelRoutes:
         )
         saas_app.gh_repo_url = "https://some-git-url"
         with (
-            patch("fastagency.app._create_gh_repo", return_value=saas_app) as mock_task,
-            patch("fastagency.app._deploy_saas_app"),
+            patch(
+                "fastagency.helpers._create_gh_repo", return_value=saas_app
+            ) as mock_task,
+            patch("fastagency.helpers._deploy_saas_app"),
         ):
             response = client.post(
                 f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",
@@ -253,7 +255,7 @@ class TestModelRoutes:
         with (
             patch("fastagency.app.get_user", side_effect=Exception()),
             patch("fastagency.db.helpers.get_db_connection", side_effect=Exception()),
-            patch("fastagency.app._deploy_saas_app") as mock_task,
+            patch("fastagency.helpers._deploy_saas_app") as mock_task,
         ):
             response = client.post(
                 f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",
@@ -325,8 +327,10 @@ class TestModelRoutes:
         )
         saas_app.gh_repo_url = "https://some-git-url"
         with (
-            patch("fastagency.app._create_gh_repo", return_value=saas_app) as mock_task,
-            patch("fastagency.app._deploy_saas_app"),
+            patch(
+                "fastagency.helpers._create_gh_repo", return_value=saas_app
+            ) as mock_task,
+            patch("fastagency.helpers._deploy_saas_app"),
         ):
             response = client.post(
                 f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",

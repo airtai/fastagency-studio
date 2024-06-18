@@ -3,7 +3,7 @@ import tempfile
 import uuid
 import zipfile
 from pathlib import Path
-from unittest.mock import ANY, MagicMock, mock_open, patch
+from unittest.mock import ANY, MagicMock, call, mock_open, patch
 
 import pytest
 
@@ -207,6 +207,72 @@ def test_set_github_actions_secrets(
 #     cwd=temp_dir,
 #     env={},
 # )
+
+
+@patch("fastagency.saas_app_generator._make_request")
+def test_get_github_username_and_primary_email(
+    mock_make_request: MagicMock, saas_app_generator: SaasAppGenerator
+) -> None:
+    # Arrange
+    mock_make_request.side_effect = [
+        {"name": "test_username", "login": "test_user", "id": 12345},  # First response
+        [
+            {
+                "email": "test_username@gmail.com",
+                "primary": False,
+                "verified": True,
+                "visibility": None,
+            },
+            {
+                "email": "test_username_primary@gmail.com",
+                "primary": True,
+                "verified": True,
+                "visibility": "public",
+            },
+        ],  # Second response
+    ]
+
+    actual = saas_app_generator._get_github_username_and_email()
+    expected = ("test_username", "test_username_primary@gmail.com")
+    assert actual == expected
+    mock_make_request.assert_has_calls(
+        [
+            call("https://api.github.com/user", ANY),  # Replace ANY with actual headers
+            call(
+                "https://api.github.com/user/emails", ANY
+            ),  # Replace ANY with actual headers
+        ]
+    )
+
+
+@patch("fastagency.saas_app_generator._make_request")
+def test_get_github_username_and_non_primary_email(
+    mock_make_request: MagicMock, saas_app_generator: SaasAppGenerator
+) -> None:
+    # Arrange
+    mock_make_request.side_effect = [
+        {"name": "test_username", "login": "test_user", "id": 12345},  # First response
+        [
+            {
+                "email": "test_username@gmail.com",
+                "primary": False,
+                "verified": True,
+                "visibility": None,
+            }
+        ],  # Second response
+    ]
+
+    actual = saas_app_generator._get_github_username_and_email()
+    expected = ("test_username", "test_username@gmail.com")
+    assert actual == expected
+    mock_make_request.assert_has_calls(
+        [
+            call("https://api.github.com/user", ANY),  # Replace ANY with actual headers
+            call(
+                "https://api.github.com/user/emails", ANY
+            ),  # Replace ANY with actual headers
+        ]
+    )
 
 
 # @patch("fastagency.saas_app_generator.SaasAppGenerator._set_gh_actions_to_create_pr")

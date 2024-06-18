@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.app.get_user
+::: fastagency.app.create_gh_repo

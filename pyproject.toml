@@ -67,7 +67,7 @@ server = [
 
 # dev dependencies
 devdocs = [
-    "mkdocs-material==9.5.26",
+    "mkdocs-material==9.5.27",
     "mkdocs-static-i18n==1.2.3",
     "mdx-include==1.4.2",
     "mkdocstrings[python]==0.25.1",
@@ -89,7 +89,7 @@ lint = [
     "types-Pygments",
     "types-docutils",
     "mypy==1.10.0",
-    "ruff==0.4.7",
+    "ruff==0.4.9",
     "pyupgrade-directories==0.3.0",
     "bandit==1.7.8",
     "semgrep==1.71.0",
@@ -98,7 +98,7 @@ lint = [
 
 test-core = [
     "coverage[toml]==7.5.3",
-    "pytest==8.2.1",
+    "pytest==8.2.2",
     "pytest-asyncio==0.23.6",
     "dirty-equals==0.7.1.post0",
 ]
@@ -106,7 +106,7 @@ test-core = [
 testing = [
     "fastagency[test-core]",
     "fastagency[server]", # Uvicorn is needed for testing
-    "pydantic-settings==2.3.1",
+    "pydantic-settings==2.3.3",
     "PyYAML==6.0.1",
     "watchfiles==0.21.0",
     "email-validator==2.1.1",

@@ -104,6 +104,54 @@ class TestModelRoutes:
                 assert actual[i][key] == expected[i][key]
 
     @pytest.mark.asyncio()
+    async def test_setup_user(self, user_uuid: str) -> None:
+        # Call setup route for user
+        response = client.get(f"/user/{user_uuid}/setup")
+        assert response.status_code == 200, response
+        expected_setup = {
+            "name": "WeatherToolbox",
+            "openapi_url": "https://weather.tools.staging.fastagency.ai/openapi.json",
+            "openapi_auth": None,
+        }
+        actual = response.json()
+        assert actual == expected_setup
+
+        # Call get all models route to check for the newly added weather toolbox
+        response = client.get(
+            f"/user/{user_uuid}/models", params={"type_name": "toolbox"}
+        )
+        assert response.status_code == 200
+        expected_toolbox_model = {
+            "user_uuid": user_uuid,
+            "type_name": "toolbox",
+            "model_name": "Toolbox",
+            "json_str": {
+                "name": "WeatherToolbox",
+                "openapi_url": "https://weather.tools.staging.fastagency.ai/openapi.json",
+                "openapi_auth": None,
+            },
+        }
+        actual_toolbox_model = next(
+            iter(
+                [
+                    model
+                    for model in response.json()
+                    if model["json_str"]["name"] == "WeatherToolbox"
+                ]
+            )
+        )
+
+        for key, value in expected_toolbox_model.items():
+            assert actual_toolbox_model[key] == value
+
+        # Call the setup route again and check the response
+        response = client.get(f"/user/{user_uuid}/setup")
+        assert response.status_code == 400
+        expected_setup_again = {"detail": "Weather toolbox already exists"}
+        actual = response.json()
+        assert actual == expected_setup_again
+
+    @pytest.mark.asyncio()
     async def test_add_model(self, user_uuid: str) -> None:
         model_uuid = str(uuid.uuid4())
         azure_oai_api_key = AzureOAIAPIKey(api_key="whatever", name="who cares?")
@@ -154,8 +202,10 @@ class TestModelRoutes:
         )
         saas_app.gh_repo_url = "https://some-git-url"
         with (
-            patch("fastagency.app._create_gh_repo", return_value=saas_app) as mock_task,
-            patch("fastagency.app._deploy_saas_app"),
+            patch(
+                "fastagency.helpers.create_gh_repo", return_value=saas_app
+            ) as mock_task,
+            patch("fastagency.helpers.deploy_saas_app"),
         ):
             response = client.post(
                 f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",
@@ -207,7 +257,7 @@ class TestModelRoutes:
         with (
             patch("fastagency.app.get_user", side_effect=Exception()),
             patch("fastagency.db.helpers.get_db_connection", side_effect=Exception()),
-            patch("fastagency.app._deploy_saas_app") as mock_task,
+            patch("fastagency.helpers.deploy_saas_app") as mock_task,
         ):
             response = client.post(
                 f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",
@@ -279,8 +329,10 @@ class TestModelRoutes:
         )
         saas_app.gh_repo_url = "https://some-git-url"
         with (
-            patch("fastagency.app._create_gh_repo", return_value=saas_app) as mock_task,
-            patch("fastagency.app._deploy_saas_app"),
+            patch(
+                "fastagency.helpers.create_gh_repo", return_value=saas_app
+            ) as mock_task,
+            patch("fastagency.helpers.deploy_saas_app"),
         ):
             response = client.post(
                 f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",

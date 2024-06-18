@@ -1,6 +1,6 @@
 import json
 import uuid
-from typing import Any, Dict, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 from uuid import UUID
 
 from fastapi import BackgroundTasks, HTTPException
@@ -185,7 +185,7 @@ async def create_model_ref(
 async def get_all_models_for_user(
     user_uuid: Union[str, UUID],
     type_name: Optional[str] = None,
-) -> list[Any]:
+) -> List[Any]:
     filters: Dict[str, Any] = {"user_uuid": user_uuid}
     if type_name:
         filters["type_name"] = type_name
@@ -193,4 +193,4 @@ async def get_all_models_for_user(
     async with get_db_connection() as db:
         models = await db.model.find_many(where=filters)  # type: ignore[arg-type]
 
-    return models
+    return models  # type: ignore[no-any-return]

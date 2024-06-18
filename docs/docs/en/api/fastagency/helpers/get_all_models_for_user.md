@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.app.get_user
+::: fastagency.helpers.get_all_models_for_user

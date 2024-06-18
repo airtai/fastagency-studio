@@ -10,11 +10,11 @@ search:
             - [add_model](api/fastagency/app/add_model.md)
             - [application_chat](api/fastagency/app/application_chat.md)
             - [chat](api/fastagency/app/chat.md)
+            - [create_toolbox_for_new_user](api/fastagency/app/create_toolbox_for_new_user.md)
             - [generate_chat_name](api/fastagency/app/generate_chat_name.md)
             - [get_all_models](api/fastagency/app/get_all_models.md)
             - [get_azure_llm_client](api/fastagency/app/get_azure_llm_client.md)
             - [get_models_schemas](api/fastagency/app/get_models_schemas.md)
-            - [get_user](api/fastagency/app/get_user.md)
             - [mask](api/fastagency/app/mask.md)
             - [models_delete](api/fastagency/app/models_delete.md)
             - [setup_user](api/fastagency/app/setup_user.md)
@@ -26,11 +26,15 @@ search:
             - helpers
                 - [find_model_using_raw](api/fastagency/db/helpers/find_model_using_raw.md)
                 - [get_db_connection](api/fastagency/db/helpers/get_db_connection.md)
+                - [get_user](api/fastagency/db/helpers/get_user.md)
                 - [get_wasp_db_url](api/fastagency/db/helpers/get_wasp_db_url.md)
         - faststream_app
             - [ping_handler](api/fastagency/faststream_app/ping_handler.md)
         - helpers
+            - [add_model_to_user](api/fastagency/helpers/add_model_to_user.md)
+            - [create_model](api/fastagency/helpers/create_model.md)
             - [create_model_ref](api/fastagency/helpers/create_model_ref.md)
+            - [get_all_models_for_user](api/fastagency/helpers/get_all_models_for_user.md)
             - [get_model_by_ref](api/fastagency/helpers/get_model_by_ref.md)
             - [get_model_by_uuid](api/fastagency/helpers/get_model_by_uuid.md)
         - io

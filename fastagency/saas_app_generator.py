@@ -7,11 +7,29 @@ import tempfile
 import uuid
 from os import environ
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
+import httpx
 import requests
 
 logging.basicConfig(level=logging.INFO)
+
+
+def _make_request(
+    url: str, headers: Dict[str, str]
+) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
+    with httpx.Client() as httpx_client:
+        response = httpx_client.get(url, headers=headers)  # type: ignore[arg-type]
+        response.raise_for_status()
+    ret_val = response.json()
+    if (
+        isinstance(ret_val, dict)
+        or isinstance(ret_val, list)
+        and all(isinstance(i, dict) for i in ret_val)
+    ):
+        return ret_val
+    else:
+        raise ValueError("Unexpected response from the API")
 
 
 class CreateGHRepoError(Exception):
@@ -158,17 +176,27 @@ class SaasAppGenerator:
         account_and_repo_name = "/".join(url_parts[-2:])
         return account_and_repo_name.strip()
 
-    #     def _set_gh_actions_to_create_pr(
-    #         self, account_and_repo_name: str, cwd: str, env: Dict[str, Any]
-    #     ) -> None:
-    #         command = f"""gh api \
-    #   --method PUT \
-    #   -H "Accept: application/vnd.github+json" \
-    #   -H "X-GitHub-Api-Version: 2022-11-28" \
-    #   /repos/{account_and_repo_name}/actions/permissions/workflow \
-    #    -f "default_workflow_permissions=read" -F "can_approve_pull_request_reviews=true"
-    # """
-    #         self._run_cli_command(command, cwd=cwd, env=env)
+    def _get_github_username_and_email(self) -> Tuple[str, str]:
+        headers = {
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {self.github_token}",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+
+        user_response: Dict[str, Any] = _make_request(
+            "https://api.github.com/user", headers
+        )  # type: ignore[assignment]
+        name = user_response["name"]
+
+        email_response: List[Dict[str, Any]] = _make_request(
+            "https://api.github.com/user/emails", headers
+        )  # type: ignore[assignment]
+        primary_email = next(
+            (email["email"] for email in email_response if email["primary"]),
+            email_response[0]["email"],
+        )
+
+        return name, primary_email
 
     def _initialize_git_and_push(
         self, temp_dir_path: Path, env: Dict[str, Any]
@@ -183,8 +211,12 @@ class SaasAppGenerator:
         command = "git add ."
         self._run_cli_command(command, cwd=cwd)
 
+        # get name and email from the GitHub token and pass it to git commit
+        github_username, github_email = self._get_github_username_and_email()
+
         # commit the changes
-        command = 'git commit -m "Create a new FastAgency SaaS application"'
+        # git commit -m "New feature added" --author="John Doe <john@doe.org>"
+        command = f'git commit -m "Create a new FastAgency SaaS application" --author="{github_username} <{github_email}>"'
         self._run_cli_command(command, cwd=cwd)
 
         # git remote add origin

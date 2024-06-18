@@ -104,6 +104,52 @@ class TestModelRoutes:
                 assert actual[i][key] == expected[i][key]
 
     @pytest.mark.asyncio()
+    async def test_setup_user(self, user_uuid: str) -> None:
+        response = client.get(f"/user/{user_uuid}/setup")
+        assert response.status_code == 200, response
+
+        expected_setup = {
+            "name": "WeatherToolbox",
+            "openapi_url": "https://weather.tools.staging.fastagency.ai/openapi.json",
+            "openapi_auth": None,
+        }
+        actual = response.json()
+        assert actual == expected_setup
+
+        response = client.get(f"/user/{user_uuid}/models")
+        assert response.status_code == 200
+
+        expected_toolbox_model = {
+            # "uuid": "27f16198-b00e-40b9-85bd-c0f7f637adb8",
+            "user_uuid": user_uuid,
+            "type_name": "toolbox",
+            "model_name": "Toolbox",
+            "json_str": {
+                "name": "WeatherToolbox",
+                "openapi_url": "https://weather.tools.staging.fastagency.ai/openapi.json",
+                "openapi_auth": None,
+            },
+        }
+
+        for model in response.json():
+            if (
+                model["type_name"] == "toolbox"
+                and model["json_str"]["name"] == "WeatherToolbox"
+            ):
+                actual_toolbox_model = model
+                break
+
+        for key in expected_toolbox_model:
+            assert actual_toolbox_model[key] == expected_toolbox_model[key]
+
+        response = client.get(f"/user/{user_uuid}/setup")
+        assert response.status_code == 400
+
+        expected_setup_again = {"detail": "Weather toolbox already exists"}
+        actual = response.json()
+        assert actual == expected_setup_again
+
+    @pytest.mark.asyncio()
     async def test_add_model(self, user_uuid: str) -> None:
         model_uuid = str(uuid.uuid4())
         azure_oai_api_key = AzureOAIAPIKey(api_key="whatever", name="who cares?")

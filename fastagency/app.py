@@ -2,7 +2,7 @@ import json
 import logging
 from os import environ
 from typing import Any, Dict, List, Optional, Tuple, Union
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import httpx
 import yaml
@@ -241,6 +241,47 @@ async def add_model(
     except Exception as e:
         msg = "Oops! Something went wrong. Please try again later."
         raise HTTPException(status_code=422, detail=msg) from e
+
+
+@app.get("/user/{user_uuid}/setup")
+async def setup_user(user_uuid: str) -> Dict[str, Any]:
+    """Setup user after creating.
+
+    This function is called after the user is created.
+    Currently it sets up weather toolbox for the user.
+    """
+    await get_user(user_uuid=user_uuid)
+    model_uuid = str(uuid4())
+    model_name = "WeatherToolbox"
+
+    domain = environ.get("DOMAIN", "localhost")
+    if "staging" in domain or "localhost" in domain:
+        toolbox_openapi_url = "https://weather.tools.staging.fastagency.ai/openapi.json"
+    else:
+        toolbox_openapi_url = "https://weather.tools.fastagency.ai/openapi.json"
+    toolbox = Toolbox(
+        name=model_name, openapi_url=toolbox_openapi_url, openapi_auth=None
+    )
+
+    # Check if default weather toolbox already exists
+    filters: Dict[str, Any] = {"user_uuid": user_uuid, "type_name": "toolbox"}
+    async with get_db_connection() as db:
+        models = await db.model.find_many(where=filters)  # type: ignore[arg-type]
+    for model in models:
+        if model.json_str == toolbox.model_dump():  # type: ignore[comparison-overlap]
+            raise HTTPException(
+                status_code=400, detail="Weather toolbox already exists"
+            )
+
+    result = await add_model(
+        user_uuid=user_uuid,
+        type_name="toolbox",
+        model_name=Toolbox.__name__,
+        model_uuid=model_uuid,
+        model=toolbox.model_dump(),
+        background_tasks=BackgroundTasks(),
+    )
+    return result
 
 
 @app.put("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")

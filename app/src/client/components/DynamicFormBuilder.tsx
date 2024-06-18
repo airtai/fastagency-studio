@@ -84,13 +84,20 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     defaultValues: updateExistingModel,
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
+  const [notification, setNotification] = useState({
+    message: 'Oops. Something went wrong. Please try again later.',
+    show: false,
+  });
   const [refValues, setRefValues] = useState<Record<string, any>>({});
   const [missingDependency, setMissingDependency] = useState<string[]>([]);
   const [instructionForApplication, setInstructionForApplication] = useState<Record<string, string> | null>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
   const isApplication = type_name === 'application';
+
+  const missingDependencyNotificationMsg = `Please create atleast one item of type "${missingDependency.join(
+    ', '
+  )}" to proceed.`;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -124,21 +131,16 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
         const errorMsgObj = JSON.parse(error.message);
         const errors = parseValidationErrors(errorMsgObj);
         setFormErrors(errors);
-      } catch (e) {
-        setShowNotification(true);
+      } catch (e: any) {
+        setNotification({ message: error.message || notification.message, show: true });
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const notificationMsg = 'Oops. Something went wrong. Please try again later.';
-  const missingDependencyNotificationMsg = `Please create atleast one item of type "${missingDependency.join(
-    ', '
-  )}" to proceed.`;
-
   const notificationOnClick = () => {
-    setShowNotification(false);
+    setNotification({ ...notification, show: false });
   };
   useEffect(() => {
     async function fetchPropertyReferenceValues() {
@@ -179,7 +181,8 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   useEffect(() => {
     if (missingDependency) {
       if (missingDependency.length > 0) {
-        setShowNotification(true);
+        // missingDependency.length > 0 ? missingDependencyNotificationMsg
+        setNotification({ ...notification, show: true });
       }
     }
   }, [missingDependency?.length]);
@@ -345,15 +348,15 @@ Before you begin, ensure you have the following:
         </div>
       </form>
       {isLoading && (
-        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
+        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 h-screen'>
           <Loader />
         </div>
       )}
-      {showNotification && (
+      {notification.show && (
         <NotificationBox
           type='error'
           onClick={notificationOnClick}
-          message={missingDependency.length > 0 ? missingDependencyNotificationMsg : notificationMsg}
+          message={missingDependency.length > 0 ? missingDependencyNotificationMsg : notification.message}
         />
       )}
     </>

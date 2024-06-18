@@ -231,8 +231,6 @@ Before you begin, ensure you have the following:
 <span class="ml-15">- Enter a name and set the <b>Optional Expiration</b> to 999999h, then click on <b>Create Organization Token</b> to generate a token.</span>
 <span class="ml-10"><b><u>Note</u></b>: If you already have a Fly.io account and created more than one organization, make sure you choose "Personal" as the organization </span>
 <span class="ml-10"> while creating the Fly.io API Token in the deployment steps below.</span>
-
-<span class="text-l inline-block my-2"><b><u>Note</u></b>: <b>We do not store your GitHub personal access token or Fly.io API token. So you need to provide them each time you deploy an application.</b></span>
 </div>
 `;
 

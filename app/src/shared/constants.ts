@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 export const DOCS_URL = 'https://docs.opensaas.sh';
 export const BLOG_URL = 'https://docs.opensaas.sh/blog';
-export const DISCORD_URL = 'https://discord.gg/KgtGKbsh';
+export const DISCORD_URL = 'https://discord.gg/kJjSGWrknU';
 export const GITHUB_URL = 'https://github.com/airtai/fastagency';
 
 const isDevEnv = process.env.NODE_ENV !== 'production';

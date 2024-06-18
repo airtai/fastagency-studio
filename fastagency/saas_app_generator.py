@@ -214,9 +214,15 @@ class SaasAppGenerator:
         # get name and email from the GitHub token and pass it to git commit
         github_username, github_email = self._get_github_username_and_email()
 
+        # set the git user name and email address for the repository
+        command = f'git config user.name "{github_username}"'
+        self._run_cli_command(command, cwd=cwd)
+
+        command = f'git config user.email "{github_email}"'
+        self._run_cli_command(command, cwd=cwd)
+
         # commit the changes
-        # git commit -m "New feature added" --author="John Doe <john@doe.org>"
-        command = f'git commit -m "Create a new FastAgency SaaS application" --author="{github_username} <{github_email}>"'
+        command = 'git commit -m "Create a new FastAgency SaaS application"'
         self._run_cli_command(command, cwd=cwd)
 
         # git remote add origin

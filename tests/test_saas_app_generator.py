@@ -3,7 +3,7 @@ import tempfile
 import uuid
 import zipfile
 from pathlib import Path
-from unittest.mock import ANY, MagicMock, mock_open, patch
+from unittest.mock import ANY, MagicMock, call, mock_open, patch
 
 import pytest
 
@@ -203,78 +203,119 @@ def test_set_github_actions_secrets(
             )
 
 
-# @patch("subprocess.run")
-# def test_set_gh_actions_to_create_pr(
-#     mock_run: MagicMock, saas_app_generator: SaasAppGenerator
-# ) -> None:
-#     with tempfile.TemporaryDirectory() as temp_dir:
-#         account_and_repo_name = "account/repo"
-#         saas_app_generator._set_gh_actions_to_create_pr(
-#             account_and_repo_name=account_and_repo_name, cwd=temp_dir, env={}
-#         )
+@patch("fastagency.saas_app_generator._make_request")
+def test_get_github_username_and_primary_email(
+    mock_make_request: MagicMock, saas_app_generator: SaasAppGenerator
+) -> None:
+    # Arrange
+    mock_make_request.side_effect = [
+        {"name": "test_username", "login": "test_user", "id": 12345},  # First response
+        [
+            {
+                "email": "test_username@gmail.com",
+                "primary": False,
+                "verified": True,
+                "visibility": None,
+            },
+            {
+                "email": "test_username_primary@gmail.com",
+                "primary": True,
+                "verified": True,
+                "visibility": "public",
+            },
+        ],  # Second response
+    ]
 
-#         expected_command = f"""gh api \
-#   --method PUT \
-#   -H "Accept: application/vnd.github+json" \
-#   -H "X-GitHub-Api-Version: 2022-11-28" \
-#   /repos/{account_and_repo_name}/actions/permissions/workflow \
-#    -f "default_workflow_permissions=read" -F "can_approve_pull_request_reviews=true"
-# """
-
-# mock_run.assert_any_call(
-#     expected_command,
-#     check=True,
-#     capture_output=True,
-#     shell=True,
-#     text=True,
-#     cwd=temp_dir,
-#     env={},
-# )
+    actual = saas_app_generator._get_github_username_and_email()
+    expected = ("test_username", "test_username_primary@gmail.com")
+    assert actual == expected
+    mock_make_request.assert_has_calls(
+        [
+            call("https://api.github.com/user", ANY),  # Replace ANY with actual headers
+            call(
+                "https://api.github.com/user/emails", ANY
+            ),  # Replace ANY with actual headers
+        ]
+    )
 
 
-# @patch("fastagency.saas_app_generator.SaasAppGenerator._set_gh_actions_to_create_pr")
+@patch("fastagency.saas_app_generator._make_request")
+def test_get_github_username_and_non_primary_email(
+    mock_make_request: MagicMock, saas_app_generator: SaasAppGenerator
+) -> None:
+    # Arrange
+    mock_make_request.side_effect = [
+        {"name": "test_username", "login": "test_user", "id": 12345},  # First response
+        [
+            {
+                "email": "test_username@gmail.com",
+                "primary": False,
+                "verified": True,
+                "visibility": None,
+            }
+        ],  # Second response
+    ]
+
+    actual = saas_app_generator._get_github_username_and_email()
+    expected = ("test_username", "test_username@gmail.com")
+    assert actual == expected
+    mock_make_request.assert_has_calls(
+        [
+            call("https://api.github.com/user", ANY),  # Replace ANY with actual headers
+            call(
+                "https://api.github.com/user/emails", ANY
+            ),  # Replace ANY with actual headers
+        ]
+    )
+
+
 @patch("subprocess.run")
 def test_initialize_git_and_push(
     mock_run: MagicMock,
-    # mock_set_gh_actions_to_create_pr: MagicMock,
     saas_app_generator: SaasAppGenerator,
 ) -> None:
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with (
+        tempfile.TemporaryDirectory() as temp_dir,
+        patch.object(
+            SaasAppGenerator,
+            "_get_account_name_and_repo_name",
+            return_value="account/repo",
+        ),
+        patch.object(
+            SaasAppGenerator,
+            "_get_github_username_and_email",
+            return_value=("John Doe", "john@doe.org"),
+        ),
+        patch.object(Path, "open", mock_open()),
+    ):
         temp_dir_path = Path(temp_dir)
         extracted_template_dir = (
             temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
         )
         extracted_template_dir.mkdir(parents=True, exist_ok=True)
 
-        with patch.object(
-            SaasAppGenerator,
-            "_get_account_name_and_repo_name",
-            return_value="account/repo",
-        ):
-            with patch.object(Path, "open", mock_open()):
-                saas_app_generator.create_new_repository(max_retries=1)
-                saas_app_generator._initialize_git_and_push(temp_dir_path, env={})
-            # mock_set_gh_actions_to_create_pr.assert_called_once()
+        saas_app_generator.create_new_repository(max_retries=1)
+        saas_app_generator._initialize_git_and_push(temp_dir_path, env={})
 
-            expected_commands = [
-                "git init",
-                "git add .",
-                'git commit -m "Create a new FastAgency SaaS application"',
-                "git branch -M main",
-                "git remote add origin git@github.com:account/repo.git",
-                "git push -u origin main",
-            ]
+        expected_commands = [
+            "git init",
+            "git add .",
+            'git commit -m "Create a new FastAgency SaaS application" --author="John Doe <john@doe.org>"',
+            "git branch -M main",
+            "git remote add origin git@github.com:account/repo.git",
+            "git push -u origin main",
+        ]
 
-            for command in expected_commands:
-                mock_run.assert_any_call(
-                    command,
-                    check=True,
-                    capture_output=True,
-                    shell=True,
-                    text=True,
-                    cwd=str(extracted_template_dir),
-                    env=None,
-                )
+        for command in expected_commands:
+            mock_run.assert_any_call(
+                command,
+                check=True,
+                capture_output=True,
+                shell=True,
+                text=True,
+                cwd=str(extracted_template_dir),
+                env=None,
+            )
 
 
 @patch("subprocess.run")

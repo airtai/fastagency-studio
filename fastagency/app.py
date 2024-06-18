@@ -11,7 +11,11 @@ from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from fastagency.saas_app_generator import CreateGHRepoError, SaasAppGenerator
+from fastagency.saas_app_generator import (
+    InvalidFlyTokenError,
+    InvalidGHTokenError,
+    SaasAppGenerator,
+)
 
 from .db.helpers import (
     find_model_using_raw,
@@ -133,7 +137,7 @@ async def get_all_models(
     return ret_val  # type: ignore[no-any-return]
 
 
-async def _create_gh_repo(
+async def _validate_tokens_and_create_gh_repo(
     model: Dict[str, Any],
     model_uuid: str,
 ) -> SaasAppGenerator:
@@ -154,6 +158,7 @@ async def _create_gh_repo(
         app_name=model["name"],
         fastagency_application_uuid=model_uuid,
     )
+    saas_app.validate_tokens()
     saas_app.create_new_repository()
     return saas_app
 
@@ -201,7 +206,9 @@ async def add_model(
         saas_app = None
 
         if type_name == "application":
-            saas_app = await _create_gh_repo(validated_model_dict, model_uuid)
+            saas_app = await _validate_tokens_and_create_gh_repo(
+                validated_model_dict, model_uuid
+            )
 
             validated_model_dict["app_deploy_status"] = "inprogress"
             validated_model_dict["gh_repo_url"] = saas_app.gh_repo_url
@@ -235,7 +242,10 @@ async def add_model(
 
         return validated_model_dict
 
-    except CreateGHRepoError as e:
+    except InvalidGHTokenError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
+
+    except InvalidFlyTokenError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
 
     except Exception as e:

@@ -154,7 +154,10 @@ class TestModelRoutes:
         )
         saas_app.gh_repo_url = "https://some-git-url"
         with (
-            patch("fastagency.app._create_gh_repo", return_value=saas_app) as mock_task,
+            patch(
+                "fastagency.app._validate_tokens_and_create_gh_repo",
+                return_value=saas_app,
+            ) as mock_task,
             patch("fastagency.app._deploy_saas_app"),
         ):
             response = client.post(
@@ -279,7 +282,10 @@ class TestModelRoutes:
         )
         saas_app.gh_repo_url = "https://some-git-url"
         with (
-            patch("fastagency.app._create_gh_repo", return_value=saas_app) as mock_task,
+            patch(
+                "fastagency.app._validate_tokens_and_create_gh_repo",
+                return_value=saas_app,
+            ) as mock_task,
             patch("fastagency.app._deploy_saas_app"),
         ):
             response = client.post(

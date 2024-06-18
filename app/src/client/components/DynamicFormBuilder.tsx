@@ -226,7 +226,7 @@ Before you begin, ensure you have the following:
 <span class="ml-5">1. GitHub account:</span>
 <span class="ml-10">- If you don't have a GitHub account, you can create one <a class="underline" href="https://github.com/signup" target="_blank" rel="noopener noreferrer">here</a>.</span>
 <span class="ml-10">- A GitHub personal access token. If you don't have one, you can generate it by following this <a class="underline" href="https://docs.github.com/github/authenticating-to-github/creating-a-personal-access-token" target="_blank" rel="noopener noreferrer">guide</a>.</span>
-<span class="ml-10"><b><u>Note</u></b>: The minimum required scopes for the token are: <b>repo</b>, <b>read:org</b>, and <b>gist</b>.</span>
+<span class="ml-10"><b><u>Note</u></b>: The minimum required scopes for the token are: <b>repo</b>, <b>workflow</b>, <b>read:org</b>, <b>gist</b>, <b>read:user</b> and <b>user:email</b>.</span>
 
 <span class="ml-5">2. Fly.io account:</span>
 <span class="ml-10">- If you don't have a Fly.io account, you can create one <a class="underline" href="https://fly.io/app/sign-up" target="_blank" rel="noopener noreferrer">here</a>. Fly provides free allowances for up to 3 VMs, so deploying a Wasp app </b></u></span>

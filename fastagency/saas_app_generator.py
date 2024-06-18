@@ -246,39 +246,40 @@ class SaasAppGenerator:
 
         # initialize a git repository
         command = "git init"
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         # add all files to the git repository
         command = "git add ."
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         # get name and email from the GitHub token and pass it to git commit
         github_username, github_email = self._get_github_username_and_email()
 
         # set the git user name and email address for the repository
         command = f'git config user.name "{github_username}"'
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         command = f'git config user.email "{github_email}"'
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         # commit the changes
         command = 'git commit -m "Create a new FastAgency SaaS application"'
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         # git remote add origin
         command = "git branch -M main"
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         # get the account name and repo name
         # create_cmd_output_file_path = Path(
         #     f"{temp_dir_path}/{SaasAppGenerator.ARTIFACTS_DIR}/create-repo.txt"
         # )
         account_and_repo_name = self._get_account_name_and_repo_name(self.gh_repo_url)
+        account_name = account_and_repo_name.split("/")[0]
 
         # set the remote origin
-        command = f"git remote add origin https://{self.github_token}@github.com/{account_and_repo_name}.git"
-        self._run_cli_command(command, cwd=cwd)
+        command = f"git remote add origin https://{account_name}:$GH_TOKEN@github.com/{account_and_repo_name}.git"
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         # Set GitHub Actions secrets
         self._set_github_actions_secrets(cwd, env=env)
@@ -288,18 +289,18 @@ class SaasAppGenerator:
 
         # push the changes
         command = "git push -u origin main"
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
     def _set_github_actions_secrets(self, cwd: str, env: Dict[str, Any]) -> None:
         secrets_env = env.copy()
 
         secrets_env["FLY_API_TOKEN"] = self.fly_api_token
         command = 'gh secret set FLY_API_TOKEN --body "$FLY_API_TOKEN" --app actions'
-        self._run_cli_command(command, cwd=cwd, env=env, print_output=True)
+        self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
 
         secrets_env["FASTAGENCY_APPLICATION_UUID"] = self.fastagency_application_uuid
         command = 'gh secret set FASTAGENCY_APPLICATION_UUID --body "$FASTAGENCY_APPLICATION_UUID" --app actions'
-        self._run_cli_command(command, cwd=cwd, env=env, print_output=True)
+        self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
 
     def execute(self) -> str:
         with tempfile.TemporaryDirectory() as temp_dir:

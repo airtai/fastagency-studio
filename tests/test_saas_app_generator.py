@@ -198,6 +198,10 @@ def test_set_github_actions_secrets(
             'gh secret set FLY_API_TOKEN --body "$FLY_API_TOKEN" --app actions',
             'gh secret set FASTAGENCY_APPLICATION_UUID --body "$FASTAGENCY_APPLICATION_UUID" --app actions',
         ]
+
+        # for call in mock_run.call_args_list:
+        #     print("Called with args:", call)
+
         for command in expected_commands:
             mock_run.assert_any_call(
                 command,
@@ -206,7 +210,10 @@ def test_set_github_actions_secrets(
                 shell=True,
                 text=True,
                 cwd=temp_dir,
-                env={},
+                env={
+                    "FLY_API_TOKEN": saas_app_generator.fly_api_token,
+                    "FASTAGENCY_APPLICATION_UUID": saas_app_generator.fastagency_application_uuid,
+                },
             )
 
 
@@ -312,9 +319,15 @@ def test_initialize_git_and_push(
             'git config user.email "john@doe.org"',
             'git commit -m "Create a new FastAgency SaaS application"',
             "git branch -M main",
-            f"git remote add origin https://{saas_app_generator.github_token}@github.com/account/repo.git",
+            "git remote add origin https://account:$GH_TOKEN@github.com/account/repo.git",
+            'gh secret set FLY_API_TOKEN --body "$FLY_API_TOKEN" --app actions',
+            'gh secret set FASTAGENCY_APPLICATION_UUID --body "$FASTAGENCY_APPLICATION_UUID" --app actions',
             "git push -u origin main",
         ]
+
+        # Print actual commands
+        # for call in mock_run.call_args_list:
+        #     print("Called with args:", call)
 
         for command in expected_commands:
             mock_run.assert_any_call(
@@ -324,7 +337,7 @@ def test_initialize_git_and_push(
                 shell=True,
                 text=True,
                 cwd=str(extracted_template_dir),
-                env=None,
+                env=ANY,
             )
 
 

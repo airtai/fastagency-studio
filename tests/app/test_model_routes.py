@@ -105,9 +105,9 @@ class TestModelRoutes:
 
     @pytest.mark.asyncio()
     async def test_setup_user(self, user_uuid: str) -> None:
+        # Call setup route for user
         response = client.get(f"/user/{user_uuid}/setup")
         assert response.status_code == 200, response
-
         expected_setup = {
             "name": "WeatherToolbox",
             "openapi_url": "https://weather.tools.staging.fastagency.ai/openapi.json",
@@ -116,11 +116,12 @@ class TestModelRoutes:
         actual = response.json()
         assert actual == expected_setup
 
-        response = client.get(f"/user/{user_uuid}/models")
+        # Call get all models route to check for the newly added weather toolbox
+        response = client.get(
+            f"/user/{user_uuid}/models", params={"type_name": "toolbox"}
+        )
         assert response.status_code == 200
-
         expected_toolbox_model = {
-            # "uuid": "27f16198-b00e-40b9-85bd-c0f7f637adb8",
             "user_uuid": user_uuid,
             "type_name": "toolbox",
             "model_name": "Toolbox",
@@ -130,21 +131,22 @@ class TestModelRoutes:
                 "openapi_auth": None,
             },
         }
+        actual_toolbox_model = next(
+            iter(
+                [
+                    model
+                    for model in response.json()
+                    if model["json_str"]["name"] == "WeatherToolbox"
+                ]
+            )
+        )
 
-        for model in response.json():
-            if (
-                model["type_name"] == "toolbox"
-                and model["json_str"]["name"] == "WeatherToolbox"
-            ):
-                actual_toolbox_model = model
-                break
+        for key, value in expected_toolbox_model.items():
+            assert actual_toolbox_model[key] == value
 
-        for key in expected_toolbox_model:
-            assert actual_toolbox_model[key] == expected_toolbox_model[key]
-
+        # Call the setup route again and check the response
         response = client.get(f"/user/{user_uuid}/setup")
         assert response.status_code == 400
-
         expected_setup_again = {"detail": "Weather toolbox already exists"}
         actual = response.json()
         assert actual == expected_setup_again

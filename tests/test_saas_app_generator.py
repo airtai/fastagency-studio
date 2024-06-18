@@ -269,6 +269,7 @@ def test_get_github_username_and_non_primary_email(
     )
 
 
+@patch.dict("os.environ", {}, clear=True)
 @patch("subprocess.run")
 def test_initialize_git_and_push(
     mock_run: MagicMock,
@@ -300,7 +301,9 @@ def test_initialize_git_and_push(
         expected_commands = [
             "git init",
             "git add .",
-            'git commit -m "Create a new FastAgency SaaS application" --author="John Doe <john@doe.org>"',
+            'git config user.name "John Doe"',
+            'git config user.email "john@doe.org"',
+            'git commit -m "Create a new FastAgency SaaS application"',
             "git branch -M main",
             "git remote add origin git@github.com:account/repo.git",
             "git push -u origin main",

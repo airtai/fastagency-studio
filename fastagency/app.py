@@ -6,6 +6,7 @@ from uuid import UUID
 
 import httpx
 import yaml
+from asyncer import asyncify
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from openai import AsyncAzureOpenAI
 from prisma.models import Model
@@ -170,7 +171,7 @@ async def _deploy_saas_app(
     type_name: str,
     model_name: str,
 ) -> None:
-    flyio_app_url = saas_app.execute()
+    flyio_app_url = await asyncify(saas_app.execute)()
 
     async with get_db_connection() as db:
         found_model = await find_model_using_raw(model_uuid=model_uuid)

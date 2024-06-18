@@ -188,19 +188,24 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   }, [missingDependency?.length]);
 
   useEffect(() => {
-    updateExistingModel &&
-      type_name === 'application' &&
+    if (updateExistingModel && type_name === 'application') {
+      const msg =
+        updateExistingModel.app_deploy_status === 'inprogress'
+          ? deploymentInprogressInstructions
+          : deploymentCompleteInstructions;
+
       //@ts-ignore
       setInstructionForApplication((prevState) => ({
         ...prevState,
         gh_repo_url: updateExistingModel.gh_repo_url,
         flyio_app_url: updateExistingModel.flyio_app_url,
-        instruction: deploymentCompleteInstructions
+        instruction: msg
           //@ts-ignore
           .replace('<gh_repo_url>', updateExistingModel.gh_repo_url)
           //@ts-ignore
           .replace('<flyio_app_url>', updateExistingModel.flyio_app_url),
       }));
+    }
   }, [isApplication]);
 
   useEffect(() => {

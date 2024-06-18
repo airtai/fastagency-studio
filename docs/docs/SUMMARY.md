@@ -108,7 +108,8 @@ search:
                 - [ArgumentWithDescription](api/fastagency/openapi/fastapi_code_generator_helpers/ArgumentWithDescription.md)
                 - [patch_get_parameter_type](api/fastagency/openapi/fastapi_code_generator_helpers/patch_get_parameter_type.md)
         - saas_app_generator
-            - [CreateGHRepoError](api/fastagency/saas_app_generator/CreateGHRepoError.md)
+            - [InvalidFlyTokenError](api/fastagency/saas_app_generator/InvalidFlyTokenError.md)
+            - [InvalidGHTokenError](api/fastagency/saas_app_generator/InvalidGHTokenError.md)
             - [SaasAppGenerator](api/fastagency/saas_app_generator/SaasAppGenerator.md)
             - [main](api/fastagency/saas_app_generator/main.md)
 - Contributing

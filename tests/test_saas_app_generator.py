@@ -7,7 +7,7 @@ from unittest.mock import ANY, MagicMock, call, mock_open, patch
 
 import pytest
 
-from fastagency.saas_app_generator import SaasAppGenerator
+from fastagency.saas_app_generator import InvalidGHTokenError, SaasAppGenerator
 
 
 @pytest.fixture()
@@ -140,6 +140,7 @@ def test_create_new_repository_retry(
         assert mock_run.call_count == 3
 
 
+@patch.dict("os.environ", {}, clear=True)
 @patch("subprocess.run")
 def test_create_new_repository_retry_fail(
     mock_run: MagicMock, saas_app_generator: SaasAppGenerator
@@ -153,10 +154,13 @@ def test_create_new_repository_retry_fail(
     )
 
     # Call the method and expect an exception
-    with pytest.raises(Exception, match="Name already exists on this account") as e:
+    expected_error_msg = (
+        "Unable to create a new GitHub repository. Please try again later."
+    )
+    with pytest.raises(InvalidGHTokenError, match=expected_error_msg) as e:
         saas_app_generator.create_new_repository(max_retries=3)
 
-    assert "Name already exists on this account" in str(e)
+    assert expected_error_msg in str(e)
 
     # Check that the method was called three times
     assert mock_run.call_count == 3
@@ -172,13 +176,16 @@ def test_create_new_repository_with_non_retry_exception(
     )
 
     # Call the method and expect an exception
-    with pytest.raises(Exception, match="Bad credentials") as e:
+    expected_error_msg = (
+        "Unable to create a new GitHub repository. Please try again later."
+    )
+    with pytest.raises(InvalidGHTokenError, match=expected_error_msg) as e:
         saas_app_generator.create_new_repository(max_retries=3)
 
-    assert "Bad credentials" in str(e)
+    assert expected_error_msg in str(e)
 
     # Check that the method was called three times
-    assert mock_run.call_count == 1
+    assert mock_run.call_count == 3
 
 
 @patch("subprocess.run")
@@ -188,9 +195,13 @@ def test_set_github_actions_secrets(
     with tempfile.TemporaryDirectory() as temp_dir:
         saas_app_generator._set_github_actions_secrets(cwd=temp_dir, env={})
         expected_commands = [
-            'gh secret set FLY_API_TOKEN --body "some-token" --app actions',
-            'gh secret set FASTAGENCY_APPLICATION_UUID --body "some-uuid" --app actions',
+            'gh secret set FLY_API_TOKEN --body "$FLY_API_TOKEN" --app actions',
+            'gh secret set FASTAGENCY_APPLICATION_UUID --body "$FASTAGENCY_APPLICATION_UUID" --app actions',
         ]
+
+        # for call in mock_run.call_args_list:
+        #     print("Called with args:", call)
+
         for command in expected_commands:
             mock_run.assert_any_call(
                 command,
@@ -199,7 +210,10 @@ def test_set_github_actions_secrets(
                 shell=True,
                 text=True,
                 cwd=temp_dir,
-                env={},
+                env={
+                    "FLY_API_TOKEN": saas_app_generator.fly_api_token,
+                    "FASTAGENCY_APPLICATION_UUID": saas_app_generator.fastagency_application_uuid,
+                },
             )
 
 
@@ -305,9 +319,15 @@ def test_initialize_git_and_push(
             'git config user.email "john@doe.org"',
             'git commit -m "Create a new FastAgency SaaS application"',
             "git branch -M main",
-            "git remote add origin git@github.com:account/repo.git",
+            "git remote add origin https://account:$GH_TOKEN@github.com/account/repo.git",
+            'gh secret set FLY_API_TOKEN --body "$FLY_API_TOKEN" --app actions',
+            'gh secret set FASTAGENCY_APPLICATION_UUID --body "$FASTAGENCY_APPLICATION_UUID" --app actions',
             "git push -u origin main",
         ]
+
+        # Print actual commands
+        # for call in mock_run.call_args_list:
+        #     print("Called with args:", call)
 
         for command in expected_commands:
             mock_run.assert_any_call(
@@ -317,7 +337,7 @@ def test_initialize_git_and_push(
                 shell=True,
                 text=True,
                 cwd=str(extracted_template_dir),
-                env=None,
+                env=ANY,
             )
 
 

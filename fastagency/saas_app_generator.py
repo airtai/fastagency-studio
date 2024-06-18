@@ -32,9 +32,16 @@ def _make_request(
         raise ValueError("Unexpected response from the API")
 
 
-class CreateGHRepoError(Exception):
+class InvalidGHTokenError(Exception):
     def __init__(self, message: str):
         """Exception raised when an error occurs while creating a GitHub repository."""
+        self.message = message
+        super().__init__(self.message)
+
+
+class InvalidFlyTokenError(Exception):
+    def __init__(self, message: str):
+        """Exception raised when an error occurs while validating the Fly.io token."""
         self.message = message
         super().__init__(self.message)
 
@@ -106,10 +113,9 @@ class SaasAppGenerator:
                 logging.info(result.stdout)
             logging.info("Command executed successfully")
         except subprocess.CalledProcessError as e:
-            logging.error(f"Command '{command}' failed with error: {e.output}")
-            logging.error(f"Stderr output:\n{e.stderr}")
-            logging.exception("Exception occurred")
-            raise RuntimeError(f"Error: {e.stderr!s}") from e
+            logging.error(f"Command '{command}' failed with error: {e}")
+            # logging.error(f"Stderr output:\n{e.stderr}")
+            raise RuntimeError(f"Failed to execute command: {command}") from e
 
     def _setup_app_in_fly(self, temp_dir_path: Path, env: Dict[str, Any]) -> str:
         cwd = temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
@@ -130,6 +136,43 @@ class SaasAppGenerator:
         self._run_cli_command(command, cwd=cwd_app, env=env)
 
         return repo_name
+
+    def validate_gh_token(self, env: Dict[str, Any]) -> None:
+        env["GH_TOKEN"] = self.github_token
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            try:
+                log_file = Path(temp_dir) / "log_file.txt"
+                command = f"gh auth status > {log_file}"
+                self._run_cli_command(command, env=env, print_output=True)
+
+                with log_file.open("r") as file:
+                    contents = file.read().strip()
+
+                if "GH_TOKEN is invalid" in contents:
+                    msg = "Invalid GitHub token. Please provide a valid GitHub token."
+                    raise Exception(msg)
+
+            except Exception as e:
+                logging.error(e)
+                raise InvalidGHTokenError(msg) from e
+
+    def validate_fly_token(self, env: Dict[str, Any]) -> None:
+        env["FLY_API_TOKEN"] = self.fly_api_token
+
+        try:
+            command = 'fly auth whoami --access-token "$FLY_API_TOKEN"'
+            self._run_cli_command(command, env=env)
+        except Exception as e:
+            logging.error(e)
+            msg = "Invalid Fly.io token. Please provide a valid Fly.io token."
+            raise InvalidFlyTokenError(msg) from e
+
+    def validate_tokens(self) -> None:
+        env = environ.copy()
+
+        self.validate_gh_token(env)
+        self.validate_fly_token(env)
 
     def create_new_repository(
         self,
@@ -157,10 +200,7 @@ class SaasAppGenerator:
 
                     break
                 except Exception as e:
-                    if (
-                        "name already exists" in str(e).lower()
-                        and attempt < max_retries - 1
-                    ):
+                    if attempt < max_retries - 1:
                         # add random 5 digit number to the repo name
                         repo_name = f"{repo_name}-{random.randint(10000, 99999)}"  # nosec B311
                         logging.info(
@@ -168,7 +208,8 @@ class SaasAppGenerator:
                         )
                     else:
                         logging.error(e)
-                        raise CreateGHRepoError(str(e)) from e
+                        msg = "Unable to create a new GitHub repository. Please try again later."
+                        raise InvalidGHTokenError(msg) from e
 
     @staticmethod
     def _get_account_name_and_repo_name(gh_repo_url: str) -> str:
@@ -205,39 +246,40 @@ class SaasAppGenerator:
 
         # initialize a git repository
         command = "git init"
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         # add all files to the git repository
         command = "git add ."
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         # get name and email from the GitHub token and pass it to git commit
         github_username, github_email = self._get_github_username_and_email()
 
         # set the git user name and email address for the repository
         command = f'git config user.name "{github_username}"'
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         command = f'git config user.email "{github_email}"'
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         # commit the changes
         command = 'git commit -m "Create a new FastAgency SaaS application"'
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         # git remote add origin
         command = "git branch -M main"
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         # get the account name and repo name
         # create_cmd_output_file_path = Path(
         #     f"{temp_dir_path}/{SaasAppGenerator.ARTIFACTS_DIR}/create-repo.txt"
         # )
         account_and_repo_name = self._get_account_name_and_repo_name(self.gh_repo_url)
+        account_name = account_and_repo_name.split("/")[0]
 
         # set the remote origin
-        command = f"git remote add origin git@github.com:{account_and_repo_name}.git"
-        self._run_cli_command(command, cwd=cwd)
+        command = f"git remote add origin https://{account_name}:$GH_TOKEN@github.com/{account_and_repo_name}.git"
+        self._run_cli_command(command, cwd=cwd, env=env)
 
         # Set GitHub Actions secrets
         self._set_github_actions_secrets(cwd, env=env)
@@ -247,17 +289,18 @@ class SaasAppGenerator:
 
         # push the changes
         command = "git push -u origin main"
-        self._run_cli_command(command, cwd=cwd)
+        self._run_cli_command(command, cwd=cwd, env=env)
 
     def _set_github_actions_secrets(self, cwd: str, env: Dict[str, Any]) -> None:
-        secrets = {
-            "FLY_API_TOKEN": self.fly_api_token,
-            "FASTAGENCY_APPLICATION_UUID": self.fastagency_application_uuid,
-        }
+        secrets_env = env.copy()
 
-        for key, value in secrets.items():
-            command = f'gh secret set {key} --body "{value}" --app actions'
-            self._run_cli_command(command, cwd=cwd, env=env, print_output=True)
+        secrets_env["FLY_API_TOKEN"] = self.fly_api_token
+        command = 'gh secret set FLY_API_TOKEN --body "$FLY_API_TOKEN" --app actions'
+        self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
+
+        secrets_env["FASTAGENCY_APPLICATION_UUID"] = self.fastagency_application_uuid
+        command = 'gh secret set FASTAGENCY_APPLICATION_UUID --body "$FASTAGENCY_APPLICATION_UUID" --app actions'
+        self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
 
     def execute(self) -> str:
         with tempfile.TemporaryDirectory() as temp_dir:

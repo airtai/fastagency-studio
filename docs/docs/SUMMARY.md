@@ -34,13 +34,13 @@ search:
             - [ping_handler](api/fastagency/faststream_app/ping_handler.md)
         - helpers
             - [add_model_to_user](api/fastagency/helpers/add_model_to_user.md)
-            - [create_gh_repo](api/fastagency/helpers/create_gh_repo.md)
             - [create_model](api/fastagency/helpers/create_model.md)
             - [create_model_ref](api/fastagency/helpers/create_model_ref.md)
             - [deploy_saas_app](api/fastagency/helpers/deploy_saas_app.md)
             - [get_all_models_for_user](api/fastagency/helpers/get_all_models_for_user.md)
             - [get_model_by_ref](api/fastagency/helpers/get_model_by_ref.md)
             - [get_model_by_uuid](api/fastagency/helpers/get_model_by_uuid.md)
+            - [validate_tokens_and_create_gh_repo](api/fastagency/helpers/validate_tokens_and_create_gh_repo.md)
         - io
             - ionats
                 - [ErrorResoponseModel](api/fastagency/io/ionats/ErrorResoponseModel.md)
@@ -117,7 +117,8 @@ search:
                 - [ArgumentWithDescription](api/fastagency/openapi/fastapi_code_generator_helpers/ArgumentWithDescription.md)
                 - [patch_get_parameter_type](api/fastagency/openapi/fastapi_code_generator_helpers/patch_get_parameter_type.md)
         - saas_app_generator
-            - [CreateGHRepoError](api/fastagency/saas_app_generator/CreateGHRepoError.md)
+            - [InvalidFlyTokenError](api/fastagency/saas_app_generator/InvalidFlyTokenError.md)
+            - [InvalidGHTokenError](api/fastagency/saas_app_generator/InvalidGHTokenError.md)
             - [SaasAppGenerator](api/fastagency/saas_app_generator/SaasAppGenerator.md)
             - [main](api/fastagency/saas_app_generator/main.md)
 - Contributing

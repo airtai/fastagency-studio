@@ -13,6 +13,7 @@ import { DOCS_URL } from '../../shared/constants';
 import { UserMenuItems } from '../components/UserMenuItems';
 import UserActionButton from '../components/UserActionButton';
 import DarkModeSwitcher from '../admin/components/DarkModeSwitcher';
+import SocialMediaIcons from '../components/SocialMediaIcons';
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -34,7 +35,7 @@ export default function LandingPage() {
               <NavLogo />
               <span className='ml-2 text-4xl font-rubik text-airt-font-base leading-6 dark:text-white'>FastAgency</span>
               <span className='ml-2 text-sm font-semibold leading-6 '>
-                <sup className='text-base text-airt-font-base'>βeta</sup>
+                <sup className='text-base text-airt-font-base'>αlpha</sup>
               </span>
             </a>
           </div>
@@ -67,9 +68,9 @@ export default function LandingPage() {
           <div className='hidden lg:flex lg:flex-1 lg:justify-end lg:align-end'>
             {/* <!-- Dark Mode Toggler --> */}
             <div className='flex items-center gap-3 2xsm:gap-7'>
-              {/* <ul className='flex justify-center items-center gap-2 2xsm:gap-4'>
-                <DarkModeSwitcher />
-              </ul> */}
+              <ul className='flex justify-center items-center gap-2 2xsm:gap-4'>
+                <SocialMediaIcons />
+              </ul>
               <UserActionButton user={user} renderGoToChat={false} theme='light' />
               {isUserLoading ? null : !user ? (
                 <Link to='/login'>
@@ -127,9 +128,9 @@ export default function LandingPage() {
                     <UserMenuItems user={user} />
                   )}
                 </div>
-                {/* <div className='py-6'>
-                  <DarkModeSwitcher />
-                </div> */}
+                <div className='py-6'>
+                  <SocialMediaIcons />
+                </div>
               </div>
             </div>
           </Dialog.Panel>

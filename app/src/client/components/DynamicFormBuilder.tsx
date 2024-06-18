@@ -51,7 +51,7 @@ const deploymentInprogressInstructions = `<div class="leading-loose ml-2 mr-2">
 <span class="ml-5">- You can either check the status on the GitHub repository page or come back to this page after a few minutes.</span>
 <span class="text-l inline-block my-2 underline">Troubleshooting: </span>
 <span class="ml-5"><b>Common Issues:</b></span>
-<span class="ml-10">- In Progress Status for Too Long: </span>
+<span class="ml-10">- In Progress Status for Too Long (more than 10 - 15 mins): </span>
 <span class="ml-13">- Ensure you have entered the correct gh_token and fly_token.</span>
 <span class="ml-13">- Verify that you have added a payment method to your Fly.io account; otherwise, the deployment will fail.</span>
 <span class="ml-13">- Review the deployment logs on Fly.io for any error messages. Access the logs by clicking on the server application</span>

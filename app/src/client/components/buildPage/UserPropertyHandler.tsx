@@ -140,7 +140,12 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     setNotificationErrorMessage(null);
   };
 
-  const propertyHeader = propertyName === 'llm' ? 'LLM' : capitalizeFirstLetter(propertyName);
+  const propertyHeader =
+    propertyName === 'llm'
+      ? 'LLM'
+      : propertyName === 'application'
+        ? 'Deployment'
+        : capitalizeFirstLetter(propertyName);
 
   return (
     <div className='flex-col flex items-start p-6 gap-3 w-full'>

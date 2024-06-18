@@ -113,7 +113,7 @@ async def get_all_models(
     return ret_val  # type: ignore[no-any-return]
 
 
-async def _create_gh_repo(
+async def create_gh_repo(
     model: Dict[str, Any],
     model_uuid: str,
 ) -> SaasAppGenerator:
@@ -138,7 +138,7 @@ async def _create_gh_repo(
     return saas_app
 
 
-async def _deploy_saas_app(
+async def deploy_saas_app(
     saas_app: SaasAppGenerator,
     user_uuid: str,
     model_uuid: str,

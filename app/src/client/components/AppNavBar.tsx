@@ -8,10 +8,10 @@ import { HiBars3 } from 'react-icons/hi2';
 import logo from '../static/logo.svg';
 import DropdownUser from './DropdownUser';
 import { DOCS_URL, BLOG_URL } from '../../shared/constants';
-import DarkModeSwitcher from '../admin/components/DarkModeSwitcher';
 import UserActionButton from '../components/UserActionButton';
 import { UserMenuItems } from '../components/UserMenuItems';
 import { navigation } from '../landing-page/contentSections';
+import SocialMediaIcons from './SocialMediaIcons';
 
 const NavLogo = () => <img className='h-8' src={logo} style={{ width: '1.8rem' }} alt='FastAgency' />;
 
@@ -63,9 +63,9 @@ export default function AppNavBar() {
           })}
         </div>
         <div className='hidden lg:flex lg:flex-1 gap-3 justify-end items-center'>
-          {/* <ul className='flex justify-center items-center gap-2 sm:gap-4'>
-            <DarkModeSwitcher />
-          </ul> */}
+          <ul className='flex justify-center items-center gap-2 sm:gap-4'>
+            <SocialMediaIcons />
+          </ul>
           <UserActionButton user={user} renderGoToChat={false} theme='light' />
           {isUserLoading ? null : !user ? (
             <a href={!user ? '/login' : '/account'} className='text-sm font-semibold leading-6 ml-4'>
@@ -128,9 +128,9 @@ export default function AppNavBar() {
                   <UserMenuItems user={user} setMobileMenuOpen={setMobileMenuOpen} />
                 )}
               </div>
-              {/* <div className='py-6'>
-                <DarkModeSwitcher />
-              </div> */}
+              <div className='py-6'>
+                <SocialMediaIcons />
+              </div>
             </div>
           </div>
         </Dialog.Panel>

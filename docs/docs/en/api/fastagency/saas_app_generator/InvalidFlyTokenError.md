@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.helpers.create_gh_repo
+::: fastagency.saas_app_generator.InvalidFlyTokenError

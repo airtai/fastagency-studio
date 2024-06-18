@@ -17,6 +17,7 @@ search:
             - [get_user](api/fastagency/app/get_user.md)
             - [mask](api/fastagency/app/mask.md)
             - [models_delete](api/fastagency/app/models_delete.md)
+            - [setup_user](api/fastagency/app/setup_user.md)
             - [update_model](api/fastagency/app/update_model.md)
             - [validate_model](api/fastagency/app/validate_model.md)
             - [validate_secret_model](api/fastagency/app/validate_secret_model.md)

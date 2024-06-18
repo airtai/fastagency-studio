@@ -312,7 +312,7 @@ def test_initialize_git_and_push(
             'git config user.email "john@doe.org"',
             'git commit -m "Create a new FastAgency SaaS application"',
             "git branch -M main",
-            "git remote add origin git@github.com:account/repo.git",
+            f"git remote add origin https://{saas_app_generator.github_token}@github.com/account/repo.git",
             "git push -u origin main",
         ]
 

@@ -277,7 +277,7 @@ class SaasAppGenerator:
         account_and_repo_name = self._get_account_name_and_repo_name(self.gh_repo_url)
 
         # set the remote origin
-        command = f"git remote add origin git@github.com:{account_and_repo_name}.git"
+        command = f"git remote add origin https://{self.github_token}@github.com/{account_and_repo_name}.git"
         self._run_cli_command(command, cwd=cwd)
 
         # Set GitHub Actions secrets

@@ -11,13 +11,10 @@ from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from fastagency.saas_app_generator import CreateGHRepoError, SaasAppGenerator
+from fastagency.saas_app_generator import SaasAppGenerator
 
-from .db.helpers import (
-    find_model_using_raw,
-    get_db_connection,
-    get_wasp_db_url,
-)
+from .db.helpers import find_model_using_raw, get_db_connection, get_user
+from .helpers import add_model_to_user, create_model, get_all_models_for_user
 from .models.registry import Registry, Schemas
 from .models.toolboxes.toolbox import Toolbox
 
@@ -91,18 +88,6 @@ async def validate_secret_model(
 # new routes by Harish
 
 
-async def get_user(user_uuid: Union[int, str]) -> Any:
-    wasp_db_url = await get_wasp_db_url()
-    async with get_db_connection(db_url=wasp_db_url) as db:
-        select_query = 'SELECT * from "User" where uuid=' + f"'{user_uuid}'"  # nosec: [B608]
-        user = await db.query_first(
-            select_query  # nosec: [B608]
-        )
-    if not user:
-        raise HTTPException(status_code=404, detail=f"user_uuid {user_uuid} not found")
-    return user
-
-
 async def mask(value: str) -> str:
     return value[:3] + "*" * (len(value) - 7) + value[-4:]
 
@@ -112,12 +97,7 @@ async def get_all_models(
     user_uuid: str,
     type_name: Optional[str] = None,
 ) -> List[Any]:
-    filters: Dict[str, Any] = {"user_uuid": user_uuid}
-    if type_name:
-        filters["type_name"] = type_name
-
-    async with get_db_connection() as db:
-        models = await db.model.find_many(where=filters)  # type: ignore[arg-type]
+    models = await get_all_models_for_user(user_uuid=user_uuid, type_name=type_name)
 
     ta = TypeAdapter(List[Model])
     ret_val_without_mask = ta.dump_python(models, serialize_as_any=True)  # type: ignore[call-arg]
@@ -133,7 +113,7 @@ async def get_all_models(
     return ret_val  # type: ignore[no-any-return]
 
 
-async def _create_gh_repo(
+async def create_gh_repo(
     model: Dict[str, Any],
     model_uuid: str,
 ) -> SaasAppGenerator:
@@ -158,7 +138,7 @@ async def _create_gh_repo(
     return saas_app
 
 
-async def _deploy_saas_app(
+async def deploy_saas_app(
     saas_app: SaasAppGenerator,
     user_uuid: str,
     model_uuid: str,
@@ -192,55 +172,49 @@ async def add_model(
     model: Dict[str, Any],
     background_tasks: BackgroundTasks,
 ) -> Dict[str, Any]:
-    try:
-        registry = Registry.get_default()
-        validated_model = registry.validate(type_name, model_name, model)
+    return await add_model_to_user(
+        user_uuid=user_uuid,
+        type_name=type_name,
+        model_name=model_name,
+        model_uuid=model_uuid,
+        model=model,
+        background_tasks=background_tasks,
+    )
 
-        validated_model_dict = validated_model.model_dump()
-        validated_model_json = validated_model.model_dump_json()
-        saas_app = None
 
-        if type_name == "application":
-            saas_app = await _create_gh_repo(validated_model_dict, model_uuid)
+async def create_toolbox_for_new_user(user_uuid: Union[str, UUID]) -> Dict[str, Any]:
+    await get_user(user_uuid=user_uuid)  # type: ignore[arg-type]
 
-            validated_model_dict["app_deploy_status"] = "inprogress"
-            validated_model_dict["gh_repo_url"] = saas_app.gh_repo_url
+    domain = environ.get("DOMAIN", "localhost")
+    toolbox_openapi_url = (
+        "https://weather.tools.staging.fastagency.ai/openapi.json"
+        if "staging" in domain or "localhost" in domain
+        else "https://weather.tools.fastagency.ai/openapi.json"
+    )
 
-            updated_validated_model_dict = json.loads(validated_model_json)
-            updated_validated_model_dict["app_deploy_status"] = "inprogress"
-            updated_validated_model_dict["gh_repo_url"] = saas_app.gh_repo_url
-            validated_model_json = json.dumps(updated_validated_model_dict)
+    # Check if default weather toolbox already exists
+    models = await get_all_models_for_user(user_uuid=user_uuid, type_name="toolbox")
+    if models:
+        raise HTTPException(status_code=400, detail="Weather toolbox already exists")
 
-        await get_user(user_uuid=user_uuid)
-        async with get_db_connection() as db:
-            await db.model.create(
-                data={
-                    "uuid": model_uuid,
-                    "user_uuid": user_uuid,
-                    "type_name": type_name,
-                    "model_name": model_name,
-                    "json_str": validated_model_json,  # type: ignore[typeddict-item]
-                }
-            )
+    _, validated_model = await create_model(
+        cls=Toolbox,
+        type_name="toolbox",
+        user_uuid=user_uuid,
+        name="WeatherToolbox",
+        openapi_url=toolbox_openapi_url,
+    )
+    return validated_model
 
-        if saas_app is not None:
-            background_tasks.add_task(
-                _deploy_saas_app,
-                saas_app,
-                user_uuid,
-                model_uuid,
-                type_name,
-                model_name,
-            )
 
-        return validated_model_dict
+@app.get("/user/{user_uuid}/setup")
+async def setup_user(user_uuid: str) -> Dict[str, Any]:
+    """Setup user after creating.
 
-    except CreateGHRepoError as e:
-        raise HTTPException(status_code=422, detail=str(e)) from e
-
-    except Exception as e:
-        msg = "Oops! Something went wrong. Please try again later."
-        raise HTTPException(status_code=422, detail=msg) from e
+    This function is called after the user is created.
+    Currently it sets up weather toolbox for the user.
+    """
+    return await create_toolbox_for_new_user(user_uuid)
 
 
 @app.put("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")

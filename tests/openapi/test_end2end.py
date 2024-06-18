@@ -556,7 +556,9 @@ class HTTPValidationError(BaseModel):
         }
         assert func_desc == expected_func_desc
 
-    def test_register_for_llm(self, client: Client, llm_config: Dict[str, Any]) -> None:
+    def test_register_for_llm(
+        self, client: Client, azure_llm_config: Dict[str, Any]
+    ) -> None:
         expected_tools = [
             {
                 "type": "function",
@@ -680,14 +682,14 @@ class HTTPValidationError(BaseModel):
             },
         ]
 
-        agent = ConversableAgent(name="agent", llm_config=llm_config)
+        agent = ConversableAgent(name="agent", llm_config=azure_llm_config)
         client.register_for_llm(agent)
         tools = agent.llm_config["tools"]
 
         assert tools == expected_tools
 
     def test_register_for_execution(
-        self, client: Client, llm_config: Dict[str, Any]
+        self, client: Client, azure_llm_config: Dict[str, Any]
     ) -> None:
         expected_keys = {
             "create_item_items__post",
@@ -695,7 +697,7 @@ class HTTPValidationError(BaseModel):
             "update_item_items__item_id__put",
             "delete_item_items__item_id__delete",
         }
-        agent = ConversableAgent(name="agent", llm_config=llm_config)
+        agent = ConversableAgent(name="agent", llm_config=azure_llm_config)
         client.register_for_execution(agent)
         function_map = agent.function_map
 

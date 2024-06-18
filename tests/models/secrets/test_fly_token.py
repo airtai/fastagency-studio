@@ -25,7 +25,7 @@ class TestFlyToken:
     async def test_github_token_model_create_autogen(
         self,
         fly_token_model: Model,
-        llm_config: Dict[str, Any],
+        azure_llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:

@@ -35,7 +35,7 @@ class TestAzureOAI:
             },
             "base_url": "https://my-model.openai.azure.com",
             "api_type": "azure",
-            "api_version": "2024-02-15-preview",
+            "api_version": "2024-02-01",
             "temperature": 0.8,
         }
         assert model.model_dump() == expected
@@ -106,8 +106,8 @@ class TestAzureOAI:
                     "type": "string",
                 },
                 "api_version": {
-                    "default": "2024-02-15-preview",
-                    "description": "The version of the Azure OpenAI API, e.g. '2024-02-15-preview'",
+                    "default": "2024-02-01",
+                    "description": "The version of the Azure OpenAI API, e.g. '2024-02-01'",
                     "enum": [
                         "2023-05-15",
                         "2023-06-01-preview",
@@ -143,7 +143,7 @@ class TestAzureOAI:
         self,
         llm_model: Model,
         api_key_model: Model,
-        llm_config: Dict[str, Any],
+        azure_llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
@@ -190,7 +190,7 @@ class TestAzureOAI:
             user_id=uuid.UUID(user_uuid),
         )
         assert isinstance(actual_llm_config, dict)
-        assert actual_llm_config == llm_config
+        assert actual_llm_config == azure_llm_config
 
 
 class TestAzureOAIAPIKey:
@@ -200,7 +200,7 @@ class TestAzureOAIAPIKey:
     async def test_azure_api_key_model_create_autogen(
         self,
         api_key_model: Model,
-        llm_config: Dict[str, Any],
+        azure_llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:

@@ -277,7 +277,7 @@ class TestMultiAgentTeam:
         enable_monkeypatch: bool,
         llm_model: Model,
         api_key_model: Model,
-        llm_config: Dict[str, Any],
+        azure_llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:

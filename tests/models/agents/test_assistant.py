@@ -228,7 +228,7 @@ class TestAssistantAgent:
         self,
         llm_model: Model,
         api_key_model: Model,
-        llm_config: Dict[str, Any],
+        azure_llm_config: Dict[str, Any],
         user_uuid: str,
         fastapi_openapi_url: str,
         monkeypatch: pytest.MonkeyPatch,
@@ -318,7 +318,7 @@ class TestAssistantAgent:
         )
 
         async def my_create_autogen(cls, model_id, user_id) -> Dict[str, Any]:  # type: ignore [no-untyped-def]
-            return llm_config
+            return azure_llm_config
 
         # Monkeypatch llm and call create_autogen
         monkeypatch.setattr(AzureOAI, "create_autogen", my_create_autogen)

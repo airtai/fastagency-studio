@@ -8,7 +8,6 @@ import uuid
 from platform import system
 from typing import Annotated, Any, AsyncIterator, Dict, Iterator, Optional
 
-import httpx
 import openai
 import pytest
 import pytest_asyncio
@@ -47,7 +46,7 @@ async def user_uuid() -> AsyncIterator[str]:
 
 
 @pytest.fixture()
-def llm_config() -> Dict[str, Any]:
+def azure_llm_config() -> Dict[str, Any]:
     api_key = os.getenv("AZURE_OPENAI_API_KEY", default="*" * 64)
     api_base = os.getenv(
         "AZURE_API_ENDPOINT", default="https://my-deployment.openai.azure.com"
@@ -73,16 +72,6 @@ def llm_config() -> Dict[str, Any]:
     }
 
     return llm_config
-
-
-@pytest.mark.azure_oai()
-def test_llm_config_fixture(llm_config: Dict[str, Any]) -> None:
-    assert set(llm_config.keys()) == {"config_list", "temperature"}
-    assert isinstance(llm_config["config_list"], list)
-    assert llm_config["temperature"] == 0.8
-
-    for k in ["model", "api_key", "base_url", "api_type", "api_version"]:
-        assert len(llm_config["config_list"][0][k]) > 3
 
 
 # FastAPI app for testing
@@ -140,12 +129,6 @@ def find_free_port() -> int:
         return s.getsockname()[1]  # type: ignore [no-any-return]
 
 
-def test_find_free_port() -> None:
-    port = find_free_port()
-    assert isinstance(port, int)
-    assert 1024 <= port <= 65535
-
-
 def run_server(app: FastAPI, host: str = "127.0.0.1", port: int = 8000) -> None:
     uvicorn.run(app, host=host, port=port)
 
@@ -182,18 +165,6 @@ def fastapi_openapi_url() -> Iterator[str]:
         yield openapi_url
 
 
-def test_fastapi_openapi(fastapi_openapi_url: str) -> None:
-    assert isinstance(fastapi_openapi_url, str)
-
-    resp = httpx.get(fastapi_openapi_url)
-    assert resp.status_code == 200
-    resp_json = resp.json()
-    assert "openapi" in resp_json
-    assert "servers" in resp_json
-    assert len(resp_json["servers"]) == 1
-    assert resp_json["info"]["title"] == "FastAPI"
-
-
 @pytest.fixture(scope="session")
 def weather_fastapi_openapi_url() -> Iterator[str]:
     host = "127.0.0.1"
@@ -207,18 +178,6 @@ def weather_fastapi_openapi_url() -> Iterator[str]:
         time.sleep(1 if system() != "Windows" else 5)  # let the server start
 
         yield openapi_url
-
-
-def test_weather_fastapi_openapi(weather_fastapi_openapi_url: str) -> None:
-    assert isinstance(weather_fastapi_openapi_url, str)
-
-    resp = httpx.get(weather_fastapi_openapi_url)
-    assert resp.status_code == 200
-    resp_json = resp.json()
-    assert "openapi" in resp_json
-    assert "servers" in resp_json
-    assert len(resp_json["servers"]) == 1
-    assert resp_json["info"]["title"] == "Weather"
 
 
 @pytest_asyncio.fixture()  # type: ignore[misc]
@@ -267,8 +226,3 @@ async def weather_toolbox_ref(
     )
 
     return toolbox
-
-
-@pytest.mark.asyncio()
-async def test_weather_toolbox_ref(weather_toolbox_ref: ObjectReference) -> None:
-    assert isinstance(weather_toolbox_ref, ObjectReference)

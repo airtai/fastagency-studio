@@ -36,7 +36,7 @@ def as_dict(model: BaseModel) -> Dict[str, Any]:
 class TestAutogen:
     @pytest.mark.azure_oai()
     def test_ioconsole(
-        self, llm_config: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
+        self, azure_llm_config: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
     ) -> None:
         d = {"count": 0}
 
@@ -56,7 +56,7 @@ class TestAutogen:
         weather_man = autogen.agentchat.AssistantAgent(
             name="weather_man",
             system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
-            llm_config=llm_config,
+            llm_config=azure_llm_config,
             code_execution_config=False,
         )
 
@@ -90,13 +90,13 @@ class TestAutogen:
     @pytest.mark.nats()
     @pytest.mark.asyncio()
     async def test_ionats_success(  # noqa: C901
-        self, llm_config: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
+        self, azure_llm_config: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
     ) -> None:
         user_id = uuid.uuid4()
         thread_id = uuid.uuid4()
         team_id = uuid.uuid4()
 
-        llm_config["temperature"] = 0.0
+        azure_llm_config["temperature"] = 0.0
 
         ### begin sending inputs to server
 
@@ -139,7 +139,7 @@ class TestAutogen:
             weather_man = autogen.agentchat.AssistantAgent(
                 name="weather_man",
                 system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
-                llm_config=llm_config,
+                llm_config=azure_llm_config,
                 code_execution_config=False,
             )
 
@@ -237,7 +237,7 @@ class TestAutogen:
     @pytest.mark.nats()
     @pytest.mark.asyncio()
     async def test_ionats_error_msg(
-        self, llm_config: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
+        self, azure_llm_config: Dict[str, Any], monkeypatch: pytest.MonkeyPatch
     ) -> None:
         user_id = uuid.uuid4()
         thread_id = uuid.uuid4()

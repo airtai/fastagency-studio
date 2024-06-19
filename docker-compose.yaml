@@ -1,14 +1,3 @@
-x-logging: &default-logging
-  driver: loki
-  options:
-    loki-url: 'http://localhost:3100/api/prom/push'
-    loki-pipeline-stages: |
-      - multiline:
-          firstline: '^\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2}'
-          max_wait_time: 3s
-      - regex:
-          expression: '^(?P<time>\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2},d{3}) (?P<message>(?s:.*))$$'
-
 version: "3.4"
 
 name: fastagency
@@ -27,7 +16,6 @@ services:
       - AZURE_GPT35_MODEL=${AZURE_GPT35_MODEL}
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
       - TOGETHER_API_KEY=${TOGETHER_API_KEY}
-    logging: *default-logging
     networks:
       - fastagency
 

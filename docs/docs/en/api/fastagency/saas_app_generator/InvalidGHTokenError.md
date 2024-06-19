@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.saas_app_generator.CreateGHRepoError
+::: fastagency.saas_app_generator.InvalidGHTokenError

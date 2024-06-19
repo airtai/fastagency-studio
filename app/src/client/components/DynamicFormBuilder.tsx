@@ -188,19 +188,24 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   }, [missingDependency?.length]);
 
   useEffect(() => {
-    updateExistingModel &&
-      type_name === 'application' &&
+    if (updateExistingModel && type_name === 'application') {
+      const msg =
+        updateExistingModel.app_deploy_status === 'inprogress'
+          ? deploymentInprogressInstructions
+          : deploymentCompleteInstructions;
+
       //@ts-ignore
       setInstructionForApplication((prevState) => ({
         ...prevState,
         gh_repo_url: updateExistingModel.gh_repo_url,
         flyio_app_url: updateExistingModel.flyio_app_url,
-        instruction: deploymentCompleteInstructions
+        instruction: msg
           //@ts-ignore
           .replace('<gh_repo_url>', updateExistingModel.gh_repo_url)
           //@ts-ignore
           .replace('<flyio_app_url>', updateExistingModel.flyio_app_url),
       }));
+    }
   }, [isApplication]);
 
   useEffect(() => {
@@ -221,7 +226,7 @@ Before you begin, ensure you have the following:
 <span class="ml-5">1. GitHub account:</span>
 <span class="ml-10">- If you don't have a GitHub account, you can create one <a class="underline" href="https://github.com/signup" target="_blank" rel="noopener noreferrer">here</a>.</span>
 <span class="ml-10">- A GitHub personal access token. If you don't have one, you can generate it by following this <a class="underline" href="https://docs.github.com/github/authenticating-to-github/creating-a-personal-access-token" target="_blank" rel="noopener noreferrer">guide</a>.</span>
-<span class="ml-10"><b><u>Note</u></b>: The minimum required scopes for the token are: <b>repo</b>, <b>read:org</b>, and <b>gist</b>.</span>
+<span class="ml-10"><b><u>Note</u></b>: The minimum required scopes for the token are: <b>repo</b>, <b>workflow</b>, <b>read:org</b>, <b>gist</b> and <b>user:email</b>.</span>
 
 <span class="ml-5">2. Fly.io account:</span>
 <span class="ml-10">- If you don't have a Fly.io account, you can create one <a class="underline" href="https://fly.io/app/sign-up" target="_blank" rel="noopener noreferrer">here</a>. Fly provides free allowances for up to 3 VMs, so deploying a Wasp app </b></u></span>
@@ -231,8 +236,6 @@ Before you begin, ensure you have the following:
 <span class="ml-15">- Enter a name and set the <b>Optional Expiration</b> to 999999h, then click on <b>Create Organization Token</b> to generate a token.</span>
 <span class="ml-10"><b><u>Note</u></b>: If you already have a Fly.io account and created more than one organization, make sure you choose "Personal" as the organization </span>
 <span class="ml-10"> while creating the Fly.io API Token in the deployment steps below.</span>
-
-<span class="text-l inline-block my-2"><b><u>Note</u></b>: <b>We do not store your GitHub personal access token or Fly.io API token. So you need to provide them each time you deploy an application.</b></span>
 </div>
 `;
 

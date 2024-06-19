@@ -3,9 +3,14 @@ import uuid
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 from uuid import UUID
 
+from asyncer import asyncify
 from fastapi import BackgroundTasks, HTTPException
 
-from fastagency.saas_app_generator import CreateGHRepoError, SaasAppGenerator
+from fastagency.saas_app_generator import (
+    InvalidFlyTokenError,
+    InvalidGHTokenError,
+    SaasAppGenerator,
+)
 
 # from fastagency.app import add_model
 from .db.helpers import find_model_using_raw, get_db_connection, get_user
@@ -32,7 +37,7 @@ async def get_model_by_ref(model_ref: ObjectReference) -> Model:
     return await get_model_by_uuid(model_ref.uuid)
 
 
-async def create_gh_repo(
+async def validate_tokens_and_create_gh_repo(
     model: Dict[str, Any],
     model_uuid: str,
 ) -> SaasAppGenerator:
@@ -53,6 +58,8 @@ async def create_gh_repo(
         app_name=model["name"],
         fastagency_application_uuid=model_uuid,
     )
+
+    saas_app.validate_tokens()
     saas_app.create_new_repository()
     return saas_app
 
@@ -64,7 +71,7 @@ async def deploy_saas_app(
     type_name: str,
     model_name: str,
 ) -> None:
-    flyio_app_url = saas_app.execute()
+    flyio_app_url = await asyncify(saas_app.execute)()
 
     async with get_db_connection() as db:
         found_model = await find_model_using_raw(model_uuid=model_uuid)
@@ -99,7 +106,9 @@ async def add_model_to_user(
         saas_app = None
 
         if type_name == "application":
-            saas_app = await create_gh_repo(validated_model_dict, model_uuid)
+            saas_app = await validate_tokens_and_create_gh_repo(
+                validated_model_dict, model_uuid
+            )
 
             validated_model_dict["app_deploy_status"] = "inprogress"
             validated_model_dict["gh_repo_url"] = saas_app.gh_repo_url
@@ -133,7 +142,10 @@ async def add_model_to_user(
 
         return validated_model_dict
 
-    except CreateGHRepoError as e:
+    except InvalidGHTokenError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
+
+    except InvalidFlyTokenError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
 
     except Exception as e:

@@ -186,7 +186,7 @@ export const navLinkItems: NavLinkItem[] = [
     componentName: 'team',
   },
   {
-    label: 'Applications',
+    label: 'Deployments',
     svgIcon: (
       <svg
         width='26px'

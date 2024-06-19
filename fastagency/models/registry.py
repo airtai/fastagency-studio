@@ -79,9 +79,9 @@ class Registry:
                 )
             else:
                 reference_model = existing_ref
-                reference_model._data_class = model  # type: ignore[attr-defined]
+                reference_model._data_class = model
 
-            model._reference_model = reference_model  # type: ignore[attr-defined]
+            model._reference_model = reference_model
 
             type_store[model_type_name] = (model, reference_model)
 
@@ -160,7 +160,10 @@ class Registry:
         if models is None:
             raise ValueError(f"No models registered under '{type_name}'")
 
-        schemas = [self.get_model_schema(model) for _, (model, _) in models.items()]  # type: ignore[arg-type]
+        schemas = [
+            self.get_model_schema(model)  # type: ignore[arg-type]
+            for _, (model, _) in models.items()
+        ]
 
         return ModelSchemas(name=type_name, schemas=schemas)
 
@@ -178,7 +181,7 @@ class Registry:
 
         return Schemas(list_of_schemas=list_of_schemas)
 
-    def validate(self, type: str, name: str, model: Dict[str, Any]) -> BaseModel:
+    def validate(self, type: str, name: str, model: Dict[str, Any]) -> Model:
         model_type = self.get_model_type(type, name)
         return model_type(**model)
 

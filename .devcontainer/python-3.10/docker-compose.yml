@@ -13,7 +13,6 @@ services:
       - NATS_URL=nats://${USER}-nats-py310-fastagency:4222
     env_file:
       - ../devcontainer.env
-    platform: linux/amd64
     networks:
       - fastagency-network
   nats-fastagency:  # nosemgrep

@@ -6,16 +6,15 @@ from uuid import UUID
 
 import httpx
 import yaml
-from fastapi import FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from .db.helpers import (
-    find_model_using_raw,
-    get_db_connection,
-    get_wasp_db_url,
-)
+from fastagency.saas_app_generator import SaasAppGenerator
+
+from .db.helpers import find_model_using_raw, get_db_connection, get_user
+from .helpers import add_model_to_user, create_model, get_all_models_for_user
 from .models.registry import Registry, Schemas
 from .models.toolboxes.toolbox import Toolbox
 
@@ -89,18 +88,6 @@ async def validate_secret_model(
 # new routes by Harish
 
 
-async def get_user(user_uuid: Union[int, str]) -> Any:
-    wasp_db_url = await get_wasp_db_url()
-    async with get_db_connection(db_url=wasp_db_url) as db:
-        select_query = 'SELECT * from "User" where uuid=' + f"'{user_uuid}'"  # nosec: [B608]
-        user = await db.query_first(
-            select_query  # nosec: [B608]
-        )
-    if not user:
-        raise HTTPException(status_code=404, detail=f"user_uuid {user_uuid} not found")
-    return user
-
-
 async def mask(value: str) -> str:
     return value[:3] + "*" * (len(value) - 7) + value[-4:]
 
@@ -110,23 +97,70 @@ async def get_all_models(
     user_uuid: str,
     type_name: Optional[str] = None,
 ) -> List[Any]:
-    filters: Dict[str, Any] = {"user_uuid": user_uuid}
-    if type_name:
-        filters["type_name"] = type_name
-
-    async with get_db_connection() as db:
-        models = await db.model.find_many(where=filters)  # type: ignore[arg-type]
+    models = await get_all_models_for_user(user_uuid=user_uuid, type_name=type_name)
 
     ta = TypeAdapter(List[Model])
     ret_val_without_mask = ta.dump_python(models, serialize_as_any=True)  # type: ignore[call-arg]
 
     ret_val = []
     for model in ret_val_without_mask:
-        if model["type_name"] == "secret" and "api_key" in model["json_str"]:
-            model["json_str"]["api_key"] = await mask(model["json_str"]["api_key"])
+        if model["type_name"] == "secret":
+            for k in ["api_key", "gh_token", "fly_token"]:
+                if k in model["json_str"]:
+                    model["json_str"][k] = await mask(model["json_str"][k])
         ret_val.append(model)
 
     return ret_val  # type: ignore[no-any-return]
+
+
+async def create_gh_repo(
+    model: Dict[str, Any],
+    model_uuid: str,
+) -> SaasAppGenerator:
+    async with get_db_connection():
+        found_gh_token = await find_model_using_raw(
+            model_uuid=model["gh_token"]["uuid"]
+        )
+        found_fly_token = await find_model_using_raw(
+            model_uuid=model["fly_token"]["uuid"]
+        )
+
+    found_gh_token_uuid = found_gh_token["json_str"]["gh_token"]
+    found_fly_token_uuid = found_fly_token["json_str"]["fly_token"]
+
+    saas_app = SaasAppGenerator(
+        fly_api_token=found_fly_token_uuid,
+        github_token=found_gh_token_uuid,
+        app_name=model["name"],
+        fastagency_application_uuid=model_uuid,
+    )
+    saas_app.create_new_repository()
+    return saas_app
+
+
+async def deploy_saas_app(
+    saas_app: SaasAppGenerator,
+    user_uuid: str,
+    model_uuid: str,
+    type_name: str,
+    model_name: str,
+) -> None:
+    flyio_app_url = saas_app.execute()
+
+    async with get_db_connection() as db:
+        found_model = await find_model_using_raw(model_uuid=model_uuid)
+        found_model["json_str"]["flyio_app_url"] = flyio_app_url
+        found_model["json_str"]["app_deploy_status"] = "completed"
+
+        await db.model.update(
+            where={"uuid": found_model["uuid"]},  # type: ignore[arg-type]
+            data={  # type: ignore[typeddict-unknown-key]
+                "type_name": type_name,
+                "model_name": model_name,
+                "json_str": json.dumps(found_model["json_str"]),  # type: ignore[typeddict-item]
+                "user_uuid": user_uuid,
+            },
+        )
 
 
 @app.post("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")
@@ -136,22 +170,51 @@ async def add_model(
     model_name: str,
     model_uuid: str,
     model: Dict[str, Any],
+    background_tasks: BackgroundTasks,
 ) -> Dict[str, Any]:
-    registry = Registry.get_default()
-    validated_model = registry.validate(type_name, model_name, model)
+    return await add_model_to_user(
+        user_uuid=user_uuid,
+        type_name=type_name,
+        model_name=model_name,
+        model_uuid=model_uuid,
+        model=model,
+        background_tasks=background_tasks,
+    )
 
-    await get_user(user_uuid=user_uuid)
-    async with get_db_connection() as db:
-        await db.model.create(
-            data={
-                "uuid": model_uuid,
-                "user_uuid": user_uuid,
-                "type_name": type_name,
-                "model_name": model_name,
-                "json_str": validated_model.model_dump_json(),  # type: ignore[typeddict-item]
-            }
-        )
-    return validated_model.model_dump()
+
+async def create_toolbox_for_new_user(user_uuid: Union[str, UUID]) -> Dict[str, Any]:
+    await get_user(user_uuid=user_uuid)  # type: ignore[arg-type]
+
+    domain = environ.get("DOMAIN", "localhost")
+    toolbox_openapi_url = (
+        "https://weather.tools.staging.fastagency.ai/openapi.json"
+        if "staging" in domain or "localhost" in domain
+        else "https://weather.tools.fastagency.ai/openapi.json"
+    )
+
+    # Check if default weather toolbox already exists
+    models = await get_all_models_for_user(user_uuid=user_uuid, type_name="toolbox")
+    if models:
+        raise HTTPException(status_code=400, detail="Weather toolbox already exists")
+
+    _, validated_model = await create_model(
+        cls=Toolbox,
+        type_name="toolbox",
+        user_uuid=user_uuid,
+        name="WeatherToolbox",
+        openapi_url=toolbox_openapi_url,
+    )
+    return validated_model
+
+
+@app.get("/user/{user_uuid}/setup")
+async def setup_user(user_uuid: str) -> Dict[str, Any]:
+    """Setup user after creating.
+
+    This function is called after the user is created.
+    Currently it sets up weather toolbox for the user.
+    """
+    return await create_toolbox_for_new_user(user_uuid)
 
 
 @app.put("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")

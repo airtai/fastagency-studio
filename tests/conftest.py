@@ -6,20 +6,26 @@ import threading
 import time
 import uuid
 from platform import system
-from typing import Any, AsyncIterator, Dict, Iterator, Optional
+from typing import Annotated, Any, AsyncIterator, Dict, Iterator, Optional
 
 import httpx
 import openai
 import pytest
 import pytest_asyncio
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Path
 from pydantic import BaseModel
 
-from fastagency.db.helpers import get_db_connection, get_wasp_db_url
+from fastagency.db.helpers import (
+    get_db_connection,
+    get_wasp_db_url,
+)
+from fastagency.helpers import create_model_ref
+from fastagency.models.base import ObjectReference
+from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
 
-@pytest_asyncio.fixture  # type: ignore
+@pytest_asyncio.fixture(scope="session")  # type: ignore[misc]
 async def user_uuid() -> AsyncIterator[str]:
     try:
         random_id = random.randint(1, 1_000_000)
@@ -42,12 +48,14 @@ async def user_uuid() -> AsyncIterator[str]:
 
 @pytest.fixture()
 def llm_config() -> Dict[str, Any]:
-    api_key = os.getenv("AZURE_OPENAI_API_KEY")  # use France or Canada
-    api_base = os.getenv("AZURE_API_ENDPOINT")
-    gpt_3_5_model_name = os.getenv("AZURE_GPT35_MODEL")  # "gpt-35-turbo-16k"
+    api_key = os.getenv("AZURE_OPENAI_API_KEY", default="*" * 64)
+    api_base = os.getenv(
+        "AZURE_API_ENDPOINT", default="https://my-deployment.openai.azure.com"
+    )
+    gpt_3_5_model_name = os.getenv("AZURE_GPT35_MODEL", default="gpt-35-turbo-16k")
 
     openai.api_type = "azure"
-    openai.api_version = os.getenv("AZURE_API_VERSION")  # "2024-02-15-preview"
+    openai.api_version = os.getenv("AZURE_API_VERSION", default="2024-02-15-preview")
 
     config_list = [
         {
@@ -71,7 +79,7 @@ def llm_config() -> Dict[str, Any]:
 def test_llm_config_fixture(llm_config: Dict[str, Any]) -> None:
     assert set(llm_config.keys()) == {"config_list", "temperature"}
     assert isinstance(llm_config["config_list"], list)
-    assert llm_config["temperature"] == 0
+    assert llm_config["temperature"] == 0.8
 
     for k in ["model", "api_key", "base_url", "api_type", "api_version"]:
         assert len(llm_config["config_list"][0][k]) > 3
@@ -105,6 +113,23 @@ def create_fastapi_app(host: str, port: int) -> FastAPI:
     @app.post("/items")
     async def create_item(item: Item) -> Item:
         return item
+
+    return app
+
+
+def create_weather_fastapi_app(host: str, port: int) -> FastAPI:
+    app = FastAPI(
+        title="Weather",
+        servers=[
+            {"url": f"http://{host}:{port}", "description": "Local development server"}
+        ],
+    )
+
+    @app.get("/forecast/{city}", description="Get the weather forecast for a city")
+    def forecast(
+        city: Annotated[str, Path(description="name of the city")],
+    ) -> str:
+        return f"Weather in {city} is sunny"
 
     return app
 
@@ -167,3 +192,83 @@ def test_fastapi_openapi(fastapi_openapi_url: str) -> None:
     assert "servers" in resp_json
     assert len(resp_json["servers"]) == 1
     assert resp_json["info"]["title"] == "FastAPI"
+
+
+@pytest.fixture(scope="session")
+def weather_fastapi_openapi_url() -> Iterator[str]:
+    host = "127.0.0.1"
+    port = find_free_port()
+    app = create_weather_fastapi_app(host, port)
+    openapi_url = f"http://{host}:{port}/openapi.json"
+
+    config = uvicorn.Config(app, host=host, port=port, log_level="info")
+    server = Server(config=config)
+    with server.run_in_thread():
+        time.sleep(1 if system() != "Windows" else 5)  # let the server start
+
+        yield openapi_url
+
+
+def test_weather_fastapi_openapi(weather_fastapi_openapi_url: str) -> None:
+    assert isinstance(weather_fastapi_openapi_url, str)
+
+    resp = httpx.get(weather_fastapi_openapi_url)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert "openapi" in resp_json
+    assert "servers" in resp_json
+    assert len(resp_json["servers"]) == 1
+    assert resp_json["info"]["title"] == "Weather"
+
+
+@pytest_asyncio.fixture()  # type: ignore[misc]
+async def toolbox_ref(user_uuid: str, fastapi_openapi_url: str) -> ObjectReference:
+    openapi_auth = await create_model_ref(
+        OpenAPIAuth,
+        "secret",
+        user_uuid,
+        name="openapi_auth_secret",
+        username="test",
+        password="password",  # pragma: allowlist secret
+    )
+
+    toolbox = await create_model_ref(
+        Toolbox,
+        "toolbox",
+        user_uuid,
+        name="test_toolbox",
+        openapi_url=fastapi_openapi_url,
+        openapi_auth=openapi_auth,
+    )
+
+    return toolbox
+
+
+@pytest_asyncio.fixture()  # type: ignore[misc]
+async def weather_toolbox_ref(
+    user_uuid: str, weather_fastapi_openapi_url: str
+) -> ObjectReference:
+    openapi_auth = await create_model_ref(
+        OpenAPIAuth,
+        "secret",
+        user_uuid,
+        name="openapi_auth_secret",
+        username="test",
+        password="password",  # pragma: allowlist secret
+    )
+
+    toolbox = await create_model_ref(
+        Toolbox,
+        "toolbox",
+        user_uuid,
+        name="test_toolbox",
+        openapi_url=weather_fastapi_openapi_url,
+        openapi_auth=openapi_auth,
+    )
+
+    return toolbox
+
+
+@pytest.mark.asyncio()
+async def test_weather_toolbox_ref(weather_toolbox_ref: ObjectReference) -> None:
+    assert isinstance(weather_toolbox_ref, ObjectReference)

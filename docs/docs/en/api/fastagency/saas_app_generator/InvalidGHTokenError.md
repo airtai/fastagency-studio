@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.models.toolboxes.toolbox.FunctionInfo
+::: fastagency.saas_app_generator.InvalidGHTokenError

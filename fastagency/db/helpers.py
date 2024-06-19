@@ -4,7 +4,7 @@ from typing import Any, AsyncGenerator, Dict, Optional, Union
 from uuid import UUID
 
 from fastapi import HTTPException
-from prisma import Prisma  # type: ignore [attr-defined]
+from prisma import Prisma  # type: ignore[attr-defined]
 
 
 @asynccontextmanager
@@ -49,3 +49,15 @@ async def find_model_using_raw(model_uuid: Union[str, UUID]) -> Dict[str, Any]:
             status_code=404, detail="Something went wrong. Please try again later."
         )
     return model
+
+
+async def get_user(user_uuid: Union[int, str]) -> Any:
+    wasp_db_url = await get_wasp_db_url()
+    async with get_db_connection(db_url=wasp_db_url) as db:
+        select_query = 'SELECT * from "User" where uuid=' + f"'{user_uuid}'"  # nosec: [B608]
+        user = await db.query_first(
+            select_query  # nosec: [B608]
+        )
+    if not user:
+        raise HTTPException(status_code=404, detail=f"user_uuid {user_uuid} not found")
+    return user

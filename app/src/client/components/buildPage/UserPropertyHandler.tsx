@@ -58,7 +58,8 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     setSelectedModel(newModel);
   };
 
-  const onSuccessCallback = async (payload: any) => {
+  const onSuccessCallback = async (payload: any): Promise<{ addUserModelResponse: any }> => {
+    let addUserModelResponse;
     try {
       setIsLoading(true);
       const mergedData = { ...payload, type_name: propertyName, model_name: selectedModel, uuid: payload.uuid };
@@ -68,16 +69,20 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
         setUpdateExistingModel(null);
       } else {
         //@ts-ignore
-        await addUserModels(filteredData);
+        addUserModelResponse = await addUserModels(filteredData);
       }
       refetchModels();
       const isNewApplicationAdded = propertyName === 'application' && !updateExistingModel;
       !isNewApplicationAdded && setShowAddModel(false);
     } catch (error) {
-      setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
+      console.log('error: ', error, 'error.message: ');
+      // setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
+      throw error;
     } finally {
       setIsLoading(false);
     }
+
+    return addUserModelResponse;
   };
 
   const onCancelCallback = (event: React.FormEvent) => {
@@ -124,6 +129,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
       if (filteredProperties) {
         const selectedModel = filteredProperties[index];
         setSelectedModel(selectedModel.model_name);
+        // @ts-ignore
         setUpdateExistingModel({ ...selectedModel.json_str, ...{ uuid: selectedModel.uuid } });
         setShowAddModel(true);
       }
@@ -134,7 +140,12 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     setNotificationErrorMessage(null);
   };
 
-  const propertyHeader = propertyName === 'llm' ? 'LLM' : capitalizeFirstLetter(propertyName);
+  const propertyHeader =
+    propertyName === 'llm'
+      ? 'LLM'
+      : propertyName === 'application'
+        ? 'Deployment'
+        : capitalizeFirstLetter(propertyName);
 
   return (
     <div className='flex-col flex items-start p-6 gap-3 w-full'>
@@ -166,7 +177,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
         <NotificationBox type='error' onClick={onClick} message={notificationErrorMessage} />
       )}
       {isLoading && (
-        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
+        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 h-screen'>
           <Loader />
         </div>
       )}

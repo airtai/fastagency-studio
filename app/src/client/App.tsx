@@ -80,6 +80,9 @@ export default function App({ children }: { children: ReactNode }) {
           }
         }
       } else {
+        if (user.isSetUpComplete) {
+          // user has completed the setup
+        }
         setShowTosAndMarketingEmailsModal(false);
         const lastSeenAt = new Date(user.lastActiveTimestamp);
         const today = new Date();

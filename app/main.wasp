@@ -79,6 +79,7 @@ entity User {=psl
   hasAcceptedTos             Boolean         @default(false)
   hasSubscribedToMarketingEmails  Boolean         @default(false)
   isSignUpComplete          Boolean         @default(false)
+  isSetUpComplete           Boolean         @default(false)
   stripeId                  String?
   checkoutSessionId         String?
   hasPaid                   Boolean         @default(false)

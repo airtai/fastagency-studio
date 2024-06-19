@@ -30,6 +30,7 @@ export function createRandomUser() {
     hasAcceptedTos: true,
     hasSubscribedToMarketingEmails: true,
     isSignUpComplete: true,
+    isSetUpComplete: true,
     uuid: faker.string.uuid(),
   };
   return user;

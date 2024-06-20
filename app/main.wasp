@@ -389,6 +389,11 @@ action getAgentResponse {
   entities: [Chat, Conversation]
 }
 
+action userModelSetup {
+  fn: import { userModelSetup } from "@src/server/actions.js",
+  entities: [User]
+}
+
 // 📚 Queries
 
 query getDailyStats {

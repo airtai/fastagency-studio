@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import './Main.css';
 
 import { useAuth } from 'wasp/client/auth';
-import { updateCurrentUser } from 'wasp/client/operations';
+import { updateCurrentUser, userModelSetup } from 'wasp/client/operations';
 
 import AppNavBar from './components/AppNavBar';
 import Footer from './components/Footer';
@@ -80,8 +80,9 @@ export default function App({ children }: { children: ReactNode }) {
           }
         }
       } else {
-        if (user.isSetUpComplete) {
-          // user has completed the setup
+        if (!user.isSetUpComplete) {
+          userModelSetup();
+          updateCurrentUser({ isSetUpComplete: true });
         }
         setShowTosAndMarketingEmailsModal(false);
         const lastSeenAt = new Date(user.lastActiveTimestamp);

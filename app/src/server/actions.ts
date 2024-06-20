@@ -16,6 +16,7 @@ import {
   type UpdateCurrentChat,
   type UpdateCurrentConversation,
   type GetAgentResponse,
+  type UserModelSetup,
   type DeleteLastConversationInChat,
   type RetryTeamChat,
 } from 'wasp/server/operations';
@@ -542,5 +543,37 @@ export const getAgentResponse: GetAgentResponse<AgentPayload, Record<string, any
     };
   } catch (error: any) {
     throw new HttpError(500, 'Something went wrong. Please try again later');
+  }
+};
+
+export const userModelSetup: UserModelSetup<void, any> = async (context: any) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+  const userUUID = context.user.uuid;
+  try {
+    console.log('-----');
+    const url = `${FASTAGENCY_SERVER_URL}/user/${userUUID}/setup`;
+    console.log(url);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    console.log('response', response);
+    const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
+
+    console.log(`json: ${json}`);
+
+    if (!response.ok) {
+      console.log(`json.detail: ${json.detail}`);
+      const errorMsg = json.detail || `HTTP error with status code ${response.status}`;
+      console.error('Server Error:', errorMsg);
+      throw new Error(errorMsg);
+    }
+    return json;
+  } catch (error: any) {
+    console.log('-----');
+    console.log(`error.message: ${error.message}`);
+    throw new HttpError(500, error.message);
   }
 };

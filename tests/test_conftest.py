@@ -44,6 +44,7 @@ def test_openai_gpt35_turbo_16k_llm_config(
     assert openai_gpt35_turbo_16k_llm_config == expected
 
 
+@pytest.mark.db()
 @pytest.mark.asyncio()
 async def test_azure_oai_key_ref(azure_oai_key_ref: ObjectReference) -> None:
     assert isinstance(azure_oai_key_ref, ObjectReference)
@@ -54,6 +55,7 @@ async def test_azure_oai_key_ref(azure_oai_key_ref: ObjectReference) -> None:
     assert azure_oai_key.name.startswith("azure_oai_key_")
 
 
+@pytest.mark.db()
 @pytest.mark.asyncio()
 async def test_azure_oai_ref(azure_oai_ref: ObjectReference) -> None:
     assert isinstance(azure_oai_ref, ObjectReference)

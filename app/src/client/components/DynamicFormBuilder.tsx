@@ -41,44 +41,31 @@ interface DynamicFormBuilderProps {
 
 const SECRETS_TO_MASK = ['api_key', 'gh_token', 'fly_token'];
 
-const deploymentInprogressInstructions = `<div class="leading-loose ml-2 mr-2">
-- Appication deployment status: <b>In Progress</b>
-
-<span class="text-l inline-block my-2 underline">GitHub Repository Created</span>
+const deploymentInprogressInstructions = `<div class="leading-loose ml-2 mr-2"><span class="text-l inline-block my-2 underline">GitHub Repository Created</span>
 <span class="ml-5">- We have created a new <a class="underline" href="<gh_repo_url>" target="_blank" rel="noopener noreferrer">GitHub repository</a> in your GitHub account.</span>
 <span class="ml-5">- The application code will be pushed to this repository in a few seconds.</span>
 <span class="text-l inline-block my-2 underline">Checking Deployment Status</span>
 <span class="ml-5">- You can monitor the status on the GitHub repository's action page.</span>
-<span class="text-l inline-block my-2 underline">Troubleshooting: </span>
-<span class="ml-5"><b>Common Issues:</b></span>
-<span class="ml-10">- In Progress Status for Too Long (more than 10 - 15 mins): </span>
-<span class="ml-13">- Ensure you have entered the correct gh_token and fly_token.</span>
-<span class="ml-13">- Verify that you have added a payment method to your Fly.io account; otherwise, the deployment will fail.</span>
-<span class="ml-13">- Review the deployment logs on Fly.io for any error messages. Access the logs by clicking on the server application</span>
-<span class="ml-17"> on the <a class="underline" href="https://fly.io/dashboard" target="_blank" rel="noopener noreferrer">Fly.io dashboard</a>, then clicking on the "Live Logs" tab.</span>
-<span class="ml-5"><b>Need Help?</b></span>
+<span class="text-l inline-block my-2 underline">Need Help?</span>
 <span class="ml-10">- If you encounter any issues or need assistance, please reach out to us on <a class="underline" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">discord</a>.</span>
 </div>
 `;
 
 const deploymentCompleteInstructions = `<div class="leading-loose ml-2 mr-2">- Hurrah! Your application has been successfully pushed to the GitHub repository.
 
-- A new workflow has been triggered to test and setup the application to Fly.io. You can check the status on the GitHub repository <a class="underline" href="<gh_repo_url>/actions" target="_blank" rel="noopener noreferrer">actions</a> page.
+- A new workflow has been triggered to test and deploy the application to Fly.io. You can check the status on the GitHub repository <a class="underline" href="<gh_repo_url>/actions" target="_blank" rel="noopener noreferrer">actions</a> page.
 
 <b>Next Steps:</b>
 <span class="ml-5">- Wait for the workflows to complete (approx. 2 mins).
 <span class="ml-13">- Pipeline to run tests and verify the build (approx. 2 mins).</span>
-<span class="ml-13">- Pipeline to setup the application to Fly.io (approx. 3 - 4 mins).</span>
+<span class="ml-13">- Pipeline to setup the application to Fly.io (approx. 5 - 10 mins).</span>
+<span class="ml-5">- Once the "Fly Deployment Pipeline" completes. Please follow the below steps to access your application:</span>
+<span class="ml-10">- Click on the "Fly Deployment Pipeline" action.</span>
+<span class="ml-10">- Click on "onetime_app_setup" job.</span>
+<span class="ml-10">- Click on "Deploy wasp application to fly" step.</span>
+<span class="ml-10">- Search for the text "Client has been deployed! Your Wasp app is accessible" (or scroll all the way down) in the logs and click on the link to access your application.</span>
 <span class="ml-5">- The above workflow might have also created a pull request in your GitHub repository to update the <b>fly.toml</b> configuration files.</span>
-<span class="ml-5">- Go to the <b>Pull requests</b> tab in your forked repository on GitHub and merge the PR named "Add Fly.io configuration files".
-<span class="ml-5">- Once the Pull Request is merged, the below workflows will be riggered in sequence:</span>
-<span class="ml-13">- Pipeline to run tests and verify the build (approx. 2 mins).</span>
-<span class="ml-13">- Pipeline to deploy the tested application to Fly.io (approx. 5 - 10 mins).</span>
-<span class="ml-5">- Once the workflow is completed, you can access your application using the hostname provided in the <a class="underline" href="https://fly.io/dashboard/personal" target="_blank" rel="noopener noreferrer">Fly.io dashboard</a>.</span>
-<span class="ml-5">- Go to fly dashboard and click on the client application (similar to: fastagency-app-******-client). </span>
-<span class="ml-5">- The hostname is the URL of your application. Open the URL in your browser to launch your application.</span>
-
-
+<span class="ml-5">- Go to the <b>Pull requests</b> tab in your forked repository on GitHub and merge the PR named "Add Fly.io configuration files". You will be needing this to deploy your application to Fly.io in the future.</span>
 </div>
 `;
 

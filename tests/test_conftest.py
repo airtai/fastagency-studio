@@ -93,6 +93,7 @@ def test_weather_fastapi_openapi(weather_fastapi_openapi_url: str) -> None:
     assert resp_json["info"]["title"] == "Weather"
 
 
+@pytest.mark.db()
 @pytest.mark.asyncio()
 async def test_weather_toolbox_ref(weather_toolbox_ref: ObjectReference) -> None:
     assert isinstance(weather_toolbox_ref, ObjectReference)

@@ -546,30 +546,36 @@ export const getAgentResponse: GetAgentResponse<AgentPayload, Record<string, any
   }
 };
 
-export const userModelSetup: UserModelSetup<void, any> = async (context: any) => {
+export const userModelSetup: UserModelSetup<void, any> = async (args, context) => {
   if (!context.user) {
     throw new HttpError(401);
   }
   const userUUID = context.user.uuid;
   try {
-    console.log('-----');
     const url = `${FASTAGENCY_SERVER_URL}/user/${userUUID}/setup`;
-    console.log(url);
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
-    console.log('response', response);
+
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 
-    console.log(`json: ${json}`);
-
     if (!response.ok) {
-      console.log(`json.detail: ${json.detail}`);
       const errorMsg = json.detail || `HTTP error with status code ${response.status}`;
-      console.error('Server Error:', errorMsg);
-      throw new Error(errorMsg);
+      console.error(`Server Error: ${errorMsg} for user ${userUUID}`);
+      if (!errorMsg.includes('toolbox already exists')) {
+        throw new Error(errorMsg);
+      }
     }
+
+    await context.entities.User.update({
+      where: {
+        id: context.user.id,
+      },
+      data: {
+        isSetUpComplete: true,
+      },
+    });
     return json;
   } catch (error: any) {
     console.log('-----');

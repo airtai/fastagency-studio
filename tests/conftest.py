@@ -21,7 +21,7 @@ from fastagency.db.helpers import (
 )
 from fastagency.helpers import create_model_ref
 from fastagency.models.base import ObjectReference
-from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey, AzureOAIAPIKeyRef
+from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
 
@@ -110,7 +110,7 @@ def add_random_sufix(prefix: str) -> str:
     return f"{prefix}_{random.randint(0, 1_000_000_000):09d}"
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture()  # type: ignore[misc]
 async def azure_oai_key_ref(
     user_uuid: str, azure_gpt35_turbo_16k_llm_config: Dict[str, Any]
 ) -> ObjectReference:
@@ -124,11 +124,11 @@ async def azure_oai_key_ref(
     )
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture()  # type: ignore[misc]
 async def azure_oai_ref(
     user_uuid: str,
     azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
-    azure_oai_key_ref: AzureOAIAPIKeyRef,
+    azure_oai_key_ref: ObjectReference,
 ) -> ObjectReference:
     return await create_model_ref(
         AzureOAI,

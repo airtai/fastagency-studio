@@ -379,6 +379,7 @@ jobs:
       DEVELOPER_TOKEN: ${{ secrets.DEVELOPER_TOKEN }}
       DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
       PY_DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_PY_DATABASE_URL || secrets.STAGING_PY_DATABASE_URL }}
+      FASTAGENCY_SERVER_URL: ${{ github.ref_name == 'main' && vars.PROD_FASTAGENCY_SERVER_URL || vars.STAGING_FASTAGENCY_SERVER_URL }}
       DOMAIN: ${{ github.ref_name == 'main' && vars.PROD_DOMAIN || vars.STAGING_DOMAIN }}
       SSH_KEY: ${{ github.ref_name == 'main' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
       AZURE_API_VERSION: ${{ github.ref_name == 'main' && secrets.PROD_AZURE_API_VERSION || secrets.STAGING_AZURE_API_VERSION }}

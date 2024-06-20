@@ -11,8 +11,6 @@ from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from fastagency.saas_app_generator import SaasAppGenerator
-
 from .db.helpers import find_model_using_raw, get_db_connection, get_user
 from .helpers import add_model_to_user, create_model, get_all_models_for_user
 from .models.registry import Registry, Schemas
@@ -111,56 +109,6 @@ async def get_all_models(
         ret_val.append(model)
 
     return ret_val  # type: ignore[no-any-return]
-
-
-async def create_gh_repo(
-    model: Dict[str, Any],
-    model_uuid: str,
-) -> SaasAppGenerator:
-    async with get_db_connection():
-        found_gh_token = await find_model_using_raw(
-            model_uuid=model["gh_token"]["uuid"]
-        )
-        found_fly_token = await find_model_using_raw(
-            model_uuid=model["fly_token"]["uuid"]
-        )
-
-    found_gh_token_uuid = found_gh_token["json_str"]["gh_token"]
-    found_fly_token_uuid = found_fly_token["json_str"]["fly_token"]
-
-    saas_app = SaasAppGenerator(
-        fly_api_token=found_fly_token_uuid,
-        github_token=found_gh_token_uuid,
-        app_name=model["name"],
-        fastagency_application_uuid=model_uuid,
-    )
-    saas_app.create_new_repository()
-    return saas_app
-
-
-async def deploy_saas_app(
-    saas_app: SaasAppGenerator,
-    user_uuid: str,
-    model_uuid: str,
-    type_name: str,
-    model_name: str,
-) -> None:
-    flyio_app_url = saas_app.execute()
-
-    async with get_db_connection() as db:
-        found_model = await find_model_using_raw(model_uuid=model_uuid)
-        found_model["json_str"]["flyio_app_url"] = flyio_app_url
-        found_model["json_str"]["app_deploy_status"] = "completed"
-
-        await db.model.update(
-            where={"uuid": found_model["uuid"]},  # type: ignore[arg-type]
-            data={  # type: ignore[typeddict-unknown-key]
-                "type_name": type_name,
-                "model_name": model_name,
-                "json_str": json.dumps(found_model["json_str"]),  # type: ignore[typeddict-item]
-                "user_uuid": user_uuid,
-            },
-        )
 
 
 @app.post("/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}")

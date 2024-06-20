@@ -275,7 +275,7 @@ class TestWebSurferAgent:
         self,
         llm_model: Model,
         api_key_model: Model,
-        azure_llm_config: Dict[str, Any],
+        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
@@ -327,7 +327,7 @@ class TestWebSurferAgent:
         )
 
         async def my_create_autogen(cls, model_id, user_id) -> Dict[str, Any]:  # type: ignore [no-untyped-def]
-            return azure_llm_config
+            return azure_gpt35_turbo_16k_llm_config
 
         # Monkeypatch llm and call create_autogen
         monkeypatch.setattr(AzureOAI, "create_autogen", my_create_autogen)
@@ -345,7 +345,7 @@ class TestBingAPIKey:
     @pytest.mark.db()
     async def test_bing_api_key_model_create_autogen(
         self,
-        azure_llm_config: Dict[str, Any],
+        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:

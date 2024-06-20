@@ -3,18 +3,64 @@ from typing import Any, Dict
 import httpx
 import pytest
 
+from fastagency.helpers import get_model_by_ref
 from fastagency.models.base import ObjectReference
 
 from .conftest import find_free_port
 
 
-def test_llm_config_fixture(azure_llm_config: Dict[str, Any]) -> None:
-    assert set(azure_llm_config.keys()) == {"config_list", "temperature"}
-    assert isinstance(azure_llm_config["config_list"], list)
-    assert azure_llm_config["temperature"] == 0.8
+def test_azure_gpt35_turbo_16k_llm_config(
+    azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
+) -> None:
+    assert set(azure_gpt35_turbo_16k_llm_config.keys()) == {
+        "config_list",
+        "temperature",
+    }
+    assert isinstance(azure_gpt35_turbo_16k_llm_config["config_list"], list)
+    assert azure_gpt35_turbo_16k_llm_config["temperature"] == 0.8
+
+    assert (
+        azure_gpt35_turbo_16k_llm_config["config_list"][0]["model"]
+        == "gpt-35-turbo-16k"
+    )
 
     for k in ["model", "api_key", "base_url", "api_type", "api_version"]:
-        assert len(azure_llm_config["config_list"][0][k]) > 3
+        assert len(azure_gpt35_turbo_16k_llm_config["config_list"][0][k]) > 3
+
+
+def test_openai_gpt35_turbo_16k_llm_config(
+    openai_gpt35_turbo_16k_llm_config: Dict[str, Any],
+) -> None:
+    expected = {
+        "config_list": [
+            {
+                "model": "gpt-3.5-turbo-16k",
+                "api_key": "sk-********************T3BlbkFJ********************",  # pragma: allowlist secret
+            }
+        ],
+        "temperature": 0.8,
+    }
+    assert openai_gpt35_turbo_16k_llm_config == expected
+
+
+@pytest.mark.asyncio()
+async def test_azure_oai_key_ref(azure_oai_key_ref: ObjectReference) -> None:
+    assert isinstance(azure_oai_key_ref, ObjectReference)
+    assert azure_oai_key_ref.type == "secret"
+    assert azure_oai_key_ref.name == "AzureOAIAPIKey"
+
+    azure_oai_key = await get_model_by_ref(azure_oai_key_ref)
+    assert azure_oai_key.name.startswith("azure_oai_key_")
+
+
+@pytest.mark.asyncio()
+async def test_azure_oai_ref(azure_oai_ref: ObjectReference) -> None:
+    assert isinstance(azure_oai_ref, ObjectReference)
+    assert azure_oai_ref.type == "llm"
+    assert azure_oai_ref.name == "AzureOAI"
+
+    azure_oai_key = await get_model_by_ref(azure_oai_ref)
+    assert azure_oai_key.name.startswith("azure_oai_")
 
 
 def test_find_free_port() -> None:

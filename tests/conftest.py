@@ -21,6 +21,7 @@ from fastagency.db.helpers import (
 )
 from fastagency.helpers import create_model_ref
 from fastagency.models.base import ObjectReference
+from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey, AzureOAIAPIKeyRef
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
 
@@ -45,16 +46,15 @@ async def user_uuid() -> AsyncIterator[str]:
         pass
 
 
-@pytest.fixture()
-def azure_llm_config() -> Dict[str, Any]:
+def azure_model_llm_config(model_env_name: str) -> Dict[str, Any]:
     api_key = os.getenv("AZURE_OPENAI_API_KEY", default="*" * 64)
     api_base = os.getenv(
         "AZURE_API_ENDPOINT", default="https://my-deployment.openai.azure.com"
     )
-    gpt_3_5_model_name = os.getenv("AZURE_GPT35_MODEL", default="gpt-35-turbo-16k")
+    gpt_3_5_model_name = os.getenv(model_env_name, default="gpt-35-turbo-16k")
 
     openai.api_type = "azure"
-    openai.api_version = os.getenv("AZURE_API_VERSION", default="2024-02-15-preview")
+    openai.api_version = os.getenv("AZURE_API_VERSION", default="2024-02-01")
 
     config_list = [
         {
@@ -72,6 +72,77 @@ def azure_llm_config() -> Dict[str, Any]:
     }
 
     return llm_config
+
+
+@pytest.fixture()
+def azure_gpt35_turbo_16k_llm_config() -> Dict[str, Any]:
+    return azure_model_llm_config("AZURE_GPT35_MODEL")
+
+
+def openai_llm_config(model: str) -> Dict[str, Any]:
+    stars = "*" * 20
+    api_key = os.getenv("OPENAI_API_KEY", default=f"sk-{stars}T3BlbkFJ{stars}")
+
+    config_list = [
+        {
+            "model": model,
+            "api_key": api_key,
+        }
+    ]
+
+    llm_config = {
+        "config_list": config_list,
+        "temperature": 0.8,
+    }
+
+    return llm_config
+
+
+@pytest.fixture()
+def openai_gpt35_turbo_16k_llm_config() -> Dict[str, Any]:
+    return openai_llm_config("gpt-3.5-turbo-16k")
+
+
+# model/* constructors
+
+
+def add_random_sufix(prefix: str) -> str:
+    return f"{prefix}_{random.randint(0, 1_000_000_000):09d}"
+
+
+@pytest_asyncio.fixture()
+async def azure_oai_key_ref(
+    user_uuid: str, azure_gpt35_turbo_16k_llm_config: Dict[str, Any]
+) -> ObjectReference:
+    api_key = azure_gpt35_turbo_16k_llm_config["config_list"][0]["api_key"]
+    return await create_model_ref(
+        AzureOAIAPIKey,
+        "secret",
+        user_uuid=user_uuid,
+        name=add_random_sufix("azure_oai_key"),
+        api_key=api_key,
+    )
+
+
+@pytest_asyncio.fixture()
+async def azure_oai_ref(
+    user_uuid: str,
+    azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
+    azure_oai_key_ref: AzureOAIAPIKeyRef,
+) -> ObjectReference:
+    return await create_model_ref(
+        AzureOAI,
+        "llm",
+        user_uuid=user_uuid,
+        name=add_random_sufix("azure_oai"),
+        azure_oai_key=azure_oai_key_ref,
+        model=azure_gpt35_turbo_16k_llm_config["config_list"][0]["model"],
+        api_key=azure_oai_key_ref,
+        base_url=azure_gpt35_turbo_16k_llm_config["config_list"][0]["base_url"],
+        api_type=azure_gpt35_turbo_16k_llm_config["config_list"][0]["api_type"],
+        api_version=azure_gpt35_turbo_16k_llm_config["config_list"][0]["api_version"],
+        temperature=azure_gpt35_turbo_16k_llm_config["temperature"],
+    )
 
 
 # FastAPI app for testing

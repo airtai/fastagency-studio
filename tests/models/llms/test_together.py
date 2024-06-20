@@ -129,7 +129,7 @@ class TestTogetherAI:
         self,
         llm_model: Model,
         api_key_model: Model,
-        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
+        llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
@@ -215,7 +215,7 @@ class TestTogetherAIAPIKey:
     async def test_togetherai_api_key_model_create_autogen(
         self,
         api_key_model: Model,
-        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
+        llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:

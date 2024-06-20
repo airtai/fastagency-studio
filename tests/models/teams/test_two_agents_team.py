@@ -231,7 +231,7 @@ class TestTwoAgentTeam:
         enable_monkeypatch: bool,
         llm_model: Model,
         api_key_model: Model,
-        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
+        llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:

@@ -6,34 +6,36 @@ import pytest
 from fastapi import BackgroundTasks
 
 from fastagency.app import add_model
-from fastagency.helpers import get_model_by_ref
-from fastagency.models.base import Model, ObjectReference
+from fastagency.models.base import Model
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 
 
 class TestAzureOAI:
-    @pytest.mark.db()
-    @pytest.mark.asyncio()
-    async def test_azure_constructor(self, azure_oai_ref: ObjectReference) -> None:
-        # create data
-        model = await get_model_by_ref(azure_oai_ref)
+    def test_azure_constructor(self) -> None:
+        # create reference to key
+        api_key_uuid = uuid.uuid4()
 
-        # dynamically created data
-        name = model.name
-        api_key_uuid = model.api_key.uuid  # type: ignore [attr-defined]
-        base_url = model.base_url  # type: ignore [attr-defined]
+        AzureOAIAPIKeyRef = AzureOAIAPIKey.get_reference_model()  # noqa: N806
+        api_key_ref = AzureOAIAPIKeyRef(uuid=api_key_uuid)
+
+        # create data
+        model = AzureOAI(
+            api_key=api_key_ref,
+            base_url="https://my-model.openai.azure.com",
+            name="who cares?",
+        )
 
         expected = {
-            "name": name,
-            "model": "gpt-35-turbo-16k",
+            "name": "who cares?",
+            "model": "gpt-3.5-turbo",
             "api_key": {
                 "type": "secret",
                 "name": "AzureOAIAPIKey",
                 "uuid": api_key_uuid,
             },
-            "base_url": base_url,
+            "base_url": "https://my-model.openai.azure.com",
             "api_type": "azure",
-            "api_version": "2024-02-01",
+            "api_version": "2024-02-15-preview",
             "temperature": 0.8,
         }
         assert model.model_dump() == expected
@@ -104,8 +106,8 @@ class TestAzureOAI:
                     "type": "string",
                 },
                 "api_version": {
-                    "default": "2024-02-01",
-                    "description": "The version of the Azure OpenAI API, e.g. '2024-02-01'",
+                    "default": "2024-02-15-preview",
+                    "description": "The version of the Azure OpenAI API, e.g. '2024-02-15-preview'",
                     "enum": [
                         "2023-05-15",
                         "2023-06-01-preview",
@@ -136,27 +138,12 @@ class TestAzureOAI:
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
-    async def test_azure_model_create_autogen(
-        self,
-        user_uuid: str,
-        azure_oai_ref: ObjectReference,
-        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
-    ) -> None:
-        actual_llm_config = await AzureOAI.create_autogen(
-            model_id=azure_oai_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        assert isinstance(actual_llm_config, dict)
-        assert actual_llm_config == azure_gpt35_turbo_16k_llm_config
-
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
     @pytest.mark.parametrize("llm_model,api_key_model", [(AzureOAI, AzureOAIAPIKey)])  # noqa: PT006
-    async def test_azure_model_create_autogen_old(
+    async def test_azure_model_create_autogen(
         self,
         llm_model: Model,
         api_key_model: Model,
-        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
+        llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
@@ -203,7 +190,7 @@ class TestAzureOAI:
             user_id=uuid.UUID(user_uuid),
         )
         assert isinstance(actual_llm_config, dict)
-        assert actual_llm_config == azure_gpt35_turbo_16k_llm_config
+        assert actual_llm_config == llm_config
 
 
 class TestAzureOAIAPIKey:
@@ -213,7 +200,7 @@ class TestAzureOAIAPIKey:
     async def test_azure_api_key_model_create_autogen(
         self,
         api_key_model: Model,
-        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
+        llm_config: Dict[str, Any],
         user_uuid: str,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:

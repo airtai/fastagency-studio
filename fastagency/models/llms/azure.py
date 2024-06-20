@@ -64,8 +64,10 @@ class AzureOAI(Model):
 
     api_version: Annotated[
         AzureApiVersionsLiteral,
-        Field(description="The version of the Azure OpenAI API, e.g. '2024-02-01'"),
-    ] = "2024-02-01"
+        Field(
+            description="The version of the Azure OpenAI API, e.g. '2024-02-15-preview'"
+        ),
+    ] = "2024-02-15-preview"
 
     temperature: Annotated[
         float,

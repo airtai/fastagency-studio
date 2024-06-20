@@ -239,6 +239,18 @@ class SaasAppGenerator:
 
         return name, primary_email
 
+    def _set_gh_actions_settings(
+        self, account_and_repo_name: str, cwd: str, env: Dict[str, Any]
+    ) -> None:
+        command = f"""gh api \
+--method PUT \
+-H "Accept: application/vnd.github+json" \
+-H "X-GitHub-Api-Version: 2022-11-28" \
+/repos/{account_and_repo_name}/actions/permissions/workflow \
+-f "default_workflow_permissions=write" -F "can_approve_pull_request_reviews=true"
+"""
+        self._run_cli_command(command, cwd=cwd, env=env)
+
     def _initialize_git_and_push(
         self, temp_dir_path: Path, env: Dict[str, Any]
     ) -> None:
@@ -285,7 +297,7 @@ class SaasAppGenerator:
         self._set_github_actions_secrets(cwd, env=env)
 
         # Update repo settings to allow GitHub Actions to create and approve pull requests
-        # self._set_gh_actions_to_create_pr(account_and_repo_name, cwd=cwd, env=env)
+        self._set_gh_actions_settings(account_and_repo_name, cwd=cwd, env=env)
 
         # push the changes
         command = "git push -u origin main"
@@ -302,7 +314,16 @@ class SaasAppGenerator:
         command = 'gh secret set FASTAGENCY_APPLICATION_UUID --body "$FASTAGENCY_APPLICATION_UUID" --app actions'
         self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
 
-    def execute(self) -> str:
+        command = f'gh variable set REACT_APP_NAME --body "{self.app_name}"'
+        self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
+
+        fastagency_staging_url = environ.get("FASTAGENCY_SERVER_URL", None)
+        logging.info(f"{fastagency_staging_url=}")
+        if fastagency_staging_url:
+            command = f'gh variable set FASTAGENCY_SERVER_URL --body "{fastagency_staging_url}"'
+            self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
+
+    def execute(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = Path(temp_dir)
 
@@ -313,7 +334,7 @@ class SaasAppGenerator:
             env = environ.copy()
 
             # Setup the app in fly
-            flyio_app_name = self._setup_app_in_fly(temp_dir_path, env=env)
+            # flyio_app_name = self._setup_app_in_fly(temp_dir_path, env=env)
 
             # Add the GitHub token to the environment variables to pass to the subprocess
             env["GH_TOKEN"] = self.github_token
@@ -324,9 +345,9 @@ class SaasAppGenerator:
             # Initialize the git repository and push the changes
             self._initialize_git_and_push(temp_dir_path, env=env)
 
-            flyio_app_url = f"https://{flyio_app_name}-client.fly.dev"
+            # flyio_app_url = f"https://{flyio_app_name}-client.fly.dev"
 
-            return flyio_app_url
+            # return flyio_app_url
 
 
 def main() -> None:
@@ -342,8 +363,7 @@ def main() -> None:
     manager.create_new_repository()
     logging.info(f"{manager.gh_repo_url=}")
 
-    flyio_app_url = manager.execute()
-    logging.info(f"{flyio_app_url=}")
+    manager.execute()
 
 
 if __name__ == "__main__":

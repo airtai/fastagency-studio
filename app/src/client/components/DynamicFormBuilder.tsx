@@ -58,14 +58,16 @@ const deploymentCompleteInstructions = `<div class="leading-loose ml-2 mr-2">- H
 <b>Next Steps:</b>
 <span class="ml-5">- Wait for the workflows to complete (approx. 2 mins).
 <span class="ml-13">- Pipeline to run tests and verify the build (approx. 2 mins).</span>
-<span class="ml-13">- Pipeline to setup the application to Fly.io (approx. 5 - 10 mins).</span>
+<span class="ml-13">- Pipeline to deploy the application to Fly.io (approx. 5 - 10 mins).</span>
 <span class="ml-5">- Once the "Fly Deployment Pipeline" completes. Please follow the below steps to access your application:</span>
 <span class="ml-10">- Click on the "Fly Deployment Pipeline" action.</span>
 <span class="ml-10">- Click on "onetime_app_setup" job.</span>
 <span class="ml-10">- Click on "Deploy wasp application to fly" step.</span>
-<span class="ml-10">- Search for the text "Client has been deployed! Your Wasp app is accessible" (or scroll all the way down) in the logs and click on the link to access your application.</span>
+<span class="ml-10">- Search for the text "Client has been deployed! Your Wasp app is accessible" (or scroll all the way down) in the logs and click</span>
+<span class="ml-13">on the link to access your application.</span></span>
 <span class="ml-5">- The above workflow might have also created a pull request in your GitHub repository to update the <b>fly.toml</b> configuration files.</span>
-<span class="ml-5">- Go to the <b>Pull requests</b> tab in your forked repository on GitHub and merge the PR named "Add Fly.io configuration files". You will be needing this to deploy your application to Fly.io in the future.</span>
+<span class="ml-5">- Go to the <b>Pull requests</b> tab in your forked repository on GitHub and merge the PR named "Add Fly.io configuration files". You will be</span>
+<span class="ml-13">needing this to deploy your application to Fly.io in the future.</span></span>
 </div>
 `;
 

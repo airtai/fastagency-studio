@@ -7,7 +7,7 @@ export default function DocsPage() {
           <div className='video-responsive'>
             <iframe
               className='aspect-video w-full rounded-lg shadow-lg shadow-yellow-800/70'
-              src='https://www.youtube.com/embed/O6ehXFjPFLA'
+              src='https://www.youtube.com/embed/9y4cDOkWIBw'
               allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
               allowFullScreen
             ></iframe>

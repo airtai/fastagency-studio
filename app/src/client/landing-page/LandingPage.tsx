@@ -162,13 +162,14 @@ export default function LandingPage() {
               </div>
               <div className='mt-14 flow-root sm:mt-14 '>
                 <div className='-m-2 rounded-xl  lg:-m-4 lg:rounded-2xl lg:p-4'>
-                  <img
-                    src={openSaasBanner}
-                    alt='App screenshot'
-                    width={2432}
-                    height={1442}
-                    className='rounded-md shadow-2xl '
-                  />
+                  <div className='video-responsive'>
+                    <iframe
+                      className='aspect-video w-full rounded-lg shadow-lg shadow-yellow-800/70'
+                      src='https://www.youtube.com/embed/9y4cDOkWIBw'
+                      allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                      allowFullScreen
+                    ></iframe>
+                  </div>
                 </div>
               </div>
             </div>

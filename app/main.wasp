@@ -79,6 +79,7 @@ entity User {=psl
   hasAcceptedTos             Boolean         @default(false)
   hasSubscribedToMarketingEmails  Boolean         @default(false)
   isSignUpComplete          Boolean         @default(false)
+  isSetUpComplete           Boolean         @default(false)
   stripeId                  String?
   checkoutSessionId         String?
   hasPaid                   Boolean         @default(false)
@@ -242,6 +243,11 @@ page ExamplesPage {
   component: import ExamplesPage from "@src/client/app/ExamplesPage",
 }
 
+route DocumentRoute { path: "/docs", to: DocsPage }
+page DocsPage {
+  component: import DocsPage from "@src/client/app/DocsPage",
+}
+
 route AdminRoute { path: "/admin", to: DashboardPage }
 page DashboardPage {
   authRequired: true,
@@ -386,6 +392,11 @@ action createNewAndReturnLastConversation {
 action getAgentResponse {
   fn: import { getAgentResponse } from "@src/server/actions.js",
   entities: [Chat, Conversation]
+}
+
+action userModelSetup {
+  fn: import { userModelSetup } from "@src/server/actions.js",
+  entities: [User]
 }
 
 // 📚 Queries

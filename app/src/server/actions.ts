@@ -16,6 +16,7 @@ import {
   type UpdateCurrentChat,
   type UpdateCurrentConversation,
   type GetAgentResponse,
+  type UserModelSetup,
   type DeleteLastConversationInChat,
   type RetryTeamChat,
 } from 'wasp/server/operations';
@@ -542,5 +543,43 @@ export const getAgentResponse: GetAgentResponse<AgentPayload, Record<string, any
     };
   } catch (error: any) {
     throw new HttpError(500, 'Something went wrong. Please try again later');
+  }
+};
+
+export const userModelSetup: UserModelSetup<void, any> = async (args, context) => {
+  if (!context.user) {
+    throw new HttpError(401);
+  }
+  const userUUID = context.user.uuid;
+  try {
+    const url = `${FASTAGENCY_SERVER_URL}/user/${userUUID}/setup`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
+
+    if (!response.ok) {
+      const errorMsg = json.detail || `HTTP error with status code ${response.status}`;
+      console.error(`Server Error: ${errorMsg} for user ${userUUID}`);
+      if (!errorMsg.includes('toolbox already exists')) {
+        throw new Error(errorMsg);
+      }
+    }
+
+    await context.entities.User.update({
+      where: {
+        id: context.user.id,
+      },
+      data: {
+        isSetUpComplete: true,
+      },
+    });
+    return json;
+  } catch (error: any) {
+    console.log('-----');
+    console.log(`error.message: ${error.message}`);
+    throw new HttpError(500, error.message);
   }
 };

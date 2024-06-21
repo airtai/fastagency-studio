@@ -25,6 +25,9 @@ GitHubTokenRef: TypeAlias = GitHubToken.get_reference_model()  # type: ignore[va
 
 @Registry.get_default().register("application")
 class Application(Model):
+    name: Annotated[
+        str, Field(..., description="The name of the item", min_length=1, max_length=30)
+    ]
     team: Annotated[
         team_type_refs,
         Field(

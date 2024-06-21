@@ -176,7 +176,7 @@ class TestModelRoutes:
         fly_token_uuid = str(uuid.uuid4())
 
         model = {
-            "name": "Test",
+            "name": "test the application name char",  # within the character limit. Max 30
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
             "gh_token": {
                 "uuid": gh_token_uuid,
@@ -216,7 +216,7 @@ class TestModelRoutes:
 
         assert response.status_code == 200
         expected = {
-            "name": "Test",
+            "name": "test the application name char",
             "team": {"type": "team", "name": "TwoAgentTeam", "uuid": team_uuid},
             "gh_token": {
                 "type": "secret",
@@ -230,6 +230,37 @@ class TestModelRoutes:
 
         actual = response.json()
         assert actual == expected
+
+    @pytest.mark.asyncio()
+    async def test_add_model_application_with_long_name(self, user_uuid: str) -> None:
+        team_uuid = str(uuid.uuid4())
+        application_uuid = str(uuid.uuid4())
+        gh_token_uuid = str(uuid.uuid4())
+        fly_token_uuid = str(uuid.uuid4())
+
+        model = {
+            "name": "test the application name charc",  # beyond the character limit. Max 30
+            "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
+            "gh_token": {
+                "uuid": gh_token_uuid,
+                "type": "secret",
+                "name": "GitHubToken",
+            },
+            "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
+            "uuid": application_uuid,
+            "type_name": "application",
+            "model_name": "Application",
+        }
+        type_name = "application"
+        model_name = "Application"
+        model_uuid = str(uuid.uuid4())
+
+        response = client.post(
+            f"/user/{user_uuid}/models/{type_name}/{model_name}/{model_uuid}",
+            json=model,
+        )
+
+        assert response.status_code != 200
 
     @pytest.mark.asyncio()
     async def test_background_task_not_called_on_error(self, user_uuid: str) -> None:

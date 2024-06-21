@@ -216,8 +216,12 @@ async def initiate_handler(
         background_tasks.add(task)
 
         def callback(t: asyncio.Task[Any]) -> None:
-            background_tasks.discard(t)
-            syncify(iostream.subscriber.close)()
+            try:
+                background_tasks.discard(t)
+                syncify(iostream.subscriber.close)()
+            except Exception as e:
+                logger.error(f"Error in callback: {e}")
+                logger.error(traceback.format_exc())
 
         task.add_done_callback(callback)
 

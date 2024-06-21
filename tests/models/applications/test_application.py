@@ -138,6 +138,7 @@ class TestApplication:
             "properties": {
                 "name": {
                     "description": "The name of the item",
+                    "maxLength": 30,
                     "minLength": 1,
                     "title": "Name",
                     "type": "string",

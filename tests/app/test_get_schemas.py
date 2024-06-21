@@ -39,8 +39,7 @@ class TestGetSchema:
             },
             "llm": {"AzureOAI", "OpenAI", "TogetherAI"},
             "agent": {"AssistantAgent", "WebSurferAgent", "UserProxyAgent"},
-            # "team": {"TwoAgentTeam", "MultiAgentTeam"},
-            "team": {"TwoAgentTeam"},
+            "team": {"TwoAgentTeam", "MultiAgentTeam"},
             "toolbox": {"Toolbox"},
             "application": {"Application"},
         }

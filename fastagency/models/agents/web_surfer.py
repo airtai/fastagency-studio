@@ -63,9 +63,19 @@ class WebSurferAgent(AgentBaseModel):
             my_model.summarizer_llm.uuid, user_id
         )
 
+        bing_api_key = None
+        if my_model.bing_api_key is not None:
+            bing_model = await my_model.bing_api_key.get_data_model().from_db(  # type: ignore[union-attr]
+                my_model.bing_api_key.uuid  # type: ignore[union-attr]
+            )
+            bing_api_key = await bing_model.create_autogen(
+                my_model.bing_api_key.uuid,  # type: ignore[union-attr]
+                user_id,
+            )
+
         browser_config = {
             "viewport_size": my_model.viewport_size,
-            "bing_api_key": my_model.bing_api_key,
+            "bing_api_key": bing_api_key,
         }
         agent_name = my_model.name
 

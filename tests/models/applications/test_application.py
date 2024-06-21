@@ -105,6 +105,35 @@ class TestApplication:
                     "title": "GitHubTokenRef",
                     "type": "object",
                 },
+                "MultiAgentTeamRef": {
+                    "properties": {
+                        "type": {
+                            "const": "team",
+                            "default": "team",
+                            "description": "The name of the type of the data",
+                            "enum": ["team"],
+                            "title": "Type",
+                            "type": "string",
+                        },
+                        "name": {
+                            "const": "MultiAgentTeam",
+                            "default": "MultiAgentTeam",
+                            "description": "The name of the data",
+                            "enum": ["MultiAgentTeam"],
+                            "title": "Name",
+                            "type": "string",
+                        },
+                        "uuid": {
+                            "description": "The unique identifier",
+                            "format": "uuid",
+                            "title": "UUID",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["uuid"],
+                    "title": "MultiAgentTeamRef",
+                    "type": "object",
+                },
                 "TwoAgentTeamRef": {
                     "properties": {
                         "type": {
@@ -144,7 +173,10 @@ class TestApplication:
                     "type": "string",
                 },
                 "team": {
-                    "allOf": [{"$ref": "#/$defs/TwoAgentTeamRef"}],
+                    "anyOf": [
+                        {"$ref": "#/$defs/MultiAgentTeamRef"},
+                        {"$ref": "#/$defs/TwoAgentTeamRef"},
+                    ],
                     "description": "The team that is used in the application",
                     "title": "Team name",
                 },

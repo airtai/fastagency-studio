@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 
+# Check the value of the DOMAIN environment variable
+if [[ -z "$DOMAIN" || "$DOMAIN" == *"staging"* || "$DOMAIN" == *"localhost"* ]]; then
+  workers=2
+else
+  workers=4
+fi
+
 prisma migrate deploy
 prisma generate --schema=schema.prisma --generator=pyclient
 
-faststream run fastagency.io.ionats:app --workers 2 > faststream.log 2>&1 &
+faststream run fastagency.io.ionats:app --workers $workers > faststream.log 2>&1 &
 
-uvicorn fastagency.weather_app:weather_app --workers 1 --host 0.0.0.0 --port 9001 --proxy-headers > weather_app.log 2>&1 &
-
-uvicorn fastagency.app:app --workers 2 --host 0.0.0.0 --proxy-headers
+uvicorn fastagency.app:app --workers $workers --host 0.0.0.0 --proxy-headers

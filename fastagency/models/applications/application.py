@@ -43,8 +43,8 @@ class Application(Model):
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
         raise NotImplementedError
 
-    @classmethod
     @field_validator("name")
+    @classmethod
     def validate_name(cls: Type["Application"], value: Any) -> Any:
         if not re.match(r"^[a-zA-Z0-9\- ]+$", value):
             raise ValueError(

@@ -56,8 +56,8 @@ const deploymentInprogressInstructions = `<div class="leading-loose ml-2 mr-2"><
 <span class="ml-10">- Click on the "Fly Deployment Pipeline" action.</span>
 <span class="ml-10">- Click on "onetime_app_setup" job.</span>
 <span class="ml-10">- Click on "Deploy wasp application to fly" step.</span>
-<span class="ml-10">- Search for the text "Client has been deployed! Your Wasp app is accessible" (or scroll all the way down) in the logs and click</span>
-<span class="ml-13">on the link to access your application.</span></span>
+<span class="ml-10">- Scroll all the way to the bottom, you will see a sentence "Client has been deployed! Your Wasp app is accessible" in the logs. Click on the</span>
+<span class="ml-13">link next to it to access your application.</span></span>
 
 <span class="ml-5">- Adding the fly.io configuration files:</span>
 <span class="ml-10">- The above workflow might have also created a pull request in your GitHub repository to update the <b>fly.toml</b> </span>
@@ -224,7 +224,7 @@ The deployment process includes:
 Before you begin, ensure you have the following:
 <span class="ml-5">1. GitHub account:</span>
 <span class="ml-10">- If you don't have a GitHub account, you can create one <a class="underline" href="https://github.com/signup" target="_blank" rel="noopener noreferrer">here</a>.</span>
-<span class="ml-10">- A GitHub personal access token. If you don't have one, you can generate it by following this <a class="underline" href="https://docs.github.com/github/authenticating-to-github/creating-a-personal-access-token" target="_blank" rel="noopener noreferrer">guide</a>.</span>
+<span class="ml-10">- A GitHub personal access token. If you don't have one, you can generate it by following this <a class="underline" href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic" target="_blank" rel="noopener noreferrer">guide</a>.</span>
 <span class="ml-10"><b><u>Note</u></b>: The minimum required scopes for the token are: <b>repo</b>, <b>workflow</b>, <b>read:org</b>, <b>gist</b> and <b>user:email</b>.</span>
 
 <span class="ml-5">2. Fly.io account:</span>

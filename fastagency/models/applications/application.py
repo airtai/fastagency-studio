@@ -1,7 +1,8 @@
-from typing import Annotated, Any, Union
+import re
+from typing import Annotated, Any, Type, Union
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from typing_extensions import TypeAlias
 
 from ..base import Model
@@ -41,3 +42,12 @@ class Application(Model):
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
         raise NotImplementedError
+
+    @classmethod
+    @field_validator("name")
+    def validate_name(cls: Type["Application"], value: Any) -> Any:
+        if not re.match(r"^[a-zA-Z0-9\- ]+$", value):
+            raise ValueError(
+                "Name must contain only letters, numbers, spaces, and dashes."
+            )
+        return value

@@ -79,7 +79,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
               </div>
             )}
             <label className='text-airt-primary inline-block' htmlFor='setSystemMessage'>
-              Task Description
+              Message
             </label>
             <TextArea id='setSystemMessage' value={message} placeholder='' onChange={handleMessageChange} />
             {formError && (

@@ -45,29 +45,27 @@ const deploymentInprogressInstructions = `<div class="leading-loose ml-2 mr-2"><
 <span class="ml-5">- We have created a new <a class="underline" href="<gh_repo_url>" target="_blank" rel="noopener noreferrer">GitHub repository</a> in your GitHub account.</span>
 <span class="ml-5">- The application code will be pushed to this repository in a few seconds.</span>
 <span class="text-l inline-block my-2 underline">Checking Deployment Status</span>
-<span class="ml-5">- You can monitor the status on the GitHub repository's action page.</span>
-<span class="text-l inline-block my-2 underline">Need Help?</span>
-<span class="ml-10">- If you encounter any issues or need assistance, please reach out to us on <a class="underline" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">discord</a>.</span>
-</div>
-`;
+<span class="ml-5">- Once the application code is pushed, new workflows will be triggered to test and deploy the application to Fly.io. You can</span>
+<span class="ml-10">check the status of the same on the GitHub repository's <a class="underline" href="<gh_repo_url>/actions" target="_blank" rel="noopener noreferrer">actions</a> page.</span>
+<span class="text-l inline-block my-2 underline">Next Steps</span>
+<span class="ml-5">- Wait for the workflows to complete:
+<span class="ml-13">- Workflow to run tests and verify the build (approx. 2 mins).</span>
+<span class="ml-13">- Workflow to deploy the application to Fly.io (approx. 8 - 10 mins).</span>
 
-const deploymentCompleteInstructions = `<div class="leading-loose ml-2 mr-2">- Hurrah! Your application has been successfully pushed to the GitHub repository.
-
-- A new workflow has been triggered to test and deploy the application to Fly.io. You can check the status on the GitHub repository <a class="underline" href="<gh_repo_url>/actions" target="_blank" rel="noopener noreferrer">actions</a> page.
-
-<b>Next Steps:</b>
-<span class="ml-5">- Wait for the workflows to complete (approx. 2 mins).
-<span class="ml-13">- Pipeline to run tests and verify the build (approx. 2 mins).</span>
-<span class="ml-13">- Pipeline to deploy the application to Fly.io (approx. 5 - 10 mins).</span>
 <span class="ml-5">- Once the "Fly Deployment Pipeline" completes. Please follow the below steps to access your application:</span>
 <span class="ml-10">- Click on the "Fly Deployment Pipeline" action.</span>
 <span class="ml-10">- Click on "onetime_app_setup" job.</span>
 <span class="ml-10">- Click on "Deploy wasp application to fly" step.</span>
 <span class="ml-10">- Search for the text "Client has been deployed! Your Wasp app is accessible" (or scroll all the way down) in the logs and click</span>
 <span class="ml-13">on the link to access your application.</span></span>
-<span class="ml-5">- The above workflow might have also created a pull request in your GitHub repository to update the <b>fly.toml</b> configuration files.</span>
-<span class="ml-5">- Go to the <b>Pull requests</b> tab in your forked repository on GitHub and merge the PR named "Add Fly.io configuration files". You will be</span>
+
+<span class="ml-5">- Adding the fly.io configuration files:</span>
+<span class="ml-10">- The above workflow might have also created a pull request in your GitHub repository to update the <b>fly.toml</b> </span>
+<span class="ml-13">configuration files.</span>
+<span class="ml-10">- Go to the <b>Pull requests</b> tab in your repository and merge the PR named "Add Fly.io configuration files". You will be</span>
 <span class="ml-13">needing this to deploy your application to Fly.io in the future.</span></span>
+<span class="text-l inline-block my-2 underline">Need Help?</span>
+<span class="ml-10">- If you encounter any issues or need assistance, please reach out to us on <a class="underline" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">discord</a>.</span>
 </div>
 `;
 
@@ -191,10 +189,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
   useEffect(() => {
     if (updateExistingModel && type_name === 'application') {
-      const msg =
-        updateExistingModel.app_deploy_status === 'inprogress'
-          ? deploymentInprogressInstructions
-          : deploymentCompleteInstructions;
+      const msg = deploymentInprogressInstructions;
 
       //@ts-ignore
       setInstructionForApplication((prevState) => ({
@@ -219,7 +214,9 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     return () => document.removeEventListener('keydown', keyHandler);
   });
 
-  const appDeploymentPrerequisites = `<div class="ml-2 mr-2 leading-loose">We've automated the application generation and deployment process so you can focus on building your application without worrying about deployment complexities.
+  const appDeploymentPrerequisites = `<div class="ml-2 mr-2 leading-loose">We've automated the application generation and deployment process so you can focus on building your application
+without worrying about deployment complexities.
+
 The deployment process includes:
 <span class="ml-5">- Automatically creating a new GitHub repository with the generated application code in your GitHub account.</span>
 <span class="ml-5">- Automatically deploying the application to Fly.io using GitHub Actions.</span>

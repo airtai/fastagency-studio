@@ -79,6 +79,7 @@ entity User {=psl
   hasAcceptedTos             Boolean         @default(false)
   hasSubscribedToMarketingEmails  Boolean         @default(false)
   isSignUpComplete          Boolean         @default(false)
+  isSetUpComplete           Boolean         @default(false)
   stripeId                  String?
   checkoutSessionId         String?
   hasPaid                   Boolean         @default(false)
@@ -386,6 +387,11 @@ action createNewAndReturnLastConversation {
 action getAgentResponse {
   fn: import { getAgentResponse } from "@src/server/actions.js",
   entities: [Chat, Conversation]
+}
+
+action userModelSetup {
+  fn: import { userModelSetup } from "@src/server/actions.js",
+  entities: [User]
 }
 
 // 📚 Queries

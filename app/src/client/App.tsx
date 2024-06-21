@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import './Main.css';
 
 import { useAuth } from 'wasp/client/auth';
-import { updateCurrentUser } from 'wasp/client/operations';
+import { updateCurrentUser, userModelSetup } from 'wasp/client/operations';
 
 import AppNavBar from './components/AppNavBar';
 import Footer from './components/Footer';
@@ -31,6 +31,7 @@ const removeServerErrorClass = () => {
 export default function App({ children }: { children: ReactNode }) {
   const location = useLocation();
   const [showTosAndMarketingEmailsModal, setShowTosAndMarketingEmailsModal] = useState(false);
+  const [isUserModelSetupCalled, setIsUserModelSetupCalled] = useState(false);
   const { data: user, isError, isLoading } = useAuth();
 
   const shouldDisplayAppNavBar = useMemo(() => {
@@ -58,37 +59,49 @@ export default function App({ children }: { children: ReactNode }) {
   }, [location]);
 
   useEffect(() => {
-    if (user) {
-      if (!user.isSignUpComplete) {
-        if (user.hasAcceptedTos) {
-          updateCurrentUser({
-            isSignUpComplete: true,
-          });
-          setShowTosAndMarketingEmailsModal(false);
-        } else {
-          const hasAcceptedTos = localStorage.getItem('hasAcceptedTos') === 'true';
-          const hasSubscribedToMarketingEmails = localStorage.getItem('hasSubscribedToMarketingEmails') === 'true';
-          if (!hasAcceptedTos) {
-            setShowTosAndMarketingEmailsModal(true);
-          } else {
+    const handleUserSetup = async () => {
+      if (user) {
+        if (!user.isSignUpComplete) {
+          if (user.hasAcceptedTos) {
             updateCurrentUser({
               isSignUpComplete: true,
-              hasAcceptedTos: hasAcceptedTos,
-              hasSubscribedToMarketingEmails: hasSubscribedToMarketingEmails,
             });
             setShowTosAndMarketingEmailsModal(false);
+          } else {
+            const hasAcceptedTos = localStorage.getItem('hasAcceptedTos') === 'true';
+            const hasSubscribedToMarketingEmails = localStorage.getItem('hasSubscribedToMarketingEmails') === 'true';
+            if (!hasAcceptedTos) {
+              setShowTosAndMarketingEmailsModal(true);
+            } else {
+              updateCurrentUser({
+                isSignUpComplete: true,
+                hasAcceptedTos: hasAcceptedTos,
+                hasSubscribedToMarketingEmails: hasSubscribedToMarketingEmails,
+              });
+              setShowTosAndMarketingEmailsModal(false);
+            }
+          }
+        } else {
+          if (!user.isSetUpComplete && !isUserModelSetupCalled) {
+            setIsUserModelSetupCalled(true);
+            try {
+              await userModelSetup();
+              console.log('userModelSetup done!');
+            } catch (error) {
+              console.log('Error in userModelSetup!');
+            }
+          }
+          setShowTosAndMarketingEmailsModal(false);
+          const lastSeenAt = new Date(user.lastActiveTimestamp);
+          const today = new Date();
+          if (today.getTime() - lastSeenAt.getTime() > 5 * 60 * 1000) {
+            updateCurrentUser({ lastActiveTimestamp: today });
           }
         }
-      } else {
-        setShowTosAndMarketingEmailsModal(false);
-        const lastSeenAt = new Date(user.lastActiveTimestamp);
-        const today = new Date();
-        if (today.getTime() - lastSeenAt.getTime() > 5 * 60 * 1000) {
-          updateCurrentUser({ lastActiveTimestamp: today });
-        }
       }
-    }
-  }, [user]);
+    };
+    handleUserSetup();
+  }, [user, isUserModelSetupCalled]);
 
   useEffect(() => {
     if (location.hash) {

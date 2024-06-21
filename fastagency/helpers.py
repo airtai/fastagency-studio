@@ -71,11 +71,10 @@ async def deploy_saas_app(
     type_name: str,
     model_name: str,
 ) -> None:
-    flyio_app_url = await asyncify(saas_app.execute)()
+    await asyncify(saas_app.execute)()
 
     async with get_db_connection() as db:
         found_model = await find_model_using_raw(model_uuid=model_uuid)
-        found_model["json_str"]["flyio_app_url"] = flyio_app_url
         found_model["json_str"]["app_deploy_status"] = "completed"
 
         await db.model.update(

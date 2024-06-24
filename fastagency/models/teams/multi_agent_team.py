@@ -37,7 +37,7 @@ class AutogenMultiAgentTeam:
         )
 
 
-# @registry.register("team")
+@registry.register("team")
 class MultiAgentTeam(TeamBaseModel):
     agent_1: Annotated[
         agent_type_refs,

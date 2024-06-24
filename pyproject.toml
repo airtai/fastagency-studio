@@ -109,7 +109,7 @@ testing = [
     "pydantic-settings==2.3.3",
     "PyYAML==6.0.1",
     "watchfiles==0.21.0",
-    "email-validator==2.1.1",
+    "email-validator==2.2.0",
 ]
 
 dev = [

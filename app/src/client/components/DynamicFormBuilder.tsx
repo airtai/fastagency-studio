@@ -45,8 +45,8 @@ const deploymentInprogressInstructions = `<div class="leading-loose ml-2 mr-2"><
 <span class="ml-5">- We have created a new <a class="underline" href="<gh_repo_url>" target="_blank" rel="noopener noreferrer">GitHub repository</a> in your GitHub account.</span>
 <span class="ml-5">- The application code will be pushed to this repository in a few seconds.</span>
 <span class="text-l inline-block my-2 underline">Checking Deployment Status</span>
-<span class="ml-5">- Once the application code is pushed, new workflows will be triggered to test and deploy the application to Fly.io. You can</span>
-<span class="ml-10">check the status of the same on the GitHub repository's <a class="underline" href="<gh_repo_url>/actions" target="_blank" rel="noopener noreferrer">actions</a> page.</span>
+<span class="ml-5">- Once the application code is pushed, new workflows will be triggered to test and deploy the application</span>
+<span class="ml-10">to Fly.io. You can check the status of the same on the GitHub repository's <a class="underline" href="<gh_repo_url>/actions" target="_blank" rel="noopener noreferrer">actions</a> page.</span>
 <span class="text-l inline-block my-2 underline">Next Steps</span>
 <span class="ml-5">- Wait for the workflows to complete:
 <span class="ml-13">- Workflow to run tests and verify the build (approx. 2 mins).</span>
@@ -56,14 +56,14 @@ const deploymentInprogressInstructions = `<div class="leading-loose ml-2 mr-2"><
 <span class="ml-10">- Click on the "Fly Deployment Pipeline" action.</span>
 <span class="ml-10">- Click on "onetime_app_setup" job.</span>
 <span class="ml-10">- Click on "Deploy wasp application to fly" step.</span>
-<span class="ml-10">- Scroll all the way to the bottom, you will see a sentence "Client has been deployed! Your Wasp app is accessible" in the logs. Click on the</span>
-<span class="ml-13">link next to it to access your application.</span></span>
+<span class="ml-10">- Scroll all the way to the bottom, you will see a sentence "Client has been deployed! Your Wasp </span>
+<span class="ml-13">app is accessible" in the logs. Click on the link next to it to access your application.</span></span>
 
 <span class="ml-5">- Adding the fly.io configuration files:</span>
-<span class="ml-10">- The above workflow might have also created a pull request in your GitHub repository to update the <b>fly.toml</b> </span>
-<span class="ml-13">configuration files.</span>
-<span class="ml-10">- Go to the <b>Pull requests</b> tab in your repository and merge the PR named "Add Fly.io configuration files". You will be</span>
-<span class="ml-13">needing this to deploy your application to Fly.io in the future.</span></span>
+<span class="ml-10">- The above workflow might have also created a pull request in your GitHub repository</span>
+<span class="ml-13">to update the <b>fly.toml</b> configuration files.</span>
+<span class="ml-10">- Go to the <b>Pull requests</b> tab in your repository and merge the PR named "Add Fly.io configuration files".</span>
+<span class="ml-13">You will be needing this to deploy your application to Fly.io in the future.</span></span>
 <span class="text-l inline-block my-2 underline">Need Help?</span>
 <span class="ml-10">- If you encounter any issues or need assistance, please reach out to us on <a class="underline" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">discord</a>.</span>
 </div>
@@ -116,7 +116,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     }
     try {
       const response = await validateForm(formDataToSubmit, validationURL, isSecretUpdate);
-      const onSuccessCallbackResponse = await onSuccessCallback(response);
+      const onSuccessCallbackResponse: any = await onSuccessCallback(response);
 
       isApplication &&
         !updateExistingModel &&
@@ -124,7 +124,10 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
           ...prevState,
           gh_repo_url: response.gh_repo_url,
           // @ts-ignore
-          instruction: deploymentInprogressInstructions.replace('<gh_repo_url>', onSuccessCallbackResponse.gh_repo_url),
+          instruction: deploymentInprogressInstructions.replaceAll(
+            '<gh_repo_url>',
+            onSuccessCallbackResponse.gh_repo_url
+          ),
         }));
     } catch (error: any) {
       try {
@@ -198,9 +201,9 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
         flyio_app_url: updateExistingModel.flyio_app_url,
         instruction: msg
           //@ts-ignore
-          .replace('<gh_repo_url>', updateExistingModel.gh_repo_url)
+          .replaceAll('<gh_repo_url>', updateExistingModel.gh_repo_url)
           //@ts-ignore
-          .replace('<flyio_app_url>', updateExistingModel.flyio_app_url),
+          .replaceAll('<flyio_app_url>', updateExistingModel.flyio_app_url),
       }));
     }
   }, [isApplication]);

@@ -13,12 +13,12 @@ from fastagency.saas_app_generator import InvalidGHTokenError, SaasAppGenerator
 @pytest.fixture()
 def saas_app_generator() -> SaasAppGenerator:
     fly_api_token = "some-token"
-    fastagency_application_uuid = "some-uuid"
+    fastagency_deployment_uuid = "some-uuid"
     github_token = "some-github-token"
     app_name = "test fastagency template"
 
     return SaasAppGenerator(
-        fly_api_token, fastagency_application_uuid, github_token, app_name
+        fly_api_token, fastagency_deployment_uuid, github_token, app_name
     )
 
 
@@ -196,7 +196,7 @@ def test_set_github_actions_secrets(
         saas_app_generator._set_github_actions_secrets(cwd=temp_dir, env={})
         expected_commands = [
             'gh secret set FLY_API_TOKEN --body "$FLY_API_TOKEN" --app actions',
-            'gh secret set FASTAGENCY_APPLICATION_UUID --body "$FASTAGENCY_APPLICATION_UUID" --app actions',
+            'gh secret set FASTAGENCY_DEPLOYMENT_UUID --body "$FASTAGENCY_DEPLOYMENT_UUID" --app actions',
         ]
 
         # for call in mock_run.call_args_list:
@@ -212,7 +212,7 @@ def test_set_github_actions_secrets(
                 cwd=temp_dir,
                 env={
                     "FLY_API_TOKEN": saas_app_generator.fly_api_token,
-                    "FASTAGENCY_APPLICATION_UUID": saas_app_generator.fastagency_application_uuid,
+                    "FASTAGENCY_DEPLOYMENT_UUID": saas_app_generator.fastagency_deployment_uuid,
                 },
             )
 
@@ -321,7 +321,7 @@ def test_initialize_git_and_push(
             "git branch -M main",
             "git remote add origin https://account:$GH_TOKEN@github.com/account/repo.git",
             'gh secret set FLY_API_TOKEN --body "$FLY_API_TOKEN" --app actions',
-            'gh secret set FASTAGENCY_APPLICATION_UUID --body "$FASTAGENCY_APPLICATION_UUID" --app actions',
+            'gh secret set FASTAGENCY_DEPLOYMENT_UUID --body "$FASTAGENCY_DEPLOYMENT_UUID" --app actions',
             "git push -u origin main",
         ]
 

@@ -56,7 +56,7 @@ async def validate_tokens_and_create_gh_repo(
         fly_api_token=found_fly_token_uuid,
         github_token=found_gh_token_uuid,
         app_name=model["name"],
-        fastagency_application_uuid=model_uuid,
+        fastagency_deployment_uuid=model_uuid,
     )
 
     saas_app.validate_tokens()
@@ -104,7 +104,7 @@ async def add_model_to_user(
         validated_model_json = validated_model.model_dump_json()
         saas_app = None
 
-        if type_name == "application":
+        if type_name == "deployment":
             saas_app = await validate_tokens_and_create_gh_repo(
                 validated_model_dict, model_uuid
             )

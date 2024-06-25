@@ -20,7 +20,7 @@ class TestGetSchema:
             "agent",
             "team",
             "toolbox",
-            "application",
+            "deployment",
         }
 
         model_names = {
@@ -42,6 +42,6 @@ class TestGetSchema:
             # "team": {"TwoAgentTeam", "MultiAgentTeam"},
             "team": {"TwoAgentTeam"},
             "toolbox": {"Toolbox"},
-            "application": {"Application"},
+            "deployment": {"Deployment"},
         }
         assert model_names == expected, f"{model_names}!={expected}"

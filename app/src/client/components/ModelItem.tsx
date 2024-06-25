@@ -31,7 +31,7 @@ const ModelItem: React.FC<ModelItemProps> = ({ model, onClick }) => {
   const svgClassName =
     model.type_name === ('llm' || 'secret')
       ? 'text-airt-primary mt-1 ml-1'
-      : model.type_name === 'application'
+      : model.type_name === 'deployment'
         ? 'text-airt-primary mt-1 ml-2'
         : 'text-airt-primary ml-1';
   return (

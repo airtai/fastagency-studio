@@ -3,7 +3,7 @@ import CustomBreadcrumb from '../CustomBreadcrumb';
 import UserPropertyHandler from './UserPropertyHandler';
 import { SecretsProps } from '../../interfaces/BuildPageInterfaces';
 
-const Applications = ({ data }: SecretsProps) => {
+const Deployments = ({ data }: SecretsProps) => {
   return (
     <>
       <CustomBreadcrumb pageName='Deployments' />
@@ -18,4 +18,4 @@ const Applications = ({ data }: SecretsProps) => {
   );
 };
 
-export default Applications;
+export default Deployments;

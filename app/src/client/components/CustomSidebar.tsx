@@ -204,7 +204,7 @@ export const navLinkItems: NavLinkItem[] = [
         <line className='st0' x1='1' y1='6' x2='17' y2='6' />
       </svg>
     ),
-    componentName: 'application',
+    componentName: 'deployment',
   },
 ];
 

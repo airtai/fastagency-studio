@@ -1606,7 +1606,7 @@ describe('buildPageUtils', () => {
             $ref: '#/$defs/TwoAgentTeamRef',
           },
         ],
-        description: 'The team that is used in the application',
+        description: 'The team that is used in the deployment',
         title: 'Team name',
       };
       const expected = ['#/$defs/TwoAgentTeamRef'];

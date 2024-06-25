@@ -3,22 +3,22 @@ import uuid
 import pytest
 from pydantic import ValidationError
 
-from fastagency.models.applications.application import Application
 from fastagency.models.base import Model
+from fastagency.models.deployments.deployment import Deployment
 from fastagency.models.secrets.fly_token import FlyToken
 from fastagency.models.secrets.github_token import GitHubToken
 from fastagency.models.teams.multi_agent_team import MultiAgentTeam
 from fastagency.models.teams.two_agent_teams import TwoAgentTeam
 
 
-class TestApplication:
+class TestDeployment:
     @pytest.mark.parametrize(
         "team_model",
         [TwoAgentTeam, pytest.param(MultiAgentTeam, marks=pytest.mark.skip)],
     )
     @pytest.mark.parametrize("gh_token_model", [(GitHubToken)])
     @pytest.mark.parametrize("fly_token_model", [(FlyToken)])
-    def test_application_constructor(
+    def test_deployment_constructor(
         self, team_model: Model, gh_token_model: Model, fly_token_model: Model
     ) -> None:
         team_uuid = uuid.uuid4()
@@ -31,9 +31,9 @@ class TestApplication:
         fly_token = fly_token_model.get_reference_model()(uuid=fly_token_uuid)
 
         try:
-            application = Application(
+            deployment = Deployment(
                 team=team,
-                name="Test Application",
+                name="Test Deployment",
                 gh_token=gh_token,
                 fly_token=fly_token,
             )
@@ -41,10 +41,10 @@ class TestApplication:
             # print(f"{e.errors()=}")
             raise
 
-        assert application.team == team
+        assert deployment.team == team
 
-    def test_application_model_schema(self) -> None:
-        schema = Application.model_json_schema()
+    def test_deployment_model_schema(self) -> None:
+        schema = Deployment.model_json_schema()
         expected = {
             "$defs": {
                 "FlyTokenRef": {
@@ -145,14 +145,14 @@ class TestApplication:
                 },
                 "team": {
                     "allOf": [{"$ref": "#/$defs/TwoAgentTeamRef"}],
-                    "description": "The team that is used in the application",
+                    "description": "The team that is used in the deployment",
                     "title": "Team name",
                 },
                 "gh_token": {"$ref": "#/$defs/GitHubTokenRef"},
                 "fly_token": {"$ref": "#/$defs/FlyTokenRef"},
             },
             "required": ["name", "team", "gh_token", "fly_token"],
-            "title": "Application",
+            "title": "Deployment",
             "type": "object",
         }
         # print(f"{schema=}")
@@ -176,15 +176,15 @@ class TestApplication:
         fly_token_uuid = uuid.uuid4()
         fly_token = fly_token_model.get_reference_model()(uuid=fly_token_uuid)
 
-        application = Application(
-            team=team, name="Test Application", gh_token=gh_token, fly_token=fly_token
+        deployment = Deployment(
+            team=team, name="Test Deployment", gh_token=gh_token, fly_token=fly_token
         )
 
-        application_json = application.model_dump_json()
-        # print(f"{application_json=}")
-        assert application_json is not None
+        deployment_json = deployment.model_dump_json()
+        # print(f"{deployment_json=}")
+        assert deployment_json is not None
 
-        validated_application = Application.model_validate_json(application_json)
+        validated_deployment = Deployment.model_validate_json(deployment_json)
         # print(f"{validated_agent=}")
-        assert validated_application is not None
-        assert validated_application == application
+        assert validated_deployment is not None
+        assert validated_deployment == deployment

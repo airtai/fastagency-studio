@@ -27,11 +27,13 @@ interface ModelItemProps {
 
 const ModelItem: React.FC<ModelItemProps> = ({ model, onClick }) => {
   const propertyName = model.json_str.name ? model.json_str.name : model.model_name;
-  const svgIcon = _.find(navLinkItems, ['componentName', model.type_name]).svgIcon;
+  const modelType = model.type_name === 'application' ? 'deployment' : model.type_name;
+  const modelName = model.model_name === 'Application' ? 'Deployment' : model.model_name;
+  const svgIcon = _.find(navLinkItems, ['componentName', modelType]).svgIcon;
   const svgClassName =
-    model.type_name === ('llm' || 'secret')
+    modelType === ('llm' || 'secret')
       ? 'text-airt-primary mt-1 ml-1'
-      : model.type_name === 'deployment'
+      : modelType === 'deployment'
         ? 'text-airt-primary mt-1 ml-2'
         : 'text-airt-primary ml-1';
   return (
@@ -51,7 +53,7 @@ const ModelItem: React.FC<ModelItemProps> = ({ model, onClick }) => {
         </div>
         {model.json_str.name && (
           <div className='flex flex-col gap-2 text-airt-font-base group-hover:text-airt-primary pt-4 sm:max-w-sm sm:rounded-lg'>
-            <p className='z-10 '>{model.model_name}</p>
+            <p className='z-10 '>{modelName}</p>
           </div>
         )}
         {model.json_str.api_key && (

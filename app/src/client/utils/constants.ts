@@ -20,5 +20,5 @@ export const propertyDependencyMap: PropertyDependencyMapProps = deepFreeze({
   toolbox: [''],
   agent: ['secret', 'llm'],
   team: ['secret', 'llm', 'agent'],
-  application: ['secret', 'llm', 'agent', 'team'],
+  deployment: ['secret', 'llm', 'agent', 'team'],
 });

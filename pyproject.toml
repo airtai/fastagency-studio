@@ -44,7 +44,7 @@ classifiers = [
 dynamic = ["version"]
 
 dependencies = [
-    "pyautogen>=0.2.28,<0.3",
+    "pyautogen[anthropic,together]==0.2.31",
     "faststream[nats]>=0.5.10,<0.6",
     "typing-extensions>=4.8.0,<5",
     "pydantic>=2.3,<3",

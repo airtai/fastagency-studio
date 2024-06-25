@@ -16,7 +16,7 @@ class AssistantAgent(AgentBaseModel):
         Field(
             description="The system message of the agent. This message is used to inform the agent about his role in the conversation"
         ),
-    ]
+    ] = "You are a helpful assistant."
 
     @classmethod
     async def create_autogen(

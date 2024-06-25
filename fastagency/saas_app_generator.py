@@ -54,14 +54,14 @@ class SaasAppGenerator:
     def __init__(
         self,
         fly_api_token: str,
-        fastagency_application_uuid: str,
+        fastagency_deployment_uuid: str,
         github_token: str,
         app_name: str,
     ) -> None:
         """GitHubManager class."""
         self.template_repo_url = SaasAppGenerator.TEMPLATE_REPO_URL
         self.fly_api_token = fly_api_token
-        self.fastagency_application_uuid = fastagency_application_uuid
+        self.fastagency_deployment_uuid = fastagency_deployment_uuid
         self.github_token = github_token
         self.app_name = app_name
 
@@ -310,8 +310,8 @@ class SaasAppGenerator:
         command = 'gh secret set FLY_API_TOKEN --body "$FLY_API_TOKEN" --app actions'
         self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
 
-        secrets_env["FASTAGENCY_APPLICATION_UUID"] = self.fastagency_application_uuid
-        command = 'gh secret set FASTAGENCY_APPLICATION_UUID --body "$FASTAGENCY_APPLICATION_UUID" --app actions'
+        secrets_env["FASTAGENCY_DEPLOYMENT_UUID"] = self.fastagency_deployment_uuid
+        command = 'gh secret set FASTAGENCY_DEPLOYMENT_UUID --body "$FASTAGENCY_DEPLOYMENT_UUID" --app actions'
         self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
 
         command = f'gh variable set REACT_APP_NAME --body "{self.app_name}"'
@@ -353,9 +353,9 @@ class SaasAppGenerator:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("fly_token", help="Fly.io token")
-    parser.add_argument("uuid", help="Application UUID")
+    parser.add_argument("uuid", help="Deployment UUID")
     parser.add_argument("gh_token", help="GitHub token")
-    parser.add_argument("app_name", help="Application name")
+    parser.add_argument("app_name", help="Deployment name")
     args = parser.parse_args()
 
     manager = SaasAppGenerator(args.fly_token, args.uuid, args.gh_token, args.app_name)

@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.app.application_chat
+::: fastagency.app.deployment_chat

@@ -169,14 +169,14 @@ class TestModelRoutes:
         assert actual == expected
 
     @pytest.mark.asyncio()
-    async def test_add_model_application(self, user_uuid: str) -> None:
+    async def test_add_model_deployment(self, user_uuid: str) -> None:
         team_uuid = str(uuid.uuid4())
-        application_uuid = str(uuid.uuid4())
+        deployment_uuid = str(uuid.uuid4())
         gh_token_uuid = str(uuid.uuid4())
         fly_token_uuid = str(uuid.uuid4())
 
         model = {
-            "name": "test the application name char",  # within the character limit. Max 30
+            "name": "test the deployment name char",  # within the character limit. Max 30
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
             "gh_token": {
                 "uuid": gh_token_uuid,
@@ -184,21 +184,21 @@ class TestModelRoutes:
                 "name": "GitHubToken",
             },
             "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
-            "uuid": application_uuid,
-            "type_name": "application",
-            "model_name": "Application",
+            "uuid": deployment_uuid,
+            "type_name": "deployment",
+            "model_name": "Deployment",
         }
-        type_name = "application"
-        model_name = "Application"
+        type_name = "deployment"
+        model_name = "Deployment"
         model_uuid = str(uuid.uuid4())
 
         # Mock the background task
         fly_api_token = "some-token"
-        fastagency_application_uuid = "some-uuid"
+        fastagency_deployment_uuid = "some-uuid"
         github_token = "some-github-token"
         app_name = "test fastagency template"
         saas_app = SaasAppGenerator(
-            fly_api_token, fastagency_application_uuid, github_token, app_name
+            fly_api_token, fastagency_deployment_uuid, github_token, app_name
         )
         saas_app.gh_repo_url = "https://some-git-url"
         with (
@@ -216,7 +216,7 @@ class TestModelRoutes:
 
         assert response.status_code == 200
         expected = {
-            "name": "test the application name char",
+            "name": "test the deployment name char",
             "team": {"type": "team", "name": "TwoAgentTeam", "uuid": team_uuid},
             "gh_token": {
                 "type": "secret",
@@ -232,14 +232,14 @@ class TestModelRoutes:
         assert actual == expected
 
     @pytest.mark.asyncio()
-    async def test_add_model_application_with_long_name(self, user_uuid: str) -> None:
+    async def test_add_model_deployment_with_long_name(self, user_uuid: str) -> None:
         team_uuid = str(uuid.uuid4())
-        application_uuid = str(uuid.uuid4())
+        deployment_uuid = str(uuid.uuid4())
         gh_token_uuid = str(uuid.uuid4())
         fly_token_uuid = str(uuid.uuid4())
 
         model = {
-            "name": "test the application name charc",  # beyond the character limit. Max 30
+            "name": "test the deployment name charc",  # beyond the character limit. Max 30
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
             "gh_token": {
                 "uuid": gh_token_uuid,
@@ -247,12 +247,12 @@ class TestModelRoutes:
                 "name": "GitHubToken",
             },
             "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
-            "uuid": application_uuid,
-            "type_name": "application",
-            "model_name": "Application",
+            "uuid": deployment_uuid,
+            "type_name": "deployment",
+            "model_name": "Deployment",
         }
-        type_name = "application"
-        model_name = "Application"
+        type_name = "deployment"
+        model_name = "Deployment"
         model_uuid = str(uuid.uuid4())
 
         response = client.post(
@@ -265,7 +265,7 @@ class TestModelRoutes:
     @pytest.mark.asyncio()
     async def test_background_task_not_called_on_error(self, user_uuid: str) -> None:
         team_uuid = str(uuid.uuid4())
-        application_uuid = str(uuid.uuid4())
+        deployment_uuid = str(uuid.uuid4())
         gh_token_uuid = str(uuid.uuid4())
         fly_token_uuid = str(uuid.uuid4())
 
@@ -278,12 +278,12 @@ class TestModelRoutes:
                 "name": "GitHubToken",
             },
             "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
-            "uuid": application_uuid,
-            "type_name": "application",
-            "model_name": "Application",
+            "uuid": deployment_uuid,
+            "type_name": "deployment",
+            "model_name": "Deployment",
         }
-        type_name = "application"
-        model_name = "Application"
+        type_name = "deployment"
+        model_name = "Deployment"
         model_uuid = str(uuid.uuid4())
 
         with (
@@ -329,9 +329,9 @@ class TestModelRoutes:
         assert actual == expected
 
     @pytest.mark.asyncio()
-    async def test_update_model_application(self, user_uuid: str) -> None:
+    async def test_update_model_deployment(self, user_uuid: str) -> None:
         team_uuid = str(uuid.uuid4())
-        application_uuid = str(uuid.uuid4())
+        deployment_uuid = str(uuid.uuid4())
         gh_token_uuid = str(uuid.uuid4())
         fly_token_uuid = str(uuid.uuid4())
         model = {
@@ -343,21 +343,21 @@ class TestModelRoutes:
                 "name": "GitHubToken",
             },
             "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
-            "uuid": application_uuid,
-            "type_name": "application",
-            "model_name": "Application",
+            "uuid": deployment_uuid,
+            "type_name": "deployment",
+            "model_name": "Deployment",
         }
-        type_name = "application"
-        model_name = "Application"
+        type_name = "deployment"
+        model_name = "Deployment"
 
         model_uuid = str(uuid.uuid4())
         # Mock the background task
         fly_api_token = "some-token"
-        fastagency_application_uuid = "some-uuid"
+        fastagency_deployment_uuid = "some-uuid"
         github_token = "some-github-token"
         app_name = "test fastagency template"
         saas_app = SaasAppGenerator(
-            fly_api_token, fastagency_application_uuid, github_token, app_name
+            fly_api_token, fastagency_deployment_uuid, github_token, app_name
         )
         saas_app.gh_repo_url = "https://some-git-url"
         with (
@@ -374,7 +374,7 @@ class TestModelRoutes:
             mock_task.assert_called_once()
 
         assert response.status_code == 200
-        # Update application
+        # Update deployment
         new_gh_token_uuid = str(uuid.uuid4())
         model = {
             "name": "Test",
@@ -385,12 +385,12 @@ class TestModelRoutes:
                 "name": "GitHubToken",
             },
             "fly_token": {"uuid": fly_token_uuid, "type": "secret", "name": "FlyToken"},
-            "uuid": application_uuid,
-            "type_name": "application",
-            "model_name": "Application",
+            "uuid": deployment_uuid,
+            "type_name": "deployment",
+            "model_name": "Deployment",
         }
         response = client.put(
-            f"/user/{user_uuid}/models/application/Application/{model_uuid}",
+            f"/user/{user_uuid}/models/deployment/Deployment/{model_uuid}",
             json=model,
         )
 

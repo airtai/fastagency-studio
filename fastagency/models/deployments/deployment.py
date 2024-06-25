@@ -10,22 +10,22 @@ from ..registry import Registry
 from ..secrets.fly_token import FlyToken
 from ..secrets.github_token import GitHubToken
 
-__all__ = ["Application"]
+__all__ = ["Deployment"]
 
-# Applications can work with any Team, so we construct a union of all Team references
+# Deployments can work with any Team, so we construct a union of all Team references
 team_type_refs: TypeAlias = Union[  # type: ignore[valid-type]
     tuple(Registry.get_default().get_models_refs_by_type("team"))
 ]
 
-# Applications can work with any FlyIO Tokens, so we construct a union of all FlyIO Token references
+# Deployments can work with any FlyIO Tokens, so we construct a union of all FlyIO Token references
 FlyTokenRef: TypeAlias = FlyToken.get_reference_model()  # type: ignore[valid-type]
 
-# Applications can work with any GitHub Tokens, so we construct a union of all GitHub Token references
+# Deployments can work with any GitHub Tokens, so we construct a union of all GitHub Token references
 GitHubTokenRef: TypeAlias = GitHubToken.get_reference_model()  # type: ignore[valid-type]
 
 
-@Registry.get_default().register("application")
-class Application(Model):
+@Registry.get_default().register("deployment")
+class Deployment(Model):
     name: Annotated[
         str, Field(..., description="The name of the item", min_length=1, max_length=30)
     ]
@@ -33,7 +33,7 @@ class Application(Model):
         team_type_refs,
         Field(
             title="Team name",
-            description="The team that is used in the application",
+            description="The team that is used in the deployment",
         ),
     ]
     gh_token: GitHubTokenRef
@@ -45,7 +45,7 @@ class Application(Model):
 
     @field_validator("name")
     @classmethod
-    def validate_name(cls: Type["Application"], value: Any) -> Any:
+    def validate_name(cls: Type["Deployment"], value: Any) -> Any:
         if not re.match(r"^[a-zA-Z0-9\- ]+$", value):
             raise ValueError(
                 "Name must contain only letters, numbers, spaces, and dashes."

@@ -8,9 +8,9 @@ search:
         - app
             - [ChatRequest](api/fastagency/app/ChatRequest.md)
             - [add_model](api/fastagency/app/add_model.md)
-            - [application_chat](api/fastagency/app/application_chat.md)
             - [chat](api/fastagency/app/chat.md)
             - [create_toolbox_for_new_user](api/fastagency/app/create_toolbox_for_new_user.md)
+            - [deployment_chat](api/fastagency/app/deployment_chat.md)
             - [generate_chat_name](api/fastagency/app/generate_chat_name.md)
             - [get_all_models](api/fastagency/app/get_all_models.md)
             - [get_azure_llm_client](api/fastagency/app/get_azure_llm_client.md)
@@ -62,15 +62,15 @@ search:
                 - web_surfer
                     - [BingAPIKey](api/fastagency/models/agents/web_surfer/BingAPIKey.md)
                     - [WebSurferAgent](api/fastagency/models/agents/web_surfer/WebSurferAgent.md)
-            - applications
-                - application
-                    - [Application](api/fastagency/models/applications/application/Application.md)
             - base
                 - [Model](api/fastagency/models/base/Model.md)
                 - [ModelTypeFinder](api/fastagency/models/base/ModelTypeFinder.md)
                 - [ObjectReference](api/fastagency/models/base/ObjectReference.md)
                 - [create_reference_model](api/fastagency/models/base/create_reference_model.md)
                 - [get_reference_model](api/fastagency/models/base/get_reference_model.md)
+            - deployments
+                - deployment
+                    - [Deployment](api/fastagency/models/deployments/deployment/Deployment.md)
             - llms
                 - azure
                     - [AzureOAI](api/fastagency/models/llms/azure/AzureOAI.md)

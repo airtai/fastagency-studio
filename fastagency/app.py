@@ -333,9 +333,9 @@ async def chat(request: ChatRequest) -> Dict[str, Any]:
     return default_response
 
 
-@app.post("/application/{application_uuid}/chat")
-async def application_chat(application_uuid: str) -> Dict[str, Any]:
-    found_model = await find_model_using_raw(model_uuid=application_uuid)
+@app.post("/deployment/{deployment_uuid}/chat")
+async def deployment_chat(deployment_uuid: str) -> Dict[str, Any]:
+    found_model = await find_model_using_raw(model_uuid=deployment_uuid)
     team_name = found_model["json_str"]["name"]
     team_uuid = found_model["json_str"]["team"]["uuid"]
 

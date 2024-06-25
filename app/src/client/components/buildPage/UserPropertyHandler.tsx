@@ -72,8 +72,8 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
         addUserModelResponse = await addUserModels(filteredData);
       }
       refetchModels();
-      const isNewApplicationAdded = propertyName === 'application' && !updateExistingModel;
-      !isNewApplicationAdded && setShowAddModel(false);
+      const isNewDeploymentAdded = propertyName === 'deployment' && !updateExistingModel;
+      !isNewDeploymentAdded && setShowAddModel(false);
     } catch (error) {
       console.log('error: ', error, 'error.message: ');
       // setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
@@ -140,12 +140,7 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
     setNotificationErrorMessage(null);
   };
 
-  const propertyHeader =
-    propertyName === 'llm'
-      ? 'LLM'
-      : propertyName === 'application'
-        ? 'Deployment'
-        : capitalizeFirstLetter(propertyName);
+  const propertyHeader = propertyName === 'llm' ? 'LLM' : capitalizeFirstLetter(propertyName);
 
   return (
     <div className='flex-col flex items-start p-6 gap-3 w-full'>

@@ -90,10 +90,10 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   });
   const [refValues, setRefValues] = useState<Record<string, any>>({});
   const [missingDependency, setMissingDependency] = useState<string[]>([]);
-  const [instructionForApplication, setInstructionForApplication] = useState<Record<string, string> | null>(null);
+  const [instructionForDeployment, setInstructionForDeployment] = useState<Record<string, string> | null>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
-  const isApplication = type_name === 'application';
+  const isDeployment = type_name === 'deployment';
 
   const missingDependencyNotificationMsg = `Please create atleast one item of type "${missingDependency.join(
     ', '
@@ -101,8 +101,8 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    // Avoid creating duplicate applications
-    if (instructionForApplication && !updateExistingModel) {
+    // Avoid creating duplicate deployments
+    if (instructionForDeployment && !updateExistingModel) {
       return;
     }
     setIsLoading(true);
@@ -118,9 +118,9 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
       const response = await validateForm(formDataToSubmit, validationURL, isSecretUpdate);
       const onSuccessCallbackResponse: any = await onSuccessCallback(response);
 
-      isApplication &&
+      isDeployment &&
         !updateExistingModel &&
-        setInstructionForApplication((prevState) => ({
+        setInstructionForDeployment((prevState) => ({
           ...prevState,
           gh_repo_url: response.gh_repo_url,
           // @ts-ignore
@@ -191,11 +191,11 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   }, [missingDependency?.length]);
 
   useEffect(() => {
-    if (updateExistingModel && type_name === 'application') {
+    if (updateExistingModel && type_name === 'deployment') {
       const msg = deploymentInprogressInstructions;
 
       //@ts-ignore
-      setInstructionForApplication((prevState) => ({
+      setInstructionForDeployment((prevState) => ({
         ...prevState,
         gh_repo_url: updateExistingModel.gh_repo_url,
         flyio_app_url: updateExistingModel.flyio_app_url,
@@ -206,7 +206,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
           .replaceAll('<flyio_app_url>', updateExistingModel.flyio_app_url),
       }));
     }
-  }, [isApplication]);
+  }, [isDeployment]);
 
   useEffect(() => {
     const keyHandler = (event: KeyboardEvent) => {
@@ -243,12 +243,12 @@ Before you begin, ensure you have the following:
 
   return (
     <>
-      {!instructionForApplication && isApplication && (
+      {!instructionForDeployment && isDeployment && (
         <div className='w-full mt-8 px-6.5 py-2'>
           <AgentConversationHistory
             agentConversationHistory={appDeploymentPrerequisites}
             isDeploymentInstructions={true}
-            containerTitle='Prerequisites for Application Generation and Deployment'
+            containerTitle='Prerequisites for Deployment Generation and Deployment'
           />
         </div>
       )}
@@ -309,12 +309,12 @@ Before you begin, ensure you have the following:
             </div>
           );
         })}
-        {instructionForApplication && instructionForApplication.instruction && (
+        {instructionForDeployment && instructionForDeployment.instruction && (
           <div className='w-full mt-8'>
             <AgentConversationHistory
-              agentConversationHistory={instructionForApplication.instruction}
+              agentConversationHistory={instructionForDeployment.instruction}
               isDeploymentInstructions={true}
-              containerTitle='Application Details and Next Steps'
+              containerTitle='Deployment Details and Next Steps'
             />
           </div>
         )}

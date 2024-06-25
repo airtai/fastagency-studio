@@ -118,11 +118,6 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
 
   const getFilteredProperties = () => {
     if (allUserProperties) {
-      if (propertyName === 'deployment') {
-        const deploymentProperties = _.filter(allUserProperties, ['type_name', 'deployment']);
-        const applicationProperties = _.filter(allUserProperties, ['type_name', 'application']);
-        return _.sortBy([...deploymentProperties, ...applicationProperties], ['created_at']);
-      }
       const properties = _.filter(allUserProperties, ['type_name', propertyName]);
       return _.sortBy(properties, ['created_at']);
     }

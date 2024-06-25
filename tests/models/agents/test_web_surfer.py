@@ -38,6 +38,35 @@ class TestWebSurferAgent:
         schema = WebSurferAgent.model_json_schema()
         expected = {
             "$defs": {
+                "AnthropicRef": {
+                    "properties": {
+                        "type": {
+                            "const": "llm",
+                            "default": "llm",
+                            "description": "The name of the type of the data",
+                            "enum": ["llm"],
+                            "title": "Type",
+                            "type": "string",
+                        },
+                        "name": {
+                            "const": "Anthropic",
+                            "default": "Anthropic",
+                            "description": "The name of the data",
+                            "enum": ["Anthropic"],
+                            "title": "Name",
+                            "type": "string",
+                        },
+                        "uuid": {
+                            "description": "The unique identifier",
+                            "format": "uuid",
+                            "title": "UUID",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["uuid"],
+                    "title": "AnthropicRef",
+                    "type": "object",
+                },
                 "AzureOAIRef": {
                     "properties": {
                         "type": {
@@ -193,6 +222,7 @@ class TestWebSurferAgent:
                 },
                 "llm": {
                     "anyOf": [
+                        {"$ref": "#/$defs/AnthropicRef"},
                         {"$ref": "#/$defs/AzureOAIRef"},
                         {"$ref": "#/$defs/OpenAIRef"},
                         {"$ref": "#/$defs/TogetherAIRef"},
@@ -220,6 +250,7 @@ class TestWebSurferAgent:
                 },
                 "summarizer_llm": {
                     "anyOf": [
+                        {"$ref": "#/$defs/AnthropicRef"},
                         {"$ref": "#/$defs/AzureOAIRef"},
                         {"$ref": "#/$defs/OpenAIRef"},
                         {"$ref": "#/$defs/TogetherAIRef"},

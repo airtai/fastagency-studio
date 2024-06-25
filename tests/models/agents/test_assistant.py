@@ -38,6 +38,35 @@ class TestAssistantAgent:
         schema = AssistantAgent.model_json_schema()
         expected = {
             "$defs": {
+                "AnthropicRef": {
+                    "properties": {
+                        "type": {
+                            "const": "llm",
+                            "default": "llm",
+                            "description": "The name of the type of the data",
+                            "enum": ["llm"],
+                            "title": "Type",
+                            "type": "string",
+                        },
+                        "name": {
+                            "const": "Anthropic",
+                            "default": "Anthropic",
+                            "description": "The name of the data",
+                            "enum": ["Anthropic"],
+                            "title": "Name",
+                            "type": "string",
+                        },
+                        "uuid": {
+                            "description": "The unique identifier",
+                            "format": "uuid",
+                            "title": "UUID",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["uuid"],
+                    "title": "AnthropicRef",
+                    "type": "object",
+                },
                 "AzureOAIRef": {
                     "properties": {
                         "type": {
@@ -164,6 +193,7 @@ class TestAssistantAgent:
                 },
                 "llm": {
                     "anyOf": [
+                        {"$ref": "#/$defs/AnthropicRef"},
                         {"$ref": "#/$defs/AzureOAIRef"},
                         {"$ref": "#/$defs/OpenAIRef"},
                         {"$ref": "#/$defs/TogetherAIRef"},
@@ -190,12 +220,13 @@ class TestAssistantAgent:
                     "title": "Toolbox",
                 },
                 "system_message": {
+                    "default": "You are a helpful assistant.",
                     "description": "The system message of the agent. This message is used to inform the agent about his role in the conversation",
                     "title": "System Message",
                     "type": "string",
                 },
             },
-            "required": ["name", "llm", "system_message"],
+            "required": ["name", "llm"],
             "title": "AssistantAgent",
             "type": "object",
         }

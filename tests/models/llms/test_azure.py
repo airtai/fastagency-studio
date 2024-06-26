@@ -189,6 +189,8 @@ class TestAzureOAI:
         user_uuid: str,
         azure_oai_ref: ObjectReference,
     ) -> None:
-        await end2end_simple_chat_with_two_agents(
-            llm_ref=azure_oai_ref, user_uuid=user_uuid
+        llm_config = await AzureOAI.create_autogen(
+            model_id=azure_oai_ref.uuid,
+            user_id=uuid.UUID(user_uuid),
         )
+        end2end_simple_chat_with_two_agents(llm_config=llm_config)

@@ -91,7 +91,6 @@ jobs:
       NATS_URL: nats://localhost:4222
       AZURE_API_VERSION: ${{ vars.AZURE_API_VERSION }}
       AZURE_API_ENDPOINT: ${{ vars.AZURE_API_ENDPOINT }}
-      AZURE_GPT4_MODEL: ${{ vars.AZURE_GPT4_MODEL }}
       AZURE_GPT35_MODEL: ${{ vars.AZURE_GPT35_MODEL }}
       AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
       TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}

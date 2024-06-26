@@ -16,7 +16,7 @@ from fastagency.models.llms.together import (
 
 
 def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("TOGETHER_API_KEY")
+    monkeypatch.delenv("TOGETHER_API_KEY", raising=False)
 
     from fastagency.models.llms.together import TogetherAI, TogetherAIAPIKey
 

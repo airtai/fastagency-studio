@@ -43,7 +43,7 @@ async def end2end_simple_chat_with_two_agents(
     )
 
     chat_result = ag_team.initiate_chat(
-        message="Hi! What is 2+2?",
+        message="What is 2+2?",
     )
 
     messages = [msg["content"] for msg in chat_result.chat_history]

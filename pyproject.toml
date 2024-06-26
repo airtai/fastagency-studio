@@ -231,7 +231,10 @@ markers = [
     "all",
     "db",
     "nats",
+    "anthropic",
     "azure_oai",
+    "openai",
+    "togetherai"
 ]
 
 [tool.coverage.run]

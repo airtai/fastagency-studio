@@ -169,6 +169,7 @@ class TestAnthropic:
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
+    @pytest.mark.anthropic()
     async def test_end2end(
         self,
         user_uuid: str,

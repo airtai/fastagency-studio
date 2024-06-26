@@ -469,10 +469,10 @@ jobs:
     needs: [deploy_fastapi]
     if: github.ref_name == 'main' || github.ref_name == 'dev'
     env:
-      NODE_DOMAIN: ${{ github.ref_name == 'main' && vars.PROD_NODE_DOMAIN || vars.STAGING_NODE_DOMAIN }}
-      SSH_KEY: ${{ github.ref_name == 'main' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
+      NODE_DOMAIN: ${{ vars.NODE_DOMAIN }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
       # REACT_APP_CUSTOMER_PORTAL_LINK: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_CUSTOMER_PORTAL_LINK || vars.STAGING_REACT_APP_CUSTOMER_PORTAL_LINK }}
-      REACT_APP_API_URL: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_API_URL || vars.STAGING_REACT_APP_API_URL }}
+      REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
     steps:
       - name: Checkout repository with cached git lfs
         uses: nschloe/action-cached-lfs-checkout@v1

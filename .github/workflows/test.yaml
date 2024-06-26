@@ -19,11 +19,11 @@ jobs:
       id: set-env
       run: |
         if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-          echo "::set-output name=environment::production"
+          echo "environment=production" >> $GITHUB_OUTPUT
         elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
-          echo "::set-output name=environment::staging"
+          echo "environment=staging" >> $GITHUB_OUTPUT
         else
-          echo "::set-output name=environment::none"
+          echo "environment=none" >> $GITHUB_OUTPUT
         fi
   static_analysis:
     strategy:

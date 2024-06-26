@@ -422,6 +422,8 @@ jobs:
         shell: bash
     needs: [deploy_fastapi]
     if: github.ref_name == 'main' || github.ref_name == 'dev'
+    environment:
+      name: ${{ needs.detect-deployment-environment.outputs.environment }}
     env:
       GITHUB_USERNAME: ${{ github.actor }}
       GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
@@ -468,6 +470,8 @@ jobs:
       contents: write
     needs: [deploy_fastapi]
     if: github.ref_name == 'main' || github.ref_name == 'dev'
+    environment:
+      name: ${{ needs.detect-deployment-environment.outputs.environment }}
     env:
       NODE_DOMAIN: ${{ vars.NODE_DOMAIN }}
       SSH_KEY: ${{ secrets.SSH_KEY }}

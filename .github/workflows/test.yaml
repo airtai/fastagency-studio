@@ -426,7 +426,7 @@ jobs:
       GITHUB_USERNAME: ${{ github.actor }}
       GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       PORT: ${{ vars.PORT }}
-      # REACT_APP_CUSTOMER_PORTAL_LINK: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_CUSTOMER_PORTAL_LINK || vars.STAGING_REACT_APP_CUSTOMER_PORTAL_LINK }}
+      # REACT_APP_CUSTOMER_PORTAL_LINK: ${{ vars.REACT_APP_CUSTOMER_PORTAL_LINK }}
       GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       ADMIN_EMAILS: ${{ vars.ADMIN_EMAILS }}
@@ -437,7 +437,7 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      # STRIPE_WEBHOOK_SECRET: ${{ github.ref_name == 'main' && secrets.PROD_STRIPE_WEBHOOK_SECRET || secrets.STAGING_STRIPE_WEBHOOK_SECRET }}
+      # STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
       SSH_KEY: ${{ secrets.SSH_KEY }}
     steps:
       - name: Checkout repository with cached git lfs
@@ -471,7 +471,7 @@ jobs:
     env:
       NODE_DOMAIN: ${{ vars.NODE_DOMAIN }}
       SSH_KEY: ${{ secrets.SSH_KEY }}
-      # REACT_APP_CUSTOMER_PORTAL_LINK: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_CUSTOMER_PORTAL_LINK || vars.STAGING_REACT_APP_CUSTOMER_PORTAL_LINK }}
+      # REACT_APP_CUSTOMER_PORTAL_LINK: ${{ vars.REACT_APP_CUSTOMER_PORTAL_LINK }}
       REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
     steps:
       - name: Checkout repository with cached git lfs

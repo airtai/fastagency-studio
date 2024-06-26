@@ -14,22 +14,41 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  detect-deployment-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+    steps:
+    - name: Determine deployment environment
+      id: set-env
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          echo "::set-output name=environment::production"
+        elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+          echo "::set-output name=environment::staging"
+        else
+          echo "::set-output name=environment::none"
+        fi
   deploy_nats:
     runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
+    needs:
+      - detect-deployment-environment
     if: github.ref_name == 'main' || github.ref_name == 'dev'
+    environment:
+      name: ${{ needs.detect-deployment-environment.outputs.environment }}
     env:
       CLEAR_JETSTREAM: ${{ github.event.inputs.clear_jetstream }}
 
       GITHUB_USERNAME: ${{ github.actor }}
       GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       DEVELOPER_TOKEN: ${{ secrets.DEVELOPER_TOKEN }}
-      DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
-      PY_DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_PY_DATABASE_URL || secrets.STAGING_PY_DATABASE_URL }}
-      DOMAIN: ${{ github.ref_name == 'main' && vars.PROD_DOMAIN || vars.STAGING_DOMAIN }}
-      SSH_KEY: ${{ github.ref_name == 'main' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PY_DATABASE_URL: ${{ secrets.PY_DATABASE_URL }}
+      DOMAIN: ${{ vars.DOMAIN }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
     steps:
       - uses: actions/checkout@v3 # Don't change it to cheackout@v4. V4 is not working with container image.
       # This is to fix GIT not liking owner of the checkout dir - https://github.com/actions/runner/issues/2033#issuecomment-1204205989

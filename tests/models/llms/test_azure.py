@@ -149,62 +149,6 @@ class TestAzureOAI:
         assert isinstance(actual_llm_config, dict)
         assert actual_llm_config == azure_gpt35_turbo_16k_llm_config
 
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    @pytest.mark.parametrize("llm_model,api_key_model", [(AzureOAI, AzureOAIAPIKey)])  # noqa: PT006
-    async def test_azure_model_create_autogen_old(
-        self,
-        llm_model: Model,
-        api_key_model: Model,
-        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
-        user_uuid: str,
-        monkeypatch: pytest.MonkeyPatch,
-    ) -> None:
-        # Add secret, llm to database
-        api_key = api_key_model(  # type: ignore [operator]
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            name="api_key_model_name",
-        )
-        api_key_model_uuid = str(uuid.uuid4())
-        await add_model(
-            user_uuid=user_uuid,
-            type_name="secret",
-            model_name=api_key_model.__name__,  # type: ignore [attr-defined]
-            model_uuid=api_key_model_uuid,
-            model=api_key.model_dump(),
-            background_tasks=BackgroundTasks(),
-        )
-
-        llm = llm_model(  # type: ignore [operator]
-            name="llm_model_name",
-            model=os.getenv("AZURE_GPT35_MODEL"),
-            api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
-            base_url=os.getenv("AZURE_API_ENDPOINT"),
-            api_version=os.getenv("AZURE_API_VERSION"),
-        )
-        llm_model_uuid = str(uuid.uuid4())
-        await add_model(
-            user_uuid=user_uuid,
-            type_name="llm",
-            model_name=llm_model.__name__,  # type: ignore [attr-defined]
-            model_uuid=llm_model_uuid,
-            model=llm.model_dump(),
-            background_tasks=BackgroundTasks(),
-        )
-
-        async def my_create_autogen(cls, model_id, user_id) -> Any:  # type: ignore [no-untyped-def]
-            return api_key.api_key
-
-        # Monkeypatch api_key and call create_autogen
-        monkeypatch.setattr(AzureOAIAPIKey, "create_autogen", my_create_autogen)
-
-        actual_llm_config = await AzureOAI.create_autogen(
-            model_id=uuid.UUID(llm_model_uuid),
-            user_id=uuid.UUID(user_uuid),
-        )
-        assert isinstance(actual_llm_config, dict)
-        assert actual_llm_config == azure_gpt35_turbo_16k_llm_config
-
 
 class TestAzureOAIAPIKey:
     @pytest.mark.asyncio()

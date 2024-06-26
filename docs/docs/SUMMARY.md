@@ -72,6 +72,9 @@ search:
                 - deployment
                     - [Deployment](api/fastagency/models/deployments/deployment/Deployment.md)
             - llms
+                - anthropic
+                    - [Anthropic](api/fastagency/models/llms/anthropic/Anthropic.md)
+                    - [AnthropicAPIKey](api/fastagency/models/llms/anthropic/AnthropicAPIKey.md)
                 - azure
                     - [AzureOAI](api/fastagency/models/llms/azure/AzureOAI.md)
                     - [AzureOAIAPIKey](api/fastagency/models/llms/azure/AzureOAIAPIKey.md)

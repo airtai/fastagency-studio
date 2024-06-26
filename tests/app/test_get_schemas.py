@@ -29,6 +29,7 @@ class TestGetSchema:
         }
         expected = {
             "secret": {
+                "AnthropicAPIKey",
                 "AzureOAIAPIKey",
                 "OpenAIAPIKey",
                 "BingAPIKey",
@@ -37,7 +38,7 @@ class TestGetSchema:
                 "OpenAPIAuth",
                 "TogetherAIAPIKey",
             },
-            "llm": {"AzureOAI", "OpenAI", "TogetherAI"},
+            "llm": {"Anthropic", "AzureOAI", "OpenAI", "TogetherAI"},
             "agent": {"AssistantAgent", "WebSurferAgent", "UserProxyAgent"},
             # "team": {"TwoAgentTeam", "MultiAgentTeam"},
             "team": {"TwoAgentTeam"},

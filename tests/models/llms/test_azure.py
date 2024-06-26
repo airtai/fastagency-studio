@@ -1,14 +1,41 @@
-import os
 import uuid
 from typing import Any, Dict
 
 import pytest
-from fastapi import BackgroundTasks
 
-from fastagency.app import add_model
 from fastagency.helpers import get_model_by_ref
-from fastagency.models.base import Model, ObjectReference
+from fastagency.models.base import ObjectReference
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
+
+from .test_end2end import end2end_simple_chat_with_two_agents
+
+
+def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("AZURE_OAI_API_KEY", raising=False)
+
+    from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
+
+    assert AzureOAI is not None
+    assert AzureOAIAPIKey is not None
+
+
+class TestAzureOAIAPIKey:
+    @pytest.mark.asyncio()
+    @pytest.mark.db()
+    async def test_azure_api_key_model_create_autogen(
+        self,
+        azure_oai_key_ref: ObjectReference,
+        user_uuid: str,
+    ) -> None:
+        model = await get_model_by_ref(azure_oai_key_ref)
+        assert isinstance(model, AzureOAIAPIKey)
+
+        # Call create_autogen
+        actual_api_key = await AzureOAIAPIKey.create_autogen(
+            model_id=azure_oai_key_ref.uuid,
+            user_id=uuid.UUID(user_uuid),
+        )
+        assert isinstance(actual_api_key, str)
 
 
 class TestAzureOAI:
@@ -17,6 +44,7 @@ class TestAzureOAI:
     async def test_azure_constructor(self, azure_oai_ref: ObjectReference) -> None:
         # create data
         model = await get_model_by_ref(azure_oai_ref)
+        assert isinstance(model, AzureOAI)
 
         # dynamically created data
         name = model.name
@@ -147,39 +175,20 @@ class TestAzureOAI:
             user_id=uuid.UUID(user_uuid),
         )
         assert isinstance(actual_llm_config, dict)
+        assert (
+            actual_llm_config["config_list"][0]
+            == azure_gpt35_turbo_16k_llm_config["config_list"][0]
+        )
         assert actual_llm_config == azure_gpt35_turbo_16k_llm_config
 
-
-class TestAzureOAIAPIKey:
     @pytest.mark.asyncio()
     @pytest.mark.db()
-    @pytest.mark.parametrize("api_key_model", [(AzureOAIAPIKey)])
-    async def test_azure_api_key_model_create_autogen(
+    @pytest.mark.azure_oai()
+    async def test_end2end(
         self,
-        api_key_model: Model,
-        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
         user_uuid: str,
-        monkeypatch: pytest.MonkeyPatch,
+        azure_oai_ref: ObjectReference,
     ) -> None:
-        # Add secret to database
-        api_key = api_key_model(  # type: ignore [operator]
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            name="api_key_model_name",
+        await end2end_simple_chat_with_two_agents(
+            llm_ref=azure_oai_ref, user_uuid=user_uuid
         )
-        api_key_model_uuid = str(uuid.uuid4())
-        await add_model(
-            user_uuid=user_uuid,
-            type_name="secret",
-            model_name=api_key_model.__name__,  # type: ignore [attr-defined]
-            model_uuid=api_key_model_uuid,
-            model=api_key.model_dump(),
-            background_tasks=BackgroundTasks(),
-        )
-
-        # Call create_autogen
-        actual_api_key = await AzureOAIAPIKey.create_autogen(
-            model_id=uuid.UUID(api_key_model_uuid),
-            user_id=uuid.UUID(user_uuid),
-        )
-        assert isinstance(actual_api_key, str)
-        assert actual_api_key == api_key.api_key

@@ -420,7 +420,9 @@ jobs:
     defaults:
       run:
         shell: bash
-    needs: [deploy_fastapi]
+    needs:
+      - deploy_fastapi
+      - detect-deployment-environment
     if: github.ref_name == 'main' || github.ref_name == 'dev'
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}
@@ -468,7 +470,9 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
-    needs: [deploy_fastapi]
+    needs:
+      - deploy_fastapi
+      - detect-deployment-environment
     if: github.ref_name == 'main' || github.ref_name == 'dev'
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}

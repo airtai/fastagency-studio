@@ -139,7 +139,7 @@ jobs:
           CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
       - name: Test with LLMs
         if: matrix.python-version == '3.12'
-        run: bash scripts/test.sh -m "not (azure_oai or anthropic)"
+        run: bash scripts/test.sh
         env:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
           CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}

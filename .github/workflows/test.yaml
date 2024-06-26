@@ -431,7 +431,7 @@ jobs:
       FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
       NODE_DOMAIN: ${{ vars.NODE_DOMAIN }}
       WASP_WEB_CLIENT_URL: ${{ vars.WASP_WEB_CLIENT_URL }}
-      DATABASE_URL: ${{ secret.DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
       REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       # STRIPE_WEBHOOK_SECRET: ${{ github.ref_name == 'main' && secrets.PROD_STRIPE_WEBHOOK_SECRET || secrets.STAGING_STRIPE_WEBHOOK_SECRET }}

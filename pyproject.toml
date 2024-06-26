@@ -44,7 +44,7 @@ classifiers = [
 dynamic = ["version"]
 
 dependencies = [
-    "pyautogen>=0.2.28,<0.3",
+    "pyautogen[anthropic,together]==0.2.31",
     "faststream[nats]>=0.5.10,<0.6",
     "typing-extensions>=4.8.0,<5",
     "pydantic>=2.3,<3",
@@ -91,7 +91,7 @@ lint = [
     "mypy==1.10.0",
     "ruff==0.4.9",
     "pyupgrade-directories==0.3.0",
-    "bandit==1.7.8",
+    "bandit==1.7.9",
     "semgrep==1.71.0",
     "pytest-mypy-plugins==3.1.2",
 ]
@@ -99,7 +99,7 @@ lint = [
 test-core = [
     "coverage[toml]==7.5.3",
     "pytest==8.2.2",
-    "pytest-asyncio==0.23.6",
+    "pytest-asyncio==0.23.7",
     "dirty-equals==0.7.1.post0",
 ]
 
@@ -108,8 +108,8 @@ testing = [
     "fastagency[server]", # Uvicorn is needed for testing
     "pydantic-settings==2.3.3",
     "PyYAML==6.0.1",
-    "watchfiles==0.21.0",
-    "email-validator==2.1.1",
+    "watchfiles==0.22.0",
+    "email-validator==2.2.0",
 ]
 
 dev = [
@@ -231,7 +231,10 @@ markers = [
     "all",
     "db",
     "nats",
+    "anthropic",
     "azure_oai",
+    "openai",
+    "togetherai"
 ]
 
 [tool.coverage.run]

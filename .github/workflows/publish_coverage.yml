@@ -2,7 +2,7 @@ name: Smokeshow
 
 on:
   workflow_run:
-    workflows: [Test]
+    workflows: [Pipeline]
     types: [completed]
 
 
@@ -22,7 +22,7 @@ jobs:
 
       - run: pip install smokeshow
 
-      - uses: dawidd6/action-download-artifact@v3.1.4  # nosemgrep
+      - uses: dawidd6/action-download-artifact@v6  # nosemgrep
         with:
           workflow: test.yaml
           commit: ${{ github.event.workflow_run.head_sha }}

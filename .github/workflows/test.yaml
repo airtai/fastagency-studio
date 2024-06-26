@@ -10,6 +10,21 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  detect-deployment-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+    steps:
+    - name: Determine deployment environment
+      id: set-env
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          echo "environment=production" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+          echo "environment=staging" >> $GITHUB_OUTPUT
+        else
+          echo "environment=none" >> $GITHUB_OUTPUT
+        fi
   static_analysis:
     strategy:
       matrix:
@@ -41,6 +56,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    environment: testing
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
@@ -73,13 +89,13 @@ jobs:
       DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency
       PY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
       NATS_URL: nats://localhost:4222
-      AZURE_API_VERSION: ${{ secrets.STAGING_AZURE_API_VERSION }}
-      AZURE_API_ENDPOINT: ${{ secrets.STAGING_AZURE_API_ENDPOINT }}
-      AZURE_GPT4_MODEL: ${{ secrets.STAGING_AZURE_GPT4_MODEL }}
-      AZURE_GPT35_MODEL: ${{ secrets.STAGING_AZURE_GPT35_MODEL }}
-      AZURE_OPENAI_API_KEY: ${{ secrets.STAGING_AZURE_OPENAI_API_KEY }}
-      TOGETHER_API_KEY: ${{ secrets.STAGING_TOGETHER_API_KEY }}
-      OPENAI_API_KEY: ${{ github.ref_name == 'main' && secrets.PROD_OPENAI_API_KEY || secrets.STAGING_OPENAI_API_KEY }}
+      AZURE_API_VERSION: ${{ vars.AZURE_API_VERSION }}
+      AZURE_API_ENDPOINT: ${{ vars.AZURE_API_ENDPOINT }}
+      AZURE_GPT35_MODEL: ${{ vars.AZURE_GPT35_MODEL }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -114,7 +130,14 @@ jobs:
       - run: mkdir coverage
       - name: Prisma
         run: prisma migrate deploy && prisma generate
-      - name: Test
+      - name: Test without LLMs
+        if: matrix.python-version != '3.12'
+        run: bash scripts/test.sh -m "not (anthropic or azure_oai or openai or togetherai)"
+        env:
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
+          CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
+      - name: Test with LLMs
+        if: matrix.python-version == '3.12'
         run: bash scripts/test.sh
         env:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
@@ -129,16 +152,6 @@ jobs:
   test-macos-latest:
     if: github.event.pull_request.draft == false
     runs-on: macos-latest
-    env:
-      NATS_URL: nats://localhost:4222
-      AZURE_API_VERSION: ${{ secrets.STAGING_AZURE_API_VERSION }}
-      AZURE_API_ENDPOINT: ${{ secrets.STAGING_AZURE_API_ENDPOINT }}
-      AZURE_GPT4_MODEL: ${{ secrets.STAGING_AZURE_GPT4_MODEL }}
-      AZURE_GPT35_MODEL: ${{ secrets.STAGING_AZURE_GPT35_MODEL }}
-      AZURE_OPENAI_API_KEY: ${{ secrets.STAGING_AZURE_OPENAI_API_KEY }}
-      TOGETHER_API_KEY: ${{ secrets.STAGING_TOGETHER_API_KEY }}
-      OPENAI_API_KEY: ${{ github.ref_name == 'main' && secrets.PROD_OPENAI_API_KEY || secrets.STAGING_OPENAI_API_KEY }}
-      AUTOGEN_USE_DOCKER: False
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -154,21 +167,11 @@ jobs:
       - name: Prisma
         run: prisma generate
       - name: Test
-        run: bash scripts/test.sh -m "not db and not nats"
+        run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai)"
 
   test-windows-latest:
     if: github.event.pull_request.draft == false
     runs-on: windows-latest
-    env:
-      NATS_URL: nats://localhost:4222
-      AZURE_API_VERSION: ${{ secrets.STAGING_AZURE_API_VERSION }}
-      AZURE_API_ENDPOINT: ${{ secrets.STAGING_AZURE_API_ENDPOINT }}
-      AZURE_GPT4_MODEL: ${{ secrets.STAGING_AZURE_GPT4_MODEL }}
-      AZURE_GPT35_MODEL: ${{ secrets.STAGING_AZURE_GPT35_MODEL }}
-      AZURE_OPENAI_API_KEY: ${{ secrets.STAGING_AZURE_OPENAI_API_KEY }}
-      TOGETHER_API_KEY: ${{ secrets.STAGING_TOGETHER_API_KEY }}
-      OPENAI_API_KEY: ${{ github.ref_name == 'main' && secrets.PROD_OPENAI_API_KEY || secrets.STAGING_OPENAI_API_KEY }}
-      AUTOGEN_USE_DOCKER: False
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -184,7 +187,7 @@ jobs:
       - name: Prisma
         run: prisma generate
       - name: Test
-        run: bash scripts/test.sh -m "not db and not nats"
+        run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai)"
 
   coverage-combine:
     if: github.event.pull_request.draft == false
@@ -328,7 +331,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SKIP: "static-analysis"
-      TOGETHER_API_KEY: ${{ github.ref_name == 'main' && secrets.PROD_TOGETHER_API_KEY || secrets.STAGING_TOGETHER_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -371,23 +373,25 @@ jobs:
     defaults:
       run:
         shell: bash
-    needs: [check]
+    needs:
+      - check
+      - detect-deployment-environment
     if: github.ref_name == 'main' || github.ref_name == 'dev'
+    environment:
+      name: ${{ needs.detect-deployment-environment.outputs.environment }}
     env:
       GITHUB_USERNAME: ${{ github.actor }}
       GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       DEVELOPER_TOKEN: ${{ secrets.DEVELOPER_TOKEN }}
-      DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
-      PY_DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_PY_DATABASE_URL || secrets.STAGING_PY_DATABASE_URL }}
-      FASTAGENCY_SERVER_URL: ${{ github.ref_name == 'main' && vars.PROD_FASTAGENCY_SERVER_URL || vars.STAGING_FASTAGENCY_SERVER_URL }}
-      DOMAIN: ${{ github.ref_name == 'main' && vars.PROD_DOMAIN || vars.STAGING_DOMAIN }}
-      SSH_KEY: ${{ github.ref_name == 'main' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
-      AZURE_API_VERSION: ${{ github.ref_name == 'main' && secrets.PROD_AZURE_API_VERSION || secrets.STAGING_AZURE_API_VERSION }}
-      AZURE_API_ENDPOINT: ${{ github.ref_name == 'main' && secrets.PROD_AZURE_API_ENDPOINT || secrets.STAGING_AZURE_API_ENDPOINT }}
-      AZURE_GPT35_MODEL: ${{ github.ref_name == 'main' && secrets.PROD_AZURE_GPT35_MODEL || secrets.STAGING_AZURE_GPT35_MODEL }}
-      AZURE_OPENAI_API_KEY: ${{ github.ref_name == 'main' && secrets.PROD_AZURE_OPENAI_API_KEY || secrets.STAGING_AZURE_OPENAI_API_KEY }}
-      TOGETHER_API_KEY: ${{ github.ref_name == 'main' && secrets.PROD_TOGETHER_API_KEY || secrets.STAGING_TOGETHER_API_KEY }}
-      OPENAI_API_KEY: ${{ github.ref_name == 'main' && secrets.PROD_OPENAI_API_KEY || secrets.STAGING_OPENAI_API_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PY_DATABASE_URL: ${{ secrets.PY_DATABASE_URL }}
+      FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
+      DOMAIN: ${{ vars.DOMAIN }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+      AZURE_API_VERSION: ${{ vars.AZURE_API_VERSION }}
+      AZURE_API_ENDPOINT: ${{ vars.AZURE_API_ENDPOINT }}
+      AZURE_GPT35_MODEL: ${{ vars.AZURE_GPT35_MODEL }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
 
     steps:
       - uses: actions/checkout@v3 # Don't change it to cheackout@v4. V4 is not working with container image.
@@ -416,25 +420,29 @@ jobs:
     defaults:
       run:
         shell: bash
-    needs: [deploy_fastapi]
+    needs:
+      - deploy_fastapi
+      - detect-deployment-environment
     if: github.ref_name == 'main' || github.ref_name == 'dev'
+    environment:
+      name: ${{ needs.detect-deployment-environment.outputs.environment }}
     env:
       GITHUB_USERNAME: ${{ github.actor }}
       GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       PORT: ${{ vars.PORT }}
-      # REACT_APP_CUSTOMER_PORTAL_LINK: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_CUSTOMER_PORTAL_LINK || vars.STAGING_REACT_APP_CUSTOMER_PORTAL_LINK }}
-      GOOGLE_CLIENT_ID: ${{ github.ref_name == 'main' && secrets.PROD_GOOGLE_CLIENT_ID || secrets.STAGING_GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ github.ref_name == 'main' && secrets.PROD_GOOGLE_CLIENT_SECRET || secrets.STAGING_GOOGLE_CLIENT_SECRET }}
+      # REACT_APP_CUSTOMER_PORTAL_LINK: ${{ vars.REACT_APP_CUSTOMER_PORTAL_LINK }}
+      GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       ADMIN_EMAILS: ${{ vars.ADMIN_EMAILS }}
-      WASP_SERVER_URL: ${{ github.ref_name == 'main' && vars.PROD_WASP_SERVER_URL || vars.STAGING_WASP_SERVER_URL }}
-      FASTAGENCY_SERVER_URL: ${{ github.ref_name == 'main' && vars.PROD_FASTAGENCY_SERVER_URL || vars.STAGING_FASTAGENCY_SERVER_URL }}
-      NODE_DOMAIN: ${{ github.ref_name == 'main' && vars.PROD_NODE_DOMAIN || vars.STAGING_NODE_DOMAIN }}
-      WASP_WEB_CLIENT_URL: ${{ github.ref_name == 'main' && vars.PROD_WASP_WEB_CLIENT_URL || vars.STAGING_WASP_WEB_CLIENT_URL }}
-      DATABASE_URL: ${{ github.ref_name == 'main' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
-      REACT_APP_API_URL: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_API_URL || vars.STAGING_REACT_APP_API_URL }}
-      JWT_SECRET: ${{ github.ref_name == 'main' && secrets.PROD_JWT_SECRET || secrets.STAGING_JWT_SECRET }}
-      # STRIPE_WEBHOOK_SECRET: ${{ github.ref_name == 'main' && secrets.PROD_STRIPE_WEBHOOK_SECRET || secrets.STAGING_STRIPE_WEBHOOK_SECRET }}
-      SSH_KEY: ${{ github.ref_name == 'main' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
+      WASP_SERVER_URL: ${{ vars.WASP_SERVER_URL }}
+      FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
+      NODE_DOMAIN: ${{ vars.NODE_DOMAIN }}
+      WASP_WEB_CLIENT_URL: ${{ vars.WASP_WEB_CLIENT_URL }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      # STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
     steps:
       - name: Checkout repository with cached git lfs
         uses: nschloe/action-cached-lfs-checkout@v1
@@ -462,13 +470,17 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
-    needs: [deploy_fastapi]
+    needs:
+      - deploy_fastapi
+      - detect-deployment-environment
     if: github.ref_name == 'main' || github.ref_name == 'dev'
+    environment:
+      name: ${{ needs.detect-deployment-environment.outputs.environment }}
     env:
-      NODE_DOMAIN: ${{ github.ref_name == 'main' && vars.PROD_NODE_DOMAIN || vars.STAGING_NODE_DOMAIN }}
-      SSH_KEY: ${{ github.ref_name == 'main' && secrets.PROD_SSH_KEY || secrets.STAGING_SSH_KEY }}
-      # REACT_APP_CUSTOMER_PORTAL_LINK: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_CUSTOMER_PORTAL_LINK || vars.STAGING_REACT_APP_CUSTOMER_PORTAL_LINK }}
-      REACT_APP_API_URL: ${{ github.ref_name == 'main' && vars.PROD_REACT_APP_API_URL || vars.STAGING_REACT_APP_API_URL }}
+      NODE_DOMAIN: ${{ vars.NODE_DOMAIN }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+      # REACT_APP_CUSTOMER_PORTAL_LINK: ${{ vars.REACT_APP_CUSTOMER_PORTAL_LINK }}
+      REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
     steps:
       - name: Checkout repository with cached git lfs
         uses: nschloe/action-cached-lfs-checkout@v1

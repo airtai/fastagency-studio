@@ -21,6 +21,7 @@ from fastagency.db.helpers import (
 )
 from fastagency.helpers import create_model_ref
 from fastagency.models.base import ObjectReference
+from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
@@ -135,13 +136,42 @@ async def azure_oai_ref(
         "llm",
         user_uuid=user_uuid,
         name=add_random_sufix("azure_oai"),
-        azure_oai_key=azure_oai_key_ref,
         model=azure_gpt35_turbo_16k_llm_config["config_list"][0]["model"],
         api_key=azure_oai_key_ref,
         base_url=azure_gpt35_turbo_16k_llm_config["config_list"][0]["base_url"],
         api_type=azure_gpt35_turbo_16k_llm_config["config_list"][0]["api_type"],
         api_version=azure_gpt35_turbo_16k_llm_config["config_list"][0]["api_version"],
         temperature=azure_gpt35_turbo_16k_llm_config["temperature"],
+    )
+
+
+@pytest_asyncio.fixture()  # type: ignore[misc]
+async def anthropic_key_ref(user_uuid: str) -> ObjectReference:
+    api_key = os.getenv(
+        "ANTHROPIC_API_KEY",
+        default="sk-ant-api03-" + "_" * 95,
+    )
+
+    return await create_model_ref(
+        AnthropicAPIKey,
+        "secret",
+        user_uuid=user_uuid,
+        name=add_random_sufix("anthropic_api_key"),
+        api_key=api_key,
+    )
+
+
+@pytest_asyncio.fixture()  # type: ignore[misc]
+async def anthropic_ref(
+    user_uuid: str,
+    anthropic_key_ref: ObjectReference,
+) -> ObjectReference:
+    return await create_model_ref(
+        Anthropic,
+        "llm",
+        user_uuid=user_uuid,
+        name=add_random_sufix("anthropic_api"),
+        api_key=anthropic_key_ref,
     )
 
 

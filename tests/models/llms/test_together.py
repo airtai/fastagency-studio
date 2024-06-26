@@ -4,13 +4,40 @@ from typing import Any, Dict
 import pytest
 from fastapi import BackgroundTasks
 from pydantic_core import Url
+from together import Together
 
 from fastagency.app import add_model
 from fastagency.models.base import Model
-from fastagency.models.llms.together import TogetherAI, TogetherAIAPIKey
+from fastagency.models.llms.together import (
+    TogetherAI,
+    TogetherAIAPIKey,
+    together_model_string,
+)
+
+
+def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("TOGETHER_API_KEY")
+
+    from fastagency.models.llms.together import TogetherAI, TogetherAIAPIKey
+
+    assert TogetherAI is not None
+    assert TogetherAIAPIKey is not None
 
 
 class TestTogetherAI:
+    @pytest.mark.togetherai()
+    def test_together_model_string(self) -> None:
+        # requires that environment variables TOGETHER_API_KEY is set
+        client = Together()
+
+        expected_together_model_string: Dict[str, str] = {
+            model.display_name: model.id
+            for model in client.models.list()
+            if model.type == "chat"
+        }
+
+        assert together_model_string == expected_together_model_string
+
     def test_togetherai_model(self) -> None:
         api_key_uuid = uuid.uuid4()
         OpenAIAPIKeyRef = TogetherAIAPIKey.get_reference_model()  # noqa: N806

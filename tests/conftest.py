@@ -24,6 +24,7 @@ from fastagency.models.base import ObjectReference
 from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
+from fastagency.models.llms.together import TogetherAI, TogetherAIAPIKey
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
 
@@ -207,6 +208,36 @@ async def anthropic_ref(
         user_uuid=user_uuid,
         name=add_random_sufix("anthropic_api"),
         api_key=anthropic_key_ref,
+    )
+
+
+@pytest_asyncio.fixture()  # type: ignore[misc]
+async def together_ai_key_ref(user_uuid: str) -> ObjectReference:
+    api_key = os.getenv(
+        "TOGETHER_API_KEY",
+        default="*" * 64,
+    )
+
+    return await create_model_ref(
+        TogetherAIAPIKey,
+        "secret",
+        user_uuid=user_uuid,
+        name=add_random_sufix("together_api_key"),
+        api_key=api_key,
+    )
+
+
+@pytest_asyncio.fixture()  # type: ignore[misc]
+async def togetherai_ref(
+    user_uuid: str,
+    together_ai_key_ref: ObjectReference,
+) -> ObjectReference:
+    return await create_model_ref(
+        TogetherAI,
+        "llm",
+        user_uuid=user_uuid,
+        name=add_random_sufix("together_api"),
+        api_key=together_ai_key_ref,
     )
 
 

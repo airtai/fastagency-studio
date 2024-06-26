@@ -1,18 +1,18 @@
 import uuid
-from typing import Any, Dict
+from typing import Dict
 
 import pytest
-from fastapi import BackgroundTasks
-from pydantic_core import Url
 from together import Together
 
-from fastagency.app import add_model
-from fastagency.models.base import Model
+from fastagency.helpers import get_model_by_ref
+from fastagency.models.base import ObjectReference
 from fastagency.models.llms.together import (
     TogetherAI,
     TogetherAIAPIKey,
     together_model_string,
 )
+
+from .test_end2end import end2end_simple_chat_with_two_agents
 
 
 def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -22,6 +22,43 @@ def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert TogetherAI is not None
     assert TogetherAIAPIKey is not None
+
+
+class TestTogetherAIAPIKey:
+    def test_constructor_success(self) -> None:
+        api_key = TogetherAIAPIKey(
+            api_key="*" * 64,  # pragma: allowlist secret
+            name="Hello World!",
+        )  # pragma: allowlist secret
+        assert (
+            api_key.api_key == "*" * 64  # pragma: allowlist secret
+        )  # pragma: allowlist secret
+
+    def test_constructor_failure(self) -> None:
+        with pytest.raises(
+            ValueError, match="String should have at least 64 characters"
+        ):
+            TogetherAIAPIKey(
+                api_key="not a proper key",  # pragma: allowlist secret
+                name="Hello World!",
+            )  # pragma: allowlist secret
+
+    @pytest.mark.asyncio()
+    @pytest.mark.db()
+    async def test_togetherai_api_key_model_create_autogen(
+        self,
+        together_ai_key_ref: ObjectReference,
+        user_uuid: str,
+    ) -> None:
+        model = await get_model_by_ref(together_ai_key_ref)
+        assert isinstance(model, TogetherAIAPIKey)
+
+        # Call create_autogen
+        actual_api_key = await TogetherAIAPIKey.create_autogen(
+            model_id=together_ai_key_ref.uuid,
+            user_id=uuid.UUID(user_uuid),
+        )
+        assert isinstance(actual_api_key, str)
 
 
 class TestTogetherAI:
@@ -38,24 +75,29 @@ class TestTogetherAI:
 
         assert together_model_string == expected_together_model_string
 
-    def test_togetherai_model(self) -> None:
-        api_key_uuid = uuid.uuid4()
-        OpenAIAPIKeyRef = TogetherAIAPIKey.get_reference_model()  # noqa: N806
-        api_key = OpenAIAPIKeyRef(uuid=api_key_uuid)
+    @pytest.mark.db()
+    @pytest.mark.asyncio()
+    async def test_togetherai_constructor(
+        self,
+        togetherai_ref: ObjectReference,
+    ) -> None:
+        # create data
+        model = await get_model_by_ref(togetherai_ref)
+        assert isinstance(model, TogetherAI)
 
-        model = TogetherAI(
-            api_key=api_key,
-            name="Hello Together!",
-        )
+        # dynamically created data
+        name = model.name
+        api_key_uuid = model.api_key.uuid  # type: ignore [attr-defined]
+
         expected = {
-            "name": "Hello Together!",
+            "name": name,
             "model": "Meta Llama 3 70B Chat",
             "api_key": {
                 "type": "secret",
                 "name": "TogetherAIAPIKey",
                 "uuid": api_key_uuid,
             },
-            "base_url": Url("https://api.together.xyz/v1"),
+            "base_url": "https://api.together.xyz/v1",
             "api_type": "togetherai",
             "temperature": 0.8,
         }
@@ -149,124 +191,41 @@ class TestTogetherAI:
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
-    @pytest.mark.parametrize(
-        ("llm_model", "api_key_model"), [(TogetherAI, TogetherAIAPIKey)]
-    )
     async def test_togetherai_model_create_autogen(
         self,
-        llm_model: Model,
-        api_key_model: Model,
-        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
         user_uuid: str,
-        monkeypatch: pytest.MonkeyPatch,
+        togetherai_ref: ObjectReference,
     ) -> None:
-        dummy_togetherai_api_key = "*" * 64  # pragma: allowlist secret
-
-        # Add secret, llm to database
-        api_key = api_key_model(  # type: ignore [operator]
-            api_key=dummy_togetherai_api_key,
-            name="api_key_model_name",
-        )
-        api_key_model_uuid = str(uuid.uuid4())
-        await add_model(
-            user_uuid=user_uuid,
-            type_name="secret",
-            model_name=api_key_model.__name__,  # type: ignore [attr-defined]
-            model_uuid=api_key_model_uuid,
-            model=api_key.model_dump(),
-            background_tasks=BackgroundTasks(),
-        )
-
-        llm = llm_model(  # type: ignore [operator]
-            name="llm_model_name",
-            model="Meta Llama 3 70B Chat",
-            api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
-        )
-        llm_model_uuid = str(uuid.uuid4())
-        await add_model(
-            user_uuid=user_uuid,
-            type_name="llm",
-            model_name=llm_model.__name__,  # type: ignore [attr-defined]
-            model_uuid=llm_model_uuid,
-            model=llm.model_dump(),
-            background_tasks=BackgroundTasks(),
-        )
-
-        # Monkeypatch api_key and call create_autogen
-        async def my_create_autogen(cls, model_id, user_id) -> Any:  # type: ignore [no-untyped-def]
-            return api_key.api_key
-
-        monkeypatch.setattr(TogetherAIAPIKey, "create_autogen", my_create_autogen)
-
         actual_llm_config = await TogetherAI.create_autogen(
-            model_id=uuid.UUID(llm_model_uuid),
+            model_id=togetherai_ref.uuid,
             user_id=uuid.UUID(user_uuid),
         )
         assert isinstance(actual_llm_config, dict)
+        api_key = actual_llm_config["config_list"][0]["api_key"]
         expected = {
             "config_list": [
                 {
                     "model": "meta-llama/Llama-3-70b-chat-hf",
-                    "api_key": dummy_togetherai_api_key,
+                    "api_key": api_key,
                     "base_url": "https://api.together.xyz/v1",
                     "api_type": "togetherai",
                 }
             ],
             "temperature": 0.8,
         }
+
         assert actual_llm_config == expected
-
-
-class TestTogetherAIAPIKey:
-    def test_constructor_success(self) -> None:
-        api_key = TogetherAIAPIKey(
-            api_key="*" * 64,  # pragma: allowlist secret
-            name="Hello World!",
-        )  # pragma: allowlist secret
-        assert (
-            api_key.api_key == "*" * 64  # pragma: allowlist secret
-        )  # pragma: allowlist secret
-
-    def test_constructor_failure(self) -> None:
-        with pytest.raises(
-            ValueError, match="String should have at least 64 characters"
-        ):
-            TogetherAIAPIKey(
-                api_key="not a proper key",  # pragma: allowlist secret
-                name="Hello World!",
-            )  # pragma: allowlist secret
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
-    @pytest.mark.parametrize("api_key_model", [(TogetherAIAPIKey)])
-    async def test_togetherai_api_key_model_create_autogen(
+    @pytest.mark.togetherai()
+    async def test_end2end(
         self,
-        api_key_model: Model,
-        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
         user_uuid: str,
-        monkeypatch: pytest.MonkeyPatch,
+        togetherai_ref: ObjectReference,
     ) -> None:
-        dummy_togetherai_api_key = "*" * 64  # pragma: allowlist secret
-
-        # Add secret to database
-        api_key = api_key_model(  # type: ignore [operator]
-            api_key=dummy_togetherai_api_key,
-            name="api_key_model_name",
-        )
-        api_key_model_uuid = str(uuid.uuid4())
-        await add_model(
-            user_uuid=user_uuid,
-            type_name="secret",
-            model_name=api_key_model.__name__,  # type: ignore [attr-defined]
-            model_uuid=api_key_model_uuid,
-            model=api_key.model_dump(),
-            background_tasks=BackgroundTasks(),
-        )
-
-        # Call create_autogen
-        actual_api_key = await TogetherAIAPIKey.create_autogen(
-            model_id=uuid.UUID(api_key_model_uuid),
+        llm_config = await TogetherAI.create_autogen(
+            model_id=togetherai_ref.uuid,
             user_id=uuid.UUID(user_uuid),
         )
-        assert isinstance(actual_api_key, str)
-        assert actual_api_key == api_key.api_key
+        end2end_simple_chat_with_two_agents(llm_config=llm_config)

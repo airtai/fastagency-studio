@@ -23,6 +23,8 @@ from fastagency.helpers import create_model_ref
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
+from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
+from fastagency.models.llms.together import TogetherAI, TogetherAIAPIKey
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
 
@@ -101,7 +103,7 @@ def openai_llm_config(model: str) -> Dict[str, Any]:
 
 @pytest.fixture()
 def openai_gpt35_turbo_16k_llm_config() -> Dict[str, Any]:
-    return openai_llm_config("gpt-3.5-turbo-16k")
+    return openai_llm_config("gpt-3.5-turbo")
 
 
 # model/* constructors
@@ -131,17 +133,51 @@ async def azure_oai_ref(
     azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
     azure_oai_key_ref: ObjectReference,
 ) -> ObjectReference:
+    kwargs = azure_gpt35_turbo_16k_llm_config["config_list"][0].copy()
+    kwargs.pop("api_key")
+    temperature = azure_gpt35_turbo_16k_llm_config["temperature"]
     return await create_model_ref(
         AzureOAI,
         "llm",
         user_uuid=user_uuid,
         name=add_random_sufix("azure_oai"),
-        model=azure_gpt35_turbo_16k_llm_config["config_list"][0]["model"],
         api_key=azure_oai_key_ref,
-        base_url=azure_gpt35_turbo_16k_llm_config["config_list"][0]["base_url"],
-        api_type=azure_gpt35_turbo_16k_llm_config["config_list"][0]["api_type"],
-        api_version=azure_gpt35_turbo_16k_llm_config["config_list"][0]["api_version"],
-        temperature=azure_gpt35_turbo_16k_llm_config["temperature"],
+        temperature=temperature,
+        **kwargs,
+    )
+
+
+@pytest_asyncio.fixture()  # type: ignore[misc]
+async def openai_oai_key_ref(
+    user_uuid: str, openai_gpt35_turbo_16k_llm_config: Dict[str, Any]
+) -> ObjectReference:
+    api_key = openai_gpt35_turbo_16k_llm_config["config_list"][0]["api_key"]
+    return await create_model_ref(
+        OpenAIAPIKey,
+        "secret",
+        user_uuid=user_uuid,
+        name=add_random_sufix("openai_oai_key"),
+        api_key=api_key,
+    )
+
+
+@pytest_asyncio.fixture()  # type: ignore[misc]
+async def openai_oai_ref(
+    user_uuid: str,
+    openai_gpt35_turbo_16k_llm_config: Dict[str, Any],
+    openai_oai_key_ref: ObjectReference,
+) -> ObjectReference:
+    kwargs = openai_gpt35_turbo_16k_llm_config["config_list"][0].copy()
+    kwargs.pop("api_key")
+    temperature = openai_gpt35_turbo_16k_llm_config["temperature"]
+    return await create_model_ref(
+        OpenAI,
+        "llm",
+        user_uuid=user_uuid,
+        name=add_random_sufix("azure_oai"),
+        api_key=openai_oai_key_ref,
+        temperature=temperature,
+        **kwargs,
     )
 
 
@@ -172,6 +208,36 @@ async def anthropic_ref(
         user_uuid=user_uuid,
         name=add_random_sufix("anthropic_api"),
         api_key=anthropic_key_ref,
+    )
+
+
+@pytest_asyncio.fixture()  # type: ignore[misc]
+async def together_ai_key_ref(user_uuid: str) -> ObjectReference:
+    api_key = os.getenv(
+        "TOGETHER_API_KEY",
+        default="*" * 64,
+    )
+
+    return await create_model_ref(
+        TogetherAIAPIKey,
+        "secret",
+        user_uuid=user_uuid,
+        name=add_random_sufix("together_api_key"),
+        api_key=api_key,
+    )
+
+
+@pytest_asyncio.fixture()  # type: ignore[misc]
+async def togetherai_ref(
+    user_uuid: str,
+    together_ai_key_ref: ObjectReference,
+) -> ObjectReference:
+    return await create_model_ref(
+        TogetherAI,
+        "llm",
+        user_uuid=user_uuid,
+        name=add_random_sufix("together_api"),
+        api_key=together_ai_key_ref,
     )
 
 

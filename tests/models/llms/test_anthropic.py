@@ -9,6 +9,15 @@ from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
 from .test_end2end import end2end_simple_chat_with_two_agents
 
 
+def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+
+    from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
+
+    assert Anthropic is not None
+    assert AnthropicAPIKey is not None
+
+
 class TestAnthropicOAIAPIKey:
     @pytest.mark.asyncio()
     @pytest.mark.db()
@@ -175,6 +184,8 @@ class TestAnthropic:
         user_uuid: str,
         anthropic_ref: ObjectReference,
     ) -> None:
-        await end2end_simple_chat_with_two_agents(
-            llm_ref=anthropic_ref, user_uuid=user_uuid
+        llm_config = await Anthropic.create_autogen(
+            model_id=anthropic_ref.uuid,
+            user_id=uuid.UUID(user_uuid),
         )
+        end2end_simple_chat_with_two_agents(llm_config=llm_config)

@@ -580,3 +580,10 @@ class TestModelRoutes:
 
         # Assert the mock was called with the correct arguments
         mock_create.assert_called_once()
+
+    @pytest.mark.asyncio()
+    async def test_ping(self) -> None:
+        deployment_uuid = str(uuid.uuid4())
+        response = client.get(f"/deployment/{deployment_uuid}/ping")
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}

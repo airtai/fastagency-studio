@@ -60,7 +60,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
-        pydantic-version: ["pydantic-v2"]
       fail-fast: false
     services:
       nats:
@@ -122,11 +121,7 @@ jobs:
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
-      - name: Install Pydantic v1
-        if: matrix.pydantic-version == 'pydantic-v1'
-        run: pip install "pydantic>=1.10,<2"
       - name: Install Pydantic v2
-        if: matrix.pydantic-version == 'pydantic-v2'
         run: pip install --pre "pydantic>=2,<3"
       - run: mkdir coverage
       - name: Prisma
@@ -135,18 +130,18 @@ jobs:
         if: matrix.python-version != '3.12'
         run: bash scripts/test.sh -m "not (anthropic or azure_oai or openai or togetherai)"
         env:
-          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
-          CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}
+          CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}
       - name: Test with LLMs
         if: matrix.python-version == '3.12'
         run: bash scripts/test.sh
         env:
-          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
-          CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}
+          CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}
       - name: Store coverage files
         uses: actions/upload-artifact@v4
         with:
-          name: .coverage.${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
+          name: .coverage.${{ runner.os }}-py${{ matrix.python-version }}
           path: coverage
           if-no-files-found: error
 

@@ -43,7 +43,7 @@ def fixture(fixture_type: str, **kwargs: Any) -> Callable[[F], F]:
         else:
             fixtures[fixture_type] = [name]
 
-        return wrapper
+        return wrapper  # type: ignore[no-any-return]
 
     return decorator
 

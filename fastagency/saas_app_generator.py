@@ -48,9 +48,14 @@ class InvalidFlyTokenError(Exception):
 
 class SaasAppGenerator:
     TEMPLATE_REPO_URL = "https://github.com/airtai/fastagency-wasp-app-template"
-    EXTRACTED_TEMPLATE_DIR_NAME = "fastagency-wasp-app-template-main"
     ARTIFACTS_DIR = ".tmp_fastagency_setup_artifacts"
     FASTAGENCY_SERVER_URL = environ.get("FASTAGENCY_SERVER_URL", None)
+    DEPLOYMENT_BRANCH = (
+        "dev"
+        if FASTAGENCY_SERVER_URL and "staging" in FASTAGENCY_SERVER_URL
+        else "main"
+    )
+    EXTRACTED_TEMPLATE_DIR_NAME = f"fastagency-wasp-app-template-{DEPLOYMENT_BRANCH}"
 
     def __init__(
         self,
@@ -72,22 +77,9 @@ class SaasAppGenerator:
             raise OSError(f"{var_name} not set in the environment")
         return environ[var_name]
 
-    @staticmethod
-    def _get_branch_zip_url(
-        owner: str, repo: str, fastagency_server_url: Optional[str]
-    ) -> str:
-        branch = (
-            "dev"
-            if fastagency_server_url and "staging" in fastagency_server_url
-            else "main"
-        )
-        return f"https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip"
-
     def _download_template_repo(self, temp_dir_path: Path) -> None:
         owner, repo = self.template_repo_url.rstrip("/").rsplit("/", 2)[-2:]
-        zip_url = SaasAppGenerator._get_branch_zip_url(
-            owner, repo, SaasAppGenerator.FASTAGENCY_SERVER_URL
-        )
+        zip_url = f"https://github.com/{owner}/{repo}/archive/refs/heads/{SaasAppGenerator.DEPLOYMENT_BRANCH}.zip"
         response = requests.get(zip_url, timeout=10)
         if response.status_code == 200:
             zip_path = temp_dir_path / f"{repo}.zip"

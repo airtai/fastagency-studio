@@ -259,6 +259,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    needs: detect-deployment-environment
+    environment: ${{ needs.detect-deployment-environment.outputs.environment == 'none' && 'testing' || needs.detect-deployment-environment.outputs.environment }}
     env:
       PORT: ${{ vars.PORT }}
     steps:

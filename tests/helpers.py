@@ -1,5 +1,6 @@
 import inspect
 import random
+import types
 from asyncio import iscoroutinefunction
 from functools import wraps
 from typing import Any, Callable, Dict, List, TypeVar
@@ -48,6 +49,16 @@ def fixture(fixture_type: str, **kwargs: Any) -> Callable[[F], F]:
     return decorator
 
 
+def get_caller_globals() -> Dict[str, Any]:
+    # Get the caller's frame
+    caller_frame = inspect.stack()[2].frame
+
+    # Set the global variable in the caller's module
+    caller_globals = caller_frame.f_globals
+
+    return caller_globals
+
+
 def parametrize_fixtures(name: str, fixture_type: str) -> Callable[[F], F]:
     def decorator(f: F, name: str = name) -> F:
         if fixture_type not in fixtures:
@@ -62,14 +73,62 @@ def parametrize_fixtures(name: str, fixture_type: str) -> Callable[[F], F]:
         def wrapper(request: Any) -> Any:
             return request.getfixturevalue(request.param)
 
-        # Get the caller's frame
-        caller_frame = inspect.stack()[1].frame
-
-        # Set the global variable in the caller's module
-        caller_globals = caller_frame.f_globals
+        caller_globals = get_caller_globals()
 
         var_name = add_random_sufix(f"{fixture_type}_{name}")
         caller_globals[var_name] = wrapper
+
+        return f
+
+    return decorator
+
+
+def rename_parameter(src_name: str, dst_name: str) -> Callable[[F], F]:
+    def decorator(f: F) -> F:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            bound_args = new_signature.bind(*args, **kwargs)
+            bound_args.apply_defaults()
+            if dst_name in bound_args.arguments:
+                bound_args.arguments[src_name] = bound_args.arguments.pop(dst_name)
+            return f(*bound_args.args, **bound_args.kwargs)
+
+        original_signature = inspect.signature(f)
+        parameters = list(original_signature.parameters.values())
+        new_parameters = [
+            param.replace(name=dst_name) if param.name == src_name else param
+            for param in parameters
+        ]
+        new_signature = original_signature.replace(parameters=new_parameters)
+        new_function = types.FunctionType(
+            wrapper.__code__,
+            wrapper.__globals__,
+            name=f.__name__,
+            argdefs=wrapper.__defaults__,
+            closure=wrapper.__closure__,
+        )
+        new_function.__signature__ = new_signature  # type: ignore[attr-defined]
+        new_function.__doc__ = f.__doc__
+        new_function.__annotations__ = f.__annotations__
+
+        return new_function  # type: ignore[return-value]
+
+    return decorator
+
+
+def parametrized_fixture(
+    target_type_name: str,
+    src_types: List[str],
+    placeholder_name: str = "placeholder",
+) -> Callable[[F], F]:
+    def decorator(f: F) -> F:
+        for src_type in src_types:
+            name = f"{target_type_name}_{src_type}"
+
+            f = rename_parameter(placeholder_name, src_type)(f)
+            f = fixture(target_type_name, name=name)(f)
+
+            caller_globals = get_caller_globals()
+            caller_globals[name] = f
 
         return f
 

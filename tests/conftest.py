@@ -6,7 +6,16 @@ import threading
 import time
 import uuid
 from platform import system
-from typing import Annotated, Any, AsyncIterator, Dict, Iterator, Optional
+from typing import (
+    Annotated,
+    Any,
+    AsyncIterator,
+    Callable,
+    Dict,
+    Iterator,
+    Optional,
+    TypeVar,
+)
 
 import openai
 import pytest
@@ -28,7 +37,9 @@ from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 from fastagency.models.llms.together import TogetherAI, TogetherAIAPIKey
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
-from .helpers import add_random_sufix, fixture
+from .helpers import add_random_sufix, fixture, fixtures, parametrized_fixture
+
+F = TypeVar("F", bound=Callable[..., Any])
 
 
 @pytest_asyncio.fixture(scope="session")  # type: ignore[misc]
@@ -251,17 +262,17 @@ async def togetherai_ref(
 ################################################################################
 
 
-@fixture("assistant")
-async def assistant_azure_ref(
+@parametrized_fixture(target_type_name="assistant", src_types=fixtures["llm"])
+async def assistant_ref(
     user_uuid: str,
-    azure_oai_ref: ObjectReference,
+    placeholder: ObjectReference,
 ) -> ObjectReference:
     return await create_model_ref(
         AssistantAgent,
         "agent",
         user_uuid=user_uuid,
         name=add_random_sufix("assistant_agent_azure_oai"),
-        api_key=azure_oai_ref,
+        api_key=placeholder,
     )
 
 

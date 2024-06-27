@@ -9,14 +9,28 @@ from pydantic import ValidationError
 
 from fastagency.app import add_model
 from fastagency.models.agents.assistant import AssistantAgent
-from fastagency.models.base import Model
+from fastagency.models.base import Model, ObjectReference
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.llms.openai import OpenAI
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 from fastagency.openapi.client import Client
 
+from ...helpers import parametrize_fixtures
+
 
 class TestAssistantAgent:
+    @pytest.mark.skip("Not working yet")
+    @pytest.mark.asyncio()
+    @pytest.mark.db()
+    @pytest.mark.llm()
+    @parametrize_fixtures("assistant_ref", "assistant")
+    async def test_assistant_construction(
+        self,
+        user_uuid: str,
+        assistant_ref: ObjectReference,
+    ) -> None:
+        print(f"test_assistant_construction({user_uuid=}, {assistant_ref=})")  # noqa: T201
+
     @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])
     def test_assistant_constructor(self, llm_model: Model) -> None:
         llm_uuid = uuid.uuid4()

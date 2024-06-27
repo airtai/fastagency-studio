@@ -205,3 +205,18 @@ async def get_all_models_for_user(
         models = await db.model.find_many(where=filters)  # type: ignore[arg-type]
 
     return models  # type: ignore[no-any-return]
+
+
+async def create_autogen(
+    model_ref: ObjectReference,
+    user_uuid: Union[str, UUID],
+) -> Any:
+    user_id = UUID(user_uuid) if isinstance(user_uuid, str) else user_uuid
+    model_id = (
+        UUID(model_ref.uuid)  # type: ignore[arg-type]
+        if isinstance(model_ref.uuid, str)
+        else model_ref.uuid
+    )
+    model = await get_model_by_ref(model_ref)
+
+    return await model.create_autogen(model_id=model_id, user_id=user_id)

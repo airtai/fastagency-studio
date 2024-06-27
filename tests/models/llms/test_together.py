@@ -12,8 +12,6 @@ from fastagency.models.llms.together import (
     together_model_string,
 )
 
-from .test_end2end import end2end_simple_chat_with_two_agents
-
 
 def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("TOGETHER_API_KEY", raising=False)
@@ -215,17 +213,3 @@ class TestTogetherAI:
         }
 
         assert actual_llm_config == expected
-
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    @pytest.mark.togetherai()
-    async def test_end2end(
-        self,
-        user_uuid: str,
-        togetherai_ref: ObjectReference,
-    ) -> None:
-        llm_config = await TogetherAI.create_autogen(
-            model_id=togetherai_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        end2end_simple_chat_with_two_agents(llm_config=llm_config)

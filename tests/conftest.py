@@ -27,6 +27,8 @@ from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 from fastagency.models.llms.together import TogetherAI, TogetherAIAPIKey
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
+from .helpers import add_random_sufix, fixture
+
 
 @pytest_asyncio.fixture(scope="session")  # type: ignore[misc]
 async def user_uuid() -> AsyncIterator[str]:
@@ -47,6 +49,26 @@ async def user_uuid() -> AsyncIterator[str]:
         yield user["uuid"]
     finally:
         pass
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    config.addinivalue_line("markers", "llm: mark test for use with LLMs")
+
+
+@pytest.fixture(autouse=True)
+def apply_llm_marker(request: pytest.FixtureRequest) -> None:  # noqa: PT004
+    if request.node.get_closest_marker("llm"):
+        request.node.add_marker("anthropic")
+        request.node.add_marker("azure_oai")
+        request.node.add_marker("openai")
+        request.node.add_marker("togetherai")
+
+
+################################################################################
+###
+###                           Fixtures for LLMs
+###
+################################################################################
 
 
 def azure_model_llm_config(model_env_name: str) -> Dict[str, Any]:
@@ -77,7 +99,7 @@ def azure_model_llm_config(model_env_name: str) -> Dict[str, Any]:
     return llm_config
 
 
-@pytest.fixture()
+@fixture("llm_config")
 def azure_gpt35_turbo_16k_llm_config() -> Dict[str, Any]:
     return azure_model_llm_config("AZURE_GPT35_MODEL")
 
@@ -101,19 +123,12 @@ def openai_llm_config(model: str) -> Dict[str, Any]:
     return llm_config
 
 
-@pytest.fixture()
+@fixture("llm_config")
 def openai_gpt35_turbo_16k_llm_config() -> Dict[str, Any]:
     return openai_llm_config("gpt-3.5-turbo")
 
 
-# model/* constructors
-
-
-def add_random_sufix(prefix: str) -> str:
-    return f"{prefix}_{random.randint(0, 1_000_000_000):09d}"
-
-
-@pytest_asyncio.fixture()  # type: ignore[misc]
+@fixture("llm_key")
 async def azure_oai_key_ref(
     user_uuid: str, azure_gpt35_turbo_16k_llm_config: Dict[str, Any]
 ) -> ObjectReference:
@@ -127,7 +142,7 @@ async def azure_oai_key_ref(
     )
 
 
-@pytest_asyncio.fixture()  # type: ignore[misc]
+@fixture("llm")
 async def azure_oai_ref(
     user_uuid: str,
     azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
@@ -147,7 +162,7 @@ async def azure_oai_ref(
     )
 
 
-@pytest_asyncio.fixture()  # type: ignore[misc]
+@fixture("llm_key")
 async def openai_oai_key_ref(
     user_uuid: str, openai_gpt35_turbo_16k_llm_config: Dict[str, Any]
 ) -> ObjectReference:
@@ -161,7 +176,7 @@ async def openai_oai_key_ref(
     )
 
 
-@pytest_asyncio.fixture()  # type: ignore[misc]
+@fixture("llm")
 async def openai_oai_ref(
     user_uuid: str,
     openai_gpt35_turbo_16k_llm_config: Dict[str, Any],
@@ -181,7 +196,7 @@ async def openai_oai_ref(
     )
 
 
-@pytest_asyncio.fixture()  # type: ignore[misc]
+@fixture("llm_key")
 async def anthropic_key_ref(user_uuid: str) -> ObjectReference:
     api_key = os.getenv(
         "ANTHROPIC_API_KEY",
@@ -197,7 +212,7 @@ async def anthropic_key_ref(user_uuid: str) -> ObjectReference:
     )
 
 
-@pytest_asyncio.fixture()  # type: ignore[misc]
+@fixture("llm")
 async def anthropic_ref(
     user_uuid: str,
     anthropic_key_ref: ObjectReference,
@@ -211,7 +226,7 @@ async def anthropic_ref(
     )
 
 
-@pytest_asyncio.fixture()  # type: ignore[misc]
+@fixture("llm_key")
 async def together_ai_key_ref(user_uuid: str) -> ObjectReference:
     api_key = os.getenv(
         "TOGETHER_API_KEY",
@@ -227,7 +242,7 @@ async def together_ai_key_ref(user_uuid: str) -> ObjectReference:
     )
 
 
-@pytest_asyncio.fixture()  # type: ignore[misc]
+@fixture("llm")
 async def togetherai_ref(
     user_uuid: str,
     together_ai_key_ref: ObjectReference,
@@ -239,6 +254,13 @@ async def togetherai_ref(
         name=add_random_sufix("together_api"),
         api_key=together_ai_key_ref,
     )
+
+
+################################################################################
+###
+###                           Fixtures for Agents
+###
+################################################################################
 
 
 # FastAPI app for testing

@@ -7,8 +7,6 @@ from fastagency.helpers import get_model_by_ref
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 
-from .test_end2end import end2end_simple_chat_with_two_agents
-
 
 def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("AZURE_OAI_API_KEY", raising=False)
@@ -180,17 +178,3 @@ class TestAzureOAI:
             == azure_gpt35_turbo_16k_llm_config["config_list"][0]
         )
         assert actual_llm_config == azure_gpt35_turbo_16k_llm_config
-
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    @pytest.mark.azure_oai()
-    async def test_end2end(
-        self,
-        user_uuid: str,
-        azure_oai_ref: ObjectReference,
-    ) -> None:
-        llm_config = await AzureOAI.create_autogen(
-            model_id=azure_oai_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        end2end_simple_chat_with_two_agents(llm_config=llm_config)

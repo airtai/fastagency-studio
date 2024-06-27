@@ -1,15 +1,26 @@
 from typing import Any, Dict
 
+import pytest
 from autogen.agentchat import AssistantAgent
 
+from fastagency.helpers import create_autogen
+from fastagency.models.base import ObjectReference
+
 # from fastagency.models.agents.assistant import AssistantAgent
-from ...conftest import add_random_sufix
+from ...helpers import add_random_sufix, parametrize_fixtures
 
 
-def end2end_simple_chat_with_two_agents(
-    llm_config: Dict[str, Any],
+@pytest.mark.asyncio()
+@pytest.mark.db()
+@pytest.mark.llm()
+@parametrize_fixtures("llm_ref", "llm")
+async def test_end2end_simple_chat_with_two_agents(
+    user_uuid: str,
+    llm_ref: ObjectReference,
 ) -> None:
-    flags: Dict[str, bool] = {"terminated": False}
+    llm_config = await create_autogen(model_ref=llm_ref, user_uuid=user_uuid)
+
+    flags: Dict[str, bool] = {}
 
     def is_termination_msg(msg: Dict[str, Any]) -> bool:
         flags["terminated"] = "TERMINATE" in msg["content"]

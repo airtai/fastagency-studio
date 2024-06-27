@@ -6,8 +6,6 @@ from fastagency.helpers import get_model_by_ref
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 
-from .test_end2end import end2end_simple_chat_with_two_agents
-
 
 def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
@@ -204,17 +202,3 @@ class TestOpenAI:
         }
 
         assert actual_llm_config == expected
-
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    @pytest.mark.openai()
-    async def test_end2end(
-        self,
-        user_uuid: str,
-        openai_oai_ref: ObjectReference,
-    ) -> None:
-        llm_config = await OpenAI.create_autogen(
-            model_id=openai_oai_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        end2end_simple_chat_with_two_agents(llm_config=llm_config)

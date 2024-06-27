@@ -34,7 +34,7 @@ jobs:
       image: ubuntu:22.04
     environment:
       # Use staging if staging in matrix.domain else use production
-      name: ${{ matrix.domain == *"staging"* && 'staging' || 'production' }}
+      name: ${{ contains(matrix.domain, 'staging') && 'staging' || 'production' }}
     env:
       SSH_KEY: ${{ secrets.SSH_KEY }}
     steps:

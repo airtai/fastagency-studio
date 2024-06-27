@@ -29,6 +29,26 @@ def test_get_account_name_and_repo_name() -> None:
     assert actual == expected
 
 
+def test_get_branch_zip_url_for_main() -> None:
+    for fastagency_server_url in ["https://api.fastagency.ai", None]:
+        owner = "owner"
+        repo = "repo"
+        expected = "https://github.com/owner/repo/archive/refs/heads/main.zip"
+        actual = SaasAppGenerator._get_branch_zip_url(
+            owner, repo, fastagency_server_url
+        )
+        assert actual == expected
+
+
+def test_get_branch_zip_url_for_dev() -> None:
+    fastagency_server_url = "https://api.staging.fastagency.ai"
+    owner = "owner"
+    repo = "repo"
+    expected = "https://github.com/owner/repo/archive/refs/heads/dev.zip"
+    actual = SaasAppGenerator._get_branch_zip_url(owner, repo, fastagency_server_url)
+    assert actual == expected
+
+
 @patch("requests.get")
 @patch("shutil.unpack_archive")
 def test_download_template_repo(

@@ -11,6 +11,7 @@ search:
             - [chat](api/fastagency/app/chat.md)
             - [create_toolbox_for_new_user](api/fastagency/app/create_toolbox_for_new_user.md)
             - [deployment_chat](api/fastagency/app/deployment_chat.md)
+            - [deployment_ping](api/fastagency/app/deployment_ping.md)
             - [generate_chat_name](api/fastagency/app/generate_chat_name.md)
             - [get_all_models](api/fastagency/app/get_all_models.md)
             - [get_azure_llm_client](api/fastagency/app/get_azure_llm_client.md)

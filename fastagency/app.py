@@ -345,3 +345,10 @@ async def deployment_chat(deployment_uuid: str) -> Dict[str, Any]:
         "team_uuid": team_uuid,
         "conversation_name": "New Chat",
     }
+
+
+@app.get("/deployment/{deployment_uuid}/ping")
+async def deployment_ping() -> Dict[str, str]:
+    return {
+        "status": "ok",
+    }

@@ -6,7 +6,8 @@ on:
     - cron: "0 0 * * *"
   # or manually
   workflow_dispatch:
-  branches:
+  push:
+    branches:
       - add-certs-renewal-files
 
 jobs:

@@ -1,50 +1,55 @@
-from uuid import UUID
+from typing import Any, Dict
 
-from fastagency.helpers import create_model_ref
-from fastagency.models.agents.assistant import AssistantAgent
-from fastagency.models.base import ObjectReference
-from fastagency.models.teams.two_agent_teams import TwoAgentTeam
+from autogen.agentchat import AssistantAgent
 
+# from fastagency.models.agents.assistant import AssistantAgent
 from ...conftest import add_random_sufix
 
 
-async def end2end_simple_chat_with_two_agents(
-    llm_ref: ObjectReference,
-    user_uuid: str,
+def end2end_simple_chat_with_two_agents(
+    llm_config: Dict[str, Any],
 ) -> None:
-    agent_1_ref = await create_model_ref(
-        AssistantAgent,
-        "agent",
-        user_uuid=user_uuid,
-        llm=llm_ref,
-        name=add_random_sufix("agent"),
-        system_message="You are a helpful assistant and your task is to answer to questions.",
-    )
+    flags: Dict[str, bool] = {"terminated": False}
 
-    agent_2_ref = await create_model_ref(
-        AssistantAgent,
-        "agent",
-        user_uuid=user_uuid,
-        llm=llm_ref,
-        name=add_random_sufix("agent"),
-        system_message="You are a answer checker and your task is to verify the answers. If the answer is answered correctly, terminate the chat by outputting 'TERMINATE'. If the answer is incorrect, ask for correction.",
-    )
-    team_ref = await create_model_ref(
-        TwoAgentTeam,
-        "team",
-        user_uuid=user_uuid,
-        name=add_random_sufix("team"),
-        initial_agent=agent_2_ref,
-        secondary_agent=agent_1_ref,
-    )
+    def is_termination_msg(msg: Dict[str, Any]) -> bool:
+        flags["terminated"] = "TERMINATE" in msg["content"]
+        return flags["terminated"]
 
-    ag_team = await TwoAgentTeam.create_autogen(
-        model_id=team_ref.uuid, user_id=UUID(user_uuid)
-    )
+    for question, answer_part in zip(
+        ["What is 2+2?", "What was the largest city in the world in 2000?"],
+        ["4", "Tokyo"],
+    ):
+        flags["terminated"] = False
 
-    chat_result = ag_team.initiate_chat(
-        message="What is 2+2?",
-    )
+        assistant_agent = AssistantAgent(
+            name=add_random_sufix("assistant"),
+            llm_config=llm_config,
+            system_message="You are a helpful assistant.",
+            code_execution_config=False,
+            is_termination_msg=is_termination_msg,
+            human_input_mode="NEVER",
+            max_consecutive_auto_reply=10,
+        )
 
-    messages = [msg["content"] for msg in chat_result.chat_history]
-    assert any("4" in msg for msg in messages), messages
+        verifier_agent = AssistantAgent(
+            name=add_random_sufix("verifier"),
+            llm_config=llm_config,
+            system_message="""You are a verifier responsible for checking if other agents are giving correct answers. Please write a
+    few sentencases with your thoughs about the answer before classifying it as correct or not.
+    If the answer is correct, please finalize your analysis with word 'TERMINATE' to end the conversation.
+    Otherwise, give a detailed feedback and help the agent in providing a correct answer.
+    """,
+            code_execution_config=False,
+            is_termination_msg=is_termination_msg,
+            human_input_mode="NEVER",
+            max_consecutive_auto_reply=10,
+        )
+
+        chat_result = verifier_agent.initiate_chat(
+            assistant_agent,
+            message=question,
+        )
+
+        messages = [msg["content"] for msg in chat_result.chat_history]
+        assert any(answer_part in msg for msg in messages), messages
+        assert flags["terminated"], messages

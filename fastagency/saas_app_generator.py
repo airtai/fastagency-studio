@@ -48,8 +48,14 @@ class InvalidFlyTokenError(Exception):
 
 class SaasAppGenerator:
     TEMPLATE_REPO_URL = "https://github.com/airtai/fastagency-wasp-app-template"
-    EXTRACTED_TEMPLATE_DIR_NAME = "fastagency-wasp-app-template-main"
     ARTIFACTS_DIR = ".tmp_fastagency_setup_artifacts"
+    FASTAGENCY_SERVER_URL = environ.get("FASTAGENCY_SERVER_URL", None)
+    DEPLOYMENT_BRANCH = (
+        "dev"
+        if FASTAGENCY_SERVER_URL and "staging" in FASTAGENCY_SERVER_URL
+        else "main"
+    )
+    EXTRACTED_TEMPLATE_DIR_NAME = f"fastagency-wasp-app-template-{DEPLOYMENT_BRANCH}"
 
     def __init__(
         self,
@@ -73,7 +79,7 @@ class SaasAppGenerator:
 
     def _download_template_repo(self, temp_dir_path: Path) -> None:
         owner, repo = self.template_repo_url.rstrip("/").rsplit("/", 2)[-2:]
-        zip_url = f"https://github.com/{owner}/{repo}/archive/refs/heads/main.zip"
+        zip_url = f"https://github.com/{owner}/{repo}/archive/refs/heads/{SaasAppGenerator.DEPLOYMENT_BRANCH}.zip"
         response = requests.get(zip_url, timeout=10)
         if response.status_code == 200:
             zip_path = temp_dir_path / f"{repo}.zip"
@@ -317,10 +323,8 @@ class SaasAppGenerator:
         command = f'gh variable set REACT_APP_NAME --body "{self.app_name}"'
         self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
 
-        fastagency_staging_url = environ.get("FASTAGENCY_SERVER_URL", None)
-        logging.info(f"{fastagency_staging_url=}")
-        if fastagency_staging_url:
-            command = f'gh variable set FASTAGENCY_SERVER_URL --body "{fastagency_staging_url}"'
+        if SaasAppGenerator.FASTAGENCY_SERVER_URL:
+            command = f'gh variable set FASTAGENCY_SERVER_URL --body "{SaasAppGenerator.FASTAGENCY_SERVER_URL}"'
             self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
 
     def execute(self) -> None:

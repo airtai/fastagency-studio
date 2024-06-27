@@ -35,7 +35,7 @@ def test_openai_gpt35_turbo_16k_llm_config(
     expected = {
         "config_list": [
             {
-                "model": "gpt-3.5-turbo-16k",
+                "model": "gpt-3.5-turbo",
                 "api_key": api_key,  # pragma: allowlist secret
             }
         ],

@@ -21,7 +21,7 @@ jobs:
             "fastagency.ai",
             "staging.fastagency.ai",
             "api.fastagency.ai",
-            "staging.api.fastagency.ai",
+            "api.staging.fastagency.ai",
             "weather.tools.fastagency.ai",
             "weather.tools.staging.fastagency.ai",
             "monitoring.fastagency.ai",

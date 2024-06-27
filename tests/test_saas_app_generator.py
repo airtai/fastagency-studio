@@ -29,6 +29,27 @@ def test_get_account_name_and_repo_name() -> None:
     assert actual == expected
 
 
+@pytest.mark.parametrize(
+    ("fastagency_server_url", "expected"),
+    [
+        (
+            "https://api.fastagency.ai",
+            "https://github.com/owner/repo/archive/refs/heads/main.zip",
+        ),
+        (None, "https://github.com/owner/repo/archive/refs/heads/main.zip"),
+        (
+            "https://api.staging.fastagency.ai",
+            "https://github.com/owner/repo/archive/refs/heads/dev.zip",
+        ),
+    ],
+)
+def test_get_branch_zip_url(fastagency_server_url: str, expected: str) -> None:
+    owner = "owner"
+    repo = "repo"
+    actual = SaasAppGenerator._get_branch_zip_url(owner, repo, fastagency_server_url)
+    assert actual == expected
+
+
 @patch("requests.get")
 @patch("shutil.unpack_archive")
 def test_download_template_repo(

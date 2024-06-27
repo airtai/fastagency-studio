@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - add-certs-renewal-files
     paths:
       - 'scripts/ci_check_certs.sh'
       - '.github/workflows/update_cron_script.yml'

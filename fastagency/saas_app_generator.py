@@ -77,15 +77,9 @@ class SaasAppGenerator:
             raise OSError(f"{var_name} not set in the environment")
         return environ[var_name]
 
-    @staticmethod
-    def _get_branch_zip_url(owner: str, repo: str, branch: str) -> str:
-        return f"https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip"
-
     def _download_template_repo(self, temp_dir_path: Path) -> None:
         owner, repo = self.template_repo_url.rstrip("/").rsplit("/", 2)[-2:]
-        zip_url = SaasAppGenerator._get_branch_zip_url(
-            owner, repo, SaasAppGenerator.DEPLOYMENT_BRANCH
-        )
+        zip_url = f"https://github.com/{owner}/{repo}/archive/refs/heads/{SaasAppGenerator.DEPLOYMENT_BRANCH}.zip"
         response = requests.get(zip_url, timeout=10)
         if response.status_code == 200:
             zip_path = temp_dir_path / f"{repo}.zip"

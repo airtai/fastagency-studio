@@ -29,26 +29,6 @@ def test_get_account_name_and_repo_name() -> None:
     assert actual == expected
 
 
-@pytest.mark.parametrize(
-    ("branch", "expected"),
-    [
-        (
-            "main",
-            "https://github.com/owner/repo/archive/refs/heads/main.zip",
-        ),
-        (
-            "dev",
-            "https://github.com/owner/repo/archive/refs/heads/dev.zip",
-        ),
-    ],
-)
-def test_get_branch_zip_url(branch: str, expected: str) -> None:
-    owner = "owner"
-    repo = "repo"
-    actual = SaasAppGenerator._get_branch_zip_url(owner, repo, branch)
-    assert actual == expected
-
-
 @patch("requests.get")
 @patch("shutil.unpack_archive")
 def test_download_template_repo(

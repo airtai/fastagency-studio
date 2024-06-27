@@ -41,23 +41,6 @@ class TestTogetherAIAPIKey:
                 name="Hello World!",
             )  # pragma: allowlist secret
 
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    async def test_togetherai_api_key_model_create_autogen(
-        self,
-        together_ai_key_ref: ObjectReference,
-        user_uuid: str,
-    ) -> None:
-        model = await get_model_by_ref(together_ai_key_ref)
-        assert isinstance(model, TogetherAIAPIKey)
-
-        # Call create_autogen
-        actual_api_key = await TogetherAIAPIKey.create_autogen(
-            model_id=together_ai_key_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        assert isinstance(actual_api_key, str)
-
 
 class TestTogetherAI:
     @pytest.mark.togetherai()

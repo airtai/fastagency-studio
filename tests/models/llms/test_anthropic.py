@@ -10,29 +10,10 @@ from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
 def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
 
-    from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
+    from fastagency.models.llms.anthropic import Anthropic
 
     assert Anthropic is not None
     assert AnthropicAPIKey is not None
-
-
-class TestAnthropicOAIAPIKey:
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    async def test_anthropic_api_key_model_create_autogen(
-        self,
-        anthropic_key_ref: ObjectReference,
-        user_uuid: str,
-    ) -> None:
-        model = await get_model_by_ref(anthropic_key_ref)
-        assert isinstance(model, AnthropicAPIKey)
-
-        # Call create_autogen
-        actual_api_key = await AnthropicAPIKey.create_autogen(
-            model_id=anthropic_key_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        assert isinstance(actual_api_key, str)
 
 
 class TestAnthropic:

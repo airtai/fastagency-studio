@@ -20,6 +20,7 @@ from fastagency.db.helpers import (
     get_wasp_db_url,
 )
 from fastagency.helpers import create_model_ref
+from fastagency.models.agents.assistant import AssistantAgent
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
@@ -49,19 +50,6 @@ async def user_uuid() -> AsyncIterator[str]:
         yield user["uuid"]
     finally:
         pass
-
-
-def pytest_configure(config: pytest.Config) -> None:
-    config.addinivalue_line("markers", "llm: mark test for use with LLMs")
-
-
-@pytest.fixture(autouse=True)
-def apply_llm_marker(request: pytest.FixtureRequest) -> None:  # noqa: PT004
-    if request.node.get_closest_marker("llm"):
-        request.node.add_marker("anthropic")
-        request.node.add_marker("azure_oai")
-        request.node.add_marker("openai")
-        request.node.add_marker("togetherai")
 
 
 ################################################################################
@@ -237,7 +225,7 @@ async def together_ai_key_ref(user_uuid: str) -> ObjectReference:
         TogetherAIAPIKey,
         "secret",
         user_uuid=user_uuid,
-        name=add_random_sufix("together_api_key"),
+        name=add_random_sufix("togetherai_api_key"),
         api_key=api_key,
     )
 
@@ -251,7 +239,7 @@ async def togetherai_ref(
         TogetherAI,
         "llm",
         user_uuid=user_uuid,
-        name=add_random_sufix("together_api"),
+        name=add_random_sufix("togetherai"),
         api_key=together_ai_key_ref,
     )
 
@@ -263,7 +251,27 @@ async def togetherai_ref(
 ################################################################################
 
 
+@fixture("assistant")
+async def assistant_azure_ref(
+    user_uuid: str,
+    azure_oai_ref: ObjectReference,
+) -> ObjectReference:
+    return await create_model_ref(
+        AssistantAgent,
+        "agent",
+        user_uuid=user_uuid,
+        name=add_random_sufix("assistant_agent_azure_oai"),
+        api_key=azure_oai_ref,
+    )
+
+
 # FastAPI app for testing
+
+################################################################################
+###
+###                        Fixtures for application
+###
+################################################################################
 
 
 class Item(BaseModel):

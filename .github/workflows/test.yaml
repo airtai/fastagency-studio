@@ -128,7 +128,7 @@ jobs:
         run: prisma migrate deploy && prisma generate
       - name: Test without LLMs
         if: matrix.python-version != '3.12'
-        run: bash scripts/test.sh -m "not (anthropic or azure_oai or openai or togetherai)"
+        run: bash scripts/test.sh -m "not (anthropic or azure_oai or openai or togetherai or llm)"
         env:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}
           CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}

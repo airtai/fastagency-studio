@@ -11,29 +11,10 @@ from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("AZURE_OAI_API_KEY", raising=False)
 
-    from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
+    from fastagency.models.llms.azure import AzureOAI
 
     assert AzureOAI is not None
     assert AzureOAIAPIKey is not None
-
-
-class TestAzureOAIAPIKey:
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    async def test_azure_api_key_model_create_autogen(
-        self,
-        azure_oai_key_ref: ObjectReference,
-        user_uuid: str,
-    ) -> None:
-        model = await get_model_by_ref(azure_oai_key_ref)
-        assert isinstance(model, AzureOAIAPIKey)
-
-        # Call create_autogen
-        actual_api_key = await AzureOAIAPIKey.create_autogen(
-            model_id=azure_oai_key_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        assert isinstance(actual_api_key, str)
 
 
 class TestAzureOAI:

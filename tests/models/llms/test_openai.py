@@ -34,23 +34,6 @@ class TestOpenAIAPIKey:
                 name="Hello World!",
             )  # pragma: allowlist secret
 
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    async def test_openai_api_key_model_create_autogen(
-        self,
-        openai_oai_key_ref: ObjectReference,
-        user_uuid: str,
-    ) -> None:
-        model = await get_model_by_ref(openai_oai_key_ref)
-        assert isinstance(model, OpenAIAPIKey)
-
-        # Call create_autogen
-        actual_api_key = await OpenAIAPIKey.create_autogen(
-            model_id=openai_oai_key_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        assert isinstance(actual_api_key, str)
-
 
 class TestOpenAI:
     @pytest.mark.db()

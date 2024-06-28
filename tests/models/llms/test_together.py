@@ -72,7 +72,7 @@ class TestTogetherAI:
 
         expected = {
             "name": name,
-            "model": "Meta Llama 3 70B Chat",
+            "model": "Mixtral-8x7B Instruct v0.1",
             "api_key": {
                 "type": "secret",
                 "name": "TogetherAIAPIKey",
@@ -186,7 +186,7 @@ class TestTogetherAI:
         expected = {
             "config_list": [
                 {
-                    "model": "meta-llama/Llama-3-70b-chat-hf",
+                    "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
                     "api_key": api_key,
                     "base_url": "https://api.together.xyz/v1",
                     "api_type": "togetherai",

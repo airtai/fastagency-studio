@@ -167,7 +167,7 @@ async def azure_oai_ref(
 
 @tag("llm_key")
 @pytest_asyncio.fixture()
-async def openai_oai_key_ref(
+async def openai_oai_key_gpt35_ref(
     user_uuid: str, openai_gpt35_turbo_16k_llm_config: Dict[str, Any]
 ) -> ObjectReference:
     api_key = openai_gpt35_turbo_16k_llm_config["config_list"][0]["api_key"]
@@ -185,7 +185,7 @@ async def openai_oai_key_ref(
 async def openai_oai_ref(
     user_uuid: str,
     openai_gpt35_turbo_16k_llm_config: Dict[str, Any],
-    openai_oai_key_ref: ObjectReference,
+    openai_oai_key_gpt35_ref: ObjectReference,
 ) -> ObjectReference:
     kwargs = openai_gpt35_turbo_16k_llm_config["config_list"][0].copy()
     kwargs.pop("api_key")
@@ -195,7 +195,7 @@ async def openai_oai_ref(
         "llm",
         user_uuid=user_uuid,
         name=add_random_sufix("azure_oai"),
-        api_key=openai_oai_key_ref,
+        api_key=openai_oai_key_gpt35_ref,
         temperature=temperature,
         **kwargs,
     )
@@ -262,40 +262,13 @@ async def togetherai_ref(
         user_uuid=user_uuid,
         name=add_random_sufix("togetherai"),
         api_key=together_ai_key_ref,
+        model="Mixtral-8x7B Instruct v0.1",
     )
 
 
 ################################################################################
 ###
-###                           Fixtures for Agents
-###
-################################################################################
-
-
-@tag_list("assistant")
-@expand_fixture(
-    dst_fixture_prefix="assistant",
-    src_fixtures_names=get_by_tag("llm"),
-    placeholder_name="llm_ref",
-)
-async def placeholder_assistant_ref(
-    user_uuid: str,
-    llm_ref: ObjectReference,
-) -> ObjectReference:
-    return await create_model_ref(
-        AssistantAgent,
-        "agent",
-        user_uuid=user_uuid,
-        name=add_random_sufix("assistant_agent_azure_oai"),
-        llm=llm_ref,
-    )
-
-
-# FastAPI app for testing
-
-################################################################################
-###
-###                        Fixtures for application
+###                          Fixtures for Toolkit
 ###
 ################################################################################
 
@@ -403,6 +376,7 @@ def weather_fastapi_openapi_url() -> Iterator[str]:
         yield openapi_url
 
 
+@tag("toolbox", "items")
 @pytest_asyncio.fixture()  # type: ignore[misc]
 async def toolbox_ref(user_uuid: str, fastapi_openapi_url: str) -> ObjectReference:
     openapi_auth = await create_model_ref(
@@ -426,6 +400,7 @@ async def toolbox_ref(user_uuid: str, fastapi_openapi_url: str) -> ObjectReferen
     return toolbox
 
 
+@tag("toolbox", "weather")
 @pytest_asyncio.fixture()  # type: ignore[misc]
 async def weather_toolbox_ref(
     user_uuid: str, weather_fastapi_openapi_url: str
@@ -449,3 +424,39 @@ async def weather_toolbox_ref(
     )
 
     return toolbox
+
+
+################################################################################
+###
+###                           Fixtures for Agents
+###
+################################################################################
+
+
+@tag_list("assistant", "weather")
+@expand_fixture(
+    dst_fixture_prefix="assistant_weather",
+    src_fixtures_names=get_by_tag("llm"),
+    placeholder_name="llm_ref",
+)
+async def placeholder_assistant_ref(
+    user_uuid: str, llm_ref: ObjectReference, weather_toolbox_ref: ObjectReference
+) -> ObjectReference:
+    return await create_model_ref(
+        AssistantAgent,
+        "agent",
+        user_uuid=user_uuid,
+        name=add_random_sufix("assistant_weather"),
+        llm=llm_ref,
+        toolbox_1=weather_toolbox_ref,
+        system_message="You are a helpful assistant with access to Weather API. After you successfully answer the question asked and there are no new questions, terminate the chat by outputting 'TERMINATE'",
+    )
+
+
+# FastAPI app for testing
+
+################################################################################
+###
+###                        Fixtures for application
+###
+################################################################################

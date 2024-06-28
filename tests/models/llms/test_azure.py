@@ -1,9 +1,8 @@
-import uuid
 from typing import Any, Dict
 
 import pytest
 
-from fastagency.helpers import get_model_by_ref
+from fastagency.helpers import create_autogen, get_model_by_ref
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 
@@ -149,9 +148,9 @@ class TestAzureOAI:
         azure_oai_ref: ObjectReference,
         azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
     ) -> None:
-        actual_llm_config = await AzureOAI.create_autogen(
-            model_id=azure_oai_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
+        actual_llm_config = await create_autogen(
+            model_ref=azure_oai_ref,
+            user_uuid=user_uuid,
         )
         assert isinstance(actual_llm_config, dict)
         assert (

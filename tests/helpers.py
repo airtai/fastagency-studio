@@ -2,9 +2,11 @@ import functools
 import inspect
 import random
 import types
-from typing import Any, Callable, Dict, List, TypeVar
+from asyncio import iscoroutinefunction
+from typing import Any, Callable, Dict, List, Tuple, TypeVar
 
 import pytest
+import pytest_asyncio
 
 __all__ = ["add_random_sufix", "parametrize_fixtures", "tag", "tag_list"]
 
@@ -15,14 +17,12 @@ def add_random_sufix(prefix: str) -> str:
 
 F = TypeVar("F", bound=Callable[..., Any])
 
-# fixtures: Dict[str, List[str]] = {}
-
-tags: Dict[str, List[str]] = {}
+_tags: Dict[str, List[str]] = {}
 
 
-def tag(tag_symbol: str) -> Callable[[F], F]:
-    def decorator(f: F, tag_symbol: str = tag_symbol) -> F:
-        global tags
+def tag(*args: str) -> Callable[[F], F]:
+    def decorator(f: F, args: Tuple[str, ...] = args) -> F:
+        global _tags
         if not hasattr(f, "_pytestfixturefunction"):
             raise ValueError(f"function {f.__name__} is not a fixture")
 
@@ -30,29 +30,31 @@ def tag(tag_symbol: str) -> Callable[[F], F]:
         if name is None:
             name = f.__name__
 
-        if tag_symbol in tags:
-            tags[tag_symbol].append(name)
-        else:
-            tags[tag_symbol] = [name]
+        for my_tag in args:
+            if my_tag in _tags:
+                _tags[my_tag].append(name)
+            else:
+                _tags[my_tag] = [name]
 
         return f
 
     return decorator
 
 
-def tag_list(tag_symbol: str) -> Callable[[List[F]], List[F]]:
-    def decorator(fs: List[F], tag_symbol: str = tag_symbol) -> List[F]:
-        return [tag(tag_symbol)(f) for f in fs]
+def tag_list(*args: str) -> Callable[[List[F]], List[F]]:
+    def decorator(fs: List[F], args: Tuple[str, ...] = args) -> List[F]:
+        return [tag(*args)(f) for f in fs]
 
     return decorator
 
 
-def get_by_tag(tag_symbol: str) -> List[str]:
-    return tags.get(tag_symbol, [])
+def get_by_tag(*args: str) -> List[str]:
+    xs = [_tags.get(my_tag, []) for my_tag in args]
+    return list(functools.reduce(set.intersection, map(set, xs)))  # type: ignore[arg-type]
 
 
 def get_tags() -> List[str]:
-    return list(tags.keys())
+    return list(_tags.keys())
 
 
 def get_caller_globals() -> Dict[str, Any]:
@@ -106,15 +108,28 @@ def rename_parameter(src_name: str, dst_name: str) -> Callable[[F], F]:
         new_sig = sig.replace(parameters=params)
 
         # Define the body of the new function
-        def wrapper(*args, **kwargs):  # type: ignore[no-untyped-def]
-            bound_args = new_sig.bind(*args, **kwargs)
-            bound_args.apply_defaults()
-            arguments = bound_args.arguments
+        if iscoroutinefunction(f):
 
-            if dst_name in arguments:
-                arguments[src_name] = arguments.pop(dst_name)
+            async def wrapper(*args, **kwargs):  # type: ignore[no-untyped-def]
+                bound_args = new_sig.bind(*args, **kwargs)
+                bound_args.apply_defaults()
+                arguments = bound_args.arguments
 
-            return f(**arguments)
+                if dst_name in arguments:
+                    arguments[src_name] = arguments.pop(dst_name)
+
+                return await f(**arguments)
+        else:
+
+            def wrapper(*args, **kwargs):  # type: ignore[no-untyped-def]
+                bound_args = new_sig.bind(*args, **kwargs)
+                bound_args.apply_defaults()
+                arguments = bound_args.arguments
+
+                if dst_name in arguments:
+                    arguments[src_name] = arguments.pop(dst_name)
+
+                return f(**arguments)
 
         # Create the new function with the modified signature
         new_func = types.FunctionType(
@@ -142,7 +157,10 @@ def expand_fixture(
             name = f"{dst_fixture_prefix}_{src_type}"
 
             f_renamed = rename_parameter(placeholder_name, src_type)(f)
-            f_fixture = pytest.fixture(name=name)(f_renamed)
+            if iscoroutinefunction(f):
+                f_fixture = pytest_asyncio.fixture(name=name)(f_renamed)
+            else:
+                f_fixture = pytest.fixture(name=name)(f_renamed)
 
             caller_globals = get_caller_globals()
             caller_globals[name] = f_fixture

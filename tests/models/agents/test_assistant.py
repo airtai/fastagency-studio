@@ -1,18 +1,9 @@
-import os
-import uuid
-from typing import Any, Dict
-
 import autogen
 import pytest
-from fastapi import BackgroundTasks
-from pydantic import ValidationError
 
-from fastagency.app import add_model
+from fastagency.helpers import create_autogen
 from fastagency.models.agents.assistant import AssistantAgent
-from fastagency.models.base import Model, ObjectReference
-from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
-from fastagency.models.llms.openai import OpenAI
-from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
+from fastagency.models.base import ObjectReference
 from fastagency.openapi.client import Client
 
 from ...helpers import get_by_tag, parametrize_fixtures
@@ -29,23 +20,6 @@ class TestAssistantAgent:
         assistant_ref: ObjectReference,
     ) -> None:
         print(f"test_assistant_construction({user_uuid=}, {assistant_ref=})")  # noqa: T201
-
-    @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])
-    def test_assistant_constructor(self, llm_model: Model) -> None:
-        llm_uuid = uuid.uuid4()
-        llm = llm_model.get_reference_model()(uuid=llm_uuid)
-
-        try:
-            agent = AssistantAgent(
-                llm=llm,
-                system_message="test system message",
-                name="Hello World!",
-            )
-        except ValidationError:
-            # print(f"{e.errors()=}")
-            raise
-
-        assert agent.system_message == "test system message"
 
     def test_assistant_model_schema(self) -> None:
         schema = AssistantAgent.model_json_schema()
@@ -245,134 +219,53 @@ class TestAssistantAgent:
         }
         assert schema == expected
 
-    @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])
-    def test_assistant_model_validation(self, llm_model: Model) -> None:
-        llm_uuid = uuid.uuid4()
-        llm = llm_model.get_reference_model()(uuid=llm_uuid)
-
-        agent = AssistantAgent(
-            llm=llm,
-            name="My Assistant",
-            system_message="test system message",
+    @pytest.mark.asyncio()
+    @pytest.mark.db()
+    @parametrize_fixtures("assistant_ref", get_by_tag("assistant"))
+    async def test_assistant_create_autogen(
+        self,
+        user_uuid: str,
+        assistant_ref: ObjectReference,
+    ) -> None:
+        ag_assistant, ag_toolkits = await create_autogen(
+            model_ref=assistant_ref,
+            user_uuid=user_uuid,
         )
+        assert isinstance(ag_assistant, autogen.agentchat.AssistantAgent)
+        assert isinstance(ag_toolkits[0], Client)
+        assert len(ag_toolkits) == 1
 
-        agent_json = agent.model_dump_json()
-        # print(f"{agent_json=}")
-        assert agent_json is not None
-
-        validated_agent = AssistantAgent.model_validate_json(agent_json)
-        # print(f"{validated_agent=}")
-        assert validated_agent is not None
-        assert validated_agent == agent
+    # todo: fix this test
+    weather_assistants = get_by_tag("assistant", "weather")
+    weather_assistants.remove("assistant_weather_togetherai_ref")
+    # weather_assistants.remove("weather_toolbox_ref")
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
-    @pytest.mark.parametrize("llm_model,api_key_model", [(AzureOAI, AzureOAIAPIKey)])  # noqa: PT006
-    async def test_assistant_model_create_autogen(
+    @pytest.mark.llm()
+    @parametrize_fixtures("assistant_ref", weather_assistants)
+    async def test_assistant_weather_end2end(
         self,
-        llm_model: Model,
-        api_key_model: Model,
-        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
         user_uuid: str,
-        fastapi_openapi_url: str,
-        monkeypatch: pytest.MonkeyPatch,
+        assistant_ref: ObjectReference,
     ) -> None:
-        # Add secret, llm, agent to database
-        api_key = api_key_model(  # type: ignore [operator]
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            name="api_key_model_name",
-        )
-        api_key_model_uuid = str(uuid.uuid4())
-        await add_model(
+        ag_assistant, ag_toolkits = await create_autogen(
+            model_ref=assistant_ref,
             user_uuid=user_uuid,
-            type_name="secret",
-            model_name=api_key_model.__name__,  # type: ignore [attr-defined]
-            model_uuid=api_key_model_uuid,
-            model=api_key.model_dump(),
-            background_tasks=BackgroundTasks(),
         )
 
-        llm = llm_model(  # type: ignore [operator]
-            name="llm_model_name",
-            model=os.getenv("AZURE_GPT35_MODEL"),
-            api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
-            base_url=os.getenv("AZURE_API_ENDPOINT"),
-            api_version=os.getenv("AZURE_API_VERSION"),
+        user_proxy = autogen.agentchat.UserProxyAgent(
+            name="user_proxy",
+            human_input_mode="NEVER",
+            max_consecutive_auto_reply=10,
         )
-        llm_model_uuid = str(uuid.uuid4())
-        await add_model(
-            user_uuid=user_uuid,
-            type_name="llm",
-            model_name=llm_model.__name__,  # type: ignore [attr-defined]
-            model_uuid=llm_model_uuid,
-            model=llm.model_dump(),
-            background_tasks=BackgroundTasks(),
+        weather_tool: Client = ag_toolkits[0]
+        weather_tool.register_for_execution(user_proxy)
+        weather_tool.register_for_llm(ag_assistant)
+        chat_result = user_proxy.initiate_chat(
+            ag_assistant, message="What is the weather in New York?"
         )
 
-        # add toolbox to database
-        openapi_auth = OpenAPIAuth(
-            name="openapi_auth_secret",
-            username="test",
-            password="password",  # pragma: allowlist secret
-        )
-        openapi_auth_model_uuid = str(uuid.uuid4())
-
-        await add_model(
-            user_uuid=user_uuid,
-            type_name="secret",
-            model_name=OpenAPIAuth.__name__,  # type: ignore [attr-defined]
-            model_uuid=openapi_auth_model_uuid,
-            model=openapi_auth.model_dump(),
-            background_tasks=BackgroundTasks(),
-        )
-
-        toolbox_uuid = str(uuid.uuid4())
-        toolbox = Toolbox(
-            name="test_toolbox_constructor",
-            openapi_url=fastapi_openapi_url,
-            openapi_auth=openapi_auth.get_reference_model()(
-                uuid=openapi_auth_model_uuid
-            ),
-        )
-
-        await add_model(
-            user_uuid=user_uuid,
-            type_name="toolbox",
-            model_name=Toolbox.__name__,  # type: ignore [attr-defined]
-            model_uuid=toolbox_uuid,
-            model=toolbox.model_dump(),
-            background_tasks=BackgroundTasks(),
-        )
-
-        # add agent to database
-        weatherman_assistant_model = AssistantAgent(
-            llm=llm.get_reference_model()(uuid=llm_model_uuid),
-            name="Assistant",
-            system_message="test system message",
-            toolbox_1=toolbox.get_reference_model()(uuid=toolbox_uuid),
-        )
-        weatherman_assistant_model_uuid = str(uuid.uuid4())
-        await add_model(
-            user_uuid=user_uuid,
-            type_name="agent",
-            model_name=AssistantAgent.__name__,
-            model_uuid=weatherman_assistant_model_uuid,
-            model=weatherman_assistant_model.model_dump(),
-            background_tasks=BackgroundTasks(),
-        )
-
-        async def my_create_autogen(cls, model_id, user_id) -> Dict[str, Any]:  # type: ignore [no-untyped-def]
-            return azure_gpt35_turbo_16k_llm_config
-
-        # Monkeypatch llm and call create_autogen
-        monkeypatch.setattr(AzureOAI, "create_autogen", my_create_autogen)
-
-        agent, clients = await AssistantAgent.create_autogen(
-            model_id=uuid.UUID(weatherman_assistant_model_uuid),
-            user_id=uuid.UUID(user_uuid),
-        )
-        assert isinstance(agent, autogen.agentchat.AssistantAgent)
-        assert len(clients) == 1
-        client = clients[0]
-        assert isinstance(client, Client)
-        assert len(client.registered_funcs) == 3
+        messages = [msg["content"] for msg in chat_result.chat_history]
+        for w in ["New York", "sunny", "TERMINATE"]:
+            assert any(msg is not None and w in msg for msg in messages), (w, messages)

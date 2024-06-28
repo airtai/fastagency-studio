@@ -37,7 +37,7 @@ from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 from fastagency.models.llms.together import TogetherAI, TogetherAIAPIKey
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
-from .helpers import add_random_sufix, expand_fixture, fixture, fixtures
+from .helpers import add_random_sufix, expand_fixture, get_by_tag, tag, tag_list
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -98,7 +98,8 @@ def azure_model_llm_config(model_env_name: str) -> Dict[str, Any]:
     return llm_config
 
 
-@fixture("llm_config")
+@tag("llm_config")
+@pytest.fixture()
 def azure_gpt35_turbo_16k_llm_config() -> Dict[str, Any]:
     return azure_model_llm_config("AZURE_GPT35_MODEL")
 
@@ -122,12 +123,14 @@ def openai_llm_config(model: str) -> Dict[str, Any]:
     return llm_config
 
 
-@fixture("llm_config")
+@tag("llm_config")
+@pytest.fixture()
 def openai_gpt35_turbo_16k_llm_config() -> Dict[str, Any]:
     return openai_llm_config("gpt-3.5-turbo")
 
 
-@fixture("llm_key")
+@tag("llm_key")
+@pytest_asyncio.fixture()
 async def azure_oai_key_ref(
     user_uuid: str, azure_gpt35_turbo_16k_llm_config: Dict[str, Any]
 ) -> ObjectReference:
@@ -141,7 +144,8 @@ async def azure_oai_key_ref(
     )
 
 
-@fixture("llm")
+@tag("llm")
+@pytest_asyncio.fixture()
 async def azure_oai_ref(
     user_uuid: str,
     azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
@@ -161,7 +165,8 @@ async def azure_oai_ref(
     )
 
 
-@fixture("llm_key")
+@tag("llm_key")
+@pytest_asyncio.fixture()
 async def openai_oai_key_ref(
     user_uuid: str, openai_gpt35_turbo_16k_llm_config: Dict[str, Any]
 ) -> ObjectReference:
@@ -175,7 +180,8 @@ async def openai_oai_key_ref(
     )
 
 
-@fixture("llm")
+@tag("llm")
+@pytest_asyncio.fixture()
 async def openai_oai_ref(
     user_uuid: str,
     openai_gpt35_turbo_16k_llm_config: Dict[str, Any],
@@ -195,7 +201,8 @@ async def openai_oai_ref(
     )
 
 
-@fixture("llm_key")
+@tag("llm_key")
+@pytest_asyncio.fixture()
 async def anthropic_key_ref(user_uuid: str) -> ObjectReference:
     api_key = os.getenv(
         "ANTHROPIC_API_KEY",
@@ -211,7 +218,8 @@ async def anthropic_key_ref(user_uuid: str) -> ObjectReference:
     )
 
 
-@fixture("llm")
+@tag("llm")
+@pytest_asyncio.fixture()
 async def anthropic_ref(
     user_uuid: str,
     anthropic_key_ref: ObjectReference,
@@ -225,7 +233,8 @@ async def anthropic_ref(
     )
 
 
-@fixture("llm_key")
+@tag("llm_key")
+@pytest_asyncio.fixture()
 async def together_ai_key_ref(user_uuid: str) -> ObjectReference:
     api_key = os.getenv(
         "TOGETHER_API_KEY",
@@ -241,7 +250,8 @@ async def together_ai_key_ref(user_uuid: str) -> ObjectReference:
     )
 
 
-@fixture("llm")
+@tag("llm")
+@pytest_asyncio.fixture()
 async def togetherai_ref(
     user_uuid: str,
     together_ai_key_ref: ObjectReference,
@@ -262,9 +272,10 @@ async def togetherai_ref(
 ################################################################################
 
 
+@tag_list("assistant")
 @expand_fixture(
     dst_fixture_prefix="assistant",
-    src_fixtures_names=fixtures["llm"],
+    src_fixtures_names=get_by_tag("llm"),
     placeholder_name="llm_ref",
 )
 async def placeholder_assistant_ref(

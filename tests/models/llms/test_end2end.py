@@ -6,14 +6,13 @@ from autogen.agentchat import AssistantAgent
 from fastagency.helpers import create_autogen
 from fastagency.models.base import ObjectReference
 
-# from fastagency.models.agents.assistant import AssistantAgent
-from ...helpers import add_random_sufix, parametrize_fixtures
+from ...helpers import add_random_sufix, get_by_tag, parametrize_fixtures
 
 
 @pytest.mark.asyncio()
 @pytest.mark.db()
 @pytest.mark.llm()
-@parametrize_fixtures("llm_ref", "llm")
+@parametrize_fixtures("llm_ref", get_by_tag("llm"))
 async def test_end2end_simple_chat_with_two_agents(
     user_uuid: str,
     llm_ref: ObjectReference,

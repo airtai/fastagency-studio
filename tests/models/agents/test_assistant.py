@@ -15,14 +15,14 @@ from fastagency.models.llms.openai import OpenAI
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 from fastagency.openapi.client import Client
 
-from ...helpers import parametrize_fixtures
+from ...helpers import get_by_tag, parametrize_fixtures
 
 
 class TestAssistantAgent:
     @pytest.mark.asyncio()
     @pytest.mark.db()
     @pytest.mark.llm()
-    @parametrize_fixtures("assistant_ref", "assistant")
+    @parametrize_fixtures("assistant_ref", get_by_tag("assistant"))
     async def test_assistant_construction(
         self,
         user_uuid: str,

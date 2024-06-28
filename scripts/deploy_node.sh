@@ -62,4 +62,5 @@ $ssh_command "docker run --name $container_name -p $PORT:$PORT -e PORT='$PORT' \
     -e WASP_SERVER_URL='$WASP_SERVER_URL' \
     -e FASTAGENCY_SERVER_URL='$FASTAGENCY_SERVER_URL' \
     -e ADMIN_EMAILS='$ADMIN_EMAILS' \
+    --restart always \
 	-d ghcr.io/$GITHUB_REPOSITORY-node:$TAG"

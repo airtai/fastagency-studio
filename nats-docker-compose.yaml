@@ -14,6 +14,7 @@ services:
       # Mount volume for storing NATS data
       - ./jetstream:/var/jetstream
     command: [ "--config", "/etc/nats/server.conf" ]
+    restart: always
     networks:
       - nats
 

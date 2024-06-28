@@ -17,6 +17,7 @@ services:
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
       - TOGETHER_API_KEY=${TOGETHER_API_KEY}
       - FASTAGENCY_SERVER_URL=${FASTAGENCY_SERVER_URL}
+    restart: always
     networks:
       - fastagency
 

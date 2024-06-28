@@ -19,7 +19,6 @@ from ...helpers import parametrize_fixtures
 
 
 class TestAssistantAgent:
-    @pytest.mark.skip("Not working yet")
     @pytest.mark.asyncio()
     @pytest.mark.db()
     @pytest.mark.llm()

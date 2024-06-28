@@ -1,3 +1,4 @@
+import functools
 import inspect
 import random
 import types
@@ -85,51 +86,64 @@ def parametrize_fixtures(name: str, fixture_type: str) -> Callable[[F], F]:
 
 def rename_parameter(src_name: str, dst_name: str) -> Callable[[F], F]:
     def decorator(f: F) -> F:
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            bound_args = new_signature.bind(*args, **kwargs)
-            bound_args.apply_defaults()
-            if dst_name in bound_args.arguments:
-                bound_args.arguments[src_name] = bound_args.arguments.pop(dst_name)
-            return f(*bound_args.args, **bound_args.kwargs)
+        # Get the original signature of the function
+        sig = inspect.signature(f)
 
-        original_signature = inspect.signature(f)
-        parameters = list(original_signature.parameters.values())
-        new_parameters = [
-            param.replace(name=dst_name) if param.name == src_name else param
-            for param in parameters
+        # Create a new parameter list with src_name replaced by dst_name
+        params = [
+            inspect.Parameter(
+                dst_name if param.name == src_name else param.name,
+                param.kind,
+                default=param.default,
+                annotation=param.annotation,
+            )
+            for param in sig.parameters.values()
         ]
-        new_signature = original_signature.replace(parameters=new_parameters)
-        new_function = types.FunctionType(
+
+        # Create a new signature with the modified parameters
+        new_sig = sig.replace(parameters=params)
+
+        # Define the body of the new function
+        def wrapper(*args, **kwargs):  # type: ignore[no-untyped-def]
+            bound_args = new_sig.bind(*args, **kwargs)
+            bound_args.apply_defaults()
+            arguments = bound_args.arguments
+
+            if dst_name in arguments:
+                arguments[src_name] = arguments.pop(dst_name)
+
+            return f(**arguments)
+
+        # Create the new function with the modified signature
+        new_func = types.FunctionType(
             wrapper.__code__,
-            wrapper.__globals__,
+            globals(),
             name=f.__name__,
             argdefs=wrapper.__defaults__,
             closure=wrapper.__closure__,
         )
-        new_function.__signature__ = new_signature  # type: ignore[attr-defined]
-        new_function.__doc__ = f.__doc__
-        new_function.__annotations__ = f.__annotations__
-
-        return new_function  # type: ignore[return-value]
+        new_func.__signature__ = new_sig  # type: ignore[attr-defined]
+        functools.update_wrapper(new_func, f)
+        return new_func  # type: ignore
 
     return decorator
 
 
-def parametrized_fixture(
-    target_type_name: str,
-    src_types: List[str],
-    placeholder_name: str = "placeholder",
+def expand_fixture(
+    dst_fixture_prefix: str,
+    src_fixtures_names: List[str],
+    placeholder_name: str,
 ) -> Callable[[F], F]:
     def decorator(f: F) -> F:
-        for src_type in src_types:
-            name = f"{target_type_name}_{src_type}"
+        for src_type in src_fixtures_names:
+            name = f"{dst_fixture_prefix}_{src_type}"
 
-            f = rename_parameter(placeholder_name, src_type)(f)
-            f = fixture(target_type_name, name=name)(f)
+            f_renamed = rename_parameter(placeholder_name, src_type)(f)
+            f_fixture = fixture(dst_fixture_prefix, name=name)(f_renamed)
 
             caller_globals = get_caller_globals()
-            caller_globals[name] = f
+            caller_globals[name] = f_fixture
 
-        return f
+        return f_fixture
 
     return decorator

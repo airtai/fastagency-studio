@@ -37,7 +37,7 @@ from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 from fastagency.models.llms.together import TogetherAI, TogetherAIAPIKey
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
-from .helpers import add_random_sufix, fixture, fixtures, parametrized_fixture
+from .helpers import add_random_sufix, expand_fixture, fixture, fixtures
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -262,17 +262,21 @@ async def togetherai_ref(
 ################################################################################
 
 
-@parametrized_fixture(target_type_name="assistant", src_types=fixtures["llm"])
-async def assistant_ref(
+@expand_fixture(
+    dst_fixture_prefix="assistant",
+    src_fixtures_names=fixtures["llm"],
+    placeholder_name="llm_ref",
+)
+async def placeholder_assistant_ref(
     user_uuid: str,
-    placeholder: ObjectReference,
+    llm_ref: ObjectReference,
 ) -> ObjectReference:
     return await create_model_ref(
         AssistantAgent,
         "agent",
         user_uuid=user_uuid,
         name=add_random_sufix("assistant_agent_azure_oai"),
-        api_key=placeholder,
+        llm=llm_ref,
     )
 
 

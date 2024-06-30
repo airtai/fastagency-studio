@@ -2,6 +2,17 @@ name: Test
 
 on: workflow_call
 
+inputs:
+  environment:
+    description: 'Environment to run the tests in'
+    required: true
+  python-version:
+    description: 'Python version to run the tests in'
+    required: true
+  use-llms:
+    description: 'Use LLMs in the tests'
+    required: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -46,7 +57,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ inputs['python-version'] }}
           cache: "pip"
           cache-dependency-path: pyproject.toml
       - uses: actions/cache@v4
@@ -72,31 +83,20 @@ jobs:
       - name: Prisma
         run: prisma migrate deploy && prisma generate
       - name: Test without LLMs
-        if: not inputs.use-llms'
+        if: ${{ inputs['use-llms'] == 'false' }}
         run: bash scripts/test.sh -m "not (anthropic or azure_oai or openai or togetherai or llm)"
         env:
-          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}
-          CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}
+          CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}
       - name: Test with LLMs
-        if: inputs.use-llms'
+        if: ${{ inputs['use-llms'] == 'true' }}
         run: bash scripts/test.sh
         env:
-          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}
-          CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}
+          CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}
       - name: Store coverage files
         uses: actions/upload-artifact@v4
         with:
-          name: .coverage.${{ runner.os }}-py${{ matrix.python-version }}
+          name: .coverage.${{ runner.os }}-py${{ inputs['python-version'] }}
           path: coverage
           if-no-files-found: error
-
-inputs:
-  environment:
-    description: 'Envorinment to run the tests in'
-    required: true
-  python-version:
-    description: 'Python version to run the tests in'
-    required: true
-  use-llms:
-    description: 'Use LLMs in the tests'
-    required: true

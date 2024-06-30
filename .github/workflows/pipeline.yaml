@@ -115,7 +115,8 @@ jobs:
   coverage-combine:
     if: github.event.pull_request.draft == false
     needs:
-      - test
+      - test-without-llms
+      - test-with-llms
     runs-on: ubuntu-latest
 
     steps:

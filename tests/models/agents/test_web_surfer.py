@@ -312,7 +312,7 @@ class TestWebSurferAgent:
     ) -> None:
         # Add secret, llm, agent to database
         api_key = api_key_model(  # type: ignore [operator]
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            api_key=os.getenv("AZURE_OPENAI_API_KEY", default="*" * 64),
             name="api_key_model_name",
         )
         api_key_model_uuid = str(uuid.uuid4())

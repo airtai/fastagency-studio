@@ -90,7 +90,7 @@ jobs:
       - name: Prisma
         run: prisma generate
       - name: Test
-        run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai)"
+        run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai or llm)"
 
   test-windows-latest:
     if: github.event.pull_request.draft == false
@@ -110,7 +110,7 @@ jobs:
       - name: Prisma
         run: prisma generate
       - name: Test
-        run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai)"
+        run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai or llm)"
 
   coverage-combine:
     if: github.event.pull_request.draft == false

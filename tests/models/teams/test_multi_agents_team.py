@@ -298,143 +298,146 @@ class TestMultiAgentTeam:
 
         # llm = llm_model(  # type: ignore [operator]
         #     name="llm_model_name",
-        #     model=os.getenv("AZURE_GPT35_MODEL"),
+        #     model=os.getenv(AZURE_GPT35_MODEL, default="gpt-35-turbo-16k"),
         #     api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
-        #     base_url=os.getenv("AZURE_API_ENDPOINT"),
-        #     api_version=os.getenv("AZURE_API_VERSION"),
-        # )
-        # llm_model_uuid = str(uuid.uuid4())
-        # await add_model(
-        #     user_uuid=user_uuid,
-        #     type_name="llm",
-        #     model_name=llm_model.__name__,  # type: ignore [attr-defined]
-        #     model_uuid=llm_model_uuid,
-        #     model=llm.model_dump(),
-        # )
+        #     base_url=os.getenv(
+        # "AZURE_API_ENDPOINT", default="https://my-deployment.openai.azure.com"
 
-        # user_proxy_model = UserProxyAgent(
-        #     name="UserProxyAgent",
-        #     llm=llm.get_reference_model()(uuid=llm_model_uuid),
-        # )
-        # user_proxy_model_uuid = str(uuid.uuid4())
-        # await add_model(
-        #     user_uuid=user_uuid,
-        #     type_name="agent",
-        #     model_name=UserProxyAgent.__name__,
-        #     model_uuid=user_proxy_model_uuid,
-        #     model=user_proxy_model.model_dump(),
-        # )
+    # ),
+    #     api_version=os.getenv("AZURE_API_VERSION", default="2024-02-01"),
+    # )
+    # llm_model_uuid = str(uuid.uuid4())
+    # await add_model(
+    #     user_uuid=user_uuid,
+    #     type_name="llm",
+    #     model_name=llm_model.__name__,  # type: ignore [attr-defined]
+    #     model_uuid=llm_model_uuid,
+    #     model=llm.model_dump(),
+    # )
 
-        # weatherman_assistant_model_1 = AssistantAgent(
-        #     llm=llm.get_reference_model()(uuid=llm_model_uuid),
-        #     name="Assistant",
-        #     system_message="test system message",
-        # )
-        # weatherman_assistant_model_1_uuid = str(uuid.uuid4())
-        # await add_model(
-        #     user_uuid=user_uuid,
-        #     type_name="agent",
-        #     model_name=AssistantAgent.__name__,
-        #     model_uuid=weatherman_assistant_model_1_uuid,
-        #     model=weatherman_assistant_model_1.model_dump(),
-        # )
+    # user_proxy_model = UserProxyAgent(
+    #     name="UserProxyAgent",
+    #     llm=llm.get_reference_model()(uuid=llm_model_uuid),
+    # )
+    # user_proxy_model_uuid = str(uuid.uuid4())
+    # await add_model(
+    #     user_uuid=user_uuid,
+    #     type_name="agent",
+    #     model_name=UserProxyAgent.__name__,
+    #     model_uuid=user_proxy_model_uuid,
+    #     model=user_proxy_model.model_dump(),
+    # )
 
-        # team_model_uuid = str(uuid.uuid4())
-        # agent_1 = user_proxy_model.get_reference_model()(uuid=user_proxy_model_uuid)
-        # agent_2 = weatherman_assistant_model_1.get_reference_model()(
-        #     uuid=weatherman_assistant_model_1_uuid
-        # )
+    # weatherman_assistant_model_1 = AssistantAgent(
+    #     llm=llm.get_reference_model()(uuid=llm_model_uuid),
+    #     name="Assistant",
+    #     system_message="test system message",
+    # )
+    # weatherman_assistant_model_1_uuid = str(uuid.uuid4())
+    # await add_model(
+    #     user_uuid=user_uuid,
+    #     type_name="agent",
+    #     model_name=AssistantAgent.__name__,
+    #     model_uuid=weatherman_assistant_model_1_uuid,
+    #     model=weatherman_assistant_model_1.model_dump(),
+    # )
 
-        # team = MultiAgentTeam(
-        #     name="MultiAgentTeam",
-        #     agent_1=agent_1,
-        #     agent_2=agent_2,
-        # )
-        # await add_model(
-        #     user_uuid=user_uuid,
-        #     type_name="team",
-        #     model_name=MultiAgentTeam.__name__,
-        #     model_uuid=team_model_uuid,
-        #     model=team.model_dump(),
-        # )
+    # team_model_uuid = str(uuid.uuid4())
+    # agent_1 = user_proxy_model.get_reference_model()(uuid=user_proxy_model_uuid)
+    # agent_2 = weatherman_assistant_model_1.get_reference_model()(
+    #     uuid=weatherman_assistant_model_1_uuid
+    # )
 
-        # # Then create autogen agents by monkeypatching create_autogen method
-        # user_proxy_agent = autogen.agentchat.UserProxyAgent(
-        #     "user_proxy",
-        #     code_execution_config=False,
-        # )
+    # team = MultiAgentTeam(
+    #     name="MultiAgentTeam",
+    #     agent_1=agent_1,
+    #     agent_2=agent_2,
+    # )
+    # await add_model(
+    #     user_uuid=user_uuid,
+    #     type_name="team",
+    #     model_name=MultiAgentTeam.__name__,
+    #     model_uuid=team_model_uuid,
+    #     model=team.model_dump(),
+    # )
 
-        # weatherman_agent_1 = autogen.agentchat.AssistantAgent(
-        #     name="weather_man_1",
-        #     system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
-        #     llm_config=llm_config,
-        #     code_execution_config=False,
-        # )
+    # # Then create autogen agents by monkeypatching create_autogen method
+    # user_proxy_agent = autogen.agentchat.UserProxyAgent(
+    #     "user_proxy",
+    #     code_execution_config=False,
+    # )
 
-        # get_forecast_for_city_mock = MagicMock()
+    # weatherman_agent_1 = autogen.agentchat.AssistantAgent(
+    #     name="weather_man_1",
+    #     system_message="You are the weather man. Ask the user to give you the name of a city and then provide the weather forecast for that city.",
+    #     llm_config=llm_config,
+    #     code_execution_config=False,
+    # )
 
-        # # @user_proxy_agent.register_for_execution()  # type: ignore [misc]
-        # # @weatherman_agent_1.register_for_llm(
-        # #     description="Get weather forecast for a city"
-        # # )  # type: ignore [misc]
-        # def get_forecast_for_city(city: str) -> str:
-        #     get_forecast_for_city_mock(city)
-        #     return f"The weather in {city} is sunny today."
+    # get_forecast_for_city_mock = MagicMock()
 
-        # async def weatherman_create_autogen(  # type: ignore [no-untyped-def]
-        #     cls, model_id, user_id
-        # ) -> autogen.agentchat.AssistantAgent:
-        #     f_info = FunctionInfo(
-        #         function=get_forecast_for_city,
-        #         description="Get weather forecast for a city",
-        #         name="get_forecast_for_city",
-        #     )
-        #     return weatherman_agent_1, [f_info]
+    # # @user_proxy_agent.register_for_execution()  # type: ignore [misc]
+    # # @weatherman_agent_1.register_for_llm(
+    # #     description="Get weather forecast for a city"
+    # # )  # type: ignore [misc]
+    # def get_forecast_for_city(city: str) -> str:
+    #     get_forecast_for_city_mock(city)
+    #     return f"The weather in {city} is sunny today."
 
-        # async def user_proxy_create_autogen(  # type: ignore [no-untyped-def]
-        #     cls, model_id, user_id
-        # ) -> autogen.agentchat.UserProxyAgent:
-        #     return user_proxy_agent, []
+    # async def weatherman_create_autogen(  # type: ignore [no-untyped-def]
+    #     cls, model_id, user_id
+    # ) -> autogen.agentchat.AssistantAgent:
+    #     f_info = FunctionInfo(
+    #         function=get_forecast_for_city,
+    #         description="Get weather forecast for a city",
+    #         name="get_forecast_for_city",
+    #     )
+    #     return weatherman_agent_1, [f_info]
 
-        # if enable_monkeypatch:
-        #     monkeypatch.setattr(
-        #         AssistantAgent, "create_autogen", weatherman_create_autogen
-        #     )
+    # async def user_proxy_create_autogen(  # type: ignore [no-untyped-def]
+    #     cls, model_id, user_id
+    # ) -> autogen.agentchat.UserProxyAgent:
+    #     return user_proxy_agent, []
 
-        #     monkeypatch.setattr(
-        #         UserProxyAgent, "create_autogen", user_proxy_create_autogen
-        #     )
+    # if enable_monkeypatch:
+    #     monkeypatch.setattr(
+    #         AssistantAgent, "create_autogen", weatherman_create_autogen
+    #     )
 
-        # team = await MultiAgentTeam.create_autogen(
-        #     model_id=uuid.UUID(team_model_uuid), user_id=uuid.UUID(user_uuid)
-        # )
+    #     monkeypatch.setattr(
+    #         UserProxyAgent, "create_autogen", user_proxy_create_autogen
+    #     )
 
-        # assert hasattr(team, "initiate_chat")
+    # team = await MultiAgentTeam.create_autogen(
+    #     model_id=uuid.UUID(team_model_uuid), user_id=uuid.UUID(user_uuid)
+    # )
 
-        # d = {"count": 0}
+    # assert hasattr(team, "initiate_chat")
 
-        # def input(prompt: str, d: Dict[str, int] = d) -> str:
-        #     d["count"] += 1
-        #     if d["count"] == 1:
-        #         return f"[{datetime.now()}] What's the weather in New York today?"
-        #     elif d["count"] == 2:
-        #         return ""
-        #     else:
-        #         return "exit"
+    # d = {"count": 0}
 
-        # monkeypatch.setattr(IOConsole, "input", lambda self, prompt: input(prompt))
+    # def input(prompt: str, d: Dict[str, int] = d) -> str:
+    #     d["count"] += 1
+    #     if d["count"] == 1:
+    #         return f"[{datetime.now()}] What's the weather in New York today?"
+    #     elif d["count"] == 2:
+    #         return ""
+    #     else:
+    #         return "exit"
 
-        # chat_result = team.initiate_chat(
-        #     message="Hi! Tell me the city for which you want the weather forecast.",
-        # )
+    # monkeypatch.setattr(IOConsole, "input", lambda self, prompt: input(prompt))
 
-        # last_message = chat_result.chat_history[-1]
+    # chat_result = team.initiate_chat(
+    #     message="Hi! Tell me the city for which you want the weather forecast.",
+    # )
 
-        # if enable_monkeypatch:
-        #     get_forecast_for_city_mock.assert_called_once_with("New York")
-        #     # get_forecast_for_city_mock.assert_not_called()
-        #     assert "sunny" in last_message["content"]
-        # else:
-        #     # assert "sunny" not in last_message["content"]
-        #     # assert "weather" in last_message["content"]
-        #     assert isinstance(last_message["content"], str)
+    # last_message = chat_result.chat_history[-1]
+
+    # if enable_monkeypatch:
+    #     get_forecast_for_city_mock.assert_called_once_with("New York")
+    #     # get_forecast_for_city_mock.assert_not_called()
+    #     assert "sunny" in last_message["content"]
+    # else:
+    #     # assert "sunny" not in last_message["content"]
+    #     # assert "weather" in last_message["content"]
+    #     assert isinstance(last_message["content"], str)

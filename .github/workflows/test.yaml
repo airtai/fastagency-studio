@@ -6,12 +6,15 @@ on:
       environment:
         description: 'Environment to run the tests in'
         required: true
+        type: string
       python-version:
         description: 'Python version to run the tests in'
         required: true
+        type: string
       use-llms:
         description: 'Use LLMs in the tests'
         required: true
+        type: string
 
 jobs:
   test:

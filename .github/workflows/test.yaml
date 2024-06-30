@@ -1,17 +1,17 @@
 name: Test
 
-on: workflow_call
-
-inputs:
-  environment:
-    description: 'Environment to run the tests in'
-    required: true
-  python-version:
-    description: 'Python version to run the tests in'
-    required: true
-  use-llms:
-    description: 'Use LLMs in the tests'
-    required: true
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to run the tests in'
+        required: true
+      python-version:
+        description: 'Python version to run the tests in'
+        required: true
+      use-llms:
+        description: 'Use LLMs in the tests'
+        required: true
 
 jobs:
   test:

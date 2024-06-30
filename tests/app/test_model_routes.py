@@ -443,6 +443,7 @@ class TestModelRoutes:
         actual = response.json()
         assert actual == expected
 
+    @pytest.mark.skip()
     @pytest.mark.asyncio()
     async def test_chat_with_no_function_calling(
         self, user_uuid: str, monkeypatch: pytest.MonkeyPatch

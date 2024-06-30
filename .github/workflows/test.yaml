@@ -51,11 +51,22 @@ jobs:
       AZURE_API_ENDPOINT: ${{ vars.AZURE_API_ENDPOINT }}
       AZURE_GPT35_MODEL: ${{ vars.AZURE_GPT35_MODEL }}
       FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
-      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
+      - name: Set secrets if defined
+        run: |
+          if [ ! -z "${{ secrets.AZURE_OPENAI_API_KEY }}" ]; then
+            echo "AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}" >> $GITHUB_ENV
+          fi
+          if [ ! -z "${{ secrets.TOGETHER_API_KEY }}" ]; then
+            echo "TOGETHER_API_KEY=${{ secrets.TOGETHER_API_KEY }}" >> $GITHUB_ENV
+          fi
+          if [ ! -z "${{ secrets.OPENAI_API_KEY }}" ]; then
+            echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+          fi
+          if [ ! -z "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+            echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
+          fi
+        shell: bash
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5

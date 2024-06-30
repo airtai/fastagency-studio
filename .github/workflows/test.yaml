@@ -63,7 +63,6 @@ jobs:
           if [ ! -z "${{ secrets.AZURE_GPT35_MODEL }}" ]; then
             echo "AZURE_GPT35_MODEL=${{ secrets.AZURE_GPT35_MODEL }}" >> $GITHUB_ENV
           fi
-
           if [ ! -z "${{ secrets.TOGETHER_API_KEY }}" ]; then
             echo "TOGETHER_API_KEY=${{ secrets.TOGETHER_API_KEY }}" >> $GITHUB_ENV
           fi
@@ -107,13 +106,13 @@ jobs:
         if: ${{ inputs['use-llms'] == 'false' }}
         run: bash scripts/test.sh -m "not (anthropic or azure_oai or openai or togetherai or llm)"
         env:
-          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-without-llms
           CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}
       - name: Test with LLMs
         if: ${{ inputs['use-llms'] == 'true' }}
         run: bash scripts/test.sh -m "anthropic or azure_oai or openai or togetherai or llm"
         env:
-          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-with-llms
           CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}
       - name: Store coverage files
         uses: actions/upload-artifact@v4

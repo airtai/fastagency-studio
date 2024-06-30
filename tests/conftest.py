@@ -105,8 +105,8 @@ def azure_gpt35_turbo_16k_llm_config() -> Dict[str, Any]:
 
 
 def openai_llm_config(model: str) -> Dict[str, Any]:
-    stars = "*" * 20
-    api_key = os.getenv("OPENAI_API_KEY", default=f"sk-{stars}T3BlbkFJ{stars}")
+    zeros = "0" * 20
+    api_key = os.getenv("OPENAI_API_KEY", default=f"sk-{zeros}T3BlbkFJ{zeros}")
 
     config_list = [
         {

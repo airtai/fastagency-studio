@@ -73,7 +73,7 @@ devdocs = [
     "mkdocstrings[python]==0.25.1",
     "mkdocs-literate-nav==0.6.1",
     "mkdocs-git-revision-date-localized-plugin==1.2.6",
-    "mike==2.1.1",  # versioning
+    "mike==2.1.2",  # versioning
     "mkdocs-minify-plugin==0.8.0",
     "mkdocs-macros-plugin==1.0.5",  # includes with variables
     "mkdocs-glightbox==0.4.0",  # img zoom
@@ -88,11 +88,11 @@ lint = [
     "types-ujson",
     "types-Pygments",
     "types-docutils",
-    "mypy==1.10.0",
-    "ruff==0.4.9",
+    "mypy==1.10.1",
+    "ruff==0.5.0",
     "pyupgrade-directories==0.3.0",
     "bandit==1.7.9",
-    "semgrep==1.71.0",
+    "semgrep==1.78.0",
     "pytest-mypy-plugins==3.1.2",
 ]
 

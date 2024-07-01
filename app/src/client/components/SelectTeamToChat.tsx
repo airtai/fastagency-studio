@@ -8,7 +8,7 @@ import { CreateNewChatProps } from '../interfaces/PlaygroundPageInterface';
 import CustomBreadcrumb from './CustomBreadcrumb';
 import NotificationBox from './NotificationBox';
 import { SelectInput } from './form/SelectInput';
-import { TextArea } from './form/TextArea';
+import { TextInput } from './form/TextInput';
 import { getModels, createNewChat, useQuery } from 'wasp/client/operations';
 
 const SelectTeamToChat = ({ userTeams }: any) => {
@@ -81,7 +81,13 @@ const SelectTeamToChat = ({ userTeams }: any) => {
             <label className='text-airt-primary inline-block' htmlFor='setSystemMessage'>
               Message
             </label>
-            <TextArea id='setSystemMessage' value={message} placeholder='' onChange={handleMessageChange} />
+            <TextInput
+              type='string'
+              id='setSystemMessage'
+              value={message}
+              placeholder=''
+              onChange={handleMessageChange}
+            />
             {formError && (
               <div className='mb-2' style={{ color: 'red' }}>
                 {formError.message}
@@ -91,7 +97,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
               className='rounded-md px-3.5 py-2.5 text-sm  bg-airt-primary text-airt-font-base   hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
               type='submit'
             >
-              Run
+              Send
             </button>
           </form>
         </div>

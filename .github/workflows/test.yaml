@@ -53,24 +53,38 @@ jobs:
         run: |
           if [ ! -z "${{ secrets.AZURE_OPENAI_API_KEY }}" ]; then
             echo "AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}" >> $GITHUB_ENV
+          else
+            echo "env variable AZURE_OPENAI_API_KEY not set"
           fi
           if [ ! -z "${{ secrets.AZURE_API_VERSION }}" ]; then
             echo "AZURE_API_VERSION=${{ secrets.AZURE_API_VERSION }}" >> $GITHUB_ENV
+          else
+            echo "env variable AZURE_API_VERSION not set"
           fi
           if [ ! -z "${{ secrets.AZURE_API_ENDPOINT }}" ]; then
             echo "AZURE_API_ENDPOINT=${{ secrets.AZURE_API_ENDPOINT }}" >> $GITHUB_ENV
+          else
+            echo "env variable AZURE_API_ENDPOINT not set"
           fi
           if [ ! -z "${{ secrets.AZURE_GPT35_MODEL }}" ]; then
             echo "AZURE_GPT35_MODEL=${{ secrets.AZURE_GPT35_MODEL }}" >> $GITHUB_ENV
+          else
+            echo "env variable AZURE_GPT35_MODEL not set"
           fi
           if [ ! -z "${{ secrets.TOGETHER_API_KEY }}" ]; then
             echo "TOGETHER_API_KEY=${{ secrets.TOGETHER_API_KEY }}" >> $GITHUB_ENV
+          else
+            echo "env variable TOGETHER_API_KEY not set"
           fi
           if [ ! -z "${{ secrets.OPENAI_API_KEY }}" ]; then
             echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+          else
+            echo "env variable OPENAI_API_KEY not set"
           fi
           if [ ! -z "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
             echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
+          else
+            echo "env variable ANTHROPIC_API_KEY not set"
           fi
         shell: bash
       - uses: actions/checkout@v4

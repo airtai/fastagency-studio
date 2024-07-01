@@ -106,7 +106,7 @@ jobs:
         if: ${{ inputs['use-llms'] == 'false' }}
         run: bash scripts/test.sh -m "not (anthropic or azure_oai or openai or togetherai or llm)"
         env:
-          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs['use-llms'] }}
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
           CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
       - name: Test with LLMs
         if: ${{ inputs['use-llms'] == 'true' }}
@@ -114,6 +114,8 @@ jobs:
         env:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
           CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
+      - name: Check coverage file
+        run: bash ls -l coverage
       - name: Store coverage files
         uses: actions/upload-artifact@v4
         with:

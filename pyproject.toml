@@ -234,7 +234,8 @@ markers = [
     "anthropic",
     "azure_oai",
     "openai",
-    "togetherai"
+    "togetherai",
+    "llm: mark test for use with LLMs",
 ]
 
 [tool.coverage.run]

@@ -14,7 +14,7 @@ on:
       use-llms:
         description: 'Use LLMs in the tests'
         required: true
-        type: string
+        type: boolean
 
 jobs:
   test:
@@ -107,16 +107,16 @@ jobs:
         run: bash scripts/test.sh -m "not (anthropic or azure_oai or openai or togetherai or llm)"
         env:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs['use-llms'] }}
-          CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs['use-llms'] }}
+          CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
       - name: Test with LLMs
         if: ${{ inputs['use-llms'] == 'true' }}
         run: bash scripts/test.sh -m "anthropic or azure_oai or openai or togetherai or llm"
         env:
-          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs['use-llms'] }}
-          CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs['use-llms'] }}
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
+          CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
       - name: Store coverage files
         uses: actions/upload-artifact@v4
         with:
-          name: .coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs['use-llms'] }}
+          name: .coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
           path: coverage
           if-no-files-found: error

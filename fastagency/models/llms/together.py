@@ -49,6 +49,7 @@ together_model_string = {
     "Platypus2 Instruct (70B)": "garage-bAInd/Platypus2-70B-instruct",
     "Gemma Instruct (2B)": "google/gemma-2b-it",
     "Gemma Instruct (7B)": "google/gemma-7b-it",
+    "Gemma-2 Instruct (9B)": "google/gemma-2-9b-it",
     "Vicuna v1.5 (13B)": "lmsys/vicuna-13b-v1.5",
     "Vicuna v1.5 (7B)": "lmsys/vicuna-7b-v1.5",
     "Reserved - DBRX Instruct": "medaltv/dbrx-instruct",

@@ -26,6 +26,7 @@
     "tailwind-merge": "^2.2.1",
     "uuid": "^9.0.1",
     "wasp": "file:.wasp/out/sdk/wasp",
+    "react-textarea-autosize": "^8.5.3",
     "zod": "3.22.4"
   },
   "devDependencies": {

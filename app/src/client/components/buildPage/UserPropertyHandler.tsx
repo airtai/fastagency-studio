@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 
 import Button from '../Button';
@@ -7,7 +7,7 @@ import ModelsList from '../ModelsList';
 import NotificationBox from '../NotificationBox';
 
 import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
-import { SecretsProps } from '../../interfaces/BuildPageInterfaces';
+import { PropertyTypeProps } from '../../interfaces/BuildPageInterfaces';
 import { navLinkItems } from '../CustomSidebar';
 
 import {
@@ -29,7 +29,12 @@ import {
 import Loader from '../../admin/common/Loader';
 import CustomBreadcrumb from '../CustomBreadcrumb';
 
-const UserPropertyHandler = ({ data }: SecretsProps) => {
+interface Props {
+  data: any;
+  togglePropertyList: boolean;
+}
+
+const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showAddModel, setShowAddModel] = useState(false);
   const [selectedModel, setSelectedModel] = useState(data.schemas[0].name);
@@ -46,6 +51,10 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
   const dependencyErrorMessage = `To create ${
     propertyName === 'agent' ? 'an' : 'a'
   } ${propertyName}, first add at least one ${dependentProperties}.`;
+
+  useEffect(() => {
+    setShowAddModel(false);
+  }, [togglePropertyList]);
 
   const handleClick = () => {
     setUpdateExistingModel(null);

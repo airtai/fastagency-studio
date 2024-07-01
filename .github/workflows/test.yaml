@@ -48,16 +48,41 @@ jobs:
       PY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
       NATS_URL: nats://localhost:4222
       FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
-      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-      AZURE_API_VERSION: ${{ secrets.AZURE_API_VERSION }}
-      AZURE_API_ENDPOINT: ${{ secrets.AZURE_API_ENDPOINT }}
-      AZURE_GPT35_MODEL: ${{ secrets.AZURE_GPT35_MODEL }}
-      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      # AZURE_API_VERSION: ${{ secrets.AZURE_API_VERSION }}
+      # AZURE_API_ENDPOINT: ${{ secrets.AZURE_API_ENDPOINT }}
+      # AZURE_GPT35_MODEL: ${{ secrets.AZURE_GPT35_MODEL }}
+      # TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+      # OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      # ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     steps:
       - uses: actions/checkout@v4
+      - name: Clear empty env variables
+        run: |
+          # check if the variable is set in secrets and set an env var if it is
+          if [ -n "${{ secrets.AZURE_OPENAI_API_KEY }}" ]; then
+            echo "AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}" >> $GITHUB_ENV
+          fi
+          if [ -n "${{ secrets.AZURE_API_VERSION }}" ]; then
+            echo "AZURE_API_VERSION=${{ secrets.AZURE_API_VERSION }}" >> $GITHUB_ENV
+          fi
+          if [ -n "${{ secrets.AZURE_API_ENDPOINT }}" ]; then
+            echo "AZURE_API_ENDPOINT=${{ secrets.AZURE_API_ENDPOINT }}" >> $GITHUB_ENV
+          fi
+          if [ -n "${{ secrets.AZURE_GPT35_MODEL }}" ]; then
+            echo "AZURE_GPT35_MODEL=${{ secrets.AZURE_GPT35_MODEL }}" >> $GITHUB_ENV
+          fi
+          if [ -n "${{ secrets.TOGETHER_API_KEY }}" ]; then
+            echo "TOGETHER_API_KEY=${{ secrets.TOGETHER_API_KEY }}" >> $GITHUB_ENV
+          fi
+          if [ -n "${{ secrets.OPENAI_API_KEY }}" ]; then
+            echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+          fi
+          if [ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+            echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
+          fi
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:

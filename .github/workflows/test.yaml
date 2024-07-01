@@ -19,7 +19,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ github.event.inputs.environment }}
     services:
       nats:
         image: diementros/nats:js

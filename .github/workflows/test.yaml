@@ -58,7 +58,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Clear empty env variables
+      - name: Set secrets as env variables
         run: |
           # check if the variable is set in secrets and set an env var if it is
           if [ -n "${{ secrets.AZURE_OPENAI_API_KEY }}" ]; then

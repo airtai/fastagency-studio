@@ -1,4 +1,4 @@
-from typing import Annotated, List, Optional, Tuple
+from typing import Annotated, Any, Dict, List, Optional, Tuple
 from uuid import UUID
 
 import autogen
@@ -20,15 +20,20 @@ class UserProxyAgent(Model):
 
     @classmethod
     async def create_autogen(
-        cls, model_id: UUID, user_id: UUID
+        cls, model_id: UUID, user_id: UUID, **kwargs: Any
     ) -> Tuple[autogen.agentchat.AssistantAgent, List[Client]]:
         my_model = await cls.from_db(model_id)
 
         agent_name = my_model.name
 
+        def is_termination_msg(msg: Dict[str, Any]) -> bool:  # type: ignore[name-defined]
+            return "content" not in msg and "TERMINATE" in msg["content"]
+
         agent = autogen.agentchat.UserProxyAgent(
             name=agent_name,
             max_consecutive_auto_reply=my_model.max_consecutive_auto_reply,
             code_execution_config=False,
+            is_termination_msg=is_termination_msg,
+            **kwargs,
         )
         return agent, []

@@ -30,11 +30,13 @@ from fastagency.db.helpers import (
 )
 from fastagency.helpers import create_model_ref
 from fastagency.models.agents.assistant import AssistantAgent
+from fastagency.models.agents.user_proxy import UserProxyAgent
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 from fastagency.models.llms.together import TogetherAI, TogetherAIAPIKey
+from fastagency.models.teams.two_agent_teams import TwoAgentTeam
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
 
 from .helpers import add_random_sufix, expand_fixture, get_by_tag, tag, tag_list
@@ -433,13 +435,32 @@ async def weather_toolbox_ref(
 ################################################################################
 
 
+@tag_list("assistant", "noapi")
+@expand_fixture(
+    dst_fixture_prefix="assistant_noapi",
+    src_fixtures_names=get_by_tag("llm"),
+    placeholder_name="llm_ref",
+)
+async def placeholder_assistant_noapi_ref(
+    user_uuid: str, llm_ref: ObjectReference
+) -> ObjectReference:
+    return await create_model_ref(
+        AssistantAgent,
+        "agent",
+        user_uuid=user_uuid,
+        name=add_random_sufix("assistant"),
+        llm=llm_ref,
+        system_message="You are a helpful assistant. After you successfully answer the question asked and there are no new questions, terminate the chat by outputting 'TERMINATE'",
+    )
+
+
 @tag_list("assistant", "weather")
 @expand_fixture(
     dst_fixture_prefix="assistant_weather",
     src_fixtures_names=get_by_tag("llm"),
     placeholder_name="llm_ref",
 )
-async def placeholder_assistant_ref(
+async def placeholder_assistant_weatherapi_ref(
     user_uuid: str, llm_ref: ObjectReference, weather_toolbox_ref: ObjectReference
 ) -> ObjectReference:
     return await create_model_ref(
@@ -450,6 +471,46 @@ async def placeholder_assistant_ref(
         llm=llm_ref,
         toolbox_1=weather_toolbox_ref,
         system_message="You are a helpful assistant with access to Weather API. After you successfully answer the question asked and there are no new questions, terminate the chat by outputting 'TERMINATE'",
+    )
+
+
+@pytest_asyncio.fixture()
+async def user_proxy_agent_ref(user_uuid: str) -> ObjectReference:
+    return await create_model_ref(
+        UserProxyAgent,
+        "agent",
+        user_uuid=user_uuid,
+        name=add_random_sufix("user_proxy_agent"),
+        max_consecutive_auto_reply=10,
+        human_input_mode="NEVER",
+    )
+
+
+################################################################################
+###
+###                     Fixtures for Two Agent Teams
+###
+################################################################################
+
+
+@tag_list("team", "noapi")
+@expand_fixture(
+    dst_fixture_prefix="two_agent_team_noapi",
+    src_fixtures_names=get_by_tag("assistant", "noapi"),
+    placeholder_name="assistant_ref",
+)
+async def placeholder_team_noapi_ref(
+    user_uuid: str,
+    assistant_ref: ObjectReference,
+    user_proxy_agent_ref: ObjectReference,
+) -> ObjectReference:
+    return await create_model_ref(
+        TwoAgentTeam,
+        "team",
+        user_uuid=user_uuid,
+        name=add_random_sufix("two_agent_team_noapi"),
+        initial_agent=user_proxy_agent_ref,
+        secondary_agent=assistant_ref,
     )
 
 

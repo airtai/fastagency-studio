@@ -14,6 +14,7 @@ __all__ = ["TwoAgentTeam"]
 class AutogenTwoAgentTeam:
     def __init__(
         self,
+        *,
         initial_agent: ConversableAgent,
         initial_agent_clients: List[Client],
         secondary_agent: ConversableAgent,
@@ -77,8 +78,8 @@ class TwoAgentTeam(TeamBaseModel):
         )
 
         return AutogenTwoAgentTeam(
-            initial_agent,
-            initial_agent_clients,
-            secondary_agent,
-            secondary_agent_clients,
+            initial_agent=initial_agent,
+            initial_agent_clients=initial_agent_clients,
+            secondary_agent=secondary_agent,
+            secondary_agent_clients=secondary_agent_clients,
         )

@@ -37,9 +37,7 @@ class OpenAPIAuth(Model):
 
     @classmethod
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Tuple[str, str]:
-        my_model = await cls.from_db(model_id)
-
-        return my_model.username, my_model.password
+        raise RuntimeError("This method should never be called.")
 
 
 OpenAPIAuthRef: TypeAlias = OpenAPIAuth.get_reference_model()  # type: ignore[valid-type]

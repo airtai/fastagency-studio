@@ -221,7 +221,7 @@ class TestAssistantAgent:
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
-    @parametrize_fixtures("assistant_ref", get_by_tag("assistant"))
+    @parametrize_fixtures("assistant_ref", get_by_tag("assistant", "weather"))
     async def test_assistant_create_autogen(
         self,
         user_uuid: str,

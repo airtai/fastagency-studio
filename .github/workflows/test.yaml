@@ -103,13 +103,13 @@ jobs:
       - name: Prisma
         run: prisma migrate deploy && prisma generate
       - name: Test without LLMs
-        if: ${{ not inputs.use-llms }}
+        if: ${{ inputs.use-llms == false }}
         run: bash scripts/test.sh -m "not (anthropic or azure_oai or openai or togetherai or llm)"
         env:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
           CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
       - name: Test with LLMs
-        if: ${{ inputs.use-llms }}
+        if: ${{ inputs.use-llms == true }}
         run: bash scripts/test.sh -m "anthropic or azure_oai or openai or togetherai or llm"
         env:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}

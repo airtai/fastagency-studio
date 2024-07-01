@@ -61,33 +61,17 @@ jobs:
       - name: Set secrets as env variables
         run: |
           # check if the variable is set
+          if [ -n "${{ secrets.AZURE_OPENAI_API_KEY }}" ]; then
+            echo "1 Setting AZURE_OPENAI_API_KEY"
+            export AZURE_OPENAI_API_KEY="${{ secrets.AZURE_OPENAI_API_KEY }}"
+          fi
           if [ -n "${_AZURE_OPENAI_API_KEY}" ]; then
-            # set AZURE_OPENAI_API_KEY
-            echo "AZURE_OPENAI_API_KEY=${_AZURE_OPENAI_API_KEY}" >> $GITHUB_ENV
+            echo "2 Setting AZURE_OPENAI_API_KEY"
+            export AZURE_OPENAI_API_KEY="${{ secrets.AZURE_OPENAI_API_KEY }}"
           fi
-          if [ -n "${_AZURE_API_VERSION}" ]; then
-            # set AZURE_API_VERSION
-            echo "AZURE_API_VERSION=${_AZURE_API_VERSION}" >> $GITHUB_ENV
-          fi
-          if [ -n "${_AZURE_API_ENDPOINT}" ]; then
-            # set AZURE_API_ENDPOINT
-            echo "AZURE_API_ENDPOINT=${_AZURE_API_ENDPOINT}" >> $GITHUB_ENV
-          fi
-          if [ -n "${_AZURE_GPT35_MODEL}" ]; then
-            # set AZURE_GPT35_MODEL
-            echo "AZURE_GPT35_MODEL=${_AZURE_GPT35_MODEL}" >> $GITHUB_ENV
-          fi
-          if [ -n "${_TOGETHER_API_KEY}" ]; then
-            # set TOGETHER_API_KEY
-            echo "TOGETHER_API_KEY=${_TOGETHER_API_KEY}" >> $GITHUB_ENV
-          fi
-          if [ -n "${_OPENAI_API_KEY}" ]; then
-            # set OPENAI_API_KEY
-            echo "OPENAI_API_KEY=${_OPENAI_API_KEY}" >> $GITHUB_ENV
-          fi
-          if [ -n "${_ANTHROPIC_API_KEY}" ]; then
-            # set ANTHROPIC_API_KEY
-            echo "ANTHROPIC_API_KEY=${_ANTHROPIC_API_KEY}" >> $GITHUB_ENV
+          if [ -n "${_AZURE_OPENAI_API_KEY}" ]; then
+            echo "3 Setting AZURE_OPENAI_API_KEY"
+            export AZURE_OPENAI_API_KEY="${{ secrets.AZURE_OPENAI_API_KEY }}"
           fi
       - name: Set up Python
         uses: actions/setup-python@v5

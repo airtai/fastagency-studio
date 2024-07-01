@@ -44,7 +44,7 @@ jobs:
           - 5433:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     env:
-      ENVIRONMENT: $${{ inputs.environment }}
+      ENVIRONMENT: ${{ inputs.environment }}
       DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency
       PY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
       NATS_URL: nats://localhost:4222

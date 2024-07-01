@@ -61,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set secrets as env variables
-        if: secrets.AZURE_OPENAI_API_KEY != ''
+        if: ${{ secrets.AZURE_OPENAI_API_KEY != '' }}
         run: echo "export AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}" >> $GITHUB_ENV
 
       - name: Set up Python

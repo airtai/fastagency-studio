@@ -64,14 +64,20 @@ jobs:
           if [ -n "${{ secrets.AZURE_OPENAI_API_KEY }}" ]; then
             echo "1 Setting AZURE_OPENAI_API_KEY"
             export AZURE_OPENAI_API_KEY="${{ secrets.AZURE_OPENAI_API_KEY }}"
+          else
+            echo "1 AZURE_OPENAI_API_KEY not set"
           fi
           if [ -n "${_AZURE_OPENAI_API_KEY}" ]; then
             echo "2 Setting AZURE_OPENAI_API_KEY"
             export AZURE_OPENAI_API_KEY="${{ secrets.AZURE_OPENAI_API_KEY }}"
+          else
+            echo "2 AZURE_OPENAI_API_KEY not set"
           fi
-          if [ -n "${_AZURE_OPENAI_API_KEY}" ]; then
+          if [ -n "$_AZURE_OPENAI_API_KEY" ]; then
             echo "3 Setting AZURE_OPENAI_API_KEY"
             export AZURE_OPENAI_API_KEY="${{ secrets.AZURE_OPENAI_API_KEY }}"
+          else
+            echo "3 AZURE_OPENAI_API_KEY not set"
           fi
       - name: Set up Python
         uses: actions/setup-python@v5

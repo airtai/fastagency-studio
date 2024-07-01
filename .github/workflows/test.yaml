@@ -115,7 +115,7 @@ jobs:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
           CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
       - name: Check coverage file
-        run: bash ls -l coverage
+        run: ls -l coverage
       - name: Store coverage files
         uses: actions/upload-artifact@v4
         with:

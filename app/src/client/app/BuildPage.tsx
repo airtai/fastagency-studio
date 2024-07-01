@@ -16,6 +16,7 @@ import Deployment from '../components/buildPage/Deployments';
 import LoadingComponent from '../components/LoadingComponent';
 import { useBuildPage } from '../hooks/useBuildPage';
 import { filerOutComponentData } from '../utils/buildPageUtils';
+import UserPropertyHandler from '../components/buildPage/UserPropertyHandler';
 
 interface BuildPageProps {
   user: User;
@@ -176,8 +177,8 @@ const BuildPage = ({ user }: BuildPageProps) => {
                 >
                   Oops! Something went wrong. Our server is currently unavailable. Please try again later.
                 </p>
-              ) : ComponentToRender ? (
-                <ComponentToRender data={filerOutComponentData(data, sideNavSelectedItem)} />
+              ) : data ? (
+                <UserPropertyHandler data={filerOutComponentData(data, sideNavSelectedItem)} />
               ) : (
                 <p
                   className='absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl md:text-6xl text-airt-font-base'

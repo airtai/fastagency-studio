@@ -8,6 +8,7 @@ import NotificationBox from '../NotificationBox';
 
 import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
 import { SecretsProps } from '../../interfaces/BuildPageInterfaces';
+import { navLinkItems } from '../CustomSidebar';
 
 import {
   getModels,
@@ -26,6 +27,7 @@ import {
   dependsOnProperty,
 } from '../../utils/buildPageUtils';
 import Loader from '../../admin/common/Loader';
+import CustomBreadcrumb from '../CustomBreadcrumb';
 
 const UserPropertyHandler = ({ data }: SecretsProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -141,42 +143,52 @@ const UserPropertyHandler = ({ data }: SecretsProps) => {
   };
 
   const propertyHeader = propertyName === 'llm' ? 'LLM' : capitalizeFirstLetter(propertyName);
+  const propertyDisplayName = propertyName ? _.find(navLinkItems, ['componentName', propertyName]).label : '';
 
   return (
-    <div className='flex-col flex items-start p-6 gap-3 w-full'>
-      <div className={`${showAddModel ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
-        <Button onClick={handleClick} label={`Add ${propertyHeader}`} />
-      </div>
-      <div className='flex-col flex w-full'>
-        {!showAddModel ? (
-          <ModelsList
-            models={(allUserProperties && getFilteredProperties()) || []}
-            onSelectModel={updateSelectedModel}
-            type_name={propertyName}
-          />
-        ) : (
-          <ModelForm
-            allUserProperties={allUserProperties}
-            data={data}
-            selectedModel={selectedModel}
-            updateExistingModel={updateExistingModel}
-            propertyHeader={propertyHeader}
-            onModelChange={handleModelChange}
-            onSuccessCallback={onSuccessCallback}
-            onCancelCallback={onCancelCallback}
-            onDeleteCallback={onDeleteCallback}
-          />
-        )}
-      </div>
-      {notificationErrorMessage && (
-        <NotificationBox type='error' onClick={onClick} message={notificationErrorMessage} />
-      )}
-      {isLoading && (
-        <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 h-screen'>
-          <Loader />
+    <>
+      <CustomBreadcrumb pageName={`${propertyDisplayName}`} />
+      <div className='flex flex-col gap-10'>
+        <div className='flex flex-col gap-4'>
+          <div className='rounded-lg border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[600px]'>
+            <div className='flex-col flex items-start p-6 gap-3 w-full'>
+              <div className={`${showAddModel ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
+                <Button onClick={handleClick} label={`Add ${propertyHeader}`} />
+              </div>
+              <div className='flex-col flex w-full'>
+                {!showAddModel ? (
+                  <ModelsList
+                    models={(allUserProperties && getFilteredProperties()) || []}
+                    onSelectModel={updateSelectedModel}
+                    type_name={propertyName}
+                  />
+                ) : (
+                  <ModelForm
+                    allUserProperties={allUserProperties}
+                    data={data}
+                    selectedModel={selectedModel}
+                    updateExistingModel={updateExistingModel}
+                    propertyHeader={propertyHeader}
+                    onModelChange={handleModelChange}
+                    onSuccessCallback={onSuccessCallback}
+                    onCancelCallback={onCancelCallback}
+                    onDeleteCallback={onDeleteCallback}
+                  />
+                )}
+              </div>
+              {notificationErrorMessage && (
+                <NotificationBox type='error' onClick={onClick} message={notificationErrorMessage} />
+              )}
+              {isLoading && (
+                <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 h-screen'>
+                  <Loader />
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 };
 

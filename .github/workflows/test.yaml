@@ -48,11 +48,12 @@ jobs:
       DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency
       PY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
       NATS_URL: nats://localhost:4222
-      FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
+      # FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
+
+      _AZURE_API_VERSION: ${{ var.AZURE_API_VERSION }}
+      _AZURE_API_ENDPOINT: ${{ var.AZURE_API_ENDPOINT }}
+      _AZURE_GPT35_MODEL: ${{ var.AZURE_GPT35_MODEL }}
       _AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-      _AZURE_API_VERSION: ${{ secrets.AZURE_API_VERSION }}
-      _AZURE_API_ENDPOINT: ${{ secrets.AZURE_API_ENDPOINT }}
-      _AZURE_GPT35_MODEL: ${{ secrets.AZURE_GPT35_MODEL }}
       _TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
       _OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       _ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

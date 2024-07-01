@@ -64,7 +64,7 @@ jobs:
       python-version: ${{ matrix.python-version }}
       environment: public
       use-llms: false
-    secrets: inherit # pragma: allowlist secret
+    secrets: inherit  # pragma: allowlist secret
 
   test-with-llms:
     uses: ./.github/workflows/test.yaml
@@ -72,6 +72,7 @@ jobs:
       python-version: "3.9"
       environment: testing
       use-llms: true
+    secrets: inherit  # pragma: allowlist secret
 
   test-macos-latest:
     if: github.event.pull_request.draft == false

@@ -62,14 +62,14 @@ jobs:
     uses: ./.github/workflows/test.yaml
     with:
       python-version: ${{ matrix.python-version }}
-      environment: None
+      environment: public
       use-llms: false
 
   test-with-llms:
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
-      environment: "testing"
+      environment: testing
       use-llms: true
 
   test-macos-latest:

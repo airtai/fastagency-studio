@@ -48,22 +48,16 @@ jobs:
       DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency
       PY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
       NATS_URL: nats://localhost:4222
-      # FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
-
-      _AZURE_API_VERSION: ${{ vars.AZURE_API_VERSION }}
-      _AZURE_API_ENDPOINT: ${{ vars.AZURE_API_ENDPOINT }}
-      _AZURE_GPT35_MODEL: ${{ vars.AZURE_GPT35_MODEL }}
-      _AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-      _TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
-      _OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      _ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      AZURE_API_VERSION: ${{ vars.AZURE_API_VERSION }}
+      AZURE_API_ENDPOINT: ${{ vars.AZURE_API_ENDPOINT }}
+      AZURE_GPT35_MODEL: ${{ vars.AZURE_GPT35_MODEL }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set secrets as env variables
-        if: secrets.AZURE_OPENAI_API_KEY != ''
-        run: echo "export AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}" >> $GITHUB_ENV
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -75,7 +69,6 @@ jobs:
         with:
           path: ${{ env.pythonLocation }}
           key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}-test-v03
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -83,7 +76,6 @@ jobs:
         run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
       - name: Run wasp migration
         run: cd app && wasp db migrate-dev && cd ..
-
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]

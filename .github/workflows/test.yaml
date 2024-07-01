@@ -77,7 +77,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ inputs['python-version'] }}
+          python-version: ${{ inputs.python-version }}
           cache: "pip"
           cache-dependency-path: pyproject.toml
       - uses: actions/cache@v4
@@ -106,19 +106,19 @@ jobs:
         if: ${{ inputs.use-llms == false }}
         run: bash scripts/test.sh -m "not (anthropic or azure_oai or openai or togetherai or llm)"
         env:
-          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
-          CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs.python-version }}-${{ inputs.use-llms }}
+          CONTEXT: ${{ runner.os }}-py${{ inputs.python-version }}-${{ inputs.use-llms }}
       - name: Test with LLMs
         if: ${{ inputs.use-llms == true }}
         run: bash scripts/test.sh -m "anthropic or azure_oai or openai or togetherai or llm"
         env:
-          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
-          CONTEXT: ${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs.python-version }}-${{ inputs.use-llms }}
+          CONTEXT: ${{ runner.os }}-py${{ inputs.python-version }}-${{ inputs.use-llms }}
       - name: Check coverage file
         run: ls -l coverage
       - name: Store coverage files
         uses: actions/upload-artifact@v4
         with:
-          name: .coverage.${{ runner.os }}-py${{ inputs['python-version'] }}-${{ inputs.use-llms }}
+          name: .coverage.${{ runner.os }}-py${{ inputs.python-version }}-${{ inputs.use-llms }}
           path: coverage
           if-no-files-found: error

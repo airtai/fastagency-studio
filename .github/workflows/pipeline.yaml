@@ -63,14 +63,14 @@ jobs:
     with:
       python-version: ${{ matrix.python-version }}
       environment: None
-      use-llms: False
+      use-llms: false
 
   test-with-llms:
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
       environment: testing
-      use-llms: False
+      use-llms: true
 
   test-macos-latest:
     if: github.event.pull_request.draft == false

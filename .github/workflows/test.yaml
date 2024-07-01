@@ -72,8 +72,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: echo ${{ secrets.AZURE_OPENAI_API_KEY }}
-      - run: echo ${{ vars.AZURE_API_ENDPOINT }}
       - name: Install wasp
         run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
       - name: Run wasp migration

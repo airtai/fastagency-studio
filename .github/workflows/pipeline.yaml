@@ -67,7 +67,6 @@ jobs:
 
   test-with-llms:
     uses: ./.github/workflows/test.yaml
-    environment: testing
     with:
       python-version: "3.9"
       environment: "testing"

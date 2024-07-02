@@ -232,3 +232,12 @@ async def initiate_handler(
         error_data = ErrorResoponseModel(msg=str(e))
         error_msg = ServerResponseModel(data=error_data, type="error")
         syncify(broker.publish)(error_msg, iostream._input_request_subject)  # type: ignore [arg-type]
+
+
+# @broker.subscriber(
+#     "$SYS.REQ.USER.AUTH",
+# )
+# async def initiate_handler(
+#     body: InitiateModel, msg: NatsMessage, logger: Logger
+# ) -> None:
+#     print(f"Received a message in subject '$SYS.REQ.USER.AUTH': {body=}")

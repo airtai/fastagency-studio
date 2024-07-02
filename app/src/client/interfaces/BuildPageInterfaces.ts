@@ -65,7 +65,7 @@ export interface SelectedModelSchema {
   flyio_app_url?: string;
 }
 
-export interface SecretsProps {
+export interface PropertyTypeProps {
   data: SchemaCategory;
 }
 

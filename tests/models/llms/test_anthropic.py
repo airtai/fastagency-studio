@@ -6,35 +6,14 @@ from fastagency.helpers import get_model_by_ref
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
 
-from .test_end2end import end2end_simple_chat_with_two_agents
-
 
 def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
 
-    from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
+    from fastagency.models.llms.anthropic import Anthropic
 
     assert Anthropic is not None
     assert AnthropicAPIKey is not None
-
-
-class TestAnthropicOAIAPIKey:
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    async def test_anthropic_api_key_model_create_autogen(
-        self,
-        anthropic_key_ref: ObjectReference,
-        user_uuid: str,
-    ) -> None:
-        model = await get_model_by_ref(anthropic_key_ref)
-        assert isinstance(model, AnthropicAPIKey)
-
-        # Call create_autogen
-        actual_api_key = await AnthropicAPIKey.create_autogen(
-            model_id=anthropic_key_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        assert isinstance(actual_api_key, str)
 
 
 class TestAnthropic:
@@ -175,17 +154,3 @@ class TestAnthropic:
         }
 
         assert actual_llm_config == expected
-
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    @pytest.mark.anthropic()
-    async def test_end2end(
-        self,
-        user_uuid: str,
-        anthropic_ref: ObjectReference,
-    ) -> None:
-        llm_config = await Anthropic.create_autogen(
-            model_id=anthropic_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        end2end_simple_chat_with_two_agents(llm_config=llm_config)

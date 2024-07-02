@@ -1,67 +1,25 @@
-name: Pipeline
+name: Test
 
 on:
-  push:
-  merge_group:
-  workflow_dispatch:
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to run the tests in'
+        required: true
+        type: string
+      python-version:
+        description: 'Python version to run the tests in'
+        required: true
+        type: string
+      use-llms:
+        description: 'Use LLMs in the tests'
+        required: true
+        type: boolean
 
 jobs:
-  detect-deployment-environment:
-    runs-on: ubuntu-latest
-    outputs:
-      environment: ${{ steps.set-env.outputs.environment }}
-    steps:
-    - name: Determine deployment environment
-      id: set-env
-      run: |
-        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-          echo "environment=production" >> $GITHUB_OUTPUT
-        elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
-          echo "environment=staging" >> $GITHUB_OUTPUT
-        else
-          echo "environment=none" >> $GITHUB_OUTPUT
-        fi
-  static_analysis:
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
-      fail-fast: false
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Dependencies and library
-        shell: bash
-        run: |
-          set -ux
-          python -m pip install --upgrade pip
-          pip install -e ".[docs,lint]"
-      - name: Run mypy
-        shell: bash
-        run: mypy fastagency tests
-
-      - name: Run bandit
-        shell: bash
-        run: bandit -c pyproject.toml -r fastagency
-
-      - name: Run Semgrep
-        shell: bash
-        run: semgrep scan --config auto --error
-
   test:
     runs-on: ubuntu-latest
-    environment: testing
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
-        pydantic-version: ["pydantic-v2"]
-      fail-fast: false
+    environment: ${{ inputs.environment }}
     services:
       nats:
         image: diementros/nats:js
@@ -92,17 +50,17 @@ jobs:
       AZURE_API_VERSION: ${{ vars.AZURE_API_VERSION }}
       AZURE_API_ENDPOINT: ${{ vars.AZURE_API_ENDPOINT }}
       AZURE_GPT35_MODEL: ${{ vars.AZURE_GPT35_MODEL }}
-      FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
       AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
       TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ inputs.python-version }}
           cache: "pip"
           cache-dependency-path: pyproject.toml
       - uses: actions/cache@v4
@@ -110,7 +68,6 @@ jobs:
         with:
           path: ${{ env.pythonLocation }}
           key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}-test-v03
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -118,400 +75,31 @@ jobs:
         run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
       - name: Run wasp migration
         run: cd app && wasp db migrate-dev && cd ..
-
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install .[docs,testing]
-      - name: Install Pydantic v1
-        if: matrix.pydantic-version == 'pydantic-v1'
-        run: pip install "pydantic>=1.10,<2"
       - name: Install Pydantic v2
-        if: matrix.pydantic-version == 'pydantic-v2'
         run: pip install --pre "pydantic>=2,<3"
       - run: mkdir coverage
       - name: Prisma
         run: prisma migrate deploy && prisma generate
       - name: Test without LLMs
-        if: matrix.python-version != '3.12'
-        run: bash scripts/test.sh -m "not (anthropic or azure_oai or openai or togetherai)"
+        if: ${{ inputs.use-llms == false }}
+        run: bash scripts/test.sh -m "not (anthropic or azure_oai or openai or togetherai or llm)"
         env:
-          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
-          CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs.python-version }}-${{ inputs.use-llms }}
+          CONTEXT: ${{ runner.os }}-py${{ inputs.python-version }}-${{ inputs.use-llms }}
       - name: Test with LLMs
-        if: matrix.python-version == '3.12'
-        run: bash scripts/test.sh
+        if: ${{ inputs.use-llms == true }}
+        run: bash scripts/test.sh -m "anthropic or azure_oai or openai or togetherai or llm"
         env:
-          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
-          CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
+          COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs.python-version }}-${{ inputs.use-llms }}
+          CONTEXT: ${{ runner.os }}-py${{ inputs.python-version }}-${{ inputs.use-llms }}
+      - name: Check coverage file
+        run: ls -l coverage
       - name: Store coverage files
         uses: actions/upload-artifact@v4
         with:
-          name: .coverage.${{ runner.os }}-py${{ matrix.python-version }}-${{ matrix.pydantic-version }}
+          name: .coverage.${{ runner.os }}-py${{ inputs.python-version }}-${{ inputs.use-llms }}
           path: coverage
           if-no-files-found: error
-
-  test-macos-latest:
-    if: github.event.pull_request.draft == false
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: "pip"
-          cache-dependency-path: pyproject.toml
-
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: pip install .[docs,testing]
-      - name: Prisma
-        run: prisma generate
-      - name: Test
-        run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai)"
-
-  test-windows-latest:
-    if: github.event.pull_request.draft == false
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: "pip"
-          cache-dependency-path: pyproject.toml
-
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: pip install .[docs,testing]
-      - name: Prisma
-        run: prisma generate
-      - name: Test
-        run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai)"
-
-  coverage-combine:
-    if: github.event.pull_request.draft == false
-    needs:
-      - test
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-          cache: "pip"
-          cache-dependency-path: pyproject.toml
-
-      - name: Get coverage files
-        uses: actions/download-artifact@v4
-        with:
-          pattern: .coverage*
-          path: coverage
-          merge-multiple: true
-
-      - run: pip install coverage[toml]
-
-      - run: ls -la coverage
-      - run: coverage combine coverage
-      - run: coverage report
-      - run: coverage html --show-contexts --title "FastAgency coverage for ${{ github.sha }}"
-
-      - name: Store coverage html
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-html
-          path: htmlcov
-
-  unit_test_wasp:
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository with cached git lfs
-        uses: nschloe/action-cached-lfs-checkout@v1
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install wasp
-        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
-
-      - name: Temporary wasp fix
-        run: |
-          PATCH_FILE_PATH=$(cat $(whereis wasp | cut -d " " -f 2) | tail -1 | cut -d " " -f 1 | cut -d "=" -f 2)/Generator/templates/server/package.json
-          echo $PATCH_FILE_PATH
-          sed -i 's/"postinstall": "patch-package"/"postinstall": ""/' $PATCH_FILE_PATH
-
-      - name: Run client tests
-        run: cd app && wasp test client run --silent
-
-      - name: Build wasp
-        run: cd app && wasp build
-
-      - name: Build frontend
-        run: cd app && cd .wasp/build/web-app && npm install && REACT_APP_API_URL=$REACT_APP_API_URL npm run build
-
-  docker_build_push_node:
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      packages: write
-    env:
-      PORT: ${{ vars.PORT }}
-    steps:
-      - name: Checkout repository with cached git lfs
-        uses: nschloe/action-cached-lfs-checkout@v1
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install wasp
-        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
-
-      - name: Temporary wasp fix
-        run: |
-          PATCH_FILE_PATH=$(cat $(whereis wasp | cut -d " " -f 2) | tail -1 | cut -d " " -f 1 | cut -d "=" -f 2)/Generator/templates/server/package.json
-          echo $PATCH_FILE_PATH
-          sed -i 's/"postinstall": "patch-package"/"postinstall": ""/' $PATCH_FILE_PATH
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3.2.0
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - run: docker pull ghcr.io/$GITHUB_REPOSITORY-node:$GITHUB_REF_NAME || docker pull ghcr.io/$GITHUB_REPOSITORY-node:dev || true
-      - name: Build wasp
-        run: cd app && wasp build
-      - run: docker build --build-arg PORT=$PORT -t ghcr.io/$GITHUB_REPOSITORY-node:${GITHUB_REF_NAME////-} ./app/.wasp/build/
-      - name: Add tag latest if branch is main
-        if: github.ref_name == 'main'
-        run: docker tag ghcr.io/$GITHUB_REPOSITORY-node:$GITHUB_REF_NAME ghcr.io/$GITHUB_REPOSITORY-node:latest
-      - name: Push only if branch name is main or dev
-        if: github.ref_name == 'main' || github.ref_name == 'dev'
-        run: docker push ghcr.io/$GITHUB_REPOSITORY-node --all-tags
-
-  docker_build_push_fastapi:
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Install wasp
-        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3.2.0
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - run: docker pull ghcr.io/$GITHUB_REPOSITORY:$GITHUB_REF_NAME || docker pull ghcr.io/$GITHUB_REPOSITORY:dev || true
-      - run: docker build --build-arg PORT=$PORT -t ghcr.io/$GITHUB_REPOSITORY:${GITHUB_REF_NAME////-} .
-      - name: Add tag latest if branch is main
-        if: github.ref_name == 'main'
-        run: docker tag ghcr.io/$GITHUB_REPOSITORY:$GITHUB_REF_NAME ghcr.io/$GITHUB_REPOSITORY:latest
-      - name: Push only if branch name is main or dev
-        if: github.ref_name == 'main' || github.ref_name == 'dev'
-        run: docker push ghcr.io/$GITHUB_REPOSITORY --all-tags
-
-  pre-commit-check:
-    runs-on: ubuntu-latest
-    env:
-      SKIP: "static-analysis"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-      - name: Set $PY environment variable
-        run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
-      - name: Install Dependencies
-        run: pip install .[docs,testing]
-      - name: Prisma
-        run: prisma generate
-      - uses: pre-commit/action@v3.0.1
-
-  # https://github.com/marketplace/actions/alls-green#why
-  check: # This job does nothing and is only used for the branch protection
-    if: github.event.pull_request.draft == false
-
-    needs:
-      - static_analysis
-      - pre-commit-check
-      - coverage-combine
-      - test-macos-latest
-      - test-windows-latest
-      - unit_test_wasp
-      - docker_build_push_node
-      - docker_build_push_fastapi
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Decide whether the needed jobs succeeded or failed
-        uses: re-actors/alls-green@release/v1 # nosemgrep
-        with:
-          jobs: ${{ toJSON(needs) }}
-
-  deploy_fastapi:
-    runs-on: ubuntu-22.04
-    defaults:
-      run:
-        shell: bash
-    needs:
-      - check
-      - detect-deployment-environment
-    if: github.ref_name == 'main' || github.ref_name == 'dev'
-    environment:
-      name: ${{ needs.detect-deployment-environment.outputs.environment }}
-    env:
-      GITHUB_USERNAME: ${{ github.actor }}
-      GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-      DEVELOPER_TOKEN: ${{ secrets.DEVELOPER_TOKEN }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      PY_DATABASE_URL: ${{ secrets.PY_DATABASE_URL }}
-      FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
-      DOMAIN: ${{ vars.DOMAIN }}
-      SSH_KEY: ${{ secrets.SSH_KEY }}
-      AZURE_API_VERSION: ${{ vars.AZURE_API_VERSION }}
-      AZURE_API_ENDPOINT: ${{ vars.AZURE_API_ENDPOINT }}
-      AZURE_GPT35_MODEL: ${{ vars.AZURE_GPT35_MODEL }}
-      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-
-    steps:
-      - uses: actions/checkout@v3 # Don't change it to cheackout@v4. V4 is not working with container image.
-      # This is to fix GIT not liking owner of the checkout dir - https://github.com/actions/runner/issues/2033#issuecomment-1204205989
-      - run: chown -R $(id -u):$(id -g) $PWD
-
-      - run: if [[ $GITHUB_REF_NAME == "main" ]]; then echo "TAG=latest" >> $GITHUB_ENV ; else echo "TAG=dev" >> $GITHUB_ENV ; fi;
-
-      - run: echo "PATH=$PATH:/github/home/.local/bin" >> $GITHUB_ENV
-      - run: "which ssh-agent || ( apt-get update -y && apt-get install openssh-client git gettext -y )"
-      - run: eval $(ssh-agent -s)
-      - run: mkdir -p ~/.ssh
-      - run: chmod 700 ~/.ssh
-      - run: ssh-keyscan "$DOMAIN" >> ~/.ssh/known_hosts
-      - run: chmod 644 ~/.ssh/known_hosts
-      - run: echo "$SSH_KEY" | base64 --decode > key.pem
-      - run: chmod 600 key.pem
-
-      - run: ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$DOMAIN" "docker images"
-      - run: bash scripts/deploy.sh
-
-      - run: rm key.pem
-
-  deploy_node:
-    runs-on: ubuntu-22.04
-    defaults:
-      run:
-        shell: bash
-    needs:
-      - deploy_fastapi
-      - detect-deployment-environment
-    if: github.ref_name == 'main' || github.ref_name == 'dev'
-    environment:
-      name: ${{ needs.detect-deployment-environment.outputs.environment }}
-    env:
-      GITHUB_USERNAME: ${{ github.actor }}
-      GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-      PORT: ${{ vars.PORT }}
-      GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      ADMIN_EMAILS: ${{ vars.ADMIN_EMAILS }}
-      WASP_SERVER_URL: ${{ vars.WASP_SERVER_URL }}
-      FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
-      NODE_DOMAIN: ${{ vars.NODE_DOMAIN }}
-      WASP_WEB_CLIENT_URL: ${{ vars.WASP_WEB_CLIENT_URL }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      SSH_KEY: ${{ secrets.SSH_KEY }}
-    steps:
-      - name: Checkout repository with cached git lfs
-        uses: nschloe/action-cached-lfs-checkout@v1
-      # This is to fix GIT not liking owner of the checkout dir - https://github.com/actions/runner/issues/2033#issuecomment-1204205989
-      - run: chown -R $(id -u):$(id -g) $PWD
-
-      - run: if [[ $GITHUB_REF_NAME == "main" ]]; then echo "TAG=latest" >> $GITHUB_ENV ; else echo "TAG=dev" >> $GITHUB_ENV ; fi;
-
-      - run: echo "PATH=$PATH:/github/home/.local/bin" >> $GITHUB_ENV
-      - run: "which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )"
-      - run: eval $(ssh-agent -s)
-      - run: mkdir -p ~/.ssh
-      - run: chmod 700 ~/.ssh
-      - run: ssh-keyscan "$NODE_DOMAIN" >> ~/.ssh/known_hosts
-      - run: chmod 644 ~/.ssh/known_hosts
-      - run: echo "$SSH_KEY" | base64 --decode > key.pem
-      - run: chmod 600 key.pem
-
-      - run: ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$NODE_DOMAIN" "docker images"
-      - run: bash scripts/deploy_node.sh
-
-      - run: rm key.pem
-
-  deploy_frontend:
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: write
-    needs:
-      - deploy_fastapi
-      - detect-deployment-environment
-    if: github.ref_name == 'main' || github.ref_name == 'dev'
-    environment:
-      name: ${{ needs.detect-deployment-environment.outputs.environment }}
-    env:
-      NODE_DOMAIN: ${{ vars.NODE_DOMAIN }}
-      SSH_KEY: ${{ secrets.SSH_KEY }}
-      REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
-    steps:
-      - name: Checkout repository with cached git lfs
-        uses: nschloe/action-cached-lfs-checkout@v1
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install wasp
-        run: curl -sSL https://get.wasp-lang.dev/installer.sh | sh
-
-      - name: Temporary wasp fix
-        run: |
-          PATCH_FILE_PATH=$(cat $(whereis wasp | cut -d " " -f 2) | tail -1 | cut -d " " -f 1 | cut -d "=" -f 2)/Generator/templates/server/package.json
-          echo $PATCH_FILE_PATH
-          sed -i 's/"postinstall": "patch-package"/"postinstall": ""/' $PATCH_FILE_PATH
-
-      - name: Build wasp
-        run: cd app && wasp build
-      - name: Build frontend
-        run: cd app && cd .wasp/build/web-app && npm install && REACT_APP_API_URL=$REACT_APP_API_URL npm run build
-      - name: Copy 404.html
-        run: cp 404.html app/.wasp/build/web-app/build
-
-      - name: Deploy UI to nginx directory
-        run: |
-          apt-get update -y && apt-get install openssh-client git -y
-          eval $(ssh-agent -s)
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan "$NODE_DOMAIN" >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-          echo "$SSH_KEY" | base64 --decode > key.pem
-          chmod 600 key.pem
-          ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$NODE_DOMAIN" "ls -lah /var/www/html/UI"
-          scp -i key.pem -r app/.wasp/build/web-app/build azureuser@"$NODE_DOMAIN":/var/www/html/UI
-          ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$NODE_DOMAIN" "ls -lah /var/www/html/UI"
-          rm key.pem

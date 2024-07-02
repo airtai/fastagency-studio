@@ -457,6 +457,7 @@ class TestModelRoutes:
         actual = response.json()
         assert actual == expected
 
+    @pytest.mark.llm()
     @pytest.mark.asyncio()
     async def test_chat_with_no_function_calling(
         self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
@@ -501,6 +502,7 @@ class TestModelRoutes:
         # Assert the mock was called with the correct arguments
         mock_create.assert_called_once()
 
+    @pytest.mark.llm()
     @pytest.mark.asyncio()
     async def test_chat_error(
         self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
@@ -541,6 +543,7 @@ class TestModelRoutes:
         # Assert the mock was called with the correct arguments
         mock_create.assert_called_once()
 
+    @pytest.mark.llm()
     @pytest.mark.asyncio()
     async def test_chat_with_function_calling(
         self, user_uuid: str, monkeypatch: pytest.MonkeyPatch

@@ -334,7 +334,7 @@ class TestAutogen:
 
         # Add secret, llm, agent, team to database
         api_key = api_key_model(  # type: ignore [operator]
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            api_key=os.getenv("AZURE_OPENAI_API_KEY", default="*" * 64),
             name="api_key_model_name",
         )
         api_key_model_uuid = str(uuid.uuid4())
@@ -349,10 +349,12 @@ class TestAutogen:
 
         llm = llm_model(  # type: ignore [operator]
             name="llm_model_name",
-            model=os.getenv("AZURE_GPT35_MODEL"),
+            model=os.getenv("AZURE_GPT35_MODEL", default="gpt-35-turbo-16k"),
             api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
-            base_url=os.getenv("AZURE_API_ENDPOINT"),
-            api_version=os.getenv("AZURE_API_VERSION"),
+            base_url=os.getenv(
+                "AZURE_API_ENDPOINT", default="https://my-deployment.openai.azure.com"
+            ),
+            api_version=os.getenv("AZURE_API_VERSION", default="2024-02-01"),
         )
         llm_model_uuid = str(uuid.uuid4())
         await add_model(

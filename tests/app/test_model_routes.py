@@ -176,7 +176,9 @@ class TestModelRoutes:
         fly_token_uuid = str(uuid.uuid4())
 
         model = {
-            "name": "test the deployment name char",  # within the character limit. Max 30
+            "name": "name",
+            "repo_name": "repo_name",
+            "fly_app_name": "test the deployment name char",  # within the character limit. Max 30
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
             "gh_token": {
                 "uuid": gh_token_uuid,
@@ -216,7 +218,9 @@ class TestModelRoutes:
 
         assert response.status_code == 200
         expected = {
-            "name": "test the deployment name char",
+            "name": "name",
+            "repo_name": "repo_name",
+            "fly_app_name": "test the deployment name char",
             "team": {"type": "team", "name": "TwoAgentTeam", "uuid": team_uuid},
             "gh_token": {
                 "type": "secret",
@@ -239,7 +243,9 @@ class TestModelRoutes:
         fly_token_uuid = str(uuid.uuid4())
 
         model = {
-            "name": "test the deployment name charc",  # beyond the character limit. Max 30
+            "name": "name",
+            "repo_name": "repo_name",
+            "fly_app_name": "test the deployment name charc",  # beyond the character limit. Max 30
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
             "gh_token": {
                 "uuid": gh_token_uuid,
@@ -270,7 +276,9 @@ class TestModelRoutes:
         fly_token_uuid = str(uuid.uuid4())
 
         model = {
-            "name": "Test",
+            "name": "name",
+            "repo_name": "repo_name",
+            "fly_app_name": "Test",
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
             "gh_token": {
                 "uuid": gh_token_uuid,
@@ -335,7 +343,9 @@ class TestModelRoutes:
         gh_token_uuid = str(uuid.uuid4())
         fly_token_uuid = str(uuid.uuid4())
         model = {
-            "name": "Test",
+            "name": "name",
+            "repo_name": "repo_name",
+            "fly_app_name": "Test",
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
             "gh_token": {
                 "uuid": gh_token_uuid,
@@ -377,7 +387,9 @@ class TestModelRoutes:
         # Update deployment
         new_gh_token_uuid = str(uuid.uuid4())
         model = {
-            "name": "Test",
+            "name": "name",
+            "repo_name": "repo_name",
+            "fly_app_name": "Test",
             "team": {"uuid": team_uuid, "type": "team", "name": "TwoAgentTeam"},
             "gh_token": {
                 "uuid": new_gh_token_uuid,
@@ -396,7 +408,9 @@ class TestModelRoutes:
 
         assert response.status_code == 200
         expected = {
-            "name": "Test",
+            "name": "name",
+            "repo_name": "repo_name",
+            "fly_app_name": "Test",
             "team": {
                 "type": "team",
                 "name": "TwoAgentTeam",

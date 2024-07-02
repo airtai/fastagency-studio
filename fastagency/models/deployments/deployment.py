@@ -27,8 +27,26 @@ GitHubTokenRef: TypeAlias = GitHubToken.get_reference_model()  # type: ignore[va
 @Registry.get_default().register("deployment")
 class Deployment(Model):
     name: Annotated[
-        str, Field(..., description="The name of the item", min_length=1, max_length=30)
+        str,
+        Field(
+            ..., description="The application name to use on the website.", min_length=1
+        ),
     ]
+
+    repo_name: Annotated[
+        str, Field(..., description="The name of the GitHub repository.", min_length=1)
+    ]
+
+    fly_app_name: Annotated[
+        str,
+        Field(
+            ...,
+            description="The name of the Fly.io application.",
+            min_length=1,
+            max_length=30,
+        ),
+    ]
+
     team: Annotated[
         team_type_refs,
         Field(
@@ -43,11 +61,20 @@ class Deployment(Model):
     async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
         raise NotImplementedError
 
-    @field_validator("name")
+    @field_validator("fly_app_name")
     @classmethod
-    def validate_name(cls: Type["Deployment"], value: Any) -> Any:
-        if not re.match(r"^[a-zA-Z0-9\- ]+$", value):
+    def validate_fly_app_name(cls: Type["Deployment"], value: Any) -> Any:
+        if not re.match(r"^[a-zA-Z][a-zA-Z0-9\- ]*$", value):
             raise ValueError(
-                "Name must contain only letters, numbers, spaces, and dashes."
+                "Fly.io app name must contain only letters, numbers, spaces, dashes and should not start with a numeric literal. Example of a valid name: my-fly-app"
+            )
+        return value
+
+    @field_validator("repo_name")
+    @classmethod
+    def validate_repo_name(cls: Type["Deployment"], value: Any) -> Any:
+        if not re.match(r"^[A-Za-z0-9._-]+$", value):
+            raise ValueError(
+                "The repository name can only contain ASCII letters, digits, and the characters ., -, and _. Example of a valid name: my-fa-repo"
             )
         return value

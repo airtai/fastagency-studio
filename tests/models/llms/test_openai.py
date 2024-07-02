@@ -28,7 +28,7 @@ class TestOpenAIAPIKey:
         )  # pragma: allowlist secret
 
     def test_constructor_failure(self) -> None:
-        with pytest.raises(ValueError, match="String should match pattern"):
+        with pytest.raises(ValueError, match="Invalid OpenAI API Key"):
             OpenAIAPIKey(
                 api_key="_sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest",  # pragma: allowlist secret
                 name="Hello World!",

@@ -229,6 +229,20 @@ class TestDeployment:
                 fly_token=FlyToken.get_reference_model()(uuid=uuid.uuid4()),
             )
 
+    @pytest.mark.parametrize("repo_name", ["repo name", "repo@name", "repo/name"])
+    def test_invalid_repo_name(self, repo_name: str) -> None:
+        with pytest.raises(
+            ValueError, match="The repository name can only contain ASCII letters"
+        ):
+            Deployment(
+                team=TwoAgentTeam.get_reference_model()(uuid=uuid.uuid4()),
+                name="Test Deployment",
+                repo_name=repo_name,
+                fly_app_name="fly-app-name",
+                gh_token=GitHubToken.get_reference_model()(uuid=uuid.uuid4()),
+                fly_token=FlyToken.get_reference_model()(uuid=uuid.uuid4()),
+            )
+
     @pytest.mark.parametrize("fly_app_name", ["app-name", "fa-123-app-name"])
     def test_valid_fly_io_app_name(self, fly_app_name: str) -> None:
         Deployment(

@@ -1,7 +1,8 @@
-from typing import Annotated, Any, Dict, Literal
+import re
+from typing import Annotated, Any, Dict, Literal, Type
 from uuid import UUID
 
-from pydantic import AfterValidator, Field, HttpUrl
+from pydantic import AfterValidator, Field, HttpUrl, field_validator
 from typing_extensions import TypeAlias
 
 from ..base import Model
@@ -26,7 +27,6 @@ class AnthropicAPIKey(Model):
         str,
         Field(
             description="The API Key from Anthropic",
-            pattern=r"^sk-ant-api03-[a-zA-Z0-9\-\_]{95}$",
         ),
     ]
 
@@ -35,6 +35,13 @@ class AnthropicAPIKey(Model):
         my_model: AnthropicAPIKey = await cls.from_db(model_id)
 
         return my_model.api_key
+
+    @field_validator("api_key")
+    @classmethod
+    def validate_api_key(cls: Type["AnthropicAPIKey"], value: Any) -> Any:
+        if not re.match(r"^sk-ant-api03-[a-zA-Z0-9\-\_]{95}$", value):
+            raise ValueError("Invalid Anthropic API Key")
+        return value
 
 
 AnthropicAPIKeyRef: TypeAlias = AnthropicAPIKey.get_reference_model()  # type: ignore[valid-type]

@@ -126,26 +126,6 @@ class SaasAppGenerator:
             # logging.error(f"Stderr output:\n{e.stderr}")
             raise RuntimeError(f"Failed to execute command: {command}") from e
 
-    # def _setup_app_in_fly(self, temp_dir_path: Path, env: Dict[str, Any]) -> str:
-    #     cwd = temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
-
-    #     command = "cd app"
-    #     self._run_cli_command(command, cwd=str(cwd))
-
-    #     cwd_app = str(cwd / "app")
-
-    #     # Add FLY_API_TOKEN to the environment variables to pass to the subprocess
-    #     env["FLY_API_TOKEN"] = self.fly_api_token
-
-    #     repo_name = f"{self.app_name.replace(' ', '-').lower()}-{uuid.uuid4()}"
-    #     command = f"wasp deploy fly setup {repo_name} mia"
-    #     self._run_cli_command(command, cwd=cwd_app, env=env)
-
-    #     command = "echo | wasp deploy fly create-db mia"
-    #     self._run_cli_command(command, cwd=cwd_app, env=env)
-
-    #     return repo_name
-
     def validate_gh_token(self, env: Dict[str, Any]) -> None:
         env["GH_TOKEN"] = self.github_token
 
@@ -196,7 +176,6 @@ class SaasAppGenerator:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = Path(temp_dir)
 
-            # repo_name = f"{self.app_name.replace(' ', '-')}".lower()
             repo_name = self.repo_name
             for attempt in range(max_retries):
                 try:
@@ -293,9 +272,6 @@ class SaasAppGenerator:
         self._run_cli_command(command, cwd=cwd, env=env)
 
         # get the account name and repo name
-        # create_cmd_output_file_path = Path(
-        #     f"{temp_dir_path}/{SaasAppGenerator.ARTIFACTS_DIR}/create-repo.txt"
-        # )
         account_and_repo_name = self._get_account_name_and_repo_name(self.gh_repo_url)
         account_name = account_and_repo_name.split("/")[0]
 
@@ -344,21 +320,11 @@ class SaasAppGenerator:
             # copy the environment variables to pass to the subprocess
             env = environ.copy()
 
-            # Setup the app in fly
-            # flyio_app_name = self._setup_app_in_fly(temp_dir_path, env=env)
-
             # Add the GitHub token to the environment variables to pass to the subprocess
             env["GH_TOKEN"] = self.github_token
 
-            # Create a new repository
-            # self.create_new_repository(temp_dir_path, max_retries, env=env)
-
             # Initialize the git repository and push the changes
             self._initialize_git_and_push(temp_dir_path, env=env)
-
-            # flyio_app_url = f"https://{flyio_app_name}-client.fly.dev"
-
-            # return flyio_app_url
 
 
 def main() -> None:

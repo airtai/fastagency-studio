@@ -73,8 +73,8 @@ jobs:
       environment: testing
       use-llms: true
     secrets: inherit  # pragma: allowlist secret
-    needs:
-      - test-without-llms
+    # needs:
+    #   - test-without-llms
 
   test-macos-latest:
     if: github.event.pull_request.draft == false

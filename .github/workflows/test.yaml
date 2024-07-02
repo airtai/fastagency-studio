@@ -60,14 +60,14 @@ jobs:
       - name: Set up environment variables
         run: |
           # check if an environment var or secret is defined and set env var to its value
-          if [ -n "${{ secrets.AZURE_API_VERSION }}" ]; then
-            echo "AZURE_API_VERSION=${{ secrets.AZURE_API_VERSION }}" >> $GITHUB_ENV
+          if [ -n "${{ vars.AZURE_API_VERSION }}" ]; then
+            echo "AZURE_API_VERSION=${{ vars.AZURE_API_VERSION }}" >> $GITHUB_ENV
           fi
-          if [ -n "${{ secrets.AZURE_API_ENDPOINT }}" ]; then
-            echo "AZURE_API_ENDPOINT=${{ secrets.AZURE_API_ENDPOINT }}" >> $GITHUB_ENV
+          if [ -n "${{ vars.AZURE_API_ENDPOINT }}" ]; then
+            echo "AZURE_API_ENDPOINT=${{ vars.AZURE_API_ENDPOINT }}" >> $GITHUB_ENV
           fi
-          if [ -n "${{ secrets.AZURE_GPT35_MODEL }}" ]; then
-            echo "AZURE_GPT35_MODEL=${{ secrets.AZURE_GPT35_MODEL }}" >> $GITHUB_ENV
+          if [ -n "${{ vars.AZURE_GPT35_MODEL }}" ]; then
+            echo "AZURE_GPT35_MODEL=${{ vars.AZURE_GPT35_MODEL }}" >> $GITHUB_ENV
           fi
           if [ -n "${{ secrets.AZURE_OPENAI_API_KEY }}" ]; then
             echo "AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}" >> $GITHUB_ENV

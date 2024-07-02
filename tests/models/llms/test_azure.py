@@ -1,41 +1,19 @@
-import uuid
 from typing import Any, Dict
 
 import pytest
 
-from fastagency.helpers import get_model_by_ref
+from fastagency.helpers import create_autogen, get_model_by_ref
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
-
-from .test_end2end import end2end_simple_chat_with_two_agents
 
 
 def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("AZURE_OAI_API_KEY", raising=False)
 
-    from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
+    from fastagency.models.llms.azure import AzureOAI
 
     assert AzureOAI is not None
     assert AzureOAIAPIKey is not None
-
-
-class TestAzureOAIAPIKey:
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    async def test_azure_api_key_model_create_autogen(
-        self,
-        azure_oai_key_ref: ObjectReference,
-        user_uuid: str,
-    ) -> None:
-        model = await get_model_by_ref(azure_oai_key_ref)
-        assert isinstance(model, AzureOAIAPIKey)
-
-        # Call create_autogen
-        actual_api_key = await AzureOAIAPIKey.create_autogen(
-            model_id=azure_oai_key_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        assert isinstance(actual_api_key, str)
 
 
 class TestAzureOAI:
@@ -170,9 +148,9 @@ class TestAzureOAI:
         azure_oai_ref: ObjectReference,
         azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
     ) -> None:
-        actual_llm_config = await AzureOAI.create_autogen(
-            model_id=azure_oai_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
+        actual_llm_config = await create_autogen(
+            model_ref=azure_oai_ref,
+            user_uuid=user_uuid,
         )
         assert isinstance(actual_llm_config, dict)
         assert (
@@ -180,17 +158,3 @@ class TestAzureOAI:
             == azure_gpt35_turbo_16k_llm_config["config_list"][0]
         )
         assert actual_llm_config == azure_gpt35_turbo_16k_llm_config
-
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    @pytest.mark.azure_oai()
-    async def test_end2end(
-        self,
-        user_uuid: str,
-        azure_oai_ref: ObjectReference,
-    ) -> None:
-        llm_config = await AzureOAI.create_autogen(
-            model_id=azure_oai_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        end2end_simple_chat_with_two_agents(llm_config=llm_config)

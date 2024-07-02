@@ -33,6 +33,7 @@ search:
             - [ping_handler](api/fastagency/faststream_app/ping_handler.md)
         - helpers
             - [add_model_to_user](api/fastagency/helpers/add_model_to_user.md)
+            - [create_autogen](api/fastagency/helpers/create_autogen.md)
             - [create_model](api/fastagency/helpers/create_model.md)
             - [create_model_ref](api/fastagency/helpers/create_model_ref.md)
             - [deploy_saas_app](api/fastagency/helpers/deploy_saas_app.md)

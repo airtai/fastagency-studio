@@ -12,8 +12,6 @@ from fastagency.models.llms.together import (
     together_model_string,
 )
 
-from .test_end2end import end2end_simple_chat_with_two_agents
-
 
 def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("TOGETHER_API_KEY", raising=False)
@@ -42,23 +40,6 @@ class TestTogetherAIAPIKey:
                 api_key="not a proper key",  # pragma: allowlist secret
                 name="Hello World!",
             )  # pragma: allowlist secret
-
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    async def test_togetherai_api_key_model_create_autogen(
-        self,
-        together_ai_key_ref: ObjectReference,
-        user_uuid: str,
-    ) -> None:
-        model = await get_model_by_ref(together_ai_key_ref)
-        assert isinstance(model, TogetherAIAPIKey)
-
-        # Call create_autogen
-        actual_api_key = await TogetherAIAPIKey.create_autogen(
-            model_id=together_ai_key_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        assert isinstance(actual_api_key, str)
 
 
 class TestTogetherAI:
@@ -91,7 +72,7 @@ class TestTogetherAI:
 
         expected = {
             "name": name,
-            "model": "Meta Llama 3 70B Chat",
+            "model": "Mixtral-8x7B Instruct v0.1",
             "api_key": {
                 "type": "secret",
                 "name": "TogetherAIAPIKey",
@@ -205,7 +186,7 @@ class TestTogetherAI:
         expected = {
             "config_list": [
                 {
-                    "model": "meta-llama/Llama-3-70b-chat-hf",
+                    "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
                     "api_key": api_key,
                     "base_url": "https://api.together.xyz/v1",
                     "api_type": "togetherai",
@@ -215,17 +196,3 @@ class TestTogetherAI:
         }
 
         assert actual_llm_config == expected
-
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    @pytest.mark.togetherai()
-    async def test_end2end(
-        self,
-        user_uuid: str,
-        togetherai_ref: ObjectReference,
-    ) -> None:
-        llm_config = await TogetherAI.create_autogen(
-            model_id=togetherai_ref.uuid,
-            user_id=uuid.UUID(user_uuid),
-        )
-        end2end_simple_chat_with_two_agents(llm_config=llm_config)

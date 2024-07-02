@@ -139,12 +139,14 @@ class TestDeployment:
             },
             "properties": {
                 "name": {
-                    "description": "The application name that will be displayed on the homepage.",
+                    "description": "The application name to use on the website.",
+                    "minLength": 1,
                     "title": "Name",
                     "type": "string",
                 },
                 "repo_name": {
                     "description": "The name of the GitHub repository.",
+                    "minLength": 1,
                     "title": "Repo Name",
                     "type": "string",
                 },

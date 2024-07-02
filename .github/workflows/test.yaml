@@ -5,7 +5,8 @@ on:
     inputs:
       environment:
         description: 'Environment to run the tests in'
-        required: true
+        required: false
+        default: null
         type: string
       python-version:
         description: 'Python version to run the tests in'
@@ -47,15 +48,33 @@ jobs:
       DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency
       PY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
       NATS_URL: nats://localhost:4222
-      AZURE_API_VERSION: ${{ vars.AZURE_API_VERSION }}
-      AZURE_API_ENDPOINT: ${{ vars.AZURE_API_ENDPOINT }}
-      AZURE_GPT35_MODEL: ${{ vars.AZURE_GPT35_MODEL }}
-      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     steps:
+      - name: Set up environment variables
+        run: |
+          # check if an environment var or secret is defined and set env var to its value
+          if [ -n "${{ vars.AZURE_API_VERSION }}" ]; then
+            echo "AZURE_API_VERSION=${{ vars.AZURE_API_VERSION }}" >> $GITHUB_ENV
+          fi
+          if [ -n "${{ vars.AZURE_API_ENDPOINT }}" ]; then
+            echo "AZURE_API_ENDPOINT=${{ vars.AZURE_API_ENDPOINT }}" >> $GITHUB_ENV
+          fi
+          if [ -n "${{ vars.AZURE_GPT35_MODEL }}" ]; then
+            echo "AZURE_GPT35_MODEL=${{ vars.AZURE_GPT35_MODEL }}" >> $GITHUB_ENV
+          fi
+          if [ -n "${{ secrets.AZURE_OPENAI_API_KEY }}" ]; then
+            echo "AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}" >> $GITHUB_ENV
+          fi
+          if [ -n "${{ secrets.TOGETHER_API_KEY }}" ]; then
+            echo "TOGETHER_API_KEY=${{ secrets.TOGETHER_API_KEY }}" >> $GITHUB_ENV
+          fi
+          if [ -n "${{ secrets.OPENAI_API_KEY }}" ]; then
+            echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+          fi
+          if [ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+            echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
+          fi
+
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5

@@ -1,3 +1,4 @@
+import re
 from typing import Annotated, List, Literal, Union
 
 from autogen.agentchat import ConversableAgent
@@ -17,10 +18,10 @@ agent_type_refs: TypeAlias = Union[  # type: ignore[valid-type]
 
 
 class TeamBaseModel(Model):
-    termination_message_regex: Annotated[
+    is_termination_msg_regex: Annotated[
         str,
         Field(
-            description="Whether the message is a termination message or not. If it is a termination message, the agent will not respond to it."
+            description="Whether the message is a termination message or not. If it is a termination message, the chat will terminate."
         ),
     ] = "^TERMINATE$"
 
@@ -31,6 +32,9 @@ class TeamBaseModel(Model):
             description="Mode for human input",
         ),
     ] = "ALWAYS"
+
+    def is_termination_msg(self, message: str) -> bool:
+        return bool(re.match(self.is_termination_msg_regex, message))
 
 
 def register_toolbox_functions(

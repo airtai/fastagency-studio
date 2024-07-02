@@ -1,4 +1,4 @@
-from typing import Annotated, List, Optional, Tuple
+from typing import Annotated, Any, List, Optional, Tuple
 from uuid import UUID
 
 import autogen.agentchat.contrib.web_surfer
@@ -18,7 +18,7 @@ class BingAPIKey(Model):
     api_key: Annotated[str, Field(description="The API Key from Bing")]
 
     @classmethod
-    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:
+    async def create_autogen(cls, model_id: UUID, user_id: UUID, **kwargs: Any) -> str:
         my_model = await cls.from_db(model_id)
 
         return my_model.api_key
@@ -45,7 +45,7 @@ class WebSurferAgent(AgentBaseModel):
 
     @classmethod
     async def create_autogen(
-        cls, model_id: UUID, user_id: UUID
+        cls, model_id: UUID, user_id: UUID, **kwargs: Any
     ) -> Tuple[autogen.agentchat.AssistantAgent, List[Client]]:
         my_model = await cls.from_db(model_id)
 
@@ -83,6 +83,7 @@ class WebSurferAgent(AgentBaseModel):
             llm_config=llm,
             summarizer_llm_config=summarizer_llm,
             browser_config=browser_config,
+            **kwargs,
         )
 
         return agent, []

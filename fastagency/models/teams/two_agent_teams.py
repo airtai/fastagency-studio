@@ -54,8 +54,10 @@ class TwoAgentTeam(TeamBaseModel):
     ]
 
     @classmethod
-    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Any:
+    async def create_autogen(cls, model_id: UUID, user_id: UUID, **kwargs: Any) -> Any:
         my_model = await cls.from_db(model_id)
+
+        is_termination_msg = my_model.is_termination_msg
 
         initial_agent_model = await my_model.initial_agent.get_data_model().from_db(
             my_model.initial_agent.uuid
@@ -64,7 +66,7 @@ class TwoAgentTeam(TeamBaseModel):
             initial_agent,
             initial_agent_clients,
         ) = await initial_agent_model.create_autogen(
-            my_model.initial_agent.uuid, user_id
+            my_model.initial_agent.uuid, user_id, is_termination_msg=is_termination_msg
         )
 
         secondary_agent_model = await my_model.secondary_agent.get_data_model().from_db(
@@ -74,7 +76,9 @@ class TwoAgentTeam(TeamBaseModel):
             secondary_agent,
             secondary_agent_clients,
         ) = await secondary_agent_model.create_autogen(
-            my_model.secondary_agent.uuid, user_id
+            my_model.secondary_agent.uuid,
+            user_id,
+            is_termination_msg=is_termination_msg,
         )
 
         return AutogenTwoAgentTeam(

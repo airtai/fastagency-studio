@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 import autogen
 import pytest
 
@@ -227,13 +229,18 @@ class TestAssistantAgent:
         user_uuid: str,
         assistant_ref: ObjectReference,
     ) -> None:
+        def is_termination_msg(msg: Dict[str, Any]) -> bool:
+            return "TERMINATE" in ["content"]
+
         ag_assistant, ag_toolkits = await create_autogen(
             model_ref=assistant_ref,
             user_uuid=user_uuid,
+            is_termination_msg=is_termination_msg,
         )
         assert isinstance(ag_assistant, autogen.agentchat.AssistantAgent)
         assert isinstance(ag_toolkits[0], Client)
         assert len(ag_toolkits) == 1
+        assert ag_assistant._is_termination_msg == is_termination_msg
 
     # todo: fix this test
     weather_assistants = get_by_tag("assistant", "weather")

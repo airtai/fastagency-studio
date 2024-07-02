@@ -1,4 +1,4 @@
-from typing import Annotated, Any, Dict, List, Optional, Tuple
+from typing import Annotated, Any, Callable, Dict, List, Optional, Tuple
 from uuid import UUID
 
 import autogen
@@ -26,8 +26,9 @@ class UserProxyAgent(Model):
 
         agent_name = my_model.name
 
-        def is_termination_msg(msg: Dict[str, Any]) -> bool:  # type: ignore[name-defined]
-            return "content" not in msg and "TERMINATE" in msg["content"]
+        is_termination_msg: Callable[[Dict[str, Any]], bool] = kwargs[
+            "is_termination_msg"
+        ]
 
         agent = autogen.agentchat.UserProxyAgent(
             name=agent_name,

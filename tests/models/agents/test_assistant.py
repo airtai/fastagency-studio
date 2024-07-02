@@ -243,15 +243,10 @@ class TestAssistantAgent:
         assert len(ag_toolkits) == 1
         assert ag_assistant._is_termination_msg == is_termination_msg
 
-    # todo: fix this test
-    weather_assistants = get_by_tag("assistant", "weather")
-    weather_assistants.remove("assistant_weather_togetherai_ref")
-    # weather_assistants.remove("weather_toolbox_ref")
-
     @pytest.mark.asyncio()
     @pytest.mark.db()
     @pytest.mark.llm()
-    @parametrize_fixtures("assistant_ref", weather_assistants)
+    @parametrize_fixtures("assistant_ref", get_by_tag("assistant", "weather"))
     async def test_assistant_weather_end2end(
         self,
         user_uuid: str,

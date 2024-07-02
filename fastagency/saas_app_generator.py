@@ -4,7 +4,6 @@ import random
 import shutil
 import subprocess  # nosec B404
 import tempfile
-import uuid
 from os import environ
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -63,6 +62,8 @@ class SaasAppGenerator:
         fastagency_deployment_uuid: str,
         github_token: str,
         app_name: str,
+        repo_name: str,
+        fly_app_name: str,
     ) -> None:
         """GitHubManager class."""
         self.template_repo_url = SaasAppGenerator.TEMPLATE_REPO_URL
@@ -70,6 +71,8 @@ class SaasAppGenerator:
         self.fastagency_deployment_uuid = fastagency_deployment_uuid
         self.github_token = github_token
         self.app_name = app_name
+        self.repo_name = repo_name
+        self.fly_app_name = fly_app_name
 
     @staticmethod
     def _get_env_var(var_name: str) -> str:
@@ -123,25 +126,25 @@ class SaasAppGenerator:
             # logging.error(f"Stderr output:\n{e.stderr}")
             raise RuntimeError(f"Failed to execute command: {command}") from e
 
-    def _setup_app_in_fly(self, temp_dir_path: Path, env: Dict[str, Any]) -> str:
-        cwd = temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
+    # def _setup_app_in_fly(self, temp_dir_path: Path, env: Dict[str, Any]) -> str:
+    #     cwd = temp_dir_path / SaasAppGenerator.EXTRACTED_TEMPLATE_DIR_NAME
 
-        command = "cd app"
-        self._run_cli_command(command, cwd=str(cwd))
+    #     command = "cd app"
+    #     self._run_cli_command(command, cwd=str(cwd))
 
-        cwd_app = str(cwd / "app")
+    #     cwd_app = str(cwd / "app")
 
-        # Add FLY_API_TOKEN to the environment variables to pass to the subprocess
-        env["FLY_API_TOKEN"] = self.fly_api_token
+    #     # Add FLY_API_TOKEN to the environment variables to pass to the subprocess
+    #     env["FLY_API_TOKEN"] = self.fly_api_token
 
-        repo_name = f"{self.app_name.replace(' ', '-').lower()}-{uuid.uuid4()}"
-        command = f"wasp deploy fly setup {repo_name} mia"
-        self._run_cli_command(command, cwd=cwd_app, env=env)
+    #     repo_name = f"{self.app_name.replace(' ', '-').lower()}-{uuid.uuid4()}"
+    #     command = f"wasp deploy fly setup {repo_name} mia"
+    #     self._run_cli_command(command, cwd=cwd_app, env=env)
 
-        command = "echo | wasp deploy fly create-db mia"
-        self._run_cli_command(command, cwd=cwd_app, env=env)
+    #     command = "echo | wasp deploy fly create-db mia"
+    #     self._run_cli_command(command, cwd=cwd_app, env=env)
 
-        return repo_name
+    #     return repo_name
 
     def validate_gh_token(self, env: Dict[str, Any]) -> None:
         env["GH_TOKEN"] = self.github_token
@@ -193,7 +196,8 @@ class SaasAppGenerator:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = Path(temp_dir)
 
-            repo_name = f"{self.app_name.replace(' ', '-')}".lower()
+            # repo_name = f"{self.app_name.replace(' ', '-')}".lower()
+            repo_name = self.repo_name
             for attempt in range(max_retries):
                 try:
                     log_file = temp_dir_path / "log_file.txt"
@@ -323,6 +327,9 @@ class SaasAppGenerator:
         command = f'gh variable set REACT_APP_NAME --body "{self.app_name}"'
         self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
 
+        command = f'gh variable set FLY_IO_APP_NAME --body "{self.fly_app_name}"'
+        self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
+
         if SaasAppGenerator.FASTAGENCY_SERVER_URL:
             command = f'gh variable set FASTAGENCY_SERVER_URL --body "{SaasAppGenerator.FASTAGENCY_SERVER_URL}"'
             self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
@@ -360,9 +367,18 @@ def main() -> None:
     parser.add_argument("uuid", help="Deployment UUID")
     parser.add_argument("gh_token", help="GitHub token")
     parser.add_argument("app_name", help="Deployment name")
+    parser.add_argument("fly_app_name", help="Fly app name")
+    parser.add_argument("repo_name", help="Repo name")
     args = parser.parse_args()
 
-    manager = SaasAppGenerator(args.fly_token, args.uuid, args.gh_token, args.app_name)
+    manager = SaasAppGenerator(
+        args.fly_token,
+        args.uuid,
+        args.gh_token,
+        args.app_name,
+        args.fly_app_name,
+        args.repo_name,
+    )
 
     manager.create_new_repository()
     logging.info(f"{manager.gh_repo_url=}")

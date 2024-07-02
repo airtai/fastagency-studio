@@ -29,13 +29,12 @@ class Deployment(Model):
     name: Annotated[
         str,
         Field(
-            ...,
-            description="The application name that will be displayed on the homepage.",
+            ..., description="The application name to use on the website.", min_length=1
         ),
     ]
 
     repo_name: Annotated[
-        str, Field(..., description="The name of the GitHub repository.")
+        str, Field(..., description="The name of the GitHub repository.", min_length=1)
     ]
 
     fly_app_name: Annotated[
@@ -67,6 +66,6 @@ class Deployment(Model):
     def validate_fly_app_name(cls: Type["Deployment"], value: Any) -> Any:
         if not re.match(r"^[a-zA-Z][a-zA-Z0-9\- ]*$", value):
             raise ValueError(
-                "Fly.io app name must contain only letters, numbers, spaces, dashes and should not start with a numeric literal."
+                "Fly.io app name must contain only letters, numbers, spaces, dashes and should not start with a numeric literal. Example of a valid name: 'my-fly-app'"
             )
         return value

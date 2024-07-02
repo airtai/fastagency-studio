@@ -199,8 +199,15 @@ class TestModelRoutes:
         fastagency_deployment_uuid = "some-uuid"
         github_token = "some-github-token"
         app_name = "test fastagency template"
+        repo_name = "test-fastagency-template"
+        fly_app_name = "test-fastagency-template"
         saas_app = SaasAppGenerator(
-            fly_api_token, fastagency_deployment_uuid, github_token, app_name
+            fly_api_token,
+            fastagency_deployment_uuid,
+            github_token,
+            app_name,
+            repo_name,
+            fly_app_name,
         )
         saas_app.gh_repo_url = "https://some-git-url"
         with (
@@ -366,8 +373,15 @@ class TestModelRoutes:
         fastagency_deployment_uuid = "some-uuid"
         github_token = "some-github-token"
         app_name = "test fastagency template"
+        repo_name = "test-fastagency-template"
+        fly_app_name = "test-fastagency-template"
         saas_app = SaasAppGenerator(
-            fly_api_token, fastagency_deployment_uuid, github_token, app_name
+            fly_api_token,
+            fastagency_deployment_uuid,
+            github_token,
+            app_name,
+            repo_name,
+            fly_app_name,
         )
         saas_app.gh_repo_url = "https://some-git-url"
         with (

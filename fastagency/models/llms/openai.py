@@ -1,7 +1,8 @@
-from typing import Annotated, Any, Dict, Literal
+import re
+from typing import Annotated, Any, Dict, Literal, Type
 from uuid import UUID
 
-from pydantic import AfterValidator, Field, HttpUrl
+from pydantic import AfterValidator, Field, HttpUrl, field_validator
 from typing_extensions import TypeAlias
 
 from ..base import Model
@@ -39,7 +40,6 @@ class OpenAIAPIKey(Model):
         str,
         Field(
             description="The API Key from OpenAI",
-            pattern=r"^sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}$",
         ),
     ]
 
@@ -48,6 +48,13 @@ class OpenAIAPIKey(Model):
         my_model: OpenAIAPIKey = await cls.from_db(model_id)
 
         return my_model.api_key
+
+    @field_validator("api_key")
+    @classmethod
+    def validate_api_key(cls: Type["OpenAIAPIKey"], value: Any) -> Any:
+        if not re.match(r"^sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}$", value):
+            raise ValueError("Invalid OpenAI API Key")
+        return value
 
 
 OpenAIAPIKeyRef: TypeAlias = OpenAIAPIKey.get_reference_model()  # type: ignore[valid-type]

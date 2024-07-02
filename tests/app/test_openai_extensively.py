@@ -43,10 +43,10 @@ class TestValidateOpenAIKey:
         msg_dict.pop("input")
         msg_dict.pop("url")
         expected = {
-            "ctx": {"pattern": "^sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}$"},
+            "type": "value_error",
             "loc": ["api_key"],
-            "msg": "String should match pattern '^sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}$'",
-            "type": "string_pattern_mismatch",
+            "msg": "Value error, Invalid OpenAI API Key",
+            "ctx": {"error": "Invalid OpenAI API Key"},
         }
         assert msg_dict == expected
 

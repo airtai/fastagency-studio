@@ -42,6 +42,13 @@ class TestAnthropic:
         }
         assert model.model_dump() == expected
 
+    def test_anthropic_constructor_failure(self) -> None:
+        with pytest.raises(ValueError, match="Invalid Anthropic API Key"):
+            AnthropicAPIKey(
+                api_key="_sk-sUeBP9asw6GiYHXqtg70T3BlbkFJJuLwJFco90bOpU0Ntest",  # pragma: allowlist secret
+                name="Hello World!",
+            )
+
     def test_anthropic_model_schema(self) -> None:
         schema = Anthropic.model_json_schema()
         expected = {

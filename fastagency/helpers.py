@@ -56,6 +56,8 @@ async def validate_tokens_and_create_gh_repo(
         fly_api_token=found_fly_token_uuid,
         github_token=found_gh_token_uuid,
         app_name=model["name"],
+        repo_name=model["repo_name"],
+        fly_app_name=model["fly_app_name"],
         fastagency_deployment_uuid=model_uuid,
     )
 

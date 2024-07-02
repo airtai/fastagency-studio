@@ -46,7 +46,7 @@ class TestTwoAgentTeam:
 
         assert team
 
-    def test_two_agent_model_schema(self) -> None:
+    def test_two_agents_team_schema(self) -> None:
         schema = TwoAgentTeam.model_json_schema()
         expected = {
             "$defs": {
@@ -145,10 +145,10 @@ class TestTwoAgentTeam:
                     "title": "Name",
                     "type": "string",
                 },
-                "termination_message_regex": {
-                    "default": "^TERMINATE$",
-                    "description": "Whether the message is a termination message or not. If it is a termination message, the agent will not respond to it.",
-                    "title": "Termination Message Regex",
+                "is_termination_msg_regex": {
+                    "default": "TERMINATE",
+                    "description": "Whether the message is a termination message or not. If it is a termination message, the chat will terminate.",
+                    "title": "Is Termination Msg Regex",
                     "type": "string",
                 },
                 "human_input_mode": {

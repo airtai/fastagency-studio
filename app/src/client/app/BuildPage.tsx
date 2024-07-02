@@ -7,32 +7,14 @@ import CustomAuthRequiredLayout from './layout/CustomAuthRequiredLayout';
 import CustomSidebar from '../components/CustomSidebar';
 import { cn } from '../../shared/utils';
 
-import Secrets from '../components/buildPage/Secrets';
-import LLMs from '../components/buildPage/LLMs';
-import Agents from '../components/buildPage/Agents';
-import Teams from '../components/buildPage/Teams';
-import ToolBoxes from '../components/buildPage/ToolBoxes';
-import Deployment from '../components/buildPage/Deployments';
 import LoadingComponent from '../components/LoadingComponent';
 import { useBuildPage } from '../hooks/useBuildPage';
 import { filerOutComponentData } from '../utils/buildPageUtils';
+import UserPropertyHandler from '../components/buildPage/UserPropertyHandler';
 
 interface BuildPageProps {
   user: User;
 }
-
-interface componentsMapType {
-  [key: string]: React.FC<any>;
-}
-
-const componentsMap: componentsMapType = {
-  secret: Secrets,
-  llm: LLMs,
-  agent: Agents,
-  team: Teams,
-  toolbox: ToolBoxes,
-  deployment: Deployment,
-};
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -113,6 +95,7 @@ const BuildPage = ({ user }: BuildPageProps) => {
   const { data, loading, error } = useBuildPage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sideNavSelectedItem, setSideNavSelectedItem] = useState('secret');
+  const [togglePropertyList, setTogglePropertyList] = useState(false);
 
   const wrapperClass = document.body.classList.contains('server-error')
     ? 'h-[calc(100vh-173px)]'
@@ -142,10 +125,9 @@ const BuildPage = ({ user }: BuildPageProps) => {
 
   const handleSideNavItemClick = (selectedComponentName: string) => {
     setSideNavSelectedItem(selectedComponentName);
+    setTogglePropertyList(!togglePropertyList);
     sessionStorage.setItem('selectedBuildPageTab', selectedComponentName);
   };
-
-  const ComponentToRender = data && componentsMap[sideNavSelectedItem];
 
   return (
     <div className='dark:bg-boxdark-2 dark:text-bodydark bg-captn-light-blue'>
@@ -176,8 +158,11 @@ const BuildPage = ({ user }: BuildPageProps) => {
                 >
                   Oops! Something went wrong. Our server is currently unavailable. Please try again later.
                 </p>
-              ) : ComponentToRender ? (
-                <ComponentToRender data={filerOutComponentData(data, sideNavSelectedItem)} />
+              ) : data ? (
+                <UserPropertyHandler
+                  data={filerOutComponentData(data, sideNavSelectedItem)}
+                  togglePropertyList={togglePropertyList}
+                />
               ) : (
                 <p
                   className='absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl md:text-6xl text-airt-font-base'

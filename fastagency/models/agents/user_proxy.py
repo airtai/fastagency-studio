@@ -1,4 +1,4 @@
-from typing import Annotated, Any, Callable, Dict, List, Optional, Tuple
+from typing import Annotated, Any, List, Optional, Tuple
 from uuid import UUID
 
 import autogen
@@ -26,15 +26,10 @@ class UserProxyAgent(Model):
 
         agent_name = my_model.name
 
-        is_termination_msg: Callable[[Dict[str, Any]], bool] = kwargs[
-            "is_termination_msg"
-        ]
-
         agent = autogen.agentchat.UserProxyAgent(
             name=agent_name,
             max_consecutive_auto_reply=my_model.max_consecutive_auto_reply,
             code_execution_config=False,
-            is_termination_msg=is_termination_msg,
             **kwargs,
         )
         return agent, []

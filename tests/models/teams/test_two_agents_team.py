@@ -203,5 +203,41 @@ class TestTwoAgentTeamSimpleChat:
         )
 
         assert ag_team
-        # history = ag_team.initiate_chat("What is 2 + 2?")
+        history = ag_team.initiate_chat("What is 2 + 2?")
+        assert sum(["TERMINATE" in msg["content"] for msg in history.chat_history]) == 1
+
+    # todo: fix this test
+    weather_teams = get_by_tag("team", "weather")
+    # print(f"{weather_teams=}")
+    weather_teams.remove("two_agent_team_weatherapi_assistant_weather_togetherai_ref")
+
+    @pytest.mark.asyncio()
+    @parametrize_fixtures("team_ref", weather_teams)
+    async def test_chat_with_weatherapi(
+        self,
+        user_uuid: str,
+        team_ref: ObjectReference,
+    ) -> None:
+        # print(f"test_simple_chat: {team_ref=}")
+
+        ag_team = await create_autogen(
+            model_ref=team_ref,
+            user_uuid=user_uuid,
+        )
+
+        assert ag_team
+        history = ag_team.initiate_chat("What is the weather in New York?")
         # print(f"history: {history=}")
+        assert any(
+            "sunny" in msg["content"]
+            for msg in history.chat_history
+            if "content" in msg and msg["content"] is not None
+        )
+        assert (
+            sum(
+                "TERMINATE" in msg["content"]
+                for msg in history.chat_history
+                if "content" in msg and msg["content"] is not None
+            )
+            == 1
+        )

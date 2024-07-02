@@ -16,7 +16,7 @@ class AssistantAgent(AgentBaseModel):
         Field(
             description="The system message of the agent. This message is used to inform the agent about his role in the conversation"
         ),
-    ] = "You are a helpful assistant."
+    ] = "You are a helpful assistant. After you successfully answer all questions and there are no new questions asked after your response (e.g. there is no specific direction or question asked after you give a response), terminate the chat by outputting 'TERMINATE'"
 
     @classmethod
     async def create_autogen(
@@ -31,6 +31,9 @@ class AssistantAgent(AgentBaseModel):
         clients = await my_model.get_clients_from_toolboxes(user_id)
 
         agent_name = my_model.name
+
+        if "human_input_mode" in kwargs:
+            kwargs.pop("human_input_mode")
 
         agent = autogen.agentchat.AssistantAgent(
             name=agent_name,

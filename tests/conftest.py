@@ -450,7 +450,7 @@ async def placeholder_assistant_noapi_ref(
         user_uuid=user_uuid,
         name=add_random_sufix("assistant"),
         llm=llm_ref,
-        system_message="You are a helpful assistant. After you successfully answer the question asked and there are no new questions, terminate the chat by outputting 'TERMINATE'",
+        # system_message="You are a helpful assistant. After you successfully answer the question asked and there are no new questions, terminate the chat by outputting 'TERMINATE'",
     )
 
 
@@ -511,6 +511,29 @@ async def placeholder_team_noapi_ref(
         name=add_random_sufix("two_agent_team_noapi"),
         initial_agent=user_proxy_agent_ref,
         secondary_agent=assistant_ref,
+        human_input_mode="NEVER",
+    )
+
+
+@tag_list("team", "weather")
+@expand_fixture(
+    dst_fixture_prefix="two_agent_team_weatherapi",
+    src_fixtures_names=get_by_tag("assistant", "weather"),
+    placeholder_name="assistant_ref",
+)
+async def placeholder_team_weatherapi_ref(
+    user_uuid: str,
+    assistant_ref: ObjectReference,
+    user_proxy_agent_ref: ObjectReference,
+) -> ObjectReference:
+    return await create_model_ref(
+        TwoAgentTeam,
+        "team",
+        user_uuid=user_uuid,
+        name=add_random_sufix("two_agent_team_weather"),
+        initial_agent=user_proxy_agent_ref,
+        secondary_agent=assistant_ref,
+        human_input_mode="NEVER",
     )
 
 

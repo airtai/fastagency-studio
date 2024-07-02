@@ -58,6 +58,7 @@ class TwoAgentTeam(TeamBaseModel):
         my_model = await cls.from_db(model_id)
 
         is_termination_msg = my_model.is_termination_msg
+        human_input_mode = my_model.human_input_mode
 
         initial_agent_model = await my_model.initial_agent.get_data_model().from_db(
             my_model.initial_agent.uuid
@@ -66,7 +67,10 @@ class TwoAgentTeam(TeamBaseModel):
             initial_agent,
             initial_agent_clients,
         ) = await initial_agent_model.create_autogen(
-            my_model.initial_agent.uuid, user_id, is_termination_msg=is_termination_msg
+            my_model.initial_agent.uuid,
+            user_id,
+            is_termination_msg=is_termination_msg,
+            human_input_mode=human_input_mode,
         )
 
         secondary_agent_model = await my_model.secondary_agent.get_data_model().from_db(
@@ -79,6 +83,7 @@ class TwoAgentTeam(TeamBaseModel):
             my_model.secondary_agent.uuid,
             user_id,
             is_termination_msg=is_termination_msg,
+            human_input_mode=human_input_mode,
         )
 
         return AutogenTwoAgentTeam(

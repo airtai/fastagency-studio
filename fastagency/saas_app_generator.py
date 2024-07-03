@@ -300,6 +300,9 @@ class SaasAppGenerator:
         command = 'gh secret set FASTAGENCY_DEPLOYMENT_UUID --body "$FASTAGENCY_DEPLOYMENT_UUID" --app actions'
         self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
 
+        command = 'gh secret set USER_GH_PAT --body "$GH_TOKEN" --app actions'
+        self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
+
         command = f'gh variable set REACT_APP_NAME --body "{self.app_name}"'
         self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
 

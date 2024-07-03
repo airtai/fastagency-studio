@@ -203,6 +203,7 @@ def test_set_github_actions_secrets(
         expected_commands = [
             'gh secret set FLY_API_TOKEN --body "$FLY_API_TOKEN" --app actions',
             'gh secret set FASTAGENCY_DEPLOYMENT_UUID --body "$FASTAGENCY_DEPLOYMENT_UUID" --app actions',
+            'gh secret set USER_GH_PAT --body "$GH_TOKEN" --app actions',
             f'gh variable set REACT_APP_NAME --body "{saas_app_generator.app_name}"',
             f'gh variable set FLY_IO_APP_NAME --body "{saas_app_generator.fly_app_name}"',
         ]

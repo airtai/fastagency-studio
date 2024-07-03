@@ -68,7 +68,7 @@ class WebSurferAgent(AgentBaseModel):
     ]
     viewport_size: Annotated[
         int, Field(description="The viewport size of the browser")
-    ] = 1080
+    ] = 1024
     bing_api_key: Annotated[
         Optional[BingAPIKeyRef], Field(description="The Bing API key for the browser")
     ] = None
@@ -83,7 +83,7 @@ class WebSurferAgent(AgentBaseModel):
 
         llm = await llm_model.create_autogen(my_model.llm.uuid, user_id)
 
-        clients = await my_model.get_clients_from_toolboxes(user_id)  # noqa: F841
+        # clients = await my_model.get_clients_from_toolboxes(user_id)
 
         summarizer_llm_model = await my_model.summarizer_llm.get_data_model().from_db(
             my_model.summarizer_llm.uuid
@@ -105,7 +105,13 @@ class WebSurferAgent(AgentBaseModel):
         browser_config = {
             "viewport_size": my_model.viewport_size,
             "bing_api_key": bing_api_key,
+            "request_kwargs": {
+                "headers": {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36",
+                }
+            },
         }
+
         agent_name = my_model.name
 
         agent = AutogenWebSurferAgent(
@@ -113,6 +119,7 @@ class WebSurferAgent(AgentBaseModel):
             llm_config=llm,
             summarizer_llm_config=summarizer_llm,
             browser_config=browser_config,
+            human_input_mode="NEVER",
             **kwargs,
         )
 

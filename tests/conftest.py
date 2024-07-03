@@ -78,14 +78,26 @@ def azure_model_llm_config(model_env_name: str) -> Dict[str, Any]:
     api_base = os.getenv(
         "AZURE_API_ENDPOINT", default="https://my-deployment.openai.azure.com"
     )
-    gpt_3_5_model_name = os.getenv(model_env_name, default="gpt-35-turbo-16k")
+
+    def get_default_model_name(model_env_name: str) -> str:
+        if model_env_name == "AZURE_GPT35_MODEL":
+            return "gpt-3.5-turbo-16k"
+        elif model_env_name == "AZURE_GPT4_MODEL":
+            return "gpt-4"
+        elif model_env_name == "AZURE_GPT4o_MODEL":
+            return "gpt-4o"
+        else:
+            raise ValueError(f"Unknown model_env_name: {model_env_name}")
+
+    default_model_env_name = get_default_model_name(model_env_name)
+    gpt_model_name = os.getenv(model_env_name, default=default_model_env_name)
 
     openai.api_type = "azure"
     openai.api_version = os.getenv("AZURE_API_VERSION", default="2024-02-01")
 
     config_list = [
         {
-            "model": gpt_3_5_model_name,
+            "model": gpt_model_name,
             "api_key": api_key,
             "base_url": api_base,
             "api_type": openai.api_type,
@@ -105,6 +117,18 @@ def azure_model_llm_config(model_env_name: str) -> Dict[str, Any]:
 @pytest.fixture()
 def azure_gpt35_turbo_16k_llm_config() -> Dict[str, Any]:
     return azure_model_llm_config("AZURE_GPT35_MODEL")
+
+
+@tag("llm_config")
+@pytest.fixture()
+def azure_gpt4_llm_config() -> Dict[str, Any]:
+    return azure_model_llm_config("AZURE_GPT4_MODEL")
+
+
+@tag("llm_config")
+@pytest.fixture()
+def azure_gpt4o_llm_config() -> Dict[str, Any]:
+    return azure_model_llm_config("AZURE_GPT4o_MODEL")
 
 
 def openai_llm_config(model: str) -> Dict[str, Any]:
@@ -132,10 +156,10 @@ def openai_gpt35_turbo_16k_llm_config() -> Dict[str, Any]:
     return openai_llm_config("gpt-3.5-turbo")
 
 
-@tag("llm_config")
-@pytest.fixture()
-def openai_gpt4_llm_config() -> Dict[str, Any]:
-    return openai_llm_config("gpt-4")
+# @tag("llm_config")
+# @pytest.fixture()
+# def openai_gpt4_llm_config() -> Dict[str, Any]:
+#     return openai_llm_config("gpt-4")
 
 
 @tag("llm-key")
@@ -155,7 +179,7 @@ async def azure_oai_key_ref(
 
 @tag("llm", "weather-llm")
 @pytest_asyncio.fixture()
-async def azure_oai_ref(
+async def azure_oai_gpt35_ref(
     user_uuid: str,
     azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
     azure_oai_key_ref: ObjectReference,
@@ -163,6 +187,48 @@ async def azure_oai_ref(
     kwargs = azure_gpt35_turbo_16k_llm_config["config_list"][0].copy()
     kwargs.pop("api_key")
     temperature = azure_gpt35_turbo_16k_llm_config["temperature"]
+    return await create_model_ref(
+        AzureOAI,
+        "llm",
+        user_uuid=user_uuid,
+        name=add_random_sufix("azure_oai"),
+        api_key=azure_oai_key_ref,
+        temperature=temperature,
+        **kwargs,
+    )
+
+
+@tag("llm")
+@pytest_asyncio.fixture()
+async def azure_oai_gpt4_ref(
+    user_uuid: str,
+    azure_gpt4_llm_config: Dict[str, Any],
+    azure_oai_key_ref: ObjectReference,
+) -> ObjectReference:
+    kwargs = azure_gpt4_llm_config["config_list"][0].copy()
+    kwargs.pop("api_key")
+    temperature = azure_gpt4_llm_config["temperature"]
+    return await create_model_ref(
+        AzureOAI,
+        "llm",
+        user_uuid=user_uuid,
+        name=add_random_sufix("azure_oai"),
+        api_key=azure_oai_key_ref,
+        temperature=temperature,
+        **kwargs,
+    )
+
+
+@tag("llm", "websurfer-llm")
+@pytest_asyncio.fixture()
+async def azure_oai_gpt4o_ref(
+    user_uuid: str,
+    azure_gpt4o_llm_config: Dict[str, Any],
+    azure_oai_key_ref: ObjectReference,
+) -> ObjectReference:
+    kwargs = azure_gpt4o_llm_config["config_list"][0].copy()
+    kwargs.pop("api_key")
+    temperature = azure_gpt4o_llm_config["temperature"]
     return await create_model_ref(
         AzureOAI,
         "llm",
@@ -197,12 +263,12 @@ async def openai_oai_key_gpt35_ref(
     return await openai_oai_key_ref(user_uuid, openai_gpt35_turbo_16k_llm_config)
 
 
-@tag("llm-key")
-@pytest_asyncio.fixture()
-async def openai_oai_key_gpt4_ref(
-    user_uuid: str, openai_gpt4_llm_config: Dict[str, Any]
-) -> ObjectReference:
-    return await openai_oai_key_ref(user_uuid, openai_gpt4_llm_config)
+# @tag("llm-key")
+# @pytest_asyncio.fixture()
+# async def openai_oai_key_gpt4_ref(
+#     user_uuid: str, openai_gpt4_llm_config: Dict[str, Any]
+# ) -> ObjectReference:
+#     return await openai_oai_key_ref(user_uuid, openai_gpt4_llm_config)
 
 
 async def openai_oai_ref(
@@ -236,16 +302,16 @@ async def openai_oai_gpt35_ref(
     )
 
 
-@tag("websurfer-llm", "openai-llm")
-@pytest_asyncio.fixture()
-async def openai_oai_gpt4_ref(
-    user_uuid: str,
-    openai_gpt4_llm_config: Dict[str, Any],
-    openai_oai_key_gpt4_ref: ObjectReference,
-) -> ObjectReference:
-    return await openai_oai_ref(
-        user_uuid, openai_gpt4_llm_config, openai_oai_key_gpt4_ref
-    )
+# @tag("openai-llm")
+# @pytest_asyncio.fixture()
+# async def openai_oai_gpt4_ref(
+#     user_uuid: str,
+#     openai_gpt4_llm_config: Dict[str, Any],
+#     openai_oai_key_gpt4_ref: ObjectReference,
+# ) -> ObjectReference:
+#     return await openai_oai_ref(
+#         user_uuid, openai_gpt4_llm_config, openai_oai_key_gpt4_ref
+#     )
 
 
 @tag("llm-key")
@@ -495,8 +561,20 @@ async def placeholder_assistant_noapi_ref(
         user_uuid=user_uuid,
         name=add_random_sufix("assistant"),
         llm=llm_ref,
-        # system_message="You are a helpful assistant. After you successfully answer the question asked and there are no new questions, terminate the chat by outputting 'TERMINATE'",
     )
+
+
+# @pytest_asyncio.fixture()
+# async def assistant_noapi_openai_oai_gpt4_ref(
+#     user_uuid: str, openai_oai_gpt4_ref: ObjectReference
+# ) -> ObjectReference:
+#     return await create_model_ref(
+#         AssistantAgent,
+#         "agent",
+#         user_uuid=user_uuid,
+#         name=add_random_sufix("assistant"),
+#         llm=openai_oai_gpt4_ref,
+#     )
 
 
 @tag_list("assistant", "weather")

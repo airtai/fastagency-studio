@@ -57,12 +57,12 @@ async def test_azure_oai_key_ref(azure_oai_key_ref: ObjectReference) -> None:
 
 @pytest.mark.db()
 @pytest.mark.asyncio()
-async def test_azure_oai_ref(azure_oai_ref: ObjectReference) -> None:
-    assert isinstance(azure_oai_ref, ObjectReference)
-    assert azure_oai_ref.type == "llm"
-    assert azure_oai_ref.name == "AzureOAI"
+async def test_azure_oai_gpt35_ref(azure_oai_gpt35_ref: ObjectReference) -> None:
+    assert isinstance(azure_oai_gpt35_ref, ObjectReference)
+    assert azure_oai_gpt35_ref.type == "llm"
+    assert azure_oai_gpt35_ref.name == "AzureOAI"
 
-    azure_oai_key = await get_model_by_ref(azure_oai_ref)
+    azure_oai_key = await get_model_by_ref(azure_oai_gpt35_ref)
     assert azure_oai_key.name.startswith("azure_oai_")
 
 

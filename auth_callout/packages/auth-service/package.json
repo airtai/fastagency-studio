@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "name": "@nats-chat/auth-service",
+  "version": "0.0.0-main",
+  "description": "Server",
+  "author": "Jonas Kello <jonas.kello@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "main": "./lib/index.js",
+  "devDependencies": {
+    "@types/node": "^20.9.0"
+  },
+  "dependencies": {
+    "nats": "^2.6.1",
+    "nkeys.js": "^1.0.5",
+    "nats-jwt": "^0.0.7"
+  },
+  "scripts": {
+    "serve": "tsx src/service.ts"
+  }
+}

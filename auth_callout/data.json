@@ -1,0 +1,15 @@
+{
+  "users": {
+    "alice": { "pass": "alice", "account": "APP" },
+    "bob": { "pass": "bob", "account": "APP" }
+  },
+  "rooms": {
+    "all1": { "users": ["alice", "bob"] },
+    "all2": { "users": ["alice", "bob"] },
+    "all3": { "users": ["alice", "bob"] },
+    "alice1": { "users": ["alice"] },
+    "alice2": { "users": ["alice"] },
+    "bob1": { "users": ["bob"] },
+    "bob2": { "users": ["bob"] }
+  }
+}

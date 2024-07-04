@@ -1,4 +1,7 @@
+import hashlib
 import json
+import secrets
+import string
 import uuid
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 from uuid import UUID
@@ -220,3 +223,42 @@ async def create_autogen(
     model = await get_model_by_ref(model_ref)
 
     return await model.create_autogen(model_id=model_id, user_id=user_id)
+
+
+def generate_auth_token(length: int = 32) -> str:
+    characters = string.ascii_letters + string.digits
+    token = "".join(secrets.choice(characters) for _ in range(length))
+    return token
+
+
+def hash_auth_token(token: str) -> str:
+    # Generate a random salt
+    salt = secrets.token_bytes(16)
+
+    # Combine salt and token
+    salted_token = salt + token.encode("utf-8")
+
+    # Use SHA-256 for hashing
+    hashed_token = hashlib.sha256(salted_token).hexdigest()
+
+    # Return the salt and hashed token
+    return salt.hex() + ":" + hashed_token
+
+
+def verify_auth_token(token: str, stored_hash: str) -> bool:
+    if ":" not in stored_hash:
+        return False
+    # Split the stored hash into salt and hash
+    salt, hash_value = stored_hash.split(":")
+
+    # Convert salt back to bytes
+    salt_bytes = bytes.fromhex(salt)
+
+    # Combine salt and token
+    salted_token = salt_bytes + token.encode("utf-8")
+
+    # Hash the salted token
+    computed_hash = hashlib.sha256(salted_token).hexdigest()
+
+    # Compare the computed hash with the stored hash
+    return computed_hash == hash_value

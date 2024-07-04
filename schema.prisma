@@ -19,3 +19,11 @@ model Model {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
+
+model AuthToken {
+  uuid String @id
+  deployment_uuid String @db.Uuid
+  auth_token String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}

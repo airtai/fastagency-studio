@@ -46,6 +46,7 @@ class TestDeployment:
 
         assert deployment.team == team
 
+    @pytest.mark.db()
     @pytest.mark.asyncio()
     async def test_create_deployment_token(
         self, user_uuid: str, monkeypatch: pytest.MonkeyPatch

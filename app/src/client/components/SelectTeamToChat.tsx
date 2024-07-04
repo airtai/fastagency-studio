@@ -73,6 +73,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
               options={_.map(allTeams, (team: SelectedModelSchema) => team.json_str.name)}
               onChange={handleTeamChange}
               missingDependency={null}
+              onMissingDependencyClick={() => {}}
             />
             {formError && (
               <div className='mb-2' style={{ color: 'red' }}>

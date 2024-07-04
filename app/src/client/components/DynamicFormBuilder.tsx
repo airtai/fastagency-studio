@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useHistory } from 'react-router-dom';
 import _ from 'lodash';
 
 import { useForm } from '../hooks/useForm';
@@ -92,7 +93,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const [refValues, setRefValues] = useState<Record<string, any>>({});
   const [instructionForDeployment, setInstructionForDeployment] = useState<Record<string, string> | null>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
-
+  const history = useHistory();
   const isDeployment = type_name === 'deployment';
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -140,6 +141,11 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
   const notificationOnClick = () => {
     setNotification({ ...notification, show: false });
+  };
+
+  const onMissingDependencyClick = (e: any, type: string) => {
+    onCancelCallback(e);
+    history.push(`/build/${type}`);
   };
   useEffect(() => {
     async function fetchPropertyReferenceValues() {
@@ -278,6 +284,7 @@ Before you begin, ensure you have the following:
                     options={formElementsObject.enum}
                     onChange={(value) => handleChange(key, value)}
                     missingDependency={missingDependencyForKey}
+                    onMissingDependencyClick={onMissingDependencyClick}
                   />
                 )
               ) : key === 'system_message' ? (

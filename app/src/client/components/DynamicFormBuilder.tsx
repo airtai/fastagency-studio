@@ -90,15 +90,10 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     show: false,
   });
   const [refValues, setRefValues] = useState<Record<string, any>>({});
-  const [missingDependency, setMissingDependency] = useState<string[]>([]);
   const [instructionForDeployment, setInstructionForDeployment] = useState<Record<string, string> | null>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
   const isDeployment = type_name === 'deployment';
-
-  const missingDependencyNotificationMsg = `Please create atleast one item of type "${missingDependency.join(
-    ', '
-  )}" to proceed.`;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -156,17 +151,14 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
           if (propertyHasRef || propertyHasAnyOf) {
             const allRefList = propertyHasRef ? [property['$ref']] : getAllRefs(property);
             const refUserProperties = getMatchedUserProperties(allUserProperties, allRefList);
-            // const missingDependencyList = checkForDependency(refUserProperties, allRefList);
+            const missingDependencyList = checkForDependency(refUserProperties, allRefList);
             const title: string = property.hasOwnProperty('title') ? property.title || '' : key;
             const selectedModelRefValues = _.get(updateExistingModel, key, null);
             const htmlSchema = constructHTMLSchema(refUserProperties, title, property, selectedModelRefValues);
-            const missingDependencyType = getMissingDependencyType(jsonSchema.$defs, allRefList);
-            // if (missingDependencyList.length > 0) {
-            //   setMissingDependency((prev) => {
-            //     const newMissingDependencies = missingDependencyList.filter((item) => !prev.includes(item));
-            //     return prev.concat(newMissingDependencies);
-            //   });
-            // }
+            let missingDependencyType: null | string = null;
+            if (missingDependencyList.length > 0) {
+              missingDependencyType = getMissingDependencyType(jsonSchema.$defs, allRefList);
+            }
             setRefValues((prev) => ({
               ...prev,
               [key]: {
@@ -186,15 +178,6 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
     fetchPropertyReferenceValues();
   }, [jsonSchema]);
-
-  useEffect(() => {
-    if (missingDependency) {
-      if (missingDependency.length > 0) {
-        // missingDependency.length > 0 ? missingDependencyNotificationMsg
-        setNotification({ ...notification, show: true });
-      }
-    }
-  }, [missingDependency?.length]);
 
   useEffect(() => {
     if (updateExistingModel && type_name === 'deployment') {
@@ -366,11 +349,7 @@ Before you begin, ensure you have the following:
         </div>
       )}
       {notification.show && (
-        <NotificationBox
-          type='error'
-          onClick={notificationOnClick}
-          message={missingDependency.length > 0 ? missingDependencyNotificationMsg : notification.message}
-        />
+        <NotificationBox type='error' onClick={notificationOnClick} message={notification.message} />
       )}
     </>
   );

@@ -53,19 +53,14 @@ const deploymentInprogressInstructions = `<div class="leading-loose ml-2 mr-2"><
 <span class="ml-5">- Wait for the workflows to complete:
 <span class="ml-13">- Workflow to run tests and verify the build (approx. 2 mins).</span>
 <span class="ml-13">- Workflow to deploy the application to Fly.io (approx. 8 - 10 mins).</span>
-
-<span class="ml-5">- Once the "Fly Deployment Pipeline" completes. Please follow the below steps to access your application:</span>
-<span class="ml-10">- Click on the "Fly Deployment Pipeline" action.</span>
-<span class="ml-10">- Click on "onetime_app_setup" job.</span>
-<span class="ml-10">- Click on "Deploy wasp application to fly" step.</span>
-<span class="ml-10">- Scroll all the way to the bottom, you will see a sentence "Client has been deployed! Your Wasp </span>
-<span class="ml-13">app is accessible" in the logs. Click on the link next to it to access your application.</span></span>
-
 <span class="ml-5">- Adding the fly.io configuration files:</span>
 <span class="ml-10">- The above workflow might have also created a pull request in your GitHub repository</span>
 <span class="ml-13">to update the <b>fly.toml</b> configuration files.</span>
 <span class="ml-10">- Go to the <b>Pull requests</b> tab in your repository and merge the PR named "Add Fly.io configuration files".</span>
 <span class="ml-13">You will be needing this to deploy your application to Fly.io in the future.</span></span>
+<span class="text-l inline-block my-2 underline">Access the application:</span>
+<span class="ml-10">- Once the "Fly Deployment Pipeline" completes. The application URL will be automatically added to the repository's description.</span>
+<span class="ml-10">- Detailed steps to access the application can be found in the README.md file of the repository.</span>
 <span class="text-l inline-block my-2 underline">Need Help?</span>
 <span class="ml-10">- If you encounter any issues or need assistance, please reach out to us on <a class="underline" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">discord</a>.</span>
 </div>

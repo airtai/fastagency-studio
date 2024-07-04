@@ -152,6 +152,12 @@ jobs:
           name: coverage-html
           path: htmlcov
 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: airtai/fastagency
+
   unit_test_wasp:
     runs-on: ubuntu-22.04
     permissions:

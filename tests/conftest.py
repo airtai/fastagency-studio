@@ -31,7 +31,7 @@ from fastagency.db.helpers import (
 from fastagency.helpers import create_model_ref
 from fastagency.models.agents.assistant import AssistantAgent
 from fastagency.models.agents.user_proxy import UserProxyAgent
-from fastagency.models.agents.web_surfer import WebSurferAgent
+from fastagency.models.agents.web_surfer import BingAPIKey, WebSurferAgent
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
@@ -597,6 +597,21 @@ async def placeholder_assistant_weatherapi_ref(
     )
 
 
+@pytest_asyncio.fixture()
+async def bing_api_key_ref(user_uuid: str) -> ObjectReference:
+    api_key = os.getenv(
+        "BING_API_KEY",
+        default="*" * 64,
+    )
+    return await create_model_ref(
+        BingAPIKey,
+        "secret",
+        user_uuid=user_uuid,
+        name=add_random_sufix("bing_api_key"),
+        api_key=api_key,
+    )
+
+
 @tag_list("websurfer")
 @expand_fixture(
     dst_fixture_prefix="websurfer",
@@ -604,7 +619,7 @@ async def placeholder_assistant_weatherapi_ref(
     placeholder_name="llm_ref",
 )
 async def placeholder_websurfer_ref(
-    user_uuid: str, llm_ref: ObjectReference
+    user_uuid: str, llm_ref: ObjectReference, bing_api_key_ref: ObjectReference
 ) -> ObjectReference:
     return await create_model_ref(
         WebSurferAgent,
@@ -613,7 +628,7 @@ async def placeholder_websurfer_ref(
         name=add_random_sufix("websurfer"),
         llm=llm_ref,
         summarizer_llm=llm_ref,
-        # system_message="You are a helpful assistant with access to Weather API. After you successfully answer the question asked and there are no new questions, terminate the chat by outputting 'TERMINATE'",
+        bing_api_key=bing_api_key_ref,
     )
 
 

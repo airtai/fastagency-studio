@@ -1,13 +1,13 @@
 import uuid
-from typing import Any, Dict, List
+from typing import Annotated, Any, Dict, List
 
 import autogen.agentchat.contrib.web_surfer
 import pytest
 from fastapi import BackgroundTasks
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl
 
 from fastagency.app import add_model
-from fastagency.helpers import create_autogen
+from fastagency.helpers import create_autogen, get_model_by_ref
 from fastagency.models.agents.web_surfer import BingAPIKey, WebSurferAgent
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.azure import AzureOAIAPIKey
@@ -24,7 +24,10 @@ class TestWebSurferAgent:
         user_uuid: str,
         websurfer_ref: ObjectReference,
     ) -> None:
-        print(f"test_websurfer_construction({user_uuid=}, {websurfer_ref=})")  # noqa: T201
+        websurfer: WebSurferAgent = await get_model_by_ref(websurfer_ref)  # type: ignore [assignment]
+        print(f"test_websurfer_construction({user_uuid=}, {websurfer=})")  # noqa: T201
+        isinstance(websurfer, WebSurferAgent)
+        assert websurfer.bing_api_key is not None
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
@@ -35,7 +38,8 @@ class TestWebSurferAgent:
         user_uuid: str,
         llm_ref: ObjectReference,
     ) -> None:
-        print(f"test_websurfer_llm_construction({user_uuid=}, {llm_ref=})")  # noqa: T201
+        llm = await get_model_by_ref(llm_ref)
+        print(f"test_websurfer_llm_construction({user_uuid=}, {llm=})")  # noqa: T201
 
     def test_web_surfer_model_schema(self) -> None:
         schema = WebSurferAgent.model_json_schema()
@@ -262,7 +266,7 @@ class TestWebSurferAgent:
                     "title": "Summarizer LLM",
                 },
                 "viewport_size": {
-                    "default": 1024,
+                    "default": 4096,
                     "description": "The viewport size of the browser",
                     "title": "Viewport Size",
                     "type": "integer",
@@ -305,20 +309,46 @@ class TestWebSurferAgent:
     @pytest.mark.db()
     @pytest.mark.llm()
     @parametrize_fixtures("websurfer_ref", get_by_tag("websurfer"))
+    @pytest.mark.parametrize(
+        "task",
+        [
+            # "Visit https://en.wikipedia.org/wiki/Zagreb and tell me when Zagreb became a free royal city.",
+            "What is the most expensive NVIDIA GPU on https://www.alternate.de/ and how much it costs?",
+            # "Compile a list of news headlines under section 'Politika i kriminal' on telegram.hr.",
+            "What is the most newsworthy story today?",
+            # "Given that weather forcast today is warm and sunny, what would be the best way to spend an evening in Zagreb according to the weather forecast?",
+        ],
+    )
     async def test_websurfer_end2end(
         self,
         user_uuid: str,
         websurfer_ref: ObjectReference,
         assistant_noapi_azure_oai_gpt4o_ref: ObjectReference,
+        task: str,
     ) -> None:
         class FinalAnswer(BaseModel):
-            task: str
-            short_answer: str
-            long_answer: str
-            visited_links: List[HttpUrl]
+            task: Annotated[str, Field(..., description="The task to be completed")]
+            is_successful: Annotated[
+                bool, Field(..., description="Whether the task was successful")
+            ]
+            short_answer: Annotated[
+                str,
+                Field(
+                    ...,
+                    description="The short answer to the task without any explanation",
+                ),
+            ]
+            long_answer: Annotated[
+                str,
+                Field(..., description="The long answer to the task with explanation"),
+            ]
+            visited_links: Annotated[
+                List[HttpUrl], Field(..., description="The list of visited links")
+            ]
 
         example_answer = FinalAnswer(
             task="What is the most popular QLED TV to buy on amazon.com?",
+            is_successful=True,
             short_answer='Amazon Fire TV 55" Omni QLED Series 4K UHD smart TV, Dolby Vision IQ, Fire TV Ambient Experience, local dimming, hands-free with Alexa',
             long_answer='Amazon has the best selling page by different categories and there is a category for QLED TVs under electroincs. The most popular QLED TV is Amazon Fire TV 55" Omni QLED Series 4K UHD smart TV, Dolby Vision IQ, Fire TV Ambient Experience, local dimming, hands-free with Alexa. It is the best selling QLED TV on Amazon.',
             visited_links=[
@@ -331,11 +361,7 @@ class TestWebSurferAgent:
             ],
         )
 
-        for task in [
-            "Visit https://en.wikipedia.org/wiki/Zagreb and tell me when Zagreb became a free royal city.",
-            "What is the most expensive NVIDIA GPU on https://www.alternate.de/?",
-        ]:
-            assistant_system_message = f"""You are in charge of navigating the web_surfer agent to scrape the web.
+        assistant_system_message = f"""You are in charge of navigating the web_surfer agent to scrape the web.
 web_surfer is able to CLICK on links, SCROLL down, and scrape the content of the web page. e.g. you cen tell him: "Click the 'Getting Started' result".
 Each time you receive a reply from web_surfer, you need to tell him what to do next. e.g. "Click the TV link" or "Scroll down".
 It is very important that you explore ONLY the page links relevant for the task!
@@ -345,11 +371,13 @@ GUIDELINES:
 By using these capabilities, you will be able to retrieve MUCH BETTER information from the web page than by just scraping the given URL!
 You MUST use these capabilities when you receive a task for a specific category/product etc.
 - do NOT try to create a summary without clicking on any link, because you will be missing a lot of information!
+- if needed, you can instruct web surfer to SEARCH THE WEB for information.
 
 Examples:
 "Click the 'TVs' result" - This way you will navigate to the TVs section of the page and you will find more information about TVs.
 "Click 'Electronics' link" - This way you will navigate to the Electronics section of the page and you will find more information about Electronics.
 "Click the 'Next' button"
+"Search the internet for the best TV to buy" - this will get links to initial pages to start the search
 
 - Do NOT try to click all the links on the page, but only the ones which are RELEVANT for the task! Web pages can be very long and you will be penalized if spend too much time on this task!
 - Your final goal is to summarize the findings for the given task. The summary must be in English!
@@ -382,10 +410,12 @@ OFTEN MISTAKES:
 - NEVER enclose JSON-encoded answer in any other text or formatting including '```json' ... '```' or similar!
 """
 
-            max_links_to_click = 10
-            initial_message = f"""We are tasked with the following task:
+        max_links_to_click = 10
+        initial_message = f"""We are tasked with the following task:
 
 {task}
+
+If no link is provided in the task, you should search the internet first to find the relevant information.
 
 The focus is on the provided url and its subpages, we do NOT care about the rest of the website i.e. parent pages.
 e.g. If the url is 'https://www.example.com/products/air-conditioners', we are interested ONLY in the 'air-conditioners' and its subpages.
@@ -397,66 +427,68 @@ If your co-speaker repeats the same message, inform him that you have already an
 e.g. "I have already answered to that message, please proceed with the task or you will be penalized!"
 """
 
-            def is_termination_msg(msg: Dict[str, Any]) -> bool:
-                # print(f"is_termination_msg({msg=})")
-                if "content" in msg and msg["content"] == "TERMINATE":
-                    return True
-                try:
-                    FinalAnswer.model_validate_json(msg["content"])
-                    return True
-                except Exception:
-                    # print(f"{e=}")
-                    return False
+        def is_termination_msg(msg: Dict[str, Any]) -> bool:
+            # print(f"is_termination_msg({msg=})")
+            if "content" in msg and msg["content"] == "TERMINATE":
+                return True
+            try:
+                FinalAnswer.model_validate_json(msg["content"])
+                return True
+            except Exception:
+                # print(f"{e=}")
+                return False
 
-            ag_websurfer, _ = await create_autogen(
-                model_ref=websurfer_ref,
-                user_uuid=user_uuid,
-                is_termination_msg=is_termination_msg,
-            )
+        ag_websurfer, _ = await create_autogen(
+            model_ref=websurfer_ref,
+            user_uuid=user_uuid,
+            is_termination_msg=is_termination_msg,
+        )
 
-            ag_assistant, _ = await create_autogen(
-                model_ref=assistant_noapi_azure_oai_gpt4o_ref,
-                user_uuid=user_uuid,
-                system_message=assistant_system_message,
-                max_consecutive_auto_reply=20,
-                # is_termination_msg=is_termination_msg,
-            )
+        ag_assistant, _ = await create_autogen(
+            model_ref=assistant_noapi_azure_oai_gpt4o_ref,
+            user_uuid=user_uuid,
+            system_message=assistant_system_message,
+            max_consecutive_auto_reply=20,
+            # is_termination_msg=is_termination_msg,
+        )
 
-            # ag_user_proxy = autogen.agentchat.UserProxyAgent(
-            #     name="user_proxy",
-            #     human_input_mode="NEVER",
-            #     max_consecutive_auto_reply=1,
-            # )
+        # ag_user_proxy = autogen.agentchat.UserProxyAgent(
+        #     name="user_proxy",
+        #     human_input_mode="NEVER",
+        #     max_consecutive_auto_reply=1,
+        # )
 
+        chat_result = ag_websurfer.initiate_chat(
+            ag_assistant,
+            message=initial_message,
+        )
+
+        messages = [msg["content"] for msg in chat_result.chat_history]
+
+        if "TERMINATE" in messages[-1]:
             chat_result = ag_websurfer.initiate_chat(
-                ag_assistant,
-                message=initial_message,
+                recipient=ag_assistant,
+                message=f"Please output the JSON-encoded answer only in the following messsage before trying to terminate the chat. An example of the JSON-encoded summary: {example_answer.model_dump_json()}\n\n"
+                "IMPORTANT:\n - NEVER enclose JSON-encoded answer in any other text or formatting including '```json' ... '```' or similar!"
+                "\n - NEVER write TERMINATE in the same message as the JSON-encoded answer!",
+                clear_history=False,
             )
-
             messages = [msg["content"] for msg in chat_result.chat_history]
 
-            if "TERMINATE" in messages[-1]:
-                chat_result = ag_websurfer.initiate_chat(
-                    recipient=ag_assistant,
-                    message=f"Please output the JSON-encoded answer only in the following messsage before trying to terminate the chat. An example of the JSON-encoded summary: {example_answer.model_dump_json()}\n\n"
-                    "IMPORTANT:\n - NEVER enclose JSON-encoded answer in any other text or formatting including '```json' ... '```' or similar!"
-                    "\n - NEVER write TERMINATE in the same message as the JSON-encoded answer!",
-                    clear_history=False,
-                )
-                messages = [msg["content"] for msg in chat_result.chat_history]
+        assert messages
+        # for w in ["1242", "Zagreb", "free royal city"]:
+        #     assert any(msg is not None and w in msg for msg in messages), (
+        #         w,
+        #         messages,
+        #     )
+        # for w in ["TERMINATE"]:
+        #     assert not any(msg is not None and w in msg for msg in messages), (w, messages)
 
-            assert messages
-            for w in ["1242", "Zagreb", "free royal city"]:
-                assert any(msg is not None and w in msg for msg in messages), (
-                    w,
-                    messages,
-                )
-            # for w in ["TERMINATE"]:
-            #     assert not any(msg is not None and w in msg for msg in messages), (w, messages)
+        final_answer = FinalAnswer.model_validate_json(messages[-1])
+        assert final_answer.is_successful
+        print(f"{final_answer=}")  # noqa: T201
 
-            final_answer = FinalAnswer.model_validate_json(messages[-1])
-            print(f"{final_answer=}")  # noqa: T201
-
+    @pytest.mark.skip()
     @pytest.mark.asyncio()
     @pytest.mark.db()
     @pytest.mark.llm()

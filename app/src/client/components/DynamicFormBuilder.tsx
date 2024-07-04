@@ -22,6 +22,7 @@ import {
   checkForDependency,
   getSecretUpdateFormSubmitValues,
   getSecretUpdateValidationURL,
+  getMissingDependencyType,
 } from '../utils/buildPageUtils';
 import { set } from 'zod';
 import { NumericStepperWithClearButton } from './form/NumericStepperWithClearButton';
@@ -155,21 +156,26 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
           if (propertyHasRef || propertyHasAnyOf) {
             const allRefList = propertyHasRef ? [property['$ref']] : getAllRefs(property);
             const refUserProperties = getMatchedUserProperties(allUserProperties, allRefList);
-            const missingDependencyList = checkForDependency(refUserProperties, allRefList);
+            // const missingDependencyList = checkForDependency(refUserProperties, allRefList);
             const title: string = property.hasOwnProperty('title') ? property.title || '' : key;
             const selectedModelRefValues = _.get(updateExistingModel, key, null);
             const htmlSchema = constructHTMLSchema(refUserProperties, title, property, selectedModelRefValues);
-            if (missingDependencyList.length > 0) {
-              setMissingDependency((prev) => {
-                const newMissingDependencies = missingDependencyList.filter((item) => !prev.includes(item));
-                return prev.concat(newMissingDependencies);
-              });
-            }
+            const missingDependencyType = getMissingDependencyType(jsonSchema.$defs, allRefList);
+            // if (missingDependencyList.length > 0) {
+            //   setMissingDependency((prev) => {
+            //     const newMissingDependencies = missingDependencyList.filter((item) => !prev.includes(item));
+            //     return prev.concat(newMissingDependencies);
+            //   });
+            // }
             setRefValues((prev) => ({
               ...prev,
               [key]: {
                 htmlSchema: htmlSchema,
                 refUserProperties: refUserProperties,
+                missingDependency: {
+                  type: missingDependencyType,
+                  label: key,
+                },
               },
             }));
           }
@@ -259,14 +265,15 @@ Before you begin, ensure you have the following:
             return null;
           }
           const inputValue = formData[key] || '';
-
+          let missingDependencyForKey = null;
           let formElementsObject = property;
           if (_.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf')) {
             if (refValues[key]) {
               formElementsObject = refValues[key].htmlSchema;
+              missingDependencyForKey = refValues[key].missingDependency;
+              missingDependencyForKey.label = formElementsObject.title;
             }
           }
-
           // return formElementsObject?.enum?.length === 1 ? null : (
           return (
             <div key={key} className='w-full mt-2'>
@@ -287,6 +294,7 @@ Before you begin, ensure you have the following:
                     value={inputValue}
                     options={formElementsObject.enum}
                     onChange={(value) => handleChange(key, value)}
+                    missingDependency={missingDependencyForKey}
                   />
                 )
               ) : key === 'system_message' ? (

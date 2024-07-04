@@ -20,6 +20,7 @@ import {
   getSecretUpdateFormSubmitValues,
   getSecretUpdateValidationURL,
   formatApiKey,
+  getMissingDependencyType,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -1890,6 +1891,82 @@ describe('buildPageUtils', () => {
       const input = '';
       const expected = '';
       const actual = formatApiKey(input);
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('getMissingDependencyType', () => {
+    test('getMissingDependencyType - with no dependency', () => {
+      const jsonDeps = {
+        AnthropicAPIKeyRef: {
+          properties: {
+            type: {
+              const: 'secret',
+              default: 'secret',
+              description: 'The name of the type of the data',
+              enum: ['secret'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'AnthropicAPIKey',
+              default: 'AnthropicAPIKey',
+              description: 'The name of the data',
+              enum: ['AnthropicAPIKey'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'AnthropicAPIKeyRef',
+          type: 'object',
+        },
+      };
+      const allRefList: string[] = [];
+      const expected = null;
+      const actual = getMissingDependencyType(jsonDeps, allRefList);
+      expect(actual).toEqual(expected);
+    });
+
+    test('getMissingDependencyType - with undefined jsonDeps', () => {
+      const jsonDeps = undefined;
+      const allRefList: string[] = [];
+      const expected = null;
+      const actual = getMissingDependencyType(jsonDeps, allRefList);
+      expect(actual).toEqual(expected);
+    });
+
+    test('getMissingDependencyType - with one or more dependencies', () => {
+      const jsonDeps = {
+        AnthropicAPIKeyRef: {
+          properties: {
+            type: {
+              const: 'secret',
+              default: 'secret',
+              description: 'The name of the type of the data',
+              enum: ['secret'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'AnthropicAPIKey',
+              default: 'AnthropicAPIKey',
+              description: 'The name of the data',
+              enum: ['AnthropicAPIKey'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'AnthropicAPIKeyRef',
+          type: 'object',
+        },
+      };
+      const allRefList: string[] = ['#/$defs/AnthropicAPIKeyRef'];
+      const expected = 'secret';
+      const actual = getMissingDependencyType(jsonDeps, allRefList);
       expect(actual).toEqual(expected);
     });
   });

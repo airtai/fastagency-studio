@@ -1,8 +1,11 @@
 import uuid
+from typing import Any, Dict
 
 import pytest
 from pydantic import ValidationError
 
+import fastagency
+from fastagency.app import create_deployment_auth_token
 from fastagency.models.base import Model
 from fastagency.models.deployments.deployment import Deployment
 from fastagency.models.secrets.fly_token import FlyToken
@@ -42,6 +45,28 @@ class TestDeployment:
             raise
 
         assert deployment.team == team
+
+    @pytest.mark.asyncio()
+    async def test_create_deployment_token(
+        self, user_uuid: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        deployment_uuid = str(uuid.uuid4())
+
+        async def mock_find_model_using_raw(
+            *args: Any, **kwargs: Any
+        ) -> Dict[str, str]:
+            return {
+                "user_uuid": user_uuid,
+                "uuid": deployment_uuid,
+            }
+
+        monkeypatch.setattr(
+            fastagency.app, "find_model_using_raw", mock_find_model_using_raw
+        )
+
+        token = await create_deployment_auth_token(user_uuid, deployment_uuid)
+        assert isinstance(token.auth_token, str)
+        assert len(token.auth_token) == 32, token.auth_token
 
     def test_deployment_model_schema(self) -> None:
         schema = Deployment.model_json_schema()

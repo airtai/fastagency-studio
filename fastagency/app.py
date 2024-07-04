@@ -1,5 +1,6 @@
 import json
 import logging
+import uuid
 from os import environ
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
@@ -12,7 +13,13 @@ from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
 from .db.helpers import find_model_using_raw, get_db_connection, get_user
-from .helpers import add_model_to_user, create_model, get_all_models_for_user
+from .helpers import (
+    add_model_to_user,
+    create_model,
+    generate_auth_token,
+    get_all_models_for_user,
+    hash_auth_token,
+)
 from .models.registry import Registry, Schemas
 from .models.toolboxes.toolbox import Toolbox
 
@@ -352,3 +359,34 @@ async def deployment_ping() -> Dict[str, str]:
     return {
         "status": "ok",
     }
+
+
+class DeploymentAuthToken(BaseModel):
+    auth_token: str
+
+
+@app.post("/user/{user_uuid}/deployment/{deployment_uuid}")
+async def create_deployment_auth_token(
+    user_uuid: str, deployment_uuid: str
+) -> DeploymentAuthToken:
+    user = await get_user(user_uuid=user_uuid)
+    deployment = await find_model_using_raw(model_uuid=deployment_uuid)
+
+    if user["uuid"] != deployment["user_uuid"]:
+        raise HTTPException(
+            status_code=403, detail="User does not have access to this deployment"
+        )
+
+    auth_token = generate_auth_token()
+    hashed_token = hash_auth_token(auth_token)
+
+    async with get_db_connection() as db:
+        await db.authtoken.create(
+            data={
+                "uuid": str(uuid.uuid4()),
+                "deployment_uuid": deployment_uuid,
+                "auth_token": hashed_token,
+            }
+        )
+
+    return DeploymentAuthToken(auth_token=auth_token)

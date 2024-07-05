@@ -7,8 +7,10 @@ search:
     - fastagency
         - app
             - [ChatRequest](api/fastagency/app/ChatRequest.md)
+            - [DeploymentAuthToken](api/fastagency/app/DeploymentAuthToken.md)
             - [add_model](api/fastagency/app/add_model.md)
             - [chat](api/fastagency/app/chat.md)
+            - [create_deployment_auth_token](api/fastagency/app/create_deployment_auth_token.md)
             - [create_toolbox_for_new_user](api/fastagency/app/create_toolbox_for_new_user.md)
             - [deployment_chat](api/fastagency/app/deployment_chat.md)
             - [deployment_ping](api/fastagency/app/deployment_ping.md)
@@ -37,10 +39,13 @@ search:
             - [create_model](api/fastagency/helpers/create_model.md)
             - [create_model_ref](api/fastagency/helpers/create_model_ref.md)
             - [deploy_saas_app](api/fastagency/helpers/deploy_saas_app.md)
+            - [generate_auth_token](api/fastagency/helpers/generate_auth_token.md)
             - [get_all_models_for_user](api/fastagency/helpers/get_all_models_for_user.md)
             - [get_model_by_ref](api/fastagency/helpers/get_model_by_ref.md)
             - [get_model_by_uuid](api/fastagency/helpers/get_model_by_uuid.md)
+            - [hash_auth_token](api/fastagency/helpers/hash_auth_token.md)
             - [validate_tokens_and_create_gh_repo](api/fastagency/helpers/validate_tokens_and_create_gh_repo.md)
+            - [verify_auth_token](api/fastagency/helpers/verify_auth_token.md)
         - io
             - ionats
                 - [ErrorResoponseModel](api/fastagency/io/ionats/ErrorResoponseModel.md)

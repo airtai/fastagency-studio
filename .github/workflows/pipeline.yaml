@@ -149,7 +149,7 @@ jobs:
         run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai or llm)"
 
   test-windows-latest:
-    if: github.actor != 'github-merge-queue' and github.event.pull_request.draft == false
+    if: github.actor != 'github-merge-queue' && github.event.pull_request.draft == false
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -169,7 +169,7 @@ jobs:
         run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai or llm)"
 
   coverage-combine:
-    if: github.actor != 'github-merge-queue' and github.event.pull_request.draft == false
+    if: github.actor != 'github-merge-queue' && github.event.pull_request.draft == false
     needs:
       - test-without-llms
       - test-with-llm
@@ -333,7 +333,7 @@ jobs:
 
   # https://github.com/marketplace/actions/alls-green#why
   check: # This job does nothing and is only used for the branch protection
-    if: github.actor != 'github-merge-queue' and github.event.pull_request.draft == false
+    if: github.actor != 'github-merge-queue' && github.event.pull_request.draft == false
 
     needs:
       - static_analysis

@@ -63,18 +63,62 @@ jobs:
     with:
       python-version: ${{ matrix.python-version }}
       environment: null
-      use-llms: false
+      use-llms: ""
     secrets: inherit  # pragma: allowlist secret
 
-  test-with-llms:
+  test-with-anthropic:
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
       environment: testing
-      use-llms: true
+      use-llms: "anthropic"
     secrets: inherit  # pragma: allowlist secret
     needs:
       - test-without-llms
+
+  test-with-azure_oai:
+    uses: ./.github/workflows/test.yaml
+    with:
+      python-version: "3.9"
+      environment: testing
+      use-llms: "azure_oai"
+    secrets: inherit  # pragma: allowlist secret
+    needs:
+      - test-without-llms
+
+  test-with-openai:
+    uses: ./.github/workflows/test.yaml
+    with:
+      python-version: "3.9"
+      environment: testing
+      use-llms: "openai"
+    secrets: inherit  # pragma: allowlist secret
+    needs:
+      - test-without-llms
+
+  test-with-togetherai:
+    uses: ./.github/workflows/test.yaml
+    with:
+      python-version: "3.9"
+      environment: testing
+      use-llms: "togetherai"
+    secrets: inherit  # pragma: allowlist secret
+    needs:
+      - test-without-llms
+
+  test-with-llm:
+    uses: ./.github/workflows/test.yaml
+    with:
+      python-version: "3.9"
+      environment: testing
+      use-llms: "llm"
+    secrets: inherit  # pragma: allowlist secret
+    needs:
+      - test-without-llms
+      - test-with-anthropic
+      - test-with-azure_oai
+      - test-with-openai
+      - test-with-togetherai
 
   test-macos-latest:
     if: github.event.pull_request.draft == false
@@ -120,7 +164,11 @@ jobs:
     if: github.event.pull_request.draft == false
     needs:
       - test-without-llms
-      - test-with-llms
+      - test-with-llm
+      - test-with-anthropic
+      - test-with-azure_oai
+      - test-with-openai
+      - test-with-togetherai
     runs-on: ubuntu-latest
 
     steps:

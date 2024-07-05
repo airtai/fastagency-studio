@@ -1,46 +1,17 @@
-from typing import Annotated, Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Annotated, Any, List, Optional, Tuple
 from uuid import UUID
 
-from autogen.agentchat import Agent as AutogenAgent
-from autogen.agentchat import AssistantAgent as AutogenAssistantAgent
-from autogen.agentchat.contrib.web_surfer import WebSurferAgent as AutogenWebSurferAgent
-from autogen.oai.client import OpenAIWrapper as AutogenOpenAIWrapper
+from asyncer import syncify
+from autogen.agentchat import AssistantAgent as AutoGenAssistantAgent
+from autogen.agentchat import ConversableAgent as AutoGenConversableAgent
 from pydantic import Field
 from typing_extensions import TypeAlias
 
-from ...openapi.client import Client
+from fastagency.models.agents.web_surfer_autogen import WebSurferAnswer, WebSurferChat
+
 from ..base import Model
 from ..registry import register
 from .base import AgentBaseModel, llm_type_refs
-
-_org_generate_surfer_reply: Optional[Callable[..., Any]] = None
-
-
-def _patch_generate_surfer_reply() -> None:
-    global _org_generate_surfer_reply
-
-    if _org_generate_surfer_reply is None:
-        _org_generate_surfer_reply = AutogenWebSurferAgent.generate_surfer_reply
-
-    def generate_surfer_reply(
-        self: AutogenWebSurferAgent,
-        messages: Optional[List[Dict[str, str]]] = None,
-        sender: Optional[AutogenAgent] = None,
-        config: Optional[AutogenOpenAIWrapper] = None,
-    ) -> Tuple[bool, Optional[Union[str, Dict[str, str]]]]:
-        global _org_generate_surfer_reply
-
-        if messages is not None and "tool_responses" in messages[-1]:
-            messages = messages.copy()
-            messages.append(messages[-1].copy())
-            messages[-1].pop("tool_responses")
-
-        return _org_generate_surfer_reply(self, messages, sender, config)  # type: ignore[no-any-return]
-
-    AutogenWebSurferAgent.generate_surfer_reply = generate_surfer_reply
-
-
-_patch_generate_surfer_reply()
 
 
 @register("secret")
@@ -57,6 +28,58 @@ class BingAPIKey(Model):
 BingAPIKeyRef: TypeAlias = BingAPIKey.get_reference_model()  # type: ignore[valid-type]
 
 
+class WebSurferToolbox:
+    def __init__(self, websurfer_chat: WebSurferChat):
+        """Create a toolbox for the web surfer agent. This toolbox will contain functions to delegate web surfing tasks to the internal web surfer agent.
+
+        Args:
+            websurfer_chat (WebSurferChat): The web surfer chat agent
+        """
+        self.websurfer_chat = websurfer_chat
+
+        def create_new_task(
+            task: Annotated[str, "task for websurfer"],
+        ) -> WebSurferAnswer:
+            try:
+                return syncify(self.websurfer_chat.create_new_task)(task)
+            except Exception as e:
+                raise e
+
+        create_new_task._description = (  # type: ignore [attr-defined]
+            "Delegate web surfing task to internal web surfer agent"
+        )
+
+        def continue_task_with_additional_instructions(
+            message: Annotated[
+                str,
+                "Additional instructions for the task after receiving the initial answer",
+            ],
+        ) -> WebSurferAnswer:
+            try:
+                return syncify(
+                    self.websurfer_chat.continue_task_with_additional_instructions
+                )(message)
+            except Exception as e:
+                raise e
+
+        continue_task_with_additional_instructions._description = (  # type: ignore [attr-defined]
+            "Continue the task with additional instructions"
+        )
+
+        self.registered_funcs = [
+            create_new_task,
+            continue_task_with_additional_instructions,
+        ]
+
+    def register_for_llm(self, agent: AutoGenConversableAgent) -> None:
+        for f in self.registered_funcs:
+            agent.register_for_llm()(f)
+
+    def register_for_execution(self, agent: AutoGenConversableAgent) -> None:
+        for f in self.registered_funcs:
+            agent.register_for_execution()(f)
+
+
 @register("agent")
 class WebSurferAgent(AgentBaseModel):
     summarizer_llm: Annotated[
@@ -68,7 +91,7 @@ class WebSurferAgent(AgentBaseModel):
     ]
     viewport_size: Annotated[
         int, Field(description="The viewport size of the browser")
-    ] = 1080
+    ] = 4096
     bing_api_key: Annotated[
         Optional[BingAPIKeyRef], Field(description="The Bing API key for the browser")
     ] = None
@@ -76,44 +99,41 @@ class WebSurferAgent(AgentBaseModel):
     @classmethod
     async def create_autogen(
         cls, model_id: UUID, user_id: UUID, **kwargs: Any
-    ) -> Tuple[AutogenAssistantAgent, List[Client]]:
-        my_model = await cls.from_db(model_id)
+    ) -> Tuple[AutoGenAssistantAgent, List[WebSurferToolbox]]:
+        from ...helpers import create_autogen, get_model_by_uuid
 
-        llm_model = await my_model.llm.get_data_model().from_db(my_model.llm.uuid)
-
-        llm = await llm_model.create_autogen(my_model.llm.uuid, user_id)
-
-        clients = await my_model.get_clients_from_toolboxes(user_id)  # noqa: F841
-
-        summarizer_llm_model = await my_model.summarizer_llm.get_data_model().from_db(
-            my_model.summarizer_llm.uuid
+        websurfer_model: WebSurferAgent = await get_model_by_uuid(model_id)  # type: ignore [assignment]
+        llm_config = await create_autogen(websurfer_model.llm, user_id)
+        summarizer_llm_config = await create_autogen(
+            websurfer_model.summarizer_llm, user_id
         )
 
-        summarizer_llm = await summarizer_llm_model.create_autogen(
-            my_model.summarizer_llm.uuid, user_id
+        bing_api_key = (
+            await create_autogen(websurfer_model.bing_api_key, user_id)
+            if websurfer_model.bing_api_key
+            else None
         )
 
-        bing_api_key = None
-        if my_model.bing_api_key:
-            bing_api_key_model = await my_model.bing_api_key.get_data_model().from_db(
-                my_model.bing_api_key.uuid
-            )
-            bing_api_key = await bing_api_key_model.create_autogen(
-                my_model.bing_api_key.uuid, user_id
-            )
+        viewport_size = websurfer_model.viewport_size
 
-        browser_config = {
-            "viewport_size": my_model.viewport_size,
-            "bing_api_key": bing_api_key,
-        }
-        agent_name = my_model.name
+        websurfer_chat = WebSurferChat(
+            name_prefix=websurfer_model.name,
+            llm_config=llm_config,
+            summarizer_llm_config=summarizer_llm_config,
+            viewport_size=viewport_size,
+            bing_api_key=bing_api_key,
+        )
 
-        agent = AutogenWebSurferAgent(
+        web_surfer_toolbox = WebSurferToolbox(websurfer_chat)
+
+        agent_name = websurfer_model.name
+
+        agent = AutoGenAssistantAgent(
             name=agent_name,
-            llm_config=llm,
-            summarizer_llm_config=summarizer_llm,
-            browser_config=browser_config,
+            llm_config=llm_config,
+            system_message="You are a helpful assistent with access to web surfing capabilities. Please use 'create_new_task' and 'continue_task_with_additional_instructions' functions to provide answers to other agents.",
+            code_execution_config=False,
             **kwargs,
         )
 
-        return agent, []
+        return agent, [web_surfer_toolbox]

@@ -174,7 +174,7 @@ page PlayGroundPage {
   component: import PlayGroundPageWithCustomAuth from "@src/client/app/PlayGroundPage"
 }
 
-route BuildRoute { path: "/build", to: BuildPage }
+route BuildRoute { path: "/build/:id?", to: BuildPage }
 page BuildPage {
   component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
 }

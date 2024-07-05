@@ -63,7 +63,7 @@ jobs:
     with:
       python-version: ${{ matrix.python-version }}
       environment: null
-      use-llms: "none"
+      use-llms: ""
     secrets: inherit  # pragma: allowlist secret
 
   test-with-llm:

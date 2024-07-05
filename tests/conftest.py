@@ -69,7 +69,7 @@ async def user_uuid() -> AsyncIterator[str]:
 
 ################################################################################
 ###
-###                           Fixtures for LLMs
+# Fixtures for LLMs
 ###
 ################################################################################
 
@@ -82,7 +82,7 @@ def azure_model_llm_config(model_env_name: str) -> Dict[str, Any]:
 
     def get_default_model_name(model_env_name: str) -> str:
         if model_env_name == "AZURE_GPT35_MODEL":
-            return "gpt-3.5-turbo-16k"
+            return "gpt-35-turbo-16k"
         elif model_env_name == "AZURE_GPT4_MODEL":
             return "gpt-4"
         elif model_env_name == "AZURE_GPT4o_MODEL":
@@ -382,7 +382,7 @@ async def togetherai_ref(
 
 ################################################################################
 ###
-###                          Fixtures for Toolkit
+# Fixtures for Toolkit
 ###
 ################################################################################
 
@@ -542,7 +542,7 @@ async def weather_toolbox_ref(
 
 ################################################################################
 ###
-###                           Fixtures for Agents
+# Fixtures for Agents
 ###
 ################################################################################
 
@@ -679,7 +679,7 @@ async def user_proxy_agent_ref(user_uuid: str) -> ObjectReference:
 
 ################################################################################
 ###
-###                     Fixtures for Two Agent Teams
+# Fixtures for Two Agent Teams
 ###
 ################################################################################
 
@@ -732,6 +732,6 @@ async def placeholder_team_weatherapi_ref(
 
 ################################################################################
 ###
-###                        Fixtures for application
+# Fixtures for application
 ###
 ################################################################################

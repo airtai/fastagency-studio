@@ -25,6 +25,7 @@ class TestWebSurferChat:
             # "Given that weather forcast today is warm and sunny, what would be the best way to spend an evening in Zagreb according to the weather forecast?",
         ],
     )
+    @pytest.mark.llm()
     async def test_web_surfer_chat_simple_task(
         self, websurfer_chat: WebSurferChat, task: str
     ) -> None:
@@ -44,6 +45,7 @@ class TestWebSurferChat:
             ),
         ],
     )
+    @pytest.mark.llm()
     async def test_web_surfer_chat_complex_task(
         self, websurfer_chat: WebSurferChat, task: str, follow_up: str
     ) -> None:

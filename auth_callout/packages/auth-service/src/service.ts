@@ -1,7 +1,7 @@
 import * as Nats from "nats";
 import * as Jwt from "nats-jwt";
 import * as Nkeys from "nkeys.js";
-import { Data, readData } from "./data";
+import { fetchAuthToken, verifyAuthToken } from "./data";
 import { AuthorizationRequestClaims } from "./types";
 
 run();
@@ -22,9 +22,6 @@ async function run() {
   // Parse the issuer account signing key.
   const issuerKeyPair = Nkeys.fromSeed(enc.encode(issuerSeed));
 
-  // Load users file and their reights
-  const userData = await readData();
-
   // Open the NATS connection passing the auth account creds file.
   const nc = await Nats.connect({ servers: natsUrl, user: natsUser, pass: natsPass });
 
@@ -34,11 +31,11 @@ async function run() {
   for await (const msg of sub) {
     console.log("Auth service got message");
     // console.log(msg)
-    await msgHandler(msg, enc, dec, userData, issuerKeyPair);
+    await msgHandler(msg, enc, dec, issuerKeyPair);
   }
 }
 
-async function msgHandler(req: Nats.Msg, enc: TextEncoder, dec: TextDecoder, userData: Data, issuerKeyPair: Nkeys.KeyPair) {
+async function msgHandler(req: Nats.Msg, enc: TextEncoder, dec: TextDecoder, issuerKeyPair: Nkeys.KeyPair) {
   // Helper function to construct an authorization response.
   const respondMsg = async (req: Nats.Msg, userNkey: string, serverId: string, userJwt: string, errMsg: string) => {
     let token: string;
@@ -69,56 +66,35 @@ async function msgHandler(req: Nats.Msg, enc: TextEncoder, dec: TextDecoder, use
   const userNkey = rc.nats.user_nkey;
   const serverId = rc.nats.server_id.id;
 
-  // Try parse token
-  // const authToken = rc.nats.connect_opts.auth_token;
-  // if (!authToken) {
-  //   return respondMsg(req, userNkey, serverId, "", "no auth_token in request");
-  // }
-  // let parsedAuthToken: MyAuthToken;
-  // try {
-  //   parsedAuthToken = JSON.parse(authToken);
-  // } catch (e) {
-  //   return respondMsg(req, "", "", "", (e as Error).message);
-  // }
-
-  // // Check if the token is valid.
-  // if (parsedAuthToken.signature !== "signature-that-should-be-encrypted") {
-  //   return respondMsg(req, userNkey, serverId, "", "invalid credentials");
-  // }
-
   const auth_user = rc.nats.connect_opts.user;
   const auth_pass = rc.nats.connect_opts.pass;
 
-  // Check if the user exists.
-  const userProfile = userData.users[auth_user];
-  if (!userProfile) {
-    return respondMsg(req, userNkey, serverId, "", "user not found");
+  // auth_user value is deployment_uuid, check authToken is not null
+  const authToken = await fetchAuthToken(auth_user);
+  if (!authToken) {
+    return respondMsg(req, userNkey, serverId, "", "user " + auth_user + " not found");
   }
-  // ToDo: Check if the password is correct.
 
-  // Gather permissions for user
-  const allowedRooms = Object.entries(userData.rooms)
-    .filter(([, room]) => room.users.includes(auth_user))
-    .map(([roomName]) => roomName);
+  const isPasswordCorrect = await verifyAuthToken(auth_pass, authToken.auth_token);
+  if (!isPasswordCorrect) {
+    return respondMsg(req, userNkey, serverId, "", "invalid credentials");
+  }
 
-  // Get the requested subjects/rooms for this connection (passed in the user field but should be passed in client_info field somewhow?)
-  // const requestedRooms = rc.nats.connect_opts.user?.split(";") ?? [];
-  // console.log(`Auth service requested permission to rooms: ${JSON.stringify(requestedRooms)}`);
-
-  // Only grant permissions to requested rooms that the user actually has access to
-  // const grantedRooms = requestedRooms.filter((rr) => allowedRooms.includes(rr));
-  const grantedRooms = [auth_user];
-  console.log(`Auth service granted permission to rooms: ${JSON.stringify(grantedRooms)}`);
+  // const grantedRooms = [auth_user];
+  const grantedRooms = ["alice"];
+  // ToDo: Grant access to necessary rooms
+  console.log(`Auth service user ${auth_user} granted permission to subjects: ${JSON.stringify(grantedRooms)}`);
 
   // User part of the JWT token to issue
   // Add "public" because if the allowed array is empty then all is allowed
   const user: Partial<Jwt.User> = { pub: { allow: ["public", ...grantedRooms], deny: [] }, sub: { allow: ["public", ...grantedRooms], deny: [] } };
-  console.log(`Auth service user: ${JSON.stringify(user)}`);
+  console.log(`Auth service permission: ${JSON.stringify(user)}`);
   // Prepare a user JWT.
   let ejwt: string;
   try {
-    ejwt = await Jwt.encodeUser(rc.nats.connect_opts.user!, rc.nats.user_nkey, issuerKeyPair, user, { aud: userProfile.account });
+    ejwt = await Jwt.encodeUser(rc.nats.connect_opts.user!, rc.nats.user_nkey, issuerKeyPair, user, { aud: "APP" });
   } catch (e) {
+    console.log("error signing user JWT: %s", e);
     return respondMsg(req, userNkey, serverId, "", "error signing user JWT");
   }
 

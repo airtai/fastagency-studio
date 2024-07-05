@@ -19,9 +19,11 @@ def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
 class TestAzureOAI:
     @pytest.mark.db()
     @pytest.mark.asyncio()
-    async def test_azure_constructor(self, azure_oai_ref: ObjectReference) -> None:
+    async def test_azure_constructor(
+        self, azure_oai_gpt35_ref: ObjectReference
+    ) -> None:
         # create data
-        model = await get_model_by_ref(azure_oai_ref)
+        model = await get_model_by_ref(azure_oai_gpt35_ref)
         assert isinstance(model, AzureOAI)
 
         # dynamically created data
@@ -145,11 +147,11 @@ class TestAzureOAI:
     async def test_azure_model_create_autogen(
         self,
         user_uuid: str,
-        azure_oai_ref: ObjectReference,
+        azure_oai_gpt35_ref: ObjectReference,
         azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
     ) -> None:
         actual_llm_config = await create_autogen(
-            model_ref=azure_oai_ref,
+            model_ref=azure_oai_gpt35_ref,
             user_uuid=user_uuid,
         )
         assert isinstance(actual_llm_config, dict)

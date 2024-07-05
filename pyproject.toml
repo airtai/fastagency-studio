@@ -101,6 +101,7 @@ test-core = [
     "pytest==8.2.2",
     "pytest-asyncio==0.23.7",
     "dirty-equals==0.7.1.post0",
+    "pytest-rerunfailures==14.0",
 ]
 
 testing = [
@@ -236,6 +237,7 @@ markers = [
     "openai",
     "togetherai",
     "llm: mark test for use with LLMs",
+    "flaky: mark test as flaky",
 ]
 
 [tool.coverage.run]

@@ -178,7 +178,7 @@ async def azure_oai_key_ref(
     )
 
 
-@tag("llm", "weather-llm")
+@tag("llm", "noapi", "weather-llm")
 @pytest_asyncio.fixture()
 async def azure_oai_gpt35_ref(
     user_uuid: str,
@@ -291,7 +291,7 @@ async def openai_oai_ref(
     )
 
 
-@tag("llm", "weather-llm", "openai-llm")
+@tag("llm", "noapi", "weather-llm", "openai-llm")
 @pytest_asyncio.fixture()
 async def openai_oai_gpt35_ref(
     user_uuid: str,
@@ -364,7 +364,7 @@ async def together_ai_key_ref(user_uuid: str) -> ObjectReference:
     )
 
 
-@tag("llm")
+@tag("llm", "noapi")
 @pytest_asyncio.fixture()
 async def togetherai_ref(
     user_uuid: str,
@@ -550,7 +550,7 @@ async def weather_toolbox_ref(
 @tag_list("assistant", "noapi")
 @expand_fixture(
     dst_fixture_prefix="assistant_noapi",
-    src_fixtures_names=get_by_tag("llm"),
+    src_fixtures_names=get_by_tag("llm", "noapi"),
     placeholder_name="llm_ref",
 )
 async def placeholder_assistant_noapi_ref(

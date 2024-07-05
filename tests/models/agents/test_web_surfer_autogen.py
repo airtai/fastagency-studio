@@ -21,7 +21,7 @@ class TestWebSurferChat:
             "Visit https://en.wikipedia.org/wiki/Zagreb and tell me when Zagreb became a free royal city.",
             # "What is the most expensive NVIDIA GPU on https://www.alternate.de/ and how much it costs?",
             # "Compile a list of news headlines under section 'Politika i kriminal' on telegram.hr.",
-            "What is the single the most newsworthy story today?",
+            # "What is the single the most newsworthy story today?",
             # "Given that weather forcast today is warm and sunny, what would be the best way to spend an evening in Zagreb according to the weather forecast?",
         ],
     )

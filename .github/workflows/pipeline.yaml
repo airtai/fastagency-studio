@@ -11,7 +11,6 @@ env:
 
 jobs:
   detect-deployment-environment:
-    if: github.actor != 'github-merge-queue'
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.set-env.outputs.environment }}
@@ -27,7 +26,7 @@ jobs:
           echo "environment=none" >> $GITHUB_OUTPUT
         fi
   static_analysis:
-    if: github.actor != 'github-merge-queue'
+    if: github.actor != 'github-merge-queue[bot]'
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
@@ -57,7 +56,7 @@ jobs:
         run: semgrep scan --config auto --error
 
   test-without-llms:
-    if: github.actor != 'github-merge-queue'
+    if: github.actor != 'github-merge-queue[bot]'
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
@@ -70,7 +69,7 @@ jobs:
     secrets: inherit  # pragma: allowlist secret
 
   test-with-anthropic:
-    if: github.actor != 'github-merge-queue'
+    if: github.actor != 'github-merge-queue[bot]'
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
@@ -81,7 +80,7 @@ jobs:
       - test-without-llms
 
   test-with-azure_oai:
-    if: github.actor != 'github-merge-queue'
+    if: github.actor != 'github-merge-queue[bot]'
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
@@ -92,7 +91,7 @@ jobs:
       - test-without-llms
 
   test-with-openai:
-    if: github.actor != 'github-merge-queue'
+    if: github.actor != 'github-merge-queue[bot]'
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
@@ -103,7 +102,7 @@ jobs:
       - test-without-llms
 
   test-with-togetherai:
-    if: github.actor != 'github-merge-queue'
+    if: github.actor != 'github-merge-queue[bot]'
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
@@ -114,7 +113,7 @@ jobs:
       - test-without-llms
 
   test-with-llm:
-    if: github.actor != 'github-merge-queue'
+    if: github.actor != 'github-merge-queue[bot]'
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
@@ -129,7 +128,7 @@ jobs:
       - test-with-togetherai
 
   test-macos-latest:
-    if: github.actor != 'github-merge-queue' && github.event.pull_request.draft == false
+    if: github.actor != 'github-merge-queue[bot]' && github.event.pull_request.draft == false
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -149,7 +148,7 @@ jobs:
         run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai or llm)"
 
   test-windows-latest:
-    if: github.actor != 'github-merge-queue' && github.event.pull_request.draft == false
+    if: github.actor != 'github-merge-queue[bot]' && github.event.pull_request.draft == false
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -169,7 +168,7 @@ jobs:
         run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai or llm)"
 
   coverage-combine:
-    if: github.actor != 'github-merge-queue' && github.event.pull_request.draft == false
+    if: github.actor != 'github-merge-queue[bot]' && github.event.pull_request.draft == false
     needs:
       - test-without-llms
       - test-with-llm
@@ -208,8 +207,14 @@ jobs:
           name: coverage-html
           path: htmlcov
 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: airtai/fastagency
+
   unit_test_wasp:
-    if: github.actor != 'github-merge-queue'
+    if: github.actor != 'github-merge-queue[bot]'
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -312,7 +317,7 @@ jobs:
         run: docker push ghcr.io/$GITHUB_REPOSITORY --all-tags
 
   pre-commit-check:
-    if: github.actor != 'github-merge-queue'
+    if: github.actor != 'github-merge-queue[bot]'
     runs-on: ubuntu-latest
     env:
       SKIP: "static-analysis"
@@ -333,7 +338,7 @@ jobs:
 
   # https://github.com/marketplace/actions/alls-green#why
   check: # This job does nothing and is only used for the branch protection
-    if: github.actor != 'github-merge-queue' && github.event.pull_request.draft == false
+    if: github.actor != 'github-merge-queue[bot]' && github.event.pull_request.draft == false
 
     needs:
       - static_analysis

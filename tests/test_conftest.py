@@ -100,3 +100,13 @@ def test_weather_fastapi_openapi(weather_fastapi_openapi_url: str) -> None:
 @pytest.mark.asyncio()
 async def test_weather_toolbox_ref(weather_toolbox_ref: ObjectReference) -> None:
     assert isinstance(weather_toolbox_ref, ObjectReference)
+
+
+@pytest.mark.anthropic()
+def test_empty_anthropic() -> None:
+    pass
+
+
+@pytest.mark.openai()
+def test_empty_openai() -> None:
+    pass

@@ -66,16 +66,6 @@ jobs:
       use-llms: ""
     secrets: inherit  # pragma: allowlist secret
 
-  test-with-llm:
-    uses: ./.github/workflows/test.yaml
-    with:
-      python-version: "3.9"
-      environment: testing
-      use-llms: "llm"
-    secrets: inherit  # pragma: allowlist secret
-    needs:
-      - test-without-llms
-
   test-with-anthropic:
     uses: ./.github/workflows/test.yaml
     with:
@@ -115,6 +105,20 @@ jobs:
     secrets: inherit  # pragma: allowlist secret
     needs:
       - test-without-llms
+
+  test-with-llm:
+    uses: ./.github/workflows/test.yaml
+    with:
+      python-version: "3.9"
+      environment: testing
+      use-llms: "llm"
+    secrets: inherit  # pragma: allowlist secret
+    needs:
+      - test-without-llms
+      - test-with-anthropic
+      - test-with-azure_oai
+      - test-with-openai
+      - test-with-togetherai
 
   test-macos-latest:
     if: github.event.pull_request.draft == false

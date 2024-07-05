@@ -110,14 +110,6 @@ jobs:
       environment: testing
       use-llms: "togetherai"
 
-  test-with-llms:
-    needs:
-      - test-with-llm
-      - test-with-anthropic
-      - test-with-azure_oai
-      - test-with-openai
-      - test-with-togetherai
-
   test-macos-latest:
     if: github.event.pull_request.draft == false
     runs-on: macos-latest
@@ -162,7 +154,11 @@ jobs:
     if: github.event.pull_request.draft == false
     needs:
       - test-without-llms
-      - test-with-llms
+      - test-with-llm
+      - test-with-anthropic
+      - test-with-azure_oai
+      - test-with-openai
+      - test-with-togetherai
     runs-on: ubuntu-latest
 
     steps:

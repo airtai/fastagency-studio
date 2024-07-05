@@ -96,6 +96,8 @@ const BuildPage = ({ user }: BuildPageProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sideNavSelectedItem, setSideNavSelectedItem] = useState('secret');
   const [togglePropertyList, setTogglePropertyList] = useState(false);
+  const { pathname } = location;
+  const activeBuildPageTab = pathname.split('/').pop();
 
   const wrapperClass = document.body.classList.contains('server-error')
     ? 'h-[calc(100vh-173px)]'
@@ -113,11 +115,13 @@ const BuildPage = ({ user }: BuildPageProps) => {
   }, [user, history]);
 
   useEffect(() => {
-    const selectedTab = sessionStorage.getItem('selectedBuildPageTab');
-    if (selectedTab) {
-      setSideNavSelectedItem(selectedTab);
+    if (!activeBuildPageTab) return;
+    if (activeBuildPageTab === 'build') {
+      history.push(`/build/secret`);
+    } else {
+      setSideNavSelectedItem(activeBuildPageTab);
     }
-  }, []);
+  }, [activeBuildPageTab]);
 
   if (loading) {
     return <LoadingComponent />;
@@ -126,7 +130,7 @@ const BuildPage = ({ user }: BuildPageProps) => {
   const handleSideNavItemClick = (selectedComponentName: string) => {
     setSideNavSelectedItem(selectedComponentName);
     setTogglePropertyList(!togglePropertyList);
-    sessionStorage.setItem('selectedBuildPageTab', selectedComponentName);
+    history.push(`/build/${selectedComponentName}`);
   };
 
   return (

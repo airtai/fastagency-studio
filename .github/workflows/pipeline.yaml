@@ -11,7 +11,7 @@ env:
 
 jobs:
   detect-deployment-environment:
-    if: github.actor != 'github-merge-queue[bot]'
+    if: github.actor != 'github-merge-queue'
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.set-env.outputs.environment }}

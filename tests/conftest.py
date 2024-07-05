@@ -28,10 +28,11 @@ from fastagency.db.helpers import (
     get_db_connection,
     get_wasp_db_url,
 )
-from fastagency.helpers import create_model_ref
+from fastagency.helpers import create_autogen, create_model_ref, get_model_by_ref
 from fastagency.models.agents.assistant import AssistantAgent
 from fastagency.models.agents.user_proxy import UserProxyAgent
 from fastagency.models.agents.web_surfer import BingAPIKey, WebSurferAgent
+from fastagency.models.agents.web_surfer_autogen import WebSurferChat
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
@@ -629,6 +630,38 @@ async def placeholder_websurfer_ref(
         llm=llm_ref,
         summarizer_llm=llm_ref,
         bing_api_key=bing_api_key_ref,
+    )
+
+
+@tag_list("websurfer-chat")
+@expand_fixture(
+    dst_fixture_prefix="websurfer_chat",
+    src_fixtures_names=get_by_tag("websurfer"),
+    placeholder_name="websurfer_ref",
+)
+async def placeholder_websurfer_chat(
+    user_uuid: str, websurfer_ref: ObjectReference, bing_api_key_ref: ObjectReference
+) -> WebSurferChat:
+    websurfer_model: WebSurferAgent = await get_model_by_ref(websurfer_ref)  # type: ignore [assignment]
+    llm_config = await create_autogen(websurfer_model.llm, user_uuid)
+    summarizer_llm_config = await create_autogen(
+        websurfer_model.summarizer_llm, user_uuid
+    )
+
+    bing_api_key = (
+        await create_autogen(websurfer_model.bing_api_key, user_uuid)
+        if websurfer_model.bing_api_key
+        else None
+    )
+
+    viewport_size = websurfer_model.viewport_size
+
+    return WebSurferChat(
+        name_prefix=websurfer_model.name,
+        llm_config=llm_config,
+        summarizer_llm_config=summarizer_llm_config,
+        viewport_size=viewport_size,
+        bing_api_key=bing_api_key,
     )
 
 

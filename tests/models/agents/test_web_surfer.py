@@ -1,14 +1,15 @@
 import uuid
-from typing import Annotated, Any, Dict, List
+from typing import Any, Dict
 
 import autogen.agentchat.contrib.web_surfer
 import pytest
+from asyncer import asyncify
 from fastapi import BackgroundTasks
-from pydantic import BaseModel, Field, HttpUrl
 
 from fastagency.app import add_model
 from fastagency.helpers import create_autogen, get_model_by_ref
 from fastagency.models.agents.web_surfer import BingAPIKey, WebSurferAgent
+from fastagency.models.agents.web_surfer_autogen import WebSurferAnswer
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.azure import AzureOAIAPIKey
 from tests.helpers import get_by_tag, parametrize_fixtures
@@ -300,10 +301,8 @@ class TestWebSurferAgent:
             user_uuid=user_uuid,
             is_termination_msg=is_termination_msg,
         )
-        assert isinstance(
-            ag_assistant, autogen.agentchat.contrib.web_surfer.WebSurferAgent
-        )
-        assert len(ag_toolkits) == 0
+        assert isinstance(ag_assistant, autogen.agentchat.AssistantAgent)
+        assert len(ag_toolkits) == 1
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
@@ -313,9 +312,9 @@ class TestWebSurferAgent:
         "task",
         [
             # "Visit https://en.wikipedia.org/wiki/Zagreb and tell me when Zagreb became a free royal city.",
-            "What is the most expensive NVIDIA GPU on https://www.alternate.de/ and how much it costs?",
-            # "Compile a list of news headlines under section 'Politika i kriminal' on telegram.hr.",
-            "What is the most newsworthy story today?",
+            # "What is the most expensive NVIDIA GPU on https://www.alternate.de/ and how much it costs?",
+            "Compile a list of news headlines under section 'Politika i kriminal' on telegram.hr.",
+            # "What is the most newsworthy story today?",
             # "Given that weather forcast today is warm and sunny, what would be the best way to spend an evening in Zagreb according to the weather forecast?",
         ],
     )
@@ -323,193 +322,13 @@ class TestWebSurferAgent:
         self,
         user_uuid: str,
         websurfer_ref: ObjectReference,
-        assistant_noapi_azure_oai_gpt4o_ref: ObjectReference,
+        # assistant_noapi_azure_oai_gpt4o_ref: ObjectReference,
         task: str,
     ) -> None:
-        class FinalAnswer(BaseModel):
-            task: Annotated[str, Field(..., description="The task to be completed")]
-            is_successful: Annotated[
-                bool, Field(..., description="Whether the task was successful")
-            ]
-            short_answer: Annotated[
-                str,
-                Field(
-                    ...,
-                    description="The short answer to the task without any explanation",
-                ),
-            ]
-            long_answer: Annotated[
-                str,
-                Field(..., description="The long answer to the task with explanation"),
-            ]
-            visited_links: Annotated[
-                List[HttpUrl], Field(..., description="The list of visited links")
-            ]
-
-        example_answer = FinalAnswer(
-            task="What is the most popular QLED TV to buy on amazon.com?",
-            is_successful=True,
-            short_answer='Amazon Fire TV 55" Omni QLED Series 4K UHD smart TV, Dolby Vision IQ, Fire TV Ambient Experience, local dimming, hands-free with Alexa',
-            long_answer='Amazon has the best selling page by different categories and there is a category for QLED TVs under electroincs. The most popular QLED TV is Amazon Fire TV 55" Omni QLED Series 4K UHD smart TV, Dolby Vision IQ, Fire TV Ambient Experience, local dimming, hands-free with Alexa. It is the best selling QLED TV on Amazon.',
-            visited_links=[
-                "https://www.amazon.com",
-                "https://www.amazon.com/Best-Sellers/zgbs/",
-                "https://www.amazon.com/Best-Sellers-Electronics/zgbs/electronics/ref=zg_bs_nav_electronics_0",
-                "https://www.amazon.com/Best-Sellers-Electronics-Televisions-Video-Products/zgbs/electronics/1266092011/ref=zg_bs_nav_electronics_1",
-                "https://www.amazon.com/Best-Sellers-Electronics-Televisions/zgbs/electronics/172659/ref=zg_bs_nav_electronics_2_1266092011",
-                "https://www.amazon.com/Best-Sellers-Electronics-QLED-TVs/zgbs/electronics/21489946011/ref=zg_bs_nav_electronics_3_172659",
-            ],
-        )
-
-        assistant_system_message = f"""You are in charge of navigating the web_surfer agent to scrape the web.
-web_surfer is able to CLICK on links, SCROLL down, and scrape the content of the web page. e.g. you cen tell him: "Click the 'Getting Started' result".
-Each time you receive a reply from web_surfer, you need to tell him what to do next. e.g. "Click the TV link" or "Scroll down".
-It is very important that you explore ONLY the page links relevant for the task!
-
-GUIDELINES:
-- Once you retrieve the content from the received url, you can tell web_surfer to CLICK on links, SCROLL down...
-By using these capabilities, you will be able to retrieve MUCH BETTER information from the web page than by just scraping the given URL!
-You MUST use these capabilities when you receive a task for a specific category/product etc.
-- do NOT try to create a summary without clicking on any link, because you will be missing a lot of information!
-- if needed, you can instruct web surfer to SEARCH THE WEB for information.
-
-Examples:
-"Click the 'TVs' result" - This way you will navigate to the TVs section of the page and you will find more information about TVs.
-"Click 'Electronics' link" - This way you will navigate to the Electronics section of the page and you will find more information about Electronics.
-"Click the 'Next' button"
-"Search the internet for the best TV to buy" - this will get links to initial pages to start the search
-
-- Do NOT try to click all the links on the page, but only the ones which are RELEVANT for the task! Web pages can be very long and you will be penalized if spend too much time on this task!
-- Your final goal is to summarize the findings for the given task. The summary must be in English!
-- Create a summary after you successfully retrieve the information from the web page.
-- It is useful to include in the summary relevant links where more information can be found.
-e.g. If the page is offering to sell TVs, you can include a link to the TV section of the page.
-- If you get some 40x error, please do NOT give up immediately, but try to navigate to another page and continue with the task.
-Give up only if you get 40x error on ALL the pages which you tried to navigate to.
-
-
-FINAL MESSAGE:
-Once you have retrieved he wanted information, YOU MUST create JSON-encoded string. Summary created by the web_surfer is not enough!
-You MUST not include any other text or formatting in the message, only JSON-encoded summary!
-
-An example of the JSON-encoded summary:
-{example_answer.model_dump_json()}
-
-TERMINATION:
-When YOU are finished and YOU have created JSON-encoded answer, write a single 'TERMINATE' to end the task.
-
-OFTEN MISTAKES:
-- Web surfer expects you to tell him what LINK NAME to click next, not the relative link. E.g. in case of '[Hardware](/Hardware), the proper command would be 'Click into 'Hardware''.
-- Links presented are often RELATIVE links, so you need to ADD the DOMAIN to the link to make it work. E.g. link '/products/air-conditioners' should be 'https://www.example.com/products/air-conditioners'
-- You do NOT need to click on MAX number of links. If you have enough information from the first xy links, you do NOT need to click on the rest of the links!
-- Do NOT repeat the steps you have already completed!
-- ALWAYS include the NEXT steps in the message!
-- Do NOT instruct web_surfer to click on the same link multiple times. If there are some problems with the link, MOVE ON to the next one!
-- Also, if web_surfer does not understand your message, just MOVE ON to the next link!
-- NEVER REPEAT the same instructions to web_surfer! If he does not understand the first time, MOVE ON to the next link!
-- NEVER enclose JSON-encoded answer in any other text or formatting including '```json' ... '```' or similar!
-"""
-
-        max_links_to_click = 10
-        initial_message = f"""We are tasked with the following task:
-
-{task}
-
-If no link is provided in the task, you should search the internet first to find the relevant information.
-
-The focus is on the provided url and its subpages, we do NOT care about the rest of the website i.e. parent pages.
-e.g. If the url is 'https://www.example.com/products/air-conditioners', we are interested ONLY in the 'air-conditioners' and its subpages.
-
-AFTER visiting the home page, create a step-by-step plan BEFORE visiting the other pages.
-You can click on MAXIMUM {max_links_to_click} links. Do NOT try to click all the links on the page, but only the ones which are most relevant for the task (MAX {max_links_to_click})!
-Do NOT visit the same page multiple times, but only once!
-If your co-speaker repeats the same message, inform him that you have already answered to that message and ask him to proceed with the task.
-e.g. "I have already answered to that message, please proceed with the task or you will be penalized!"
-"""
-
-        def is_termination_msg(msg: Dict[str, Any]) -> bool:
-            # print(f"is_termination_msg({msg=})")
-            if "content" in msg and msg["content"] == "TERMINATE":
-                return True
-            try:
-                FinalAnswer.model_validate_json(msg["content"])
-                return True
-            except Exception:
-                # print(f"{e=}")
-                return False
-
-        ag_websurfer, _ = await create_autogen(
-            model_ref=websurfer_ref,
-            user_uuid=user_uuid,
-            is_termination_msg=is_termination_msg,
-        )
-
-        ag_assistant, _ = await create_autogen(
-            model_ref=assistant_noapi_azure_oai_gpt4o_ref,
-            user_uuid=user_uuid,
-            system_message=assistant_system_message,
-            max_consecutive_auto_reply=20,
-            # is_termination_msg=is_termination_msg,
-        )
-
-        # ag_user_proxy = autogen.agentchat.UserProxyAgent(
-        #     name="user_proxy",
-        #     human_input_mode="NEVER",
-        #     max_consecutive_auto_reply=1,
-        # )
-
-        chat_result = ag_websurfer.initiate_chat(
-            ag_assistant,
-            message=initial_message,
-        )
-
-        messages = [msg["content"] for msg in chat_result.chat_history]
-
-        if "TERMINATE" in messages[-1]:
-            chat_result = ag_websurfer.initiate_chat(
-                recipient=ag_assistant,
-                message=f"Please output the JSON-encoded answer only in the following messsage before trying to terminate the chat. An example of the JSON-encoded summary: {example_answer.model_dump_json()}\n\n"
-                "IMPORTANT:\n - NEVER enclose JSON-encoded answer in any other text or formatting including '```json' ... '```' or similar!"
-                "\n - NEVER write TERMINATE in the same message as the JSON-encoded answer!",
-                clear_history=False,
-            )
-            messages = [msg["content"] for msg in chat_result.chat_history]
-
-        assert messages
-        # for w in ["1242", "Zagreb", "free royal city"]:
-        #     assert any(msg is not None and w in msg for msg in messages), (
-        #         w,
-        #         messages,
-        #     )
-        # for w in ["TERMINATE"]:
-        #     assert not any(msg is not None and w in msg for msg in messages), (w, messages)
-
-        final_answer = FinalAnswer.model_validate_json(messages[-1])
-        assert final_answer.is_successful
-        print(f"{final_answer=}")  # noqa: T201
-
-    @pytest.mark.skip()
-    @pytest.mark.asyncio()
-    @pytest.mark.db()
-    @pytest.mark.llm()
-    @parametrize_fixtures("websurfer_ref", get_by_tag("websurfer"))
-    async def test_websurfer_and_toolkit_end2end(
-        self,
-        user_uuid: str,
-        websurfer_ref: ObjectReference,
-        assistant_weather_openai_oai_gpt35_ref: ObjectReference,
-        openai_gpt35_turbo_16k_llm_config: Dict[str, Any],
-    ) -> None:
-        ag_websurfer, _ = await create_autogen(
+        ag_websurfer, ag_toolboxes = await create_autogen(
             model_ref=websurfer_ref,
             user_uuid=user_uuid,
         )
-
-        ag_assistant, ag_toolboxes = await create_autogen(
-            model_ref=assistant_weather_openai_oai_gpt35_ref,
-            user_uuid=user_uuid,
-        )
-
         ag_user_proxy = autogen.agentchat.UserProxyAgent(
             name="user_proxy",
             human_input_mode="NEVER",
@@ -517,35 +336,100 @@ e.g. "I have already answered to that message, please proceed with the task or y
         )
 
         ag_toolbox = ag_toolboxes[0]
-        ag_toolbox.register_for_llm(ag_assistant)
+        ag_toolbox.register_for_llm(ag_websurfer)
         ag_toolbox.register_for_execution(ag_user_proxy)
 
-        groupchat = autogen.GroupChat(
-            agents=[ag_assistant, ag_websurfer, ag_user_proxy],
-            messages=[],
+        chat_result = await asyncify(ag_user_proxy.initiate_chat)(
+            recipient=ag_websurfer,
+            message=task,
         )
 
-        manager = autogen.GroupChatManager(
-            groupchat=groupchat,
-            llm_config=openai_gpt35_turbo_16k_llm_config,
-        )
-        chat_result = manager.initiate_chat(
-            recipient=manager,
-            message="Find out what's the weather in Zagreb today and then visit https://www.infozagreb.hr/hr/dogadanja and check what would be the best way to spend an evening in Zagreb according to the weather forecast.",
-        )
+        messages = [
+            msg["content"]
+            for msg in chat_result.chat_history
+            if msg["content"] is not None
+        ]
+        assert messages != []
 
-        messages = [msg["content"] for msg in chat_result.chat_history]
-        assert messages
+        # one common error message if there is a bug with syncify
+        assert not any(
+            "Error: This function can only be run from an AnyIO worker thread" in msg
+            for msg in messages
+        ), messages
 
-        # print("*" * 80)
-        # print()
-        # for msg in messages:
-        #     print(msg)
-        #     print()
-        # print("*" * 80)
+        # exctract final message from web surfer
+        websurfer_replies = []
+        for msg in messages:
+            try:
+                model = WebSurferAnswer.model_validate_json(msg)
+                websurfer_replies.append(model)
+            except Exception:  # noqa: PERF203
+                pass
 
-        # for w in ["sunny", "Zagreb", ]:
-        #     assert any(msg is not None and w in msg for msg in messages), (w, messages)
+        # we have at least one successful reply
+        websurfer_successful_replies = [
+            reply for reply in websurfer_replies if reply.is_successful
+        ]
+        assert websurfer_successful_replies != []
+
+    # @pytest.mark.skip()
+    # @pytest.mark.asyncio()
+    # @pytest.mark.db()
+    # @pytest.mark.llm()
+    # @parametrize_fixtures("websurfer_ref", get_by_tag("websurfer"))
+    # async def test_websurfer_and_toolkit_end2end(
+    #     self,
+    #     user_uuid: str,
+    #     websurfer_ref: ObjectReference,
+    #     assistant_weather_openai_oai_gpt35_ref: ObjectReference,
+    #     openai_gpt35_turbo_16k_llm_config: Dict[str, Any],
+    # ) -> None:
+    #     ag_websurfer, _ = await create_autogen(
+    #         model_ref=websurfer_ref,
+    #         user_uuid=user_uuid,
+    #     )
+
+    #     ag_assistant, ag_toolboxes = await create_autogen(
+    #         model_ref=assistant_weather_openai_oai_gpt35_ref,
+    #         user_uuid=user_uuid,
+    #     )
+
+    #     ag_user_proxy = autogen.agentchat.UserProxyAgent(
+    #         name="user_proxy",
+    #         human_input_mode="NEVER",
+    #         max_consecutive_auto_reply=4,
+    #     )
+
+    #     ag_toolbox = ag_toolboxes[0]
+    #     ag_toolbox.register_for_llm(ag_assistant)
+    #     ag_toolbox.register_for_execution(ag_user_proxy)
+
+    #     groupchat = autogen.GroupChat(
+    #         agents=[ag_assistant, ag_websurfer, ag_user_proxy],
+    #         messages=[],
+    #     )
+
+    #     manager = autogen.GroupChatManager(
+    #         groupchat=groupchat,
+    #         llm_config=openai_gpt35_turbo_16k_llm_config,
+    #     )
+    #     chat_result = manager.initiate_chat(
+    #         recipient=manager,
+    #         message="Find out what's the weather in Zagreb today and then visit https://www.infozagreb.hr/hr/dogadanja and check what would be the best way to spend an evening in Zagreb according to the weather forecast.",
+    #     )
+
+    #     messages = [msg["content"] for msg in chat_result.chat_history]
+    #     assert messages is not []
+
+    #     # print("*" * 80)
+    #     # print()
+    #     # for msg in messages:
+    #     #     print(msg)
+    #     #     print()
+    #     # print("*" * 80)
+
+    #     # for w in ["sunny", "Zagreb", ]:
+    #     #     assert any(msg is not None and w in msg for msg in messages), (w, messages)
 
 
 # todo

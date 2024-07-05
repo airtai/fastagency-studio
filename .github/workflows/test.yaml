@@ -15,7 +15,7 @@ on:
       use-llms:
         description: 'Use LLM in the tests'
         required: true
-        type: str
+        type: string
 
 jobs:
   test:

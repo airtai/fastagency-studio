@@ -1,26 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useHistory } from 'react-router-dom';
-import _ from 'lodash';
-
+import React, { useRef } from 'react';
 import { useForm } from '../hooks/useForm';
-import { validateForm } from '../services/commonService';
-import { parseValidationErrors } from '../app/utils/formHelpers';
+import { useFormSubmission } from '../hooks/useFormSubmission';
+import { usePropertyReferenceValues } from '../hooks/usePropertyReferenceValues';
+import { useDeploymentInstructions } from '../hooks/useDeploymentInstructions';
+import { useEscapeKeyHandler } from '../hooks/useEscapeKeyHandler';
 import Loader from '../admin/common/Loader';
 import NotificationBox from './NotificationBox';
-
 import { DynamicFormBuilderProps } from '../interfaces/DynamicFormBuilderInterface';
-import {
-  getFormSubmitValues,
-  getMatchedUserProperties,
-  constructHTMLSchema,
-  getAllRefs,
-  checkForDependency,
-  getSecretUpdateFormSubmitValues,
-  getSecretUpdateValidationURL,
-  getMissingDependencyType,
-} from '../utils/buildPageUtils';
 import AgentConversationHistory from './AgentConversationHistory';
-import { DEPLOYMENT_INSTRUCTIONS, DEPLOYMENT_PREREQUISITES } from '../utils/constants';
+import { DEPLOYMENT_PREREQUISITES } from '../utils/constants';
 import DynamicForm from './form/DynamicForm';
 
 const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
@@ -37,130 +25,38 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     jsonSchema,
     defaultValues: updateExistingModel,
   });
-  const [isLoading, setIsLoading] = useState(false);
 
-  const [notification, setNotification] = useState({
-    message: 'Oops. Something went wrong. Please try again later.',
-    show: false,
+  const {
+    isLoading,
+    notification,
+    instructionForDeployment,
+    handleSubmit,
+    notificationOnClick,
+    onMissingDependencyClick,
+    setInstructionForDeployment,
+  } = useFormSubmission({
+    type_name,
+    validationURL,
+    updateExistingModel,
+    onSuccessCallback,
+    setFormErrors,
   });
-  const [refValues, setRefValues] = useState<Record<string, any>>({});
-  const [instructionForDeployment, setInstructionForDeployment] = useState<Record<string, string> | null>(null);
+
+  const refValues = usePropertyReferenceValues({
+    jsonSchema,
+    allUserProperties,
+    updateExistingModel,
+  });
+
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
-  const history = useHistory();
   const isDeployment = type_name === 'deployment';
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    // Avoid creating duplicate deployments
-    if (instructionForDeployment && !updateExistingModel) {
-      return;
-    }
-    setIsLoading(true);
-    const isSecretUpdate = type_name === 'secret' && !!updateExistingModel;
-    let formDataToSubmit: any = {};
-    if (isSecretUpdate) {
-      formDataToSubmit = getSecretUpdateFormSubmitValues(formData, updateExistingModel);
-      validationURL = getSecretUpdateValidationURL(validationURL, updateExistingModel);
-    } else {
-      formDataToSubmit = getFormSubmitValues(refValues, formData, isSecretUpdate); // remove isSecretUpdate
-    }
-    try {
-      const response = await validateForm(formDataToSubmit, validationURL, isSecretUpdate);
-      const onSuccessCallbackResponse: any = await onSuccessCallback(response);
+  useDeploymentInstructions(updateExistingModel, type_name, setInstructionForDeployment);
+  useEscapeKeyHandler(cancelButtonRef);
 
-      isDeployment &&
-        !updateExistingModel &&
-        setInstructionForDeployment((prevState) => ({
-          ...prevState,
-          gh_repo_url: response.gh_repo_url,
-          // @ts-ignore
-          instruction: DEPLOYMENT_INSTRUCTIONS.replaceAll('<gh_repo_url>', onSuccessCallbackResponse.gh_repo_url),
-        }));
-    } catch (error: any) {
-      try {
-        const errorMsgObj = JSON.parse(error.message);
-        const errors = parseValidationErrors(errorMsgObj);
-        setFormErrors(errors);
-      } catch (e: any) {
-        setNotification({ message: error.message || notification.message, show: true });
-      }
-    } finally {
-      setIsLoading(false);
-    }
+  const onSubmit = (event: React.FormEvent) => {
+    handleSubmit(event, formData, refValues);
   };
-
-  const notificationOnClick = () => {
-    setNotification({ ...notification, show: false });
-  };
-
-  const onMissingDependencyClick = (e: any, type: string) => {
-    onCancelCallback(e);
-    history.push(`/build/${type}`);
-  };
-  useEffect(() => {
-    async function fetchPropertyReferenceValues() {
-      if (jsonSchema) {
-        setIsLoading(true);
-        for (const [key, property] of Object.entries(jsonSchema.properties)) {
-          const propertyHasRef = _.has(property, '$ref') && property['$ref'];
-          const propertyHasAnyOf = (_.has(property, 'anyOf') || _.has(property, 'allOf')) && _.has(jsonSchema, '$defs');
-          if (propertyHasRef || propertyHasAnyOf) {
-            const allRefList = propertyHasRef ? [property['$ref']] : getAllRefs(property);
-            const refUserProperties = getMatchedUserProperties(allUserProperties, allRefList);
-            const missingDependencyList = checkForDependency(refUserProperties, allRefList);
-            const title: string = property.hasOwnProperty('title') ? property.title || '' : key;
-            const selectedModelRefValues = _.get(updateExistingModel, key, null);
-            const htmlSchema = constructHTMLSchema(refUserProperties, title, property, selectedModelRefValues);
-            let missingDependencyType: null | string = null;
-            if (missingDependencyList.length > 0) {
-              missingDependencyType = getMissingDependencyType(jsonSchema.$defs, allRefList);
-            }
-            setRefValues((prev) => ({
-              ...prev,
-              [key]: {
-                htmlSchema: htmlSchema,
-                refUserProperties: refUserProperties,
-                missingDependency: {
-                  type: missingDependencyType,
-                  label: key,
-                },
-              },
-            }));
-          }
-        }
-        setIsLoading(false);
-      }
-    }
-
-    fetchPropertyReferenceValues();
-  }, [jsonSchema]);
-
-  useEffect(() => {
-    if (updateExistingModel && type_name === 'deployment') {
-      const msg = DEPLOYMENT_INSTRUCTIONS;
-
-      //@ts-ignore
-      setInstructionForDeployment((prevState) => ({
-        ...prevState,
-        gh_repo_url: updateExistingModel.gh_repo_url,
-        flyio_app_url: updateExistingModel.flyio_app_url,
-        instruction: msg
-          //@ts-ignore
-          .replaceAll('<gh_repo_url>', updateExistingModel.gh_repo_url)
-          //@ts-ignore
-          .replaceAll('<flyio_app_url>', updateExistingModel.flyio_app_url),
-      }));
-    }
-  }, [isDeployment]);
-
-  useEffect(() => {
-    const keyHandler = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      cancelButtonRef.current?.click();
-    };
-    document.addEventListener('keydown', keyHandler);
-    return () => document.removeEventListener('keydown', keyHandler);
-  });
 
   return (
     <>
@@ -182,7 +78,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
         isLoading={isLoading}
         onMissingDependencyClick={onMissingDependencyClick}
         updateExistingModel={updateExistingModel}
-        handleSubmit={handleSubmit}
+        handleSubmit={onSubmit}
         instructionForDeployment={instructionForDeployment}
         onCancelCallback={onCancelCallback}
         cancelButtonRef={cancelButtonRef}

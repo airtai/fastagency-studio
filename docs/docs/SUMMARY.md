@@ -64,6 +64,10 @@ search:
                 - web_surfer
                     - [BingAPIKey](api/fastagency/models/agents/web_surfer/BingAPIKey.md)
                     - [WebSurferAgent](api/fastagency/models/agents/web_surfer/WebSurferAgent.md)
+                    - [WebSurferToolbox](api/fastagency/models/agents/web_surfer/WebSurferToolbox.md)
+                - web_surfer_autogen
+                    - [WebSurferAnswer](api/fastagency/models/agents/web_surfer_autogen/WebSurferAnswer.md)
+                    - [WebSurferChat](api/fastagency/models/agents/web_surfer_autogen/WebSurferChat.md)
             - base
                 - [Model](api/fastagency/models/base/Model.md)
                 - [ModelTypeFinder](api/fastagency/models/base/ModelTypeFinder.md)

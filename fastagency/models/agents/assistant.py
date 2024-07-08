@@ -35,10 +35,16 @@ class AssistantAgent(AgentBaseModel):
         if "human_input_mode" in kwargs:
             kwargs.pop("human_input_mode")
 
+        if "system_message" in kwargs:
+            system_message = kwargs["system_message"]
+            kwargs.pop("system_message")
+        else:
+            system_message = my_model.system_message
+
         agent = autogen.agentchat.AssistantAgent(
             name=agent_name,
             llm_config=llm,
-            system_message=my_model.system_message,
+            system_message=system_message,
             code_execution_config=False,
             **kwargs,
         )

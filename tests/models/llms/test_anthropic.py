@@ -137,6 +137,7 @@ class TestAnthropic:
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
+    @pytest.mark.anthropic()
     async def test_anthropic_model_create_autogen(
         self,
         user_uuid: str,

@@ -14,8 +14,8 @@ async function run() {
     natsUrl = `tls://${domain}:4222`;
   }
   const natsUser = "auth";
-  const natsPass = "auth";
-  const issuerSeed = process.env.FASTSTREAM_NATS_PRIV_NKEY;
+  const natsPass = process.env.AUTH_NATS_PASSWORD;
+  const issuerSeed = process.env.NATS_PRIV_NKEY;
   console.log(`NATS URL: ${natsUrl}`);
 
   var enc = new TextEncoder();

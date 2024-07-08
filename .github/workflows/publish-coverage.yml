@@ -4,8 +4,7 @@ on:
   workflow_run:
     workflows: [Pipeline]
     types: [completed]
-    branches-ignore:
-      # - main
+    ignore-branches:
       - dev
 
 

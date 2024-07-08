@@ -2,7 +2,7 @@ name: Pipeline
 
 on:
   push:
-  merge_group:
+  # merge_group:
   workflow_dispatch:
 
 env:
@@ -26,11 +26,13 @@ jobs:
           echo "environment=none" >> $GITHUB_OUTPUT
         fi
   static_analysis:
+    # if: github.actor != 'github-merge-queue[bot]'
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
       fail-fast: false
     runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -55,6 +57,7 @@ jobs:
         run: semgrep scan --config auto --error
 
   test-without-llms:
+    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
@@ -63,21 +66,70 @@ jobs:
     with:
       python-version: ${{ matrix.python-version }}
       environment: null
-      use-llms: false
+      use-llms: ""
     secrets: inherit  # pragma: allowlist secret
 
-  test-with-llms:
+  test-with-anthropic:
+    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
       environment: testing
-      use-llms: true
+      use-llms: "anthropic"
     secrets: inherit  # pragma: allowlist secret
     needs:
       - test-without-llms
 
+  test-with-azure_oai:
+    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
+    uses: ./.github/workflows/test.yaml
+    with:
+      python-version: "3.9"
+      environment: testing
+      use-llms: "azure_oai"
+    secrets: inherit  # pragma: allowlist secret
+    needs:
+      - test-without-llms
+
+  test-with-openai:
+    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
+    uses: ./.github/workflows/test.yaml
+    with:
+      python-version: "3.9"
+      environment: testing
+      use-llms: "openai"
+    secrets: inherit  # pragma: allowlist secret
+    needs:
+      - test-without-llms
+
+  test-with-togetherai:
+    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
+    uses: ./.github/workflows/test.yaml
+    with:
+      python-version: "3.9"
+      environment: testing
+      use-llms: "togetherai"
+    secrets: inherit  # pragma: allowlist secret
+    needs:
+      - test-without-llms
+
+  test-with-llm:
+    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
+    uses: ./.github/workflows/test.yaml
+    with:
+      python-version: "3.9"
+      environment: testing
+      use-llms: "llm"
+    secrets: inherit  # pragma: allowlist secret
+    needs:
+      - test-without-llms
+      - test-with-anthropic
+      - test-with-azure_oai
+      - test-with-openai
+      - test-with-togetherai
+
   test-macos-latest:
-    if: github.event.pull_request.draft == false
+    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main' && github.event.pull_request.draft == false
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -97,7 +149,7 @@ jobs:
         run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai or llm)"
 
   test-windows-latest:
-    if: github.event.pull_request.draft == false
+    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main' && github.event.pull_request.draft == false
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -117,10 +169,14 @@ jobs:
         run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai or llm)"
 
   coverage-combine:
-    if: github.event.pull_request.draft == false
+    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main' && github.event.pull_request.draft == false
     needs:
       - test-without-llms
-      - test-with-llms
+      - test-with-llm
+      - test-with-anthropic
+      - test-with-azure_oai
+      - test-with-openai
+      - test-with-togetherai
     runs-on: ubuntu-latest
 
     steps:
@@ -151,6 +207,12 @@ jobs:
         with:
           name: coverage-html
           path: htmlcov
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: airtai/fastagency
 
   unit_test_wasp:
     runs-on: ubuntu-22.04
@@ -255,6 +317,7 @@ jobs:
         run: docker push ghcr.io/$GITHUB_REPOSITORY --all-tags
 
   pre-commit-check:
+    if: github.actor != 'github-merge-queue[bot]'
     runs-on: ubuntu-latest
     env:
       SKIP: "static-analysis"
@@ -275,7 +338,7 @@ jobs:
 
   # https://github.com/marketplace/actions/alls-green#why
   check: # This job does nothing and is only used for the branch protection
-    if: github.event.pull_request.draft == false
+    if: github.actor != 'github-merge-queue[bot]' && github.event.pull_request.draft == false
 
     needs:
       - static_analysis

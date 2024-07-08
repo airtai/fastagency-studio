@@ -28,6 +28,7 @@ import {
 } from '../../utils/buildPageUtils';
 import Loader from '../../admin/common/Loader';
 import CustomBreadcrumb from '../CustomBreadcrumb';
+import { useHistory } from 'react-router-dom';
 
 interface Props {
   data: any;
@@ -35,6 +36,7 @@ interface Props {
 }
 
 const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
+  const history = useHistory();
   const [isLoading, setIsLoading] = useState(false);
   const [showAddModel, setShowAddModel] = useState(false);
   const [selectedModel, setSelectedModel] = useState(data.schemas[0].name);
@@ -151,6 +153,11 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
     setNotificationErrorMessage(null);
   };
 
+  const onMissingDependencyClick = (e: any, type: string) => {
+    onCancelCallback(e);
+    history.push(`/build/${type}`);
+  };
+
   const propertyHeader = propertyName === 'llm' ? 'LLM' : capitalizeFirstLetter(propertyName);
   const propertyDisplayName = propertyName ? _.find(navLinkItems, ['componentName', propertyName]).label : '';
 
@@ -182,6 +189,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
                     onSuccessCallback={onSuccessCallback}
                     onCancelCallback={onCancelCallback}
                     onDeleteCallback={onDeleteCallback}
+                    onMissingDependencyClick={onMissingDependencyClick}
                   />
                 )}
               </div>

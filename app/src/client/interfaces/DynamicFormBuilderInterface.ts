@@ -9,4 +9,5 @@ export interface DynamicFormBuilderProps {
   onSuccessCallback: (data: any) => void;
   onCancelCallback: (event: React.FormEvent) => void;
   onDeleteCallback: (data: any) => void;
+  onMissingDependencyClick: (event: React.FormEvent, type: string) => void;
 }

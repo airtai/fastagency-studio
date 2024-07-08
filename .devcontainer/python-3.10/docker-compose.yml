@@ -10,7 +10,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://admin:password@${USER}-postgres-py310-fastagency:5432/fastagency
       - PY_DATABASE_URL=postgresql://admin:password@${USER}-postgres-py310-fastagency:5432/pyfastagency
-      - NATS_URL=nats://faststream:faststream_password@${USER}-nats-py310-fastagency:4222
+      - NATS_URL=nats://${USER}-nats-py310-fastagency:4222
     env_file:
       - ../devcontainer.env
     networks:

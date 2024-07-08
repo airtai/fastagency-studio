@@ -116,6 +116,7 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PY_DATABASE_URL: ${{ secrets.PY_DATABASE_URL }}
       FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
+      FASTSTREAM_NATS_PASSWORD: ${{ secrets.FASTSTREAM_NATS_PASSWORD }}
       DOMAIN: ${{ vars.DOMAIN }}
       SSH_KEY: ${{ secrets.SSH_KEY }}
       AZURE_API_VERSION: ${{ vars.AZURE_API_VERSION }}
@@ -164,6 +165,7 @@ jobs:
       ADMIN_EMAILS: ${{ vars.ADMIN_EMAILS }}
       WASP_SERVER_URL: ${{ vars.WASP_SERVER_URL }}
       FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
+      WASP_NATS_PASSWORD: ${{ secrets.WASP_NATS_PASSWORD }}
       NODE_DOMAIN: ${{ vars.NODE_DOMAIN }}
       WASP_WEB_CLIENT_URL: ${{ vars.WASP_WEB_CLIENT_URL }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}

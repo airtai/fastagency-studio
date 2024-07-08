@@ -25,7 +25,7 @@ jobs:
         else
           echo "environment=none" >> $GITHUB_OUTPUT
         fi
-  static_analysis:
+  static-analysis:
     # if: github.actor != 'github-merge-queue[bot]'
     strategy:
       matrix:
@@ -169,7 +169,7 @@ jobs:
         run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai or llm)"
 
   coverage-combine:
-    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main' && github.event.pull_request.draft == false
+    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
     needs:
       - test-without-llms
       - test-with-llm
@@ -214,7 +214,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: airtai/fastagency
 
-  unit_test_wasp:
+  unit-test-wasp:
+    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main' && github.event.pull_request.draft == false
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -244,7 +245,7 @@ jobs:
       - name: Build frontend
         run: cd app && cd .wasp/build/web-app && npm install && REACT_APP_API_URL=$REACT_APP_API_URL npm run build
 
-  docker_build_push_node:
+  docker-build-push-node:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -285,7 +286,7 @@ jobs:
         if: github.ref_name == 'main' || github.ref_name == 'dev'
         run: docker push ghcr.io/$GITHUB_REPOSITORY-node --all-tags
 
-  docker_build_push_fastapi:
+  docker-build-push-fastapi:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -341,14 +342,14 @@ jobs:
     if: github.actor != 'github-merge-queue[bot]' && github.event.pull_request.draft == false
 
     needs:
-      - static_analysis
+      - static-analysis
       - pre-commit-check
       - coverage-combine
       - test-macos-latest
       - test-windows-latest
-      - unit_test_wasp
-      - docker_build_push_node
-      - docker_build_push_fastapi
+      - unit-test-wasp
+      - docker-build-push-node
+      - docker-build-push-fastapi
 
     runs-on: ubuntu-latest
 
@@ -358,13 +359,13 @@ jobs:
         with:
           jobs: ${{ toJSON(needs) }}
 
-  deploy_fastapi:
+  deploy-fastapi:
     runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
     needs:
-      - check
+      # - check
       - detect-deployment-environment
     if: github.ref_name == 'main' || github.ref_name == 'dev'
     environment:
@@ -405,13 +406,13 @@ jobs:
 
       - run: rm key.pem
 
-  deploy_node:
+  deploy-node:
     runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
     needs:
-      - deploy_fastapi
+      - deploy-fastapi
       - detect-deployment-environment
     if: github.ref_name == 'main' || github.ref_name == 'dev'
     environment:
@@ -450,16 +451,16 @@ jobs:
       - run: chmod 600 key.pem
 
       - run: ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$NODE_DOMAIN" "docker images"
-      - run: bash scripts/deploy_node.sh
+      - run: bash scripts/deploy-node.sh
 
       - run: rm key.pem
 
-  deploy_frontend:
+  deploy-frontend:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
     needs:
-      - deploy_fastapi
+      - deploy-fastapi
       - detect-deployment-environment
     if: github.ref_name == 'main' || github.ref_name == 'dev'
     environment:

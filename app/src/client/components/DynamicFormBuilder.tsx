@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useHistory } from 'react-router-dom';
 import _ from 'lodash';
 
 import { useForm } from '../hooks/useForm';
@@ -22,6 +23,7 @@ import {
   checkForDependency,
   getSecretUpdateFormSubmitValues,
   getSecretUpdateValidationURL,
+  getMissingDependencyType,
 } from '../utils/buildPageUtils';
 import { set } from 'zod';
 import { NumericStepperWithClearButton } from './form/NumericStepperWithClearButton';
@@ -51,19 +53,14 @@ const deploymentInprogressInstructions = `<div class="leading-loose ml-2 mr-2"><
 <span class="ml-5">- Wait for the workflows to complete:
 <span class="ml-13">- Workflow to run tests and verify the build (approx. 2 mins).</span>
 <span class="ml-13">- Workflow to deploy the application to Fly.io (approx. 8 - 10 mins).</span>
-
-<span class="ml-5">- Once the "Fly Deployment Pipeline" completes. Please follow the below steps to access your application:</span>
-<span class="ml-10">- Click on the "Fly Deployment Pipeline" action.</span>
-<span class="ml-10">- Click on "onetime_app_setup" job.</span>
-<span class="ml-10">- Click on "Deploy wasp application to fly" step.</span>
-<span class="ml-10">- Scroll all the way to the bottom, you will see a sentence "Client has been deployed! Your Wasp </span>
-<span class="ml-13">app is accessible" in the logs. Click on the link next to it to access your application.</span></span>
-
 <span class="ml-5">- Adding the fly.io configuration files:</span>
 <span class="ml-10">- The above workflow might have also created a pull request in your GitHub repository</span>
 <span class="ml-13">to update the <b>fly.toml</b> configuration files.</span>
 <span class="ml-10">- Go to the <b>Pull requests</b> tab in your repository and merge the PR named "Add Fly.io configuration files".</span>
 <span class="ml-13">You will be needing this to deploy your application to Fly.io in the future.</span></span>
+<span class="text-l inline-block my-2 underline">Access the application:</span>
+<span class="ml-10">- Once the "Fly Deployment Pipeline" completes. The application URL will be automatically added to the repository's description.</span>
+<span class="ml-10">- Detailed steps to access the application can be found in the README.md file of the repository.</span>
 <span class="text-l inline-block my-2 underline">Need Help?</span>
 <span class="ml-10">- If you encounter any issues or need assistance, please reach out to us on <a class="underline" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">discord</a>.</span>
 </div>
@@ -89,15 +86,10 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     show: false,
   });
   const [refValues, setRefValues] = useState<Record<string, any>>({});
-  const [missingDependency, setMissingDependency] = useState<string[]>([]);
   const [instructionForDeployment, setInstructionForDeployment] = useState<Record<string, string> | null>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
-
+  const history = useHistory();
   const isDeployment = type_name === 'deployment';
-
-  const missingDependencyNotificationMsg = `Please create atleast one item of type "${missingDependency.join(
-    ', '
-  )}" to proceed.`;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -145,6 +137,11 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const notificationOnClick = () => {
     setNotification({ ...notification, show: false });
   };
+
+  const onMissingDependencyClick = (e: any, type: string) => {
+    onCancelCallback(e);
+    history.push(`/build/${type}`);
+  };
   useEffect(() => {
     async function fetchPropertyReferenceValues() {
       if (jsonSchema) {
@@ -159,17 +156,19 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             const title: string = property.hasOwnProperty('title') ? property.title || '' : key;
             const selectedModelRefValues = _.get(updateExistingModel, key, null);
             const htmlSchema = constructHTMLSchema(refUserProperties, title, property, selectedModelRefValues);
+            let missingDependencyType: null | string = null;
             if (missingDependencyList.length > 0) {
-              setMissingDependency((prev) => {
-                const newMissingDependencies = missingDependencyList.filter((item) => !prev.includes(item));
-                return prev.concat(newMissingDependencies);
-              });
+              missingDependencyType = getMissingDependencyType(jsonSchema.$defs, allRefList);
             }
             setRefValues((prev) => ({
               ...prev,
               [key]: {
                 htmlSchema: htmlSchema,
                 refUserProperties: refUserProperties,
+                missingDependency: {
+                  type: missingDependencyType,
+                  label: key,
+                },
               },
             }));
           }
@@ -180,15 +179,6 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
     fetchPropertyReferenceValues();
   }, [jsonSchema]);
-
-  useEffect(() => {
-    if (missingDependency) {
-      if (missingDependency.length > 0) {
-        // missingDependency.length > 0 ? missingDependencyNotificationMsg
-        setNotification({ ...notification, show: true });
-      }
-    }
-  }, [missingDependency?.length]);
 
   useEffect(() => {
     if (updateExistingModel && type_name === 'deployment') {
@@ -259,14 +249,15 @@ Before you begin, ensure you have the following:
             return null;
           }
           const inputValue = formData[key] || '';
-
+          let missingDependencyForKey = null;
           let formElementsObject = property;
           if (_.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf')) {
             if (refValues[key]) {
               formElementsObject = refValues[key].htmlSchema;
+              missingDependencyForKey = refValues[key].missingDependency;
+              missingDependencyForKey.label = formElementsObject.title;
             }
           }
-
           // return formElementsObject?.enum?.length === 1 ? null : (
           return (
             <div key={key} className='w-full mt-2'>
@@ -287,6 +278,8 @@ Before you begin, ensure you have the following:
                     value={inputValue}
                     options={formElementsObject.enum}
                     onChange={(value) => handleChange(key, value)}
+                    missingDependency={missingDependencyForKey}
+                    onMissingDependencyClick={onMissingDependencyClick}
                   />
                 )
               ) : key === 'system_message' ? (
@@ -358,11 +351,7 @@ Before you begin, ensure you have the following:
         </div>
       )}
       {notification.show && (
-        <NotificationBox
-          type='error'
-          onClick={notificationOnClick}
-          message={missingDependency.length > 0 ? missingDependencyNotificationMsg : notification.message}
-        />
+        <NotificationBox type='error' onClick={notificationOnClick} message={notification.message} />
       )}
     </>
   );

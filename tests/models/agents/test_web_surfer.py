@@ -1,38 +1,46 @@
-import os
 import uuid
 from typing import Any, Dict
 
 import autogen.agentchat.contrib.web_surfer
 import pytest
+from asyncer import asyncify
 from fastapi import BackgroundTasks
-from pydantic import ValidationError
 
 from fastagency.app import add_model
+from fastagency.helpers import create_autogen, get_model_by_ref
 from fastagency.models.agents.web_surfer import BingAPIKey, WebSurferAgent
-from fastagency.models.base import Model
-from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
-from fastagency.models.llms.openai import OpenAI
+from fastagency.models.agents.web_surfer_autogen import WebSurferAnswer
+from fastagency.models.base import ObjectReference
+from fastagency.models.llms.azure import AzureOAIAPIKey
+from tests.helpers import get_by_tag, parametrize_fixtures
 
 
 class TestWebSurferAgent:
-    @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])
-    def test_assistant_constructor(self, llm_model: Model) -> None:
-        llm_uuid = uuid.uuid4()
-        llm = llm_model.get_reference_model()(uuid=llm_uuid)
+    @pytest.mark.asyncio()
+    @pytest.mark.db()
+    @pytest.mark.llm()
+    @parametrize_fixtures("websurfer_ref", get_by_tag("websurfer"))
+    async def test_websurfer_construction(
+        self,
+        user_uuid: str,
+        websurfer_ref: ObjectReference,
+    ) -> None:
+        websurfer: WebSurferAgent = await get_model_by_ref(websurfer_ref)  # type: ignore [assignment]
+        print(f"test_websurfer_construction({user_uuid=}, {websurfer=})")  # noqa: T201
+        isinstance(websurfer, WebSurferAgent)
+        assert websurfer.bing_api_key is not None
 
-        summarizer_llm_uuid = uuid.uuid4()
-        summarizer_llm = llm_model.get_reference_model()(uuid=summarizer_llm_uuid)
-
-        try:
-            web_surfer = WebSurferAgent(
-                name="WebSurferAgent",
-                llm=llm,
-                summarizer_llm=summarizer_llm,
-            )
-        except ValidationError:
-            raise
-
-        assert web_surfer
+    @pytest.mark.asyncio()
+    @pytest.mark.db()
+    @pytest.mark.llm()
+    @parametrize_fixtures("llm_ref", get_by_tag("websurfer-llm"))
+    async def test_websurfer_llm_construction(
+        self,
+        user_uuid: str,
+        llm_ref: ObjectReference,
+    ) -> None:
+        llm = await get_model_by_ref(llm_ref)
+        print(f"test_websurfer_llm_construction({user_uuid=}, {llm=})")  # noqa: T201
 
     def test_web_surfer_model_schema(self) -> None:
         schema = WebSurferAgent.model_json_schema()
@@ -259,7 +267,7 @@ class TestWebSurferAgent:
                     "title": "Summarizer LLM",
                 },
                 "viewport_size": {
-                    "default": 1080,
+                    "default": 4096,
                     "description": "The viewport size of the browser",
                     "title": "Viewport Size",
                     "type": "integer",
@@ -274,105 +282,158 @@ class TestWebSurferAgent:
             "title": "WebSurferAgent",
             "type": "object",
         }
+        # print(f"{schema=}")
         assert schema == expected
-
-    @pytest.mark.parametrize("llm_model", [OpenAI, AzureOAI])
-    def test_websurfer_model_validation(self, llm_model: Model) -> None:
-        llm_uuid = uuid.uuid4()
-        llm = llm_model.get_reference_model()(uuid=llm_uuid)
-
-        summarizer_llm_uuid = uuid.uuid4()
-        summarizer_llm = llm_model.get_reference_model()(uuid=summarizer_llm_uuid)
-
-        web_surfer = WebSurferAgent(
-            name="WebSurferAgent",
-            llm=llm,
-            summarizer_llm=summarizer_llm,
-        )
-
-        web_surfer_json = web_surfer.model_dump_json()
-        # print(f"{agent_json=}")
-        assert web_surfer_json is not None
-
-        validated_agent = WebSurferAgent.model_validate_json(web_surfer_json)
-        # print(f"{validated_agent=}")
-        assert validated_agent is not None
-        assert validated_agent == web_surfer
 
     @pytest.mark.asyncio()
     @pytest.mark.db()
-    @pytest.mark.parametrize("llm_model,api_key_model", [(AzureOAI, AzureOAIAPIKey)])  # noqa: PT006
-    async def test_web_surfer_model_create_autogen(
+    @parametrize_fixtures("websurfer_ref", get_by_tag("websurfer"))
+    async def test_assistant_create_autogen(
         self,
-        llm_model: Model,
-        api_key_model: Model,
-        azure_gpt35_turbo_16k_llm_config: Dict[str, Any],
         user_uuid: str,
-        monkeypatch: pytest.MonkeyPatch,
+        websurfer_ref: ObjectReference,
     ) -> None:
-        # Add secret, llm, agent to database
-        api_key = api_key_model(  # type: ignore [operator]
-            api_key=os.getenv("AZURE_OPENAI_API_KEY", default="*" * 64),
-            name="api_key_model_name",
-        )
-        api_key_model_uuid = str(uuid.uuid4())
-        await add_model(
+        def is_termination_msg(msg: Dict[str, Any]) -> bool:
+            return "TERMINATE" in ["content"]
+
+        ag_assistant, ag_toolkits = await create_autogen(
+            model_ref=websurfer_ref,
             user_uuid=user_uuid,
-            type_name="secret",
-            model_name=api_key_model.__name__,  # type: ignore [attr-defined]
-            model_uuid=api_key_model_uuid,
-            model=api_key.model_dump(),
-            background_tasks=BackgroundTasks(),
+            is_termination_msg=is_termination_msg,
         )
+        assert isinstance(ag_assistant, autogen.agentchat.AssistantAgent)
+        assert len(ag_toolkits) == 1
 
-        llm = llm_model(  # type: ignore [operator]
-            name="llm_model_name",
-            model=os.getenv("AZURE_GPT35_MODEL", default="gpt-35-turbo-16k"),
-            api_key=api_key.get_reference_model()(uuid=api_key_model_uuid),
-            base_url=os.getenv(
-                "AZURE_API_ENDPOINT", default="https://my-deployment.openai.azure.com"
-            ),
-            api_version=os.getenv("AZURE_API_VERSION", default="2024-02-01"),
-        )
-        llm_model_uuid = str(uuid.uuid4())
-        await add_model(
+    @pytest.mark.asyncio()
+    @pytest.mark.db()
+    @pytest.mark.llm()
+    @parametrize_fixtures("websurfer_ref", get_by_tag("websurfer"))
+    @pytest.mark.parametrize(
+        "task",
+        [
+            # "Visit https://en.wikipedia.org/wiki/Zagreb and tell me when Zagreb became a free royal city.",
+            # "What is the most expensive NVIDIA GPU on https://www.alternate.de/ and how much it costs?",
+            "Compile a list of news headlines under section 'Politika i kriminal' on telegram.hr.",
+            # "What is the most newsworthy story today?",
+            # "Given that weather forcast today is warm and sunny, what would be the best way to spend an evening in Zagreb according to the weather forecast?",
+        ],
+    )
+    @pytest.mark.skip(reason="This test is not working properly in CI")
+    async def test_websurfer_end2end(
+        self,
+        user_uuid: str,
+        websurfer_ref: ObjectReference,
+        # assistant_noapi_azure_oai_gpt4o_ref: ObjectReference,
+        task: str,
+    ) -> None:
+        ag_websurfer, ag_toolboxes = await create_autogen(
+            model_ref=websurfer_ref,
             user_uuid=user_uuid,
-            type_name="llm",
-            model_name=llm_model.__name__,  # type: ignore [attr-defined]
-            model_uuid=llm_model_uuid,
-            model=llm.model_dump(),
-            background_tasks=BackgroundTasks(),
+        )
+        ag_user_proxy = autogen.agentchat.UserProxyAgent(
+            name="user_proxy",
+            human_input_mode="NEVER",
+            max_consecutive_auto_reply=4,
         )
 
-        web_surfer_model = WebSurferAgent(
-            name="WebSurferAgent",
-            llm=llm.get_reference_model()(uuid=llm_model_uuid),
-            summarizer_llm=llm.get_reference_model()(uuid=llm_model_uuid),
-        )
-        web_surfer_model_uuid = str(uuid.uuid4())
-        await add_model(
-            user_uuid=user_uuid,
-            type_name="agent",
-            model_name=WebSurferAgent.__name__,
-            model_uuid=web_surfer_model_uuid,
-            model=web_surfer_model.model_dump(),
-            background_tasks=BackgroundTasks(),
+        ag_toolbox = ag_toolboxes[0]
+        ag_toolbox.register_for_llm(ag_websurfer)
+        ag_toolbox.register_for_execution(ag_user_proxy)
+
+        chat_result = await asyncify(ag_user_proxy.initiate_chat)(
+            recipient=ag_websurfer,
+            message=task,
         )
 
-        async def my_create_autogen(cls, model_id, user_id) -> Dict[str, Any]:  # type: ignore [no-untyped-def]
-            return azure_gpt35_turbo_16k_llm_config
+        messages = [
+            msg["content"]
+            for msg in chat_result.chat_history
+            if msg["content"] is not None
+        ]
+        assert messages != []
 
-        # Monkeypatch llm and call create_autogen
-        monkeypatch.setattr(AzureOAI, "create_autogen", my_create_autogen)
+        # one common error message if there is a bug with syncify
+        assert not any(
+            "Error: This function can only be run from an AnyIO worker thread" in msg
+            for msg in messages
+        ), messages
 
-        agent, functions = await WebSurferAgent.create_autogen(
-            model_id=uuid.UUID(web_surfer_model_uuid),
-            user_id=uuid.UUID(user_uuid),
-        )
-        assert isinstance(agent, autogen.agentchat.contrib.web_surfer.WebSurferAgent)
-        assert functions == []
+        # exctract final message from web surfer
+        websurfer_replies = []
+        for msg in messages:
+            try:
+                model = WebSurferAnswer.model_validate_json(msg)
+                websurfer_replies.append(model)
+            except Exception:  # noqa: PERF203
+                pass
+
+        # we have at least one successful reply
+        websurfer_successful_replies = [
+            reply for reply in websurfer_replies if reply.is_successful
+        ]
+        assert websurfer_successful_replies != []
+
+    # @pytest.mark.skip()
+    # @pytest.mark.asyncio()
+    # @pytest.mark.db()
+    # @pytest.mark.llm()
+    # @parametrize_fixtures("websurfer_ref", get_by_tag("websurfer"))
+    # async def test_websurfer_and_toolkit_end2end(
+    #     self,
+    #     user_uuid: str,
+    #     websurfer_ref: ObjectReference,
+    #     assistant_weather_openai_oai_gpt35_ref: ObjectReference,
+    #     openai_gpt35_turbo_16k_llm_config: Dict[str, Any],
+    # ) -> None:
+    #     ag_websurfer, _ = await create_autogen(
+    #         model_ref=websurfer_ref,
+    #         user_uuid=user_uuid,
+    #     )
+
+    #     ag_assistant, ag_toolboxes = await create_autogen(
+    #         model_ref=assistant_weather_openai_oai_gpt35_ref,
+    #         user_uuid=user_uuid,
+    #     )
+
+    #     ag_user_proxy = autogen.agentchat.UserProxyAgent(
+    #         name="user_proxy",
+    #         human_input_mode="NEVER",
+    #         max_consecutive_auto_reply=4,
+    #     )
+
+    #     ag_toolbox = ag_toolboxes[0]
+    #     ag_toolbox.register_for_llm(ag_assistant)
+    #     ag_toolbox.register_for_execution(ag_user_proxy)
+
+    #     groupchat = autogen.GroupChat(
+    #         agents=[ag_assistant, ag_websurfer, ag_user_proxy],
+    #         messages=[],
+    #     )
+
+    #     manager = autogen.GroupChatManager(
+    #         groupchat=groupchat,
+    #         llm_config=openai_gpt35_turbo_16k_llm_config,
+    #     )
+    #     chat_result = manager.initiate_chat(
+    #         recipient=manager,
+    #         message="Find out what's the weather in Zagreb today and then visit https://www.infozagreb.hr/hr/dogadanja and check what would be the best way to spend an evening in Zagreb according to the weather forecast.",
+    #     )
+
+    #     messages = [msg["content"] for msg in chat_result.chat_history]
+    #     assert messages is not []
+
+    #     # print("*" * 80)
+    #     # print()
+    #     # for msg in messages:
+    #     #     print(msg)
+    #     #     print()
+    #     # print("*" * 80)
+
+    #     # for w in ["sunny", "Zagreb", ]:
+    #     #     assert any(msg is not None and w in msg for msg in messages), (w, messages)
 
 
+# todo
 class TestBingAPIKey:
     @pytest.mark.asyncio()
     @pytest.mark.db()

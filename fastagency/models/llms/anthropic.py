@@ -1,7 +1,8 @@
-from typing import Annotated, Any, Dict, Literal
+import re
+from typing import Annotated, Any, Dict, Literal, Type
 from uuid import UUID
 
-from pydantic import AfterValidator, Field, HttpUrl
+from pydantic import AfterValidator, Field, HttpUrl, field_validator
 from typing_extensions import TypeAlias
 
 from ..base import Model
@@ -26,15 +27,21 @@ class AnthropicAPIKey(Model):
         str,
         Field(
             description="The API Key from Anthropic",
-            pattern=r"^sk-ant-api03-[a-zA-Z0-9\-\_]{95}$",
         ),
     ]
 
     @classmethod
-    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> str:
+    async def create_autogen(cls, model_id: UUID, user_id: UUID, **kwargs: Any) -> str:
         my_model: AnthropicAPIKey = await cls.from_db(model_id)
 
         return my_model.api_key
+
+    @field_validator("api_key")
+    @classmethod
+    def validate_api_key(cls: Type["AnthropicAPIKey"], value: Any) -> Any:
+        if not re.match(r"^sk-ant-api03-[a-zA-Z0-9\-\_]{95}$", value):
+            raise ValueError("Invalid Anthropic API Key")
+        return value
 
 
 AnthropicAPIKeyRef: TypeAlias = AnthropicAPIKey.get_reference_model()  # type: ignore[valid-type]
@@ -74,7 +81,9 @@ class Anthropic(Model):
     ] = 0.8
 
     @classmethod
-    async def create_autogen(cls, model_id: UUID, user_id: UUID) -> Dict[str, Any]:
+    async def create_autogen(
+        cls, model_id: UUID, user_id: UUID, **kwargs: Any
+    ) -> Dict[str, Any]:
         my_model: Anthropic = await cls.from_db(model_id)
 
         api_key_model: AnthropicAPIKey = (

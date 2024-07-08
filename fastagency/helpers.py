@@ -59,6 +59,8 @@ async def validate_tokens_and_create_gh_repo(
         fly_api_token=found_fly_token_uuid,
         github_token=found_gh_token_uuid,
         app_name=model["name"],
+        repo_name=model["repo_name"],
+        fly_app_name=model["fly_app_name"],
         fastagency_deployment_uuid=model_uuid,
     )
 
@@ -213,6 +215,7 @@ async def get_all_models_for_user(
 async def create_autogen(
     model_ref: ObjectReference,
     user_uuid: Union[str, UUID],
+    **kwargs: Any,
 ) -> Any:
     user_id = UUID(user_uuid) if isinstance(user_uuid, str) else user_uuid
     model_id = (
@@ -222,7 +225,7 @@ async def create_autogen(
     )
     model = await get_model_by_ref(model_ref)
 
-    return await model.create_autogen(model_id=model_id, user_id=user_id)
+    return await model.create_autogen(model_id=model_id, user_id=user_id, **kwargs)
 
 
 def generate_auth_token(length: int = 32) -> str:

@@ -37,6 +37,8 @@ class TestDeployment:
             deployment = Deployment(
                 team=team,
                 name="Test Deployment",
+                repo_name="test-deployment",
+                fly_app_name="test-deployment",
                 gh_token=gh_token,
                 fly_token=fly_token,
             )
@@ -163,10 +165,22 @@ class TestDeployment:
             },
             "properties": {
                 "name": {
-                    "description": "The name of the item",
-                    "maxLength": 30,
+                    "description": "The application name to use on the website.",
                     "minLength": 1,
                     "title": "Name",
+                    "type": "string",
+                },
+                "repo_name": {
+                    "description": "The name of the GitHub repository.",
+                    "minLength": 1,
+                    "title": "Repo Name",
+                    "type": "string",
+                },
+                "fly_app_name": {
+                    "description": "The name of the Fly.io application.",
+                    "maxLength": 30,
+                    "minLength": 1,
+                    "title": "Fly App Name",
                     "type": "string",
                 },
                 "team": {
@@ -177,7 +191,14 @@ class TestDeployment:
                 "gh_token": {"$ref": "#/$defs/GitHubTokenRef"},
                 "fly_token": {"$ref": "#/$defs/FlyTokenRef"},
             },
-            "required": ["name", "team", "gh_token", "fly_token"],
+            "required": [
+                "name",
+                "repo_name",
+                "fly_app_name",
+                "team",
+                "gh_token",
+                "fly_token",
+            ],
             "title": "Deployment",
             "type": "object",
         }
@@ -203,7 +224,12 @@ class TestDeployment:
         fly_token = fly_token_model.get_reference_model()(uuid=fly_token_uuid)
 
         deployment = Deployment(
-            team=team, name="Test Deployment", gh_token=gh_token, fly_token=fly_token
+            team=team,
+            name="Test Deployment",
+            repo_name="test-deployment",
+            fly_app_name="test-deployment",
+            gh_token=gh_token,
+            fly_token=fly_token,
         )
 
         deployment_json = deployment.model_dump_json()
@@ -214,3 +240,42 @@ class TestDeployment:
         # print(f"{validated_agent=}")
         assert validated_deployment is not None
         assert validated_deployment == deployment
+
+    @pytest.mark.parametrize(
+        "fly_app_name", ["", "app_name", "123-app-name", "2024-06-29"]
+    )
+    def test_invalid_fly_io_app_name(self, fly_app_name: str) -> None:
+        with pytest.raises(ValidationError):
+            Deployment(
+                team=TwoAgentTeam.get_reference_model()(uuid=uuid.uuid4()),
+                name="Test Deployment",
+                repo_name="test-deployment",
+                fly_app_name=fly_app_name,
+                gh_token=GitHubToken.get_reference_model()(uuid=uuid.uuid4()),
+                fly_token=FlyToken.get_reference_model()(uuid=uuid.uuid4()),
+            )
+
+    @pytest.mark.parametrize("repo_name", ["repo name", "repo@name", "repo/name"])
+    def test_invalid_repo_name(self, repo_name: str) -> None:
+        with pytest.raises(
+            ValueError, match="The repository name can only contain ASCII letters"
+        ):
+            Deployment(
+                team=TwoAgentTeam.get_reference_model()(uuid=uuid.uuid4()),
+                name="Test Deployment",
+                repo_name=repo_name,
+                fly_app_name="fly-app-name",
+                gh_token=GitHubToken.get_reference_model()(uuid=uuid.uuid4()),
+                fly_token=FlyToken.get_reference_model()(uuid=uuid.uuid4()),
+            )
+
+    @pytest.mark.parametrize("fly_app_name", ["app-name", "fa-123-app-name"])
+    def test_valid_fly_io_app_name(self, fly_app_name: str) -> None:
+        Deployment(
+            team=TwoAgentTeam.get_reference_model()(uuid=uuid.uuid4()),
+            name="Test Deployment",
+            repo_name="test-deployment",
+            fly_app_name=fly_app_name,
+            gh_token=GitHubToken.get_reference_model()(uuid=uuid.uuid4()),
+            fly_token=FlyToken.get_reference_model()(uuid=uuid.uuid4()),
+        )

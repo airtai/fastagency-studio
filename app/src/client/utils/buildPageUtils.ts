@@ -1,7 +1,13 @@
 import _ from 'lodash';
 
 import { getModels } from 'wasp/client/operations';
-import { SchemaCategory, ApiResponse, ApiSchema, JsonSchema } from '../interfaces/BuildPageInterfaces';
+import {
+  SchemaCategory,
+  ApiResponse,
+  ApiSchema,
+  JsonSchema,
+  SchemaDefinition,
+} from '../interfaces/BuildPageInterfaces';
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 import { propertyDependencyMap } from './constants';
 import { tr } from '@faker-js/faker';
@@ -247,4 +253,18 @@ export function formatApiKey(apiKey: string) {
   } else {
     return '';
   }
+}
+
+export function getMissingDependencyType(
+  jsonDeps: { [key: string]: SchemaDefinition } | undefined,
+  allRefList: string[]
+): string | null {
+  if (allRefList.length === 0 || !jsonDeps) {
+    return null;
+  }
+  const refName: string = allRefList[0].split('/').pop() as string;
+  if (!jsonDeps[refName]) {
+    return null;
+  }
+  return jsonDeps[refName].properties.type['const'] || null;
 }

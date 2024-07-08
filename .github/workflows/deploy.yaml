@@ -11,6 +11,22 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  detect-deployment-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+    steps:
+    - name: Determine deployment environment
+      id: set-env
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          echo "environment=production" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+          echo "environment=staging" >> $GITHUB_OUTPUT
+        else
+          echo "environment=none" >> $GITHUB_OUTPUT
+        fi
+
   docker-build-push-node:
     runs-on: ubuntu-22.04
     permissions:
@@ -90,6 +106,7 @@ jobs:
         shell: bash
     needs:
       - docker-build-push-fastapi
+      - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}
     env:
@@ -135,6 +152,7 @@ jobs:
         shell: bash
     needs:
       - docker-build-push-node
+      - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}
     env:
@@ -181,6 +199,8 @@ jobs:
       contents: write
     needs:
       - deploy-fastapi
+      - deploy-node
+      - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}
     env:

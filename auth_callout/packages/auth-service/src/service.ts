@@ -1,20 +1,22 @@
 import * as Nats from "nats";
 import * as Jwt from "nats-jwt";
 import * as Nkeys from "nkeys.js";
-import { fetchAuthToken, verifyAuthToken } from "./data";
+import { Auth, checkChatUuid, fetchAuthToken, verifyAuthToken } from "./data";
 import { AuthorizationRequestClaims } from "./types";
 
 run();
 
 async function run() {
-  // const natsUrl = "nats://localhost:4228";
-  // const natsUser = "auth";
-  // const natsPass = "auth";
-  // const issuerSeed = "SAANDLKMXL6CUS3CP52WIXBEDN6YJ545GDKC65U5JZPPV6WH6ESWUA6YAI";
-  const natsUrl = "nats://kumaran-nats-py310-fastagency:4222"
+  let natsUrl: string | undefined;
+  natsUrl = process.env.NATS_URL
+  if (!natsUrl) {
+    const domain = process.env.DOMAIN;
+    natsUrl = `tls://${domain}:4222`;
+  }
   const natsUser = "auth";
   const natsPass = "auth";
-  const issuerSeed = "SAALYZUPN235PN72VRMNHL26UQOMIFKLQANMFUAPQIAE5BXCS5X65WB4BI";
+  const issuerSeed = process.env.FASTSTREAM_NATS_PRIV_NKEY;
+  console.log(`NATS URL: ${natsUrl}`);
 
   var enc = new TextEncoder();
   var dec = new TextDecoder();
@@ -66,8 +68,20 @@ async function msgHandler(req: Nats.Msg, enc: TextEncoder, dec: TextDecoder, iss
   const userNkey = rc.nats.user_nkey;
   const serverId = rc.nats.server_id.id;
 
-  const auth_user = rc.nats.connect_opts.user;
-  const auth_pass = rc.nats.connect_opts.pass;
+  const auth = rc.nats.connect_opts.auth_token;
+  if (!auth) {
+    return respondMsg(req, userNkey, serverId, "", "auth token not provided");
+  }
+  let parsedAuth: Auth;
+  try {
+    parsedAuth = JSON.parse(auth);
+  } catch (e) {
+    return respondMsg(req, "", "", "", (e as Error).message);
+  }
+
+  const auth_user = parsedAuth.user;
+  const auth_pass = parsedAuth.password;
+  const chat_uuid = parsedAuth.chat_uuid;
 
   // auth_user value is deployment_uuid, check authToken is not null
   const authToken = await fetchAuthToken(auth_user);
@@ -79,15 +93,22 @@ async function msgHandler(req: Nats.Msg, enc: TextEncoder, dec: TextDecoder, iss
   if (!isPasswordCorrect) {
     return respondMsg(req, userNkey, serverId, "", "invalid credentials");
   }
+  // ToDo: Check deployment chat_uuid does not exist in main node database
+  const chat = await checkChatUuid(chat_uuid);
+  if (chat) {
+    return respondMsg(req, userNkey, serverId, "", "chat " + chat_uuid + " is not part of deployment");
+  }
 
-  // const grantedRooms = [auth_user];
-  const grantedRooms = ["alice"];
-  // ToDo: Grant access to necessary rooms
+  const grantedRooms = [
+    "chat.server.initiate_chat",
+    `chat.client.messages.${chat_uuid}`,
+    `chat.server.messages.${chat_uuid}`,
+  ];
   console.log(`Auth service user ${auth_user} granted permission to subjects: ${JSON.stringify(grantedRooms)}`);
 
   // User part of the JWT token to issue
   // Add "public" because if the allowed array is empty then all is allowed
-  const user: Partial<Jwt.User> = { pub: { allow: ["public", ...grantedRooms], deny: [] }, sub: { allow: ["public", ...grantedRooms], deny: [] } };
+  const user: Partial<Jwt.User> = { pub: { allow: [...grantedRooms], deny: [] }, sub: { allow: [...grantedRooms], deny: [] } };
   console.log(`Auth service permission: ${JSON.stringify(user)}`);
   // Prepare a user JWT.
   let ejwt: string;

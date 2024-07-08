@@ -24,7 +24,15 @@ export async function readData(): Promise<Data> {
   return data;
 }
 
+export type Auth = {
+  user: string;
+  password: string;
+  chat_uuid: string;
+}
+
 const prisma = new PrismaClient();
+
+const wasp_prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } })
 
 
 export async function fetchAuthToken(deployment_uuid: string) {
@@ -33,6 +41,17 @@ export async function fetchAuthToken(deployment_uuid: string) {
     return authToken.length > 0 ? authToken[0] : null; // Return the first authToken if found, else return null
   } catch (error) {
     console.error('Error fetching AuthToken by deployment_uuid:', error);
+    return null; // Return null on error
+  }
+}
+
+export async function checkChatUuid(chat_uuid: string) {
+  try {
+    const result = await wasp_prisma.$queryRaw`SELECT * FROM "Chat" WHERE "uuid" = ${chat_uuid} LIMIT 1`;
+    const chats = Array.isArray(result) ? result : [result];
+    return chats.length > 0 ? chats[0] : null; // Return the first chat if found, else return null
+  } catch (error) {
+    console.error('Error fetching Chat by chat_uuid:', error);
     return null; // Return null on error
   }
 }
@@ -70,7 +89,3 @@ export async function verifyAuthToken(token: string, storedHash: string): Promis
   // Compare the computed hash with the stored hash
   return computedHash.then(hash => hash === hashValue);
 }
-
-// console.log(await fetchAuthToken("5060f4a8-0e73-4b03-be29-400ca1aaa45a"));
-
-// console.log(await verifyAuthToken("gK0OeemyoXNnQhI7lnGFInnDWkBTBu5f", "550d7749c253a1bd8a83a81ef6f35887:1473d06d0102afda8bda41eb1db73d36b8eb57c30f457b925283bc7085a4b5c9"))

@@ -10,7 +10,7 @@ import {
 import { JsonSchema, SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
 interface UsePropertyReferenceValuesProps {
-  jsonSchema: JsonSchema;
+  jsonSchema: JsonSchema | null;
   allUserProperties: any;
   updateExistingModel: SelectedModelSchema | null;
 }

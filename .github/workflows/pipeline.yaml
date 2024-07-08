@@ -259,8 +259,6 @@ jobs:
       - test-macos-latest
       - test-windows-latest
       - unit-test-wasp
-      - docker-build-push-node
-      - docker-build-push-fastapi
 
     runs-on: ubuntu-latest
 

@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'scripts/ci_check_certs.sh'
-      - '.github/workflows/update_cron_script.yml'
+      - 'scripts/ci-check-certs.sh'
+      - '.github/workflows/update-cron-script.yml'
   workflow_dispatch:
 
 jobs:
@@ -59,7 +59,7 @@ jobs:
 
       - run: ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$DOMAIN" "ls -la"
 
-      - run: envsubst '${DOMAIN}' < scripts/cron_check_certs.sh > tmp.sh
+      - run: envsubst '${DOMAIN}' < scripts/cron-check-certs.sh > tmp.sh
       - run: chmod +x tmp.sh
       - run: cat tmp.sh
       - run: scp -i key.pem tmp.sh azureuser@"$DOMAIN":/home/azureuser/cron_check_certs.sh

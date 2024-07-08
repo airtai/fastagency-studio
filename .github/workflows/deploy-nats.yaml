@@ -67,6 +67,6 @@ jobs:
       - run: chmod 600 key.pem
 
       - run: ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$DOMAIN" "docker images"
-      - run: bash scripts/deploy_nats.sh
+      - run: bash scripts/deploy-nats.sh
 
       - run: rm key.pem

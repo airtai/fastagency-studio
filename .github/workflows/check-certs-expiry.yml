@@ -55,6 +55,6 @@ jobs:
       - run: chmod 600 key.pem
 
       - run: ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$DOMAIN" "ls -la"
-      - run: bash ./scripts/ci_check_certs.sh
+      - run: bash ./scripts/ci-check-certs.sh
 
       - run: rm key.pem

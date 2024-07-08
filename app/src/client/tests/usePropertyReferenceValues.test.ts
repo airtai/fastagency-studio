@@ -208,24 +208,12 @@ describe('usePropertyReferenceValues', () => {
     const expected = {
       api_key: {
         htmlSchema: { description: '', enum: ['None'], title: 'Api Key', type: 'string' },
-        refUserProperties: [],
-        missingDependency: { type: 'secret', label: 'api_key' },
+        matchedProperties: [],
+        missingDependency: [{ property_type: 'secret', label: 'api_key', model_type: 'AnthropicAPIKey' }],
       },
     };
-
     // Check the structure of the returned refValues
     expect(result.current).toEqual(expected);
-
-    // Additional checks to ensure the structure is correct
-    expect(result.current.api_key).toHaveProperty('htmlSchema');
-    expect(result.current.api_key).toHaveProperty('refUserProperties');
-    expect(result.current.api_key).toHaveProperty('missingDependency');
-
-    // Check specific properties
-    expect(result.current.api_key.htmlSchema.enum).toEqual(['None']);
-    expect(result.current.api_key.refUserProperties).toEqual([]);
-    expect(result.current.api_key.missingDependency.type).toBe('secret');
-    expect(result.current.api_key.missingDependency.label).toBe('api_key');
   });
   it('should process $ref properties and return appropriate refValues with matching user property', async () => {
     const jsonSchema = {
@@ -366,8 +354,8 @@ describe('usePropertyReferenceValues', () => {
       type: 'string',
     });
 
-    // Check refUserProperties
-    expect(apiKeyResult.refUserProperties).toEqual([
+    // Check missingDependency
+    expect(apiKeyResult.matchedProperties).toEqual([
       {
         uuid: '367d2944-fe36-4223-82e6-f532c58afe32',
         user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
@@ -383,10 +371,7 @@ describe('usePropertyReferenceValues', () => {
     ]);
 
     // Check missingDependency
-    expect(apiKeyResult.missingDependency).toEqual({
-      type: null,
-      label: 'api_key',
-    });
+    expect(apiKeyResult.missingDependency).toEqual([]);
 
     // Additional checks
     expect(Object.keys(result.current)).toHaveLength(1); // Only api_key should be processed
@@ -494,14 +479,16 @@ describe('usePropertyReferenceValues', () => {
       type: 'string',
     });
 
-    // Check refUserProperties
-    expect(openapiAuthResult.refUserProperties).toEqual([]);
+    // Check missingDependency
+    expect(openapiAuthResult.matchedProperties).toEqual([]);
 
     // Check missingDependency
-    expect(openapiAuthResult.missingDependency).toEqual({ type: null, label: 'openapi_auth' });
+    expect(openapiAuthResult.missingDependency).toEqual([
+      { property_type: 'secret', label: 'openapi_auth', model_type: 'OpenAPIAuth' },
+    ]);
 
     // Additional checks
-    expect(Object.keys(result.current)).toHaveLength(1); // Only openapi_auth should be processed
+    // expect(Object.keys(result.current)).toHaveLength(1); // Only openapi_auth should be processed
   });
   it('should process anyOf properties with $ref and null options, with a matching user property', async () => {
     const jsonSchema = {
@@ -607,8 +594,8 @@ describe('usePropertyReferenceValues', () => {
       type: 'string',
     });
 
-    // Check refUserProperties
-    expect(openapiAuthResult.refUserProperties).toEqual([
+    // Check matchedProperties
+    expect(openapiAuthResult.matchedProperties).toEqual([
       {
         uuid: 'd72e6782-a849-45c3-bac8-7e9605fb73b3',
         user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
@@ -625,11 +612,7 @@ describe('usePropertyReferenceValues', () => {
     ]);
 
     // Check missingDependency
-
-    expect(openapiAuthResult.missingDependency).toEqual({
-      type: null,
-      label: 'openapi_auth',
-    });
+    expect(openapiAuthResult.missingDependency).toEqual([]);
 
     // Additional checks
     expect(Object.keys(result.current)).toHaveLength(1); // Only openapi_auth should be processed

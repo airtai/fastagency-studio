@@ -114,7 +114,7 @@ export const getFormSubmitValues = (refValues: any, formData: any, isSecretUpdat
             : formData[key].json_str.name
           : refValues[key].htmlSchema.default;
       }
-      const selectedData = refValues[key].refUserProperties.find((data: any) => data.json_str.name === selectedKey);
+      const selectedData = refValues[key].matchedProperties.find((data: any) => data.json_str.name === selectedKey);
       newFormData[key] = typeof selectedKey === 'string' ? selectedData : selectedKey;
     }
   });
@@ -164,15 +164,24 @@ export const removeRefSuffix = (ref: string): string => {
   return refName;
 };
 
-export function getMatchedUserProperties(allUserProperties: any, ref: string[]) {
-  const refList = _.flatten(ref);
-  const retVal = _.map(refList, function (ref: any) {
-    const refName = removeRefSuffix(ref);
-    return _(allUserProperties)
-      .filter((property: any) => property.model_name === refName)
-      .value();
+export function matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties: any[], ref: string[]): [any[], string[]] {
+  const removeRefSuffix = (ref: string): string => ref.replace('#/$defs/', '').replace('Ref', '');
+
+  const refSet = new Set(ref.map(removeRefSuffix));
+  const matchedRefs: any[] = [];
+  const unMatchedRefs: string[] = [];
+
+  refSet.forEach((refName) => {
+    const matchedProperties = allUserProperties.filter((property) => property.model_name === refName);
+    if (matchedProperties.length > 0) {
+      matchedRefs.push(...matchedProperties);
+    } else {
+      unMatchedRefs.push(refName);
+    }
   });
-  return _.flatten(retVal);
+
+  _.remove(unMatchedRefs, (n: string) => n === 'null');
+  return [matchedRefs, unMatchedRefs];
 }
 
 export function getAllRefs(property: any): any[] {
@@ -184,14 +193,16 @@ export function getAllRefs(property: any): any[] {
   return [];
 }
 
-export function checkForDependency(userPropertyData: object[], allRefList: string[]): string[] {
-  if (userPropertyData.length === 0) {
-    if (!_.includes(allRefList, 'null')) {
-      return _.map(allRefList, removeRefSuffix);
-    }
-  }
-  return [];
-}
+// export function checkForDependency(userPropertyData: object[], allRefList: string[]): string[] {
+//   if (userPropertyData.length === 0) {
+//     _.remove(allRefList, (n: string) => n === 'null');
+//     return _.map(allRefList, removeRefSuffix);
+//     // if (!_.includes(allRefList, 'null')) {
+//     //   return _.map(allRefList, removeRefSuffix);
+//     // }
+//   }
+//   return [];
+// }
 
 type dataObject = {
   uuid: string;
@@ -257,14 +268,17 @@ export function formatApiKey(apiKey: string) {
 
 export function getMissingDependencyType(
   jsonDeps: { [key: string]: SchemaDefinition } | undefined,
-  allRefList: string[]
+  refName: string
 ): string | null {
-  if (allRefList.length === 0 || !jsonDeps) {
+  if (!refName || !jsonDeps) {
     return null;
   }
-  const refName: string = allRefList[0].split('/').pop() as string;
-  if (!jsonDeps[refName]) {
+
+  const fullRefName = Object.keys(jsonDeps).find((key) => key.startsWith(refName));
+
+  if (!fullRefName || !jsonDeps[fullRefName]) {
     return null;
   }
-  return jsonDeps[refName].properties.type['const'] || null;
+
+  return jsonDeps[fullRefName].properties.type['const'] || null;
 }

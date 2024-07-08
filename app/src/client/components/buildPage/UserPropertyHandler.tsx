@@ -156,6 +156,9 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const onMissingDependencyClick = (e: any, type: string) => {
     onCancelCallback(e);
     history.push(`/build/${type}`);
+    // setUpdateExistingModel(null);
+    // setSelectedModel(data.schemas[0].name);
+    // setShowAddModel(true);
   };
 
   const propertyHeader = propertyName === 'llm' ? 'LLM' : capitalizeFirstLetter(propertyName);

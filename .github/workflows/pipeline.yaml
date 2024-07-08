@@ -2,7 +2,9 @@ name: Pipeline
 
 on:
   push:
-  # merge_group:
+    branches-ignore:
+      - main
+      - dev
   workflow_dispatch:
 
 env:
@@ -16,7 +18,6 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
       fail-fast: false
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -41,7 +42,6 @@ jobs:
         run: semgrep scan --config auto --error
 
   test-without-llms:
-    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
@@ -54,7 +54,6 @@ jobs:
     secrets: inherit  # pragma: allowlist secret
 
   test-with-anthropic:
-    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
@@ -65,7 +64,6 @@ jobs:
       - test-without-llms
 
   test-with-azure_oai:
-    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
@@ -76,7 +74,6 @@ jobs:
       - test-without-llms
 
   test-with-openai:
-    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
@@ -87,7 +84,6 @@ jobs:
       - test-without-llms
 
   test-with-togetherai:
-    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
@@ -98,7 +94,6 @@ jobs:
       - test-without-llms
 
   test-with-llm:
-    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
@@ -153,7 +148,6 @@ jobs:
         run: bash scripts/test.sh -m "not (db or nats or anthropic or azure_oai or openai or togetherai or llm)"
 
   coverage-combine:
-    if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
     needs:
       - test-without-llms
       - test-with-llm

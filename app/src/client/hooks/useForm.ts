@@ -6,7 +6,8 @@ interface UseFormProps {
   jsonSchema: JsonSchema;
   defaultValues?: SelectedModelSchema | null;
 }
-interface FormData {
+
+export interface FormData {
   [key: string]: any;
 }
 

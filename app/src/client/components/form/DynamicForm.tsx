@@ -16,7 +16,7 @@ interface DynamicFormProps {
   formErrors: Record<string, string>;
   refValues: Record<string, any>;
   isLoading: boolean;
-  onMissingDependencyClick: (e: any, type: string) => void;
+  onMissingDependencyClick: (event: React.FormEvent, property_type: string, model_type: string) => void;
   updateExistingModel: any;
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   instructionForDeployment: Record<string, string> | null;

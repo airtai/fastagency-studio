@@ -209,7 +209,7 @@ describe('usePropertyReferenceValues', () => {
       api_key: {
         htmlSchema: { description: '', enum: ['None'], title: 'Api Key', type: 'string' },
         matchedProperties: [],
-        missingDependency: [{ property_type: 'secret', label: 'api_key', model_type: 'AnthropicAPIKey' }],
+        missingDependency: [{ property_type: 'secret', label: 'Api Key', model_type: 'AnthropicAPIKey' }],
       },
     };
     // Check the structure of the returned refValues
@@ -484,7 +484,7 @@ describe('usePropertyReferenceValues', () => {
 
     // Check missingDependency
     expect(openapiAuthResult.missingDependency).toEqual([
-      { property_type: 'secret', label: 'openapi_auth', model_type: 'OpenAPIAuth' },
+      { property_type: 'secret', label: 'OpenAPI Auth', model_type: 'OpenAPIAuth' },
     ]);
 
     // Additional checks

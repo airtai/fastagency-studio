@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import _ from 'lodash';
 import {
   matchPropertiesAndIdentifyUnmatchedRefs,
   constructHTMLSchema,
   getAllRefs,
-  // checkForDependency,
   getMissingDependencyType,
 } from '../utils/buildPageUtils';
 import { JsonSchema, SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
@@ -22,48 +21,46 @@ export const usePropertyReferenceValues = ({
 }: UsePropertyReferenceValuesProps) => {
   const [refValues, setRefValues] = useState<Record<string, any>>({});
 
-  useEffect(() => {
-    async function fetchPropertyReferenceValues() {
-      if (jsonSchema) {
-        for (const [key, property] of Object.entries(jsonSchema.properties)) {
-          const propertyHasRef = _.has(property, '$ref') && property['$ref'];
-          const propertyHasAnyOf = (_.has(property, 'anyOf') || _.has(property, 'allOf')) && _.has(jsonSchema, '$defs');
-          if (propertyHasRef || propertyHasAnyOf) {
-            const title: string = property.hasOwnProperty('title') ? property.title || '' : key;
-            const propertyRefs = propertyHasRef ? [property['$ref']] : getAllRefs(property);
-            const [matchedProperties, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(
-              allUserProperties,
-              propertyRefs
-            );
+  const fetchPropertyReferenceValues = useCallback(() => {
+    if (!jsonSchema) return;
 
-            const selectedModelRefValues = _.get(updateExistingModel, key, null);
-            const htmlSchema = constructHTMLSchema(matchedProperties, title, property, selectedModelRefValues);
+    const newRefValues: Record<string, any> = {};
 
-            let missingDependencyList: string[] = [];
-            if (unMatchedRefs.length > 0) {
-              for (const item of unMatchedRefs) {
-                missingDependencyList = _.concat(missingDependencyList, {
-                  label: htmlSchema.title,
-                  model_type: item,
-                  property_type: getMissingDependencyType(jsonSchema.$defs, item),
-                });
-              }
-            }
-            setRefValues((prev) => ({
-              ...prev,
-              [key]: {
-                htmlSchema: htmlSchema,
-                matchedProperties: matchedProperties,
-                missingDependency: missingDependencyList,
-              },
-            }));
-          }
-        }
+    Object.entries(jsonSchema.properties).forEach(([key, property]) => {
+      const propertyHasRef = _.has(property, '$ref') && property['$ref'];
+      const propertyHasAnyOf = (_.has(property, 'anyOf') || _.has(property, 'allOf')) && _.has(jsonSchema, '$defs');
+
+      if (propertyHasRef || propertyHasAnyOf) {
+        const title: string = property.hasOwnProperty('title') ? property.title || '' : key;
+        const propertyRefs = propertyHasRef ? [property['$ref']] : getAllRefs(property);
+        const [matchedProperties, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(
+          allUserProperties,
+          propertyRefs
+        );
+
+        const selectedModelRefValues = _.get(updateExistingModel, key, null);
+        const htmlSchema = constructHTMLSchema(matchedProperties, title, property, selectedModelRefValues);
+
+        const missingDependencyList = unMatchedRefs.map((item) => ({
+          label: htmlSchema.title,
+          model_type: item,
+          property_type: getMissingDependencyType(jsonSchema.$defs, item),
+        }));
+
+        newRefValues[key] = {
+          htmlSchema: htmlSchema,
+          matchedProperties: matchedProperties,
+          missingDependency: missingDependencyList,
+        };
       }
-    }
+    });
 
-    fetchPropertyReferenceValues();
+    setRefValues(newRefValues);
   }, [jsonSchema, allUserProperties, updateExistingModel]);
+
+  useEffect(() => {
+    fetchPropertyReferenceValues();
+  }, [fetchPropertyReferenceValues]);
 
   return refValues;
 };

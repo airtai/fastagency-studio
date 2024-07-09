@@ -58,11 +58,15 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
     setShowAddModel(false);
   }, [togglePropertyList]);
 
+  const updateModel = (model_type: string) => {
+    setSelectedModel(model_type);
+    setShowAddModel(true);
+  };
+
   const handleClick = () => {
     setUpdateExistingModel(null);
     if (isDependencyAvailable(propertyDependency)) {
-      setSelectedModel(data.schemas[0].name);
-      setShowAddModel(true);
+      updateModel(data.schemas[0].name);
     } else {
       setNotificationErrorMessage(dependencyErrorMessage);
     }
@@ -153,12 +157,11 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
     setNotificationErrorMessage(null);
   };
 
-  const onMissingDependencyClick = (e: any, type: string) => {
-    onCancelCallback(e);
-    history.push(`/build/${type}`);
-    // setUpdateExistingModel(null);
-    // setSelectedModel(data.schemas[0].name);
-    // setShowAddModel(true);
+  const onMissingDependencyClick = (event: React.FormEvent, property_type: string, model_type: string) => {
+    onCancelCallback(event);
+    setUpdateExistingModel(null);
+    updateModel(model_type);
+    history.push(`/build/${property_type}`);
   };
 
   const propertyHeader = propertyName === 'llm' ? 'LLM' : capitalizeFirstLetter(propertyName);

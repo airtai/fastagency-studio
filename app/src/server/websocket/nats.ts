@@ -26,16 +26,21 @@ class NatsConnectionManager {
 
   static async getConnection(threadId: string, conversationId: number) {
     if (!this.connections.has(threadId)) {
-      const nc = await connect({ servers: NATS_URL });
-      this.connections.set(threadId, {
-        nc,
-        subscriptions: new Map(),
-        socketConversationHistory: '',
-        lastSocketMessage: null,
-        conversationId: conversationId,
-        timeoutId: null,
-      });
-      console.log(`Connected to ${nc.getServer()} for threadId ${threadId}`);
+      try {
+        const nc = await connect({ servers: NATS_URL }); // pass username and password
+        this.connections.set(threadId, {
+          nc,
+          subscriptions: new Map(),
+          socketConversationHistory: '',
+          lastSocketMessage: null,
+          conversationId: conversationId,
+          timeoutId: null,
+        });
+        console.log(`Connected to ${nc.getServer()} for threadId ${threadId}`);
+      } catch (error: any) {
+        console.error(`Failed to connect to NATS server for threadId ${threadId}:`, error);
+        throw new Error(`${error}`);
+      }
     }
     return this.connections.get(threadId);
   }
@@ -212,7 +217,9 @@ export async function sendMsgToNatsServer(
     } else {
       NatsConnectionManager.setConversationId(threadId, conversationId);
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error(`Error in connectToNatsServer: ${err}`);
+    await updateDB(context, currentChatDetails.id, err.toString(), conversationId, '', true);
+    socket.emit('streamFromTeamFinished');
   }
 }

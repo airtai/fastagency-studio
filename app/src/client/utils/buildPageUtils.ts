@@ -9,7 +9,6 @@ import {
   SchemaDefinition,
 } from '../interfaces/BuildPageInterfaces';
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
-import { propertyDependencyMap } from './constants';
 import { tr } from '@faker-js/faker';
 
 export const filerOutComponentData = (data: ApiResponse, componentName: string): SchemaCategory => {
@@ -23,17 +22,6 @@ export function capitalizeFirstLetter(s: string): string {
 export const getSchemaByName = (schemas: ApiSchema[], schemaName: string): JsonSchema => {
   const apiSchema: ApiSchema | undefined = schemas.find((s) => s.name === schemaName);
   return apiSchema ? apiSchema.json_schema : schemas[0].json_schema;
-};
-
-export const getDependenciesCreatedByUser = async (type_name: string): Promise<SelectedModelSchema[]> => {
-  const getProperty = async (property: string) => {
-    return await getModels([''], { type_name: property });
-  };
-  const propertyDependencies = _.get(propertyDependencyMap, type_name);
-  // const immediateDependency = _.castArray(_.last(propertyDependencies));
-  const userPropertyDataPromises = _.map(propertyDependencies, getProperty);
-  const userPropertyData = await Promise.all(userPropertyDataPromises);
-  return _.flatten(userPropertyData);
 };
 
 interface constructHTMLSchemaValues {
@@ -114,42 +102,12 @@ export const getFormSubmitValues = (refValues: any, formData: any, isSecretUpdat
             : formData[key].json_str.name
           : refValues[key].htmlSchema.default;
       }
-      const selectedData = refValues[key].refUserProperties.find((data: any) => data.json_str.name === selectedKey);
+      const selectedData = refValues[key].matchedProperties.find((data: any) => data.json_str.name === selectedKey);
       newFormData[key] = typeof selectedKey === 'string' ? selectedData : selectedKey;
     }
   });
   return newFormData;
 };
-
-export const isDependencyAvailable = (dependencyObj: any): boolean => {
-  if (_.keys(dependencyObj).length === 0) {
-    return true;
-  }
-  const retVal = _.reduce(
-    dependencyObj,
-    function (result: boolean, value: number) {
-      result = result && value > 0;
-      return result;
-    },
-    true
-  );
-
-  return retVal;
-};
-
-export function formatDependencyErrorMessage(dependencyList: string[]): string {
-  // Create a copy of the dependencyList
-  let dependencyListCopy = [...dependencyList];
-
-  if (dependencyListCopy.length === 0) {
-    return '';
-  } else if (dependencyListCopy.length === 1) {
-    return dependencyListCopy[0];
-  } else {
-    let last = dependencyListCopy.pop();
-    return `${dependencyListCopy.join(', one ')} and one ${last}`;
-  }
-}
 
 export function getRefValues(input: Array<{ $ref: string }>): string[] {
   return input.map((item) => item.$ref);
@@ -164,15 +122,24 @@ export const removeRefSuffix = (ref: string): string => {
   return refName;
 };
 
-export function getMatchedUserProperties(allUserProperties: any, ref: string[]) {
-  const refList = _.flatten(ref);
-  const retVal = _.map(refList, function (ref: any) {
-    const refName = removeRefSuffix(ref);
-    return _(allUserProperties)
-      .filter((property: any) => property.model_name === refName)
-      .value();
+export function matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties: any[], ref: string[]): [any[], string[]] {
+  const removeRefSuffix = (ref: string): string => ref.replace('#/$defs/', '').replace('Ref', '');
+
+  const refSet = new Set(ref.map(removeRefSuffix));
+  const matchedRefs: any[] = [];
+  const unMatchedRefs: string[] = [];
+
+  refSet.forEach((refName) => {
+    const matchedProperties = allUserProperties.filter((property) => property.model_name === refName);
+    if (matchedProperties.length > 0) {
+      matchedRefs.push(...matchedProperties);
+    } else {
+      unMatchedRefs.push(refName);
+    }
   });
-  return _.flatten(retVal);
+
+  _.remove(unMatchedRefs, (n: string) => n === 'null');
+  return [matchedRefs, unMatchedRefs];
 }
 
 export function getAllRefs(property: any): any[] {
@@ -184,14 +151,16 @@ export function getAllRefs(property: any): any[] {
   return [];
 }
 
-export function checkForDependency(userPropertyData: object[], allRefList: string[]): string[] {
-  if (userPropertyData.length === 0) {
-    if (!_.includes(allRefList, 'null')) {
-      return _.map(allRefList, removeRefSuffix);
-    }
-  }
-  return [];
-}
+// export function checkForDependency(userPropertyData: object[], allRefList: string[]): string[] {
+//   if (userPropertyData.length === 0) {
+//     _.remove(allRefList, (n: string) => n === 'null');
+//     return _.map(allRefList, removeRefSuffix);
+//     // if (!_.includes(allRefList, 'null')) {
+//     //   return _.map(allRefList, removeRefSuffix);
+//     // }
+//   }
+//   return [];
+// }
 
 type dataObject = {
   uuid: string;
@@ -257,14 +226,17 @@ export function formatApiKey(apiKey: string) {
 
 export function getMissingDependencyType(
   jsonDeps: { [key: string]: SchemaDefinition } | undefined,
-  allRefList: string[]
+  refName: string
 ): string | null {
-  if (allRefList.length === 0 || !jsonDeps) {
+  if (!refName || !jsonDeps) {
     return null;
   }
-  const refName: string = allRefList[0].split('/').pop() as string;
-  if (!jsonDeps[refName]) {
+
+  const fullRefName = Object.keys(jsonDeps).find((key) => key.startsWith(refName));
+
+  if (!fullRefName || !jsonDeps[fullRefName]) {
     return null;
   }
-  return jsonDeps[refName].properties.type['const'] || null;
+
+  return jsonDeps[fullRefName].properties.type['const'] || null;
 }

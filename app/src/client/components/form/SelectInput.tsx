@@ -1,12 +1,18 @@
 import React from 'react';
 
+interface MissingDependency {
+  property_type: string;
+  model_type: string;
+  label: string;
+}
+
 interface SelectInputProps {
   id: string;
   value: string;
   options: string[];
   onChange: (value: string) => void;
-  missingDependency: { type: string; label: string } | null;
-  onMissingDependencyClick: (e: any, type: string) => void;
+  missingDependencies: MissingDependency[];
+  onMissingDependencyClick: (event: React.FormEvent, property_type: string, model_type: string) => void;
 }
 
 export const SelectInput: React.FC<SelectInputProps> = ({
@@ -14,11 +20,11 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   value,
   options,
   onChange,
-  missingDependency,
+  missingDependencies,
   onMissingDependencyClick,
 }) => {
   return (
-    <div className='flex gap-4'>
+    <div className=''>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -31,19 +37,25 @@ export const SelectInput: React.FC<SelectInputProps> = ({
           </option>
         ))}
       </select>
-      {missingDependency && missingDependency.type && (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            if (missingDependency) {
-              onMissingDependencyClick(e, missingDependency.type);
-            }
-          }}
-          className='rounded-md my-2 px-3.5 py-2.5 text-sm bg-airt-primary text-airt-font-base hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 whitespace-nowrap'
-        >
-          {`Add ${missingDependency.label}`}
-        </button>
-      )}
+      <div>
+        {missingDependencies &&
+          missingDependencies.length > 0 &&
+          // render button for each item in missingDependencies
+          missingDependencies.map((missingDependency, i) => (
+            <button
+              key={i}
+              onClick={(e) => {
+                e.preventDefault();
+                if (missingDependency) {
+                  onMissingDependencyClick(e, missingDependency.property_type, missingDependency.model_type);
+                }
+              }}
+              className='rounded-md mr-2 my-2 px-3.5 py-2.5 text-sm bg-airt-primary text-airt-font-base hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 whitespace-nowrap'
+            >
+              {`Add '${missingDependency.model_type}' as ${missingDependency.label}`}
+            </button>
+          ))}
+      </div>
     </div>
   );
 };

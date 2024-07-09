@@ -72,7 +72,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
               value={team}
               options={_.map(allTeams, (team: SelectedModelSchema) => team.json_str.name)}
               onChange={handleTeamChange}
-              missingDependency={null}
+              missingDependencies={[]}
               onMissingDependencyClick={() => {}}
             />
             {formError && (

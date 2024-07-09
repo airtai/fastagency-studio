@@ -30,7 +30,7 @@ const ModelFormContainer: React.FC<ModelFormContainerProps> = ({
               <select
                 className='w-full rounded border bg-transparent py-3 px-12 outline-none focus:border-primary'
                 onChange={(e) => onModelChange(e.target.value)}
-                defaultValue={selectedModel}
+                value={selectedModel}
               >
                 {modelSchemas.map((schema) => (
                   <option key={schema.name} value={schema.name}>

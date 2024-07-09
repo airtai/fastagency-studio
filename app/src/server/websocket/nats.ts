@@ -1,6 +1,8 @@
 import { connect, consumerOpts, JSONCodec, Subscription, JetStreamClient } from 'nats';
 import { updateDB } from './webSocket';
 
+import { WASP_NATS_PASSWORD } from '../common/constants';
+
 function generateNatsUrl(natsUrl: string | undefined, fastAgencyServerUrl: string | undefined): string | undefined {
   if (natsUrl) return natsUrl;
   return fastAgencyServerUrl ? `${fastAgencyServerUrl.replace('https://', 'tls://')}:4222` : fastAgencyServerUrl;
@@ -26,16 +28,25 @@ class NatsConnectionManager {
 
   static async getConnection(threadId: string, conversationId: number) {
     if (!this.connections.has(threadId)) {
-      const nc = await connect({ servers: NATS_URL });
-      this.connections.set(threadId, {
-        nc,
-        subscriptions: new Map(),
-        socketConversationHistory: '',
-        lastSocketMessage: null,
-        conversationId: conversationId,
-        timeoutId: null,
-      });
-      console.log(`Connected to ${nc.getServer()} for threadId ${threadId}`);
+      try {
+        const nc = await connect({
+          servers: NATS_URL,
+          user: 'wasp',
+          pass: WASP_NATS_PASSWORD,
+        });
+        this.connections.set(threadId, {
+          nc,
+          subscriptions: new Map(),
+          socketConversationHistory: '',
+          lastSocketMessage: null,
+          conversationId: conversationId,
+          timeoutId: null,
+        });
+        console.log(`Connected to ${nc.getServer()} for threadId ${threadId}`);
+      } catch (error: any) {
+        console.error(`Failed to connect to NATS server for threadId ${threadId}:`, error);
+        throw new Error(`${error}`);
+      }
     }
     return this.connections.get(threadId);
   }
@@ -212,7 +223,9 @@ export async function sendMsgToNatsServer(
     } else {
       NatsConnectionManager.setConversationId(threadId, conversationId);
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error(`Error in connectToNatsServer: ${err}`);
+    await updateDB(context, currentChatDetails.id, err.toString(), conversationId, '', true);
+    socket.emit('streamFromTeamFinished');
   }
 }

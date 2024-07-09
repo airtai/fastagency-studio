@@ -7,10 +7,8 @@ search:
     - fastagency
         - app
             - [ChatRequest](api/fastagency/app/ChatRequest.md)
-            - [DeploymentAuthToken](api/fastagency/app/DeploymentAuthToken.md)
             - [add_model](api/fastagency/app/add_model.md)
             - [chat](api/fastagency/app/chat.md)
-            - [create_deployment_auth_token](api/fastagency/app/create_deployment_auth_token.md)
             - [create_toolbox_for_new_user](api/fastagency/app/create_toolbox_for_new_user.md)
             - [deployment_chat](api/fastagency/app/deployment_chat.md)
             - [deployment_ping](api/fastagency/app/deployment_ping.md)
@@ -34,8 +32,10 @@ search:
         - faststream_app
             - [ping_handler](api/fastagency/faststream_app/ping_handler.md)
         - helpers
+            - [DeploymentAuthToken](api/fastagency/helpers/DeploymentAuthToken.md)
             - [add_model_to_user](api/fastagency/helpers/add_model_to_user.md)
             - [create_autogen](api/fastagency/helpers/create_autogen.md)
+            - [create_deployment_auth_token](api/fastagency/helpers/create_deployment_auth_token.md)
             - [create_model](api/fastagency/helpers/create_model.md)
             - [create_model_ref](api/fastagency/helpers/create_model_ref.md)
             - [deploy_saas_app](api/fastagency/helpers/deploy_saas_app.md)

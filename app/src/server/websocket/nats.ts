@@ -1,6 +1,8 @@
 import { connect, consumerOpts, JSONCodec, Subscription, JetStreamClient } from 'nats';
 import { updateDB } from './webSocket';
 
+import { WASP_NATS_PASSWORD } from '../common/constants';
+
 function generateNatsUrl(natsUrl: string | undefined, fastAgencyServerUrl: string | undefined): string | undefined {
   if (natsUrl) return natsUrl;
   return fastAgencyServerUrl ? `${fastAgencyServerUrl.replace('https://', 'tls://')}:4222` : fastAgencyServerUrl;
@@ -27,7 +29,11 @@ class NatsConnectionManager {
   static async getConnection(threadId: string, conversationId: number) {
     if (!this.connections.has(threadId)) {
       try {
-        const nc = await connect({ servers: NATS_URL }); // pass username and password
+        const nc = await connect({
+          servers: NATS_URL,
+          user: 'wasp',
+          pass: WASP_NATS_PASSWORD,
+        });
         this.connections.set(threadId, {
           nc,
           subscriptions: new Map(),

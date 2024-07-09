@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useHistory } from 'react-router-dom';
 import { validateForm } from '../services/commonService';
 import {
   getFormSubmitValues,
@@ -31,7 +30,6 @@ export const useFormSubmission = ({
     show: false,
   });
   const [instructionForDeployment, setInstructionForDeployment] = useState<Record<string, string> | null>(null);
-  const history = useHistory();
   const isDeployment = type_name === 'deployment';
 
   const handleSubmit = async (event: React.FormEvent, formData: any, refValues: Record<string, any>) => {
@@ -79,17 +77,12 @@ export const useFormSubmission = ({
     setNotification({ ...notification, show: false });
   };
 
-  const onMissingDependencyClick = (e: any, type: string) => {
-    history.push(`/build/${type}`);
-  };
-
   return {
     isLoading,
     notification,
     instructionForDeployment,
     handleSubmit,
     notificationOnClick,
-    onMissingDependencyClick,
     setInstructionForDeployment,
   };
 };

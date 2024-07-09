@@ -9,7 +9,6 @@ import {
   SchemaDefinition,
 } from '../interfaces/BuildPageInterfaces';
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
-import { propertyDependencyMap } from './constants';
 import { tr } from '@faker-js/faker';
 
 export const filerOutComponentData = (data: ApiResponse, componentName: string): SchemaCategory => {
@@ -23,17 +22,6 @@ export function capitalizeFirstLetter(s: string): string {
 export const getSchemaByName = (schemas: ApiSchema[], schemaName: string): JsonSchema => {
   const apiSchema: ApiSchema | undefined = schemas.find((s) => s.name === schemaName);
   return apiSchema ? apiSchema.json_schema : schemas[0].json_schema;
-};
-
-export const getDependenciesCreatedByUser = async (type_name: string): Promise<SelectedModelSchema[]> => {
-  const getProperty = async (property: string) => {
-    return await getModels([''], { type_name: property });
-  };
-  const propertyDependencies = _.get(propertyDependencyMap, type_name);
-  // const immediateDependency = _.castArray(_.last(propertyDependencies));
-  const userPropertyDataPromises = _.map(propertyDependencies, getProperty);
-  const userPropertyData = await Promise.all(userPropertyDataPromises);
-  return _.flatten(userPropertyData);
 };
 
 interface constructHTMLSchemaValues {
@@ -120,36 +108,6 @@ export const getFormSubmitValues = (refValues: any, formData: any, isSecretUpdat
   });
   return newFormData;
 };
-
-export const isDependencyAvailable = (dependencyObj: any): boolean => {
-  if (_.keys(dependencyObj).length === 0) {
-    return true;
-  }
-  const retVal = _.reduce(
-    dependencyObj,
-    function (result: boolean, value: number) {
-      result = result && value > 0;
-      return result;
-    },
-    true
-  );
-
-  return retVal;
-};
-
-export function formatDependencyErrorMessage(dependencyList: string[]): string {
-  // Create a copy of the dependencyList
-  let dependencyListCopy = [...dependencyList];
-
-  if (dependencyListCopy.length === 0) {
-    return '';
-  } else if (dependencyListCopy.length === 1) {
-    return dependencyListCopy[0];
-  } else {
-    let last = dependencyListCopy.pop();
-    return `${dependencyListCopy.join(', one ')} and one ${last}`;
-  }
-}
 
 export function getRefValues(input: Array<{ $ref: string }>): string[] {
   return input.map((item) => item.$ref);

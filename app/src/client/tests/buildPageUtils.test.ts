@@ -8,8 +8,6 @@ import {
   getRefValues,
   constructHTMLSchema,
   getFormSubmitValues,
-  isDependencyAvailable,
-  formatDependencyErrorMessage,
   getKeyType,
   matchPropertiesAndIdentifyUnmatchedRefs,
   removeRefSuffix,
@@ -1235,67 +1233,7 @@ describe('buildPageUtils', () => {
       expect(_.isEqual(actual, expected)).toBe(true);
     });
   });
-  describe('isDependencyAvailable', () => {
-    test('isDependencyNotCreated - positive case - without dependencies', () => {
-      const input = {};
-      const actual = isDependencyAvailable(input);
-      expect(actual).toBe(true);
-    });
 
-    test('isDependencyNotCreated - positive case - with dependencies', () => {
-      const input = { secret: 1 };
-      const actual = isDependencyAvailable(input);
-      expect(actual).toBe(true);
-    });
-
-    test('isDependencyNotCreated - positive case - with multiple dependencies', () => {
-      const input = { secret: 5, llm: 10 };
-      const actual = isDependencyAvailable(input);
-      expect(actual).toBe(true);
-    });
-
-    test('isDependencyNotCreated - negative case - with dependencies', () => {
-      const input = { secret: 0 };
-      const actual = isDependencyAvailable(input);
-      expect(actual).toBe(false);
-    });
-
-    test('isDependencyNotCreated - negative case - with multiple dependencies', () => {
-      const input = { secret: 5, llm: 0 };
-      const actual = isDependencyAvailable(input);
-      expect(actual).toBe(false);
-    });
-  });
-  describe('formatDependencyErrorMessage', () => {
-    test('formatDependencyErrorMessage - empty list', () => {
-      const input = [''];
-      const actual = formatDependencyErrorMessage(input);
-      expect(actual).toBe('');
-    });
-
-    test('formatDependencyErrorMessage - with one dependency', () => {
-      const input = ['secret'];
-      const actual = formatDependencyErrorMessage(input);
-      expect(actual).toBe('secret');
-    });
-
-    test('formatDependencyErrorMessage - with two dependencies', () => {
-      const input = ['secret', 'agent'];
-      const actual = formatDependencyErrorMessage(input);
-      expect(actual).toBe('secret and one agent');
-    });
-    test('formatDependencyErrorMessage - with three dependencies', () => {
-      const input = ['secret', 'agent', 'llm'];
-      const actual = formatDependencyErrorMessage(input);
-      expect(actual).toBe('secret, one agent and one llm');
-    });
-
-    test('formatDependencyErrorMessage - with four dependencies', () => {
-      const input = ['secret', 'agent', 'llm', 'team'];
-      const actual = formatDependencyErrorMessage(input);
-      expect(actual).toBe('secret, one agent, one llm and one team');
-    });
-  });
   describe('getRefValues', () => {
     test('getRefValues', () => {
       const input = [{ $ref: '#/$defs/AzureOAIRef' }, { $ref: '#/$defs/OpenAIRef' }];

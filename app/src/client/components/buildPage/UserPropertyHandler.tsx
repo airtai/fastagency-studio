@@ -7,7 +7,6 @@ import ModelsList from '../ModelsList';
 import NotificationBox from '../NotificationBox';
 
 import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
-import { PropertyTypeProps } from '../../interfaces/BuildPageInterfaces';
 import { navLinkItems } from '../CustomSidebar';
 
 import {
@@ -18,14 +17,7 @@ import {
   deleteUserModels,
   propertyDependencies,
 } from 'wasp/client/operations';
-import { propertyDependencyMap } from '../../utils/constants';
-import {
-  isDependencyAvailable,
-  formatDependencyErrorMessage,
-  capitalizeFirstLetter,
-  filterDataToValidate,
-  dependsOnProperty,
-} from '../../utils/buildPageUtils';
+import { capitalizeFirstLetter, filterDataToValidate, dependsOnProperty } from '../../utils/buildPageUtils';
 import Loader from '../../admin/common/Loader';
 import CustomBreadcrumb from '../CustomBreadcrumb';
 import { useHistory } from 'react-router-dom';
@@ -44,16 +36,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const propertyName = data.name;
   const { data: allUserProperties, refetch: refetchModels, isLoading: getModelsIsLoading } = useQuery(getModels);
 
-  const { data: propertyDependency } = useQuery(propertyDependencies, {
-    properties: _.get(propertyDependencyMap, propertyName),
-  });
-
   const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
-  const dependentProperties = formatDependencyErrorMessage(_.get(propertyDependencyMap, propertyName));
-  const dependencyErrorMessage = `To create ${
-    propertyName === 'agent' ? 'an' : 'a'
-  } ${propertyName}, first add at least one ${dependentProperties}.`;
-
   useEffect(() => {
     setShowAddModel(false);
   }, [togglePropertyList]);
@@ -65,11 +48,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
 
   const handleClick = () => {
     setUpdateExistingModel(null);
-    if (isDependencyAvailable(propertyDependency)) {
-      updateModel(data.schemas[0].name);
-    } else {
-      setNotificationErrorMessage(dependencyErrorMessage);
-    }
+    updateModel(data.schemas[0].name);
   };
   const handleModelChange = (newModel: string) => {
     setSelectedModel(newModel);

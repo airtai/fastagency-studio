@@ -1,0 +1,18 @@
+# Use the official Node.js 20 image as a parent image
+FROM node:20
+
+# Set the working directory inside the container
+WORKDIR /usr/src/app
+
+# Copy the auth_callout directory contents into the container at /usr/src/app
+COPY auth_callout/ .
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Install any dependencies
+RUN pnpm install
+
+# Define the command to run your app using pnpm serve
+ENTRYPOINT []
+CMD ["/usr/bin/bash", "-c", "./run-auth-callout.sh"]

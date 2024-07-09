@@ -64,11 +64,3 @@ export interface SelectedModelSchema {
   gh_repo_url?: string;
   flyio_app_url?: string;
 }
-
-export interface PropertyTypeProps {
-  data: SchemaCategory;
-}
-
-export interface PropertyDependencyMapProps {
-  [key: string]: string[];
-}

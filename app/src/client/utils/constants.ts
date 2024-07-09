@@ -1,4 +1,3 @@
-import { PropertyDependencyMapProps } from '../interfaces/BuildPageInterfaces';
 import { DISCORD_URL } from '../../shared/constants';
 
 function deepFreeze(object: any) {
@@ -14,15 +13,6 @@ function deepFreeze(object: any) {
 
   return Object.freeze(object);
 }
-
-export const propertyDependencyMap: PropertyDependencyMapProps = deepFreeze({
-  secret: [''],
-  llm: ['secret'],
-  toolbox: [''],
-  agent: ['secret', 'llm'],
-  team: ['secret', 'llm', 'agent'],
-  deployment: ['secret', 'llm', 'agent', 'team'],
-});
 
 export const SECRETS_TO_MASK = ['api_key', 'gh_token', 'fly_token'];
 

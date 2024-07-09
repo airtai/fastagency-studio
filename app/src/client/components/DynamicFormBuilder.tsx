@@ -20,6 +20,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   onSuccessCallback,
   onCancelCallback,
   onDeleteCallback,
+  onMissingDependencyClick,
 }) => {
   const { formData, handleChange, formErrors, setFormErrors } = useForm({
     jsonSchema,
@@ -32,7 +33,6 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     instructionForDeployment,
     handleSubmit,
     notificationOnClick,
-    onMissingDependencyClick,
     setInstructionForDeployment,
   } = useFormSubmission({
     type_name,

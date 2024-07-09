@@ -5,13 +5,13 @@ FROM node:20
 WORKDIR /usr/src/app
 
 # Copy the auth_callout directory contents into the container at /usr/src/app
-COPY auth_callout/ .
+COPY ./ .
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm && ls -lah
 
 # Install any dependencies
-RUN pnpm install
+RUN pnpm install --force
 
 # Define the command to run your app using pnpm serve
 ENTRYPOINT []

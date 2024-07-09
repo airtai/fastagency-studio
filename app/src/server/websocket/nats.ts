@@ -1,4 +1,4 @@
-import { connect, consumerOpts, JSONCodec, Subscription, JetStreamClient } from 'nats';
+import { JSONCodec, JetStreamClient, Subscription, connect, consumerOpts } from 'nats';
 import { updateDB } from './webSocket';
 
 import { WASP_NATS_PASSWORD } from '../common/constants';

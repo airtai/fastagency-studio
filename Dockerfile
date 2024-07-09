@@ -51,4 +51,4 @@ ENV PATH="${PATH}:/root/.local/bin:${FLYCTL_INSTALL}/bin"
 EXPOSE ${PORT}
 
 ENTRYPOINT []
-CMD [ "/usr/bin/bash", "-c", "./run_server.sh" ]
+CMD [ "/usr/bin/bash", "-c", "./run-server.sh" ]

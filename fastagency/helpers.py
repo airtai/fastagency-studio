@@ -8,6 +8,7 @@ from uuid import UUID
 
 from asyncer import asyncify
 from fastapi import BackgroundTasks, HTTPException
+from pydantic import BaseModel
 
 from fastagency.saas_app_generator import (
     InvalidFlyTokenError,
@@ -76,6 +77,9 @@ async def deploy_saas_app(
     type_name: str,
     model_name: str,
 ) -> None:
+    deployment_auth_token = await create_deployment_auth_token(user_uuid, model_uuid)
+    saas_app.deployment_auth_token = deployment_auth_token.auth_token
+
     await asyncify(saas_app.execute)()
 
     async with get_db_connection() as db:
@@ -265,3 +269,33 @@ def verify_auth_token(token: str, stored_hash: str) -> bool:
 
     # Compare the computed hash with the stored hash
     return computed_hash == hash_value
+
+
+class DeploymentAuthToken(BaseModel):
+    auth_token: str
+
+
+async def create_deployment_auth_token(
+    user_uuid: str, deployment_uuid: str
+) -> DeploymentAuthToken:
+    user = await get_user(user_uuid=user_uuid)
+    deployment = await find_model_using_raw(model_uuid=deployment_uuid)
+
+    if user["uuid"] != deployment["user_uuid"]:
+        raise HTTPException(
+            status_code=403, detail="User does not have access to this deployment"
+        )
+
+    auth_token = generate_auth_token()
+    hashed_token = hash_auth_token(auth_token)
+
+    async with get_db_connection() as db:
+        await db.authtoken.create(  # type: ignore[attr-defined]
+            data={
+                "uuid": str(uuid.uuid4()),
+                "deployment_uuid": deployment_uuid,
+                "auth_token": hashed_token,
+            }
+        )
+
+    return DeploymentAuthToken(auth_token=auth_token)

@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 import fastagency
-from fastagency.app import create_deployment_auth_token
+from fastagency.helpers import create_deployment_auth_token
 from fastagency.models.base import Model
 from fastagency.models.deployments.deployment import Deployment
 from fastagency.models.secrets.fly_token import FlyToken
@@ -64,7 +64,7 @@ class TestDeployment:
             }
 
         monkeypatch.setattr(
-            fastagency.app, "find_model_using_raw", mock_find_model_using_raw
+            fastagency.helpers, "find_model_using_raw", mock_find_model_using_raw
         )
 
         token = await create_deployment_auth_token(user_uuid, deployment_uuid)

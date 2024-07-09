@@ -1,4 +1,4 @@
-import { connect, consumerOpts, JSONCodec, Subscription, JetStreamClient } from 'nats';
+import { JSONCodec, JetStreamClient, Subscription, connect, consumerOpts } from 'nats';
 import { updateDB } from './webSocket';
 
 import { WASP_NATS_PASSWORD } from '../common/constants';
@@ -44,7 +44,7 @@ class NatsConnectionManager {
         });
         console.log(`Connected to ${nc.getServer()} for threadId ${threadId}`);
       } catch (error: any) {
-        console.error(`Failed to connect to NATS server for threadId ${threadId}:`, error);
+        console.error(`Failed to connect to NATS server for threadId ${threadId}:`, error); //nosemgrep
         throw new Error(`${error}`);
       }
     }

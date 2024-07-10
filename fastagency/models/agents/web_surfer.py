@@ -138,7 +138,6 @@ class WebSurferAgent(AgentBaseModel):
             llm_config=llm_config,
             system_message=system_message,
             code_execution_config=False,
-            human_input_mode="NEVER",
             **kwargs,
         )
 

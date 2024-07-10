@@ -31,10 +31,10 @@ class TestWebSurferChat:
     async def test_web_surfer_chat_simple_task(
         self, websurfer_chat: WebSurferChat, task: str
     ) -> None:
-        result: WebSurferAnswer = await websurfer_chat.create_new_task(task=task)
+        result: str = await websurfer_chat.create_new_task(task=task)
         print(result)  # noqa: T201
-        assert isinstance(result, WebSurferAnswer)
-        assert result.is_successful
+        assert isinstance(result, str)
+        assert "We have successfully completed the task" in result
 
     @parametrize_fixtures("websurfer_chat", get_by_tag("websurfer-chat"))
     @pytest.mark.parametrize(
@@ -53,16 +53,16 @@ class TestWebSurferChat:
     async def test_web_surfer_chat_complex_task(
         self, websurfer_chat: WebSurferChat, task: str, follow_up: str
     ) -> None:
-        result: WebSurferAnswer = await websurfer_chat.create_new_task(task=task)
+        result: str = await websurfer_chat.create_new_task(task=task)
         print(result)  # noqa: T201
-        assert isinstance(result, WebSurferAnswer)
-        assert result.is_successful
-        assert "NVIDIA" in result.long_answer
+        assert isinstance(result, str)
+        assert "We have successfully completed the task" in result
+        assert "NVIDIA" in result
 
         result = await websurfer_chat.continue_task_with_additional_instructions(
             message=follow_up
         )
         print(result)  # noqa: T201
         assert isinstance(result, WebSurferAnswer)
-        assert result.is_successful
-        assert "NVIDIA" in result.long_answer
+        assert "We have successfully completed the task" in result
+        assert "NVIDIA" in result

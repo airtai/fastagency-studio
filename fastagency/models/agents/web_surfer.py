@@ -7,7 +7,7 @@ from autogen.agentchat import ConversableAgent as AutoGenConversableAgent
 from pydantic import Field
 from typing_extensions import TypeAlias
 
-from fastagency.models.agents.web_surfer_autogen import WebSurferAnswer, WebSurferChat
+from fastagency.models.agents.web_surfer_autogen import WebSurferChat
 
 from ..base import Model
 from ..registry import register
@@ -39,7 +39,7 @@ class WebSurferToolbox:
 
         def create_new_task(
             task: Annotated[str, "task for websurfer"],
-        ) -> WebSurferAnswer:
+        ) -> str:
             try:
                 return syncify(self.websurfer_chat.create_new_task)(task)
             except Exception as e:
@@ -54,7 +54,7 @@ class WebSurferToolbox:
                 str,
                 "Additional instructions for the task after receiving the initial answer",
             ],
-        ) -> WebSurferAnswer:
+        ) -> str:
             try:
                 return syncify(
                     self.websurfer_chat.continue_task_with_additional_instructions
@@ -128,11 +128,17 @@ class WebSurferAgent(AgentBaseModel):
 
         agent_name = websurfer_model.name
 
+        system_message = (
+            "You are a helpful assistent with access to web surfing capabilities."
+            "Please use 'create_new_task' and 'continue_task_with_additional_instructions' functions to provide answers to other agents."
+        )
+
         agent = AutoGenAssistantAgent(
             name=agent_name,
             llm_config=llm_config,
-            system_message="You are a helpful assistent with access to web surfing capabilities. Please use 'create_new_task' and 'continue_task_with_additional_instructions' functions to provide answers to other agents.",
+            system_message=system_message,
             code_execution_config=False,
+            human_input_mode="NEVER",
             **kwargs,
         )
 

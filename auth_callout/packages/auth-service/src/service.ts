@@ -103,6 +103,10 @@ async function msgHandler(req: Nats.Msg, enc: TextEncoder, dec: TextDecoder, iss
     "chat.server.initiate_chat",
     `chat.client.messages.${chat_uuid}`,
     `chat.server.messages.${chat_uuid}`,
+    "_INBOX.>",
+    "$JS.API.STREAM.NAMES",
+    // `$JS.API.STREAM.NAMES.FastAgency`,
+    "$JS.API.CONSUMER.INFO.FastAgency.*",
   ];
   console.log(`Auth service user ${auth_user} granted permission to subjects: ${JSON.stringify(grantedRooms)}`);
 
@@ -113,7 +117,7 @@ async function msgHandler(req: Nats.Msg, enc: TextEncoder, dec: TextDecoder, iss
   // Prepare a user JWT.
   let ejwt: string;
   try {
-    ejwt = await Jwt.encodeUser(rc.nats.connect_opts.user!, rc.nats.user_nkey, issuerKeyPair, user, { aud: "APP" });
+    ejwt = await Jwt.encodeUser(rc.nats.connect_opts.user!, rc.nats.user_nkey, issuerKeyPair, user, { aud: "AUTH" });
   } catch (e) {
     console.log("error signing user JWT: %s", e);
     return respondMsg(req, userNkey, serverId, "", "error signing user JWT");

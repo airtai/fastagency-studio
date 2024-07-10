@@ -8,7 +8,7 @@ run();
 
 async function run() {
   let natsUrl: string | undefined;
-  natsUrl = process.env.NATS_URL
+  natsUrl = process.env.NATS_URL;
   if (!natsUrl) {
     const domain = process.env.DOMAIN;
     natsUrl = `tls://${domain}:4222`;
@@ -107,6 +107,7 @@ async function msgHandler(req: Nats.Msg, enc: TextEncoder, dec: TextDecoder, iss
     "$JS.API.STREAM.NAMES",
     // `$JS.API.STREAM.NAMES.FastAgency`,
     "$JS.API.CONSUMER.INFO.FastAgency.*",
+    "$JS.API.CONSUMER.CREATE.FastAgency",
   ];
   console.log(`Auth service user ${auth_user} granted permission to subjects: ${JSON.stringify(grantedRooms)}`);
 

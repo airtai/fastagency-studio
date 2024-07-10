@@ -171,11 +171,13 @@ export default function ConversationsList({
         );
       })}
       {currentChatDetails?.team_status === 'inprogress' && streamingAgentResponse && (
-        <AgentConversationHistory
-          agentConversationHistory={streamingAgentResponse}
-          initialState={true}
-          isAgentWindow={true}
-        />
+        <div className='pl-7 bg-airt-primary'>
+          <AgentConversationHistory
+            agentConversationHistory={streamingAgentResponse}
+            initialState={true}
+            isAgentWindow={true}
+          />
+        </div>
       )}
     </div>
   );

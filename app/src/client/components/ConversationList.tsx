@@ -146,9 +146,22 @@ export default function ConversationsList({
                     </div>
                   )}
 
-                  {(idx !== lastConversationIdx || (idx === lastConversationIdx && isUserConversation)) && (
+                  {idx !== lastConversationIdx && !isUserConversation && (
                     <div className='chat-conversations text-base flex flex-col gap-2 ml-4'>
                       <Markdown>{conversation.message === '' ? 'Auto reply' : conversation.message}</Markdown>
+                    </div>
+                  )}
+
+                  {isUserConversation && (
+                    <div className='chat-conversations text-base flex flex-col gap-2 ml-4 user-message-pre-block'>
+                      <Markdown>
+                        {conversation.message === ''
+                          ? 'Auto reply'
+                          : `<p class="whitespace-pre-wrap break-words">${conversation.message.replaceAll(
+                              '\n',
+                              '<br />'
+                            )}</p>`}
+                      </Markdown>
                     </div>
                   )}
                 </div>

@@ -1,3 +1,4 @@
+import os
 from typing import Annotated, Any, Dict, List, Optional
 
 from asyncer import asyncify
@@ -71,11 +72,13 @@ class WebSurferChat:
             assistant_kwargs (Dict[str, Any], optional): The keyword arguments for the assistant. Defaults to {}.
 
         """
-        self.name = name_prefix
+        self.name_prefix = name_prefix
         self.llm_config = llm_config
         self.summarizer_llm_config = summarizer_llm_config
         self.viewport_size = viewport_size
-        self.bing_api_key = bing_api_key
+        self.bing_api_key = (
+            bing_api_key if bing_api_key is not None else os.getenv("BING_API_KEY")
+        )
         self.max_consecutive_auto_reply = max_consecutive_auto_reply
         self.max_links_to_click = max_links_to_click
         self.websurfer_kwargs = websurfer_kwargs
@@ -84,9 +87,9 @@ class WebSurferChat:
         self.task = "not set yet"
         self.last_is_termination_msg_error = ""
 
-        browser_config = {
-            "viewport_size": viewport_size,
-            "bing_api_key": bing_api_key,
+        self.browser_config = {
+            "viewport_size": self.viewport_size,
+            "bing_api_key": self.bing_api_key,
             "request_kwargs": {
                 "headers": {
                     "User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36",
@@ -94,24 +97,30 @@ class WebSurferChat:
             },
         }
 
+        if "human_input_mode" in self.websurfer_kwargs:
+            self.websurfer_kwargs.pop("human_input_mode")
+
         self.websurfer = AutoGenWebSurferAgent(
-            name=f"{name_prefix}_inner_websurfer",
-            llm_config=llm_config,
-            summarizer_llm_config=summarizer_llm_config,
-            browser_config=browser_config,
+            name=f"{self.name_prefix}_inner_websurfer",
+            llm_config=self.llm_config,
+            summarizer_llm_config=self.summarizer_llm_config,
+            browser_config=self.browser_config,
             human_input_mode="NEVER",
             is_termination_msg=self.is_termination_msg,
-            **websurfer_kwargs,
+            **self.websurfer_kwargs,
         )
 
+        if "human_input_mode" in self.assistant_kwargs:
+            self.assistant_kwargs.pop("human_input_mode")
+
         self.assistant = AutoGenAssistantAgent(
-            name=f"{name_prefix}_inner_assistant",
-            llm_config=llm_config,
+            name=f"{self.name_prefix}_inner_assistant",
+            llm_config=self.llm_config,
             human_input_mode="NEVER",
             system_message=self.system_message,
-            max_consecutive_auto_reply=max_consecutive_auto_reply,
+            max_consecutive_auto_reply=self.max_consecutive_auto_reply,
             # is_termination_msg=self.is_termination_msg,
-            **assistant_kwargs,
+            **self.assistant_kwargs,
         )
 
     def is_termination_msg(self, msg: Dict[str, Any]) -> bool:
@@ -163,35 +172,54 @@ class WebSurferChat:
 
         return self._get_answer(chat_result)
 
-    def _get_error_from_exception(self, e: Exception) -> WebSurferAnswer:
-        return WebSurferAnswer(
-            task=self.task,
+    def _get_error_from_exception(self, task: str, e: Exception) -> str:
+        answer = WebSurferAnswer(
+            task=task,
             is_successful=False,
             short_answer="unexpected error occured",
             long_answer=str(e),
             visited_links=[],
         )
 
-    async def create_new_task(self, task: str) -> WebSurferAnswer:
+        return self.create_final_reply(task, answer)
+
+    def create_final_reply(self, task: str, message: WebSurferAnswer) -> str:
+        retval = (
+            "We have successfully completed the task:\n\n"
+            if message.is_successful
+            else "We have failed to complete the task:\n\n"
+        )
+        retval += f"{task}\n\n"
+        retval += f"Short answer: {message.short_answer}\n\n"
+        retval += f"Explanation: {message.long_answer}\n\n"
+        retval += "Visited links:\n"
+        for link in message.visited_links:
+            retval += f"  - {link}\n"
+
+        return retval
+
+    async def create_new_task(self, task: str) -> str:
         self.task = task
         try:
-            return await asyncify(self._chat_with_websurfer)(
+            answer = await asyncify(self._chat_with_websurfer)(
                 message=self.initial_message,
                 clear_history=True,
             )
         except Exception as e:
-            return self._get_error_from_exception(e)
+            return self._get_error_from_exception(task, e)
 
-    async def continue_task_with_additional_instructions(
-        self, message: str
-    ) -> WebSurferAnswer:
+        return self.create_final_reply(task, answer)
+
+    async def continue_task_with_additional_instructions(self, message: str) -> str:
         try:
-            return await asyncify(self._chat_with_websurfer)(
+            answer = await asyncify(self._chat_with_websurfer)(
                 message=message,
                 clear_history=False,
             )
         except Exception as e:
-            return self._get_error_from_exception(e)
+            return self._get_error_from_exception(message, e)
+
+        return self.create_final_reply(message, answer)
 
     @property
     def example_answer(self) -> WebSurferAnswer:

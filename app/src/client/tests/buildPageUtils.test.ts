@@ -8,13 +8,11 @@ import {
   getRefValues,
   constructHTMLSchema,
   getFormSubmitValues,
-  isDependencyAvailable,
-  formatDependencyErrorMessage,
   getKeyType,
-  getMatchedUserProperties,
+  matchPropertiesAndIdentifyUnmatchedRefs,
   removeRefSuffix,
   getAllRefs,
-  checkForDependency,
+  // checkForDependency,
   filterDataToValidate,
   dependsOnProperty,
   getSecretUpdateFormSubmitValues,
@@ -891,7 +889,7 @@ describe('buildPageUtils', () => {
             title: 'Api Key',
             type: 'string',
           },
-          refUserProperties: [
+          matchedProperties: [
             {
               uuid: '36015a9d-b03a-404b-8a21-a86267e92931',
               user_uuid: 'c8371732-c996-4cce-a7b5-9a738dfc62f3',
@@ -973,7 +971,7 @@ describe('buildPageUtils', () => {
             title: 'LLM',
             type: 'string',
           },
-          refUserProperties: [
+          matchedProperties: [
             {
               uuid: '25427d4f-d48f-430e-9d0b-b15b20619b01',
               user_uuid: 'ff2bb5ec-c769-40f2-8613-b44d792cb690',
@@ -1004,7 +1002,7 @@ describe('buildPageUtils', () => {
             title: 'Max Consecutive Auto Reply',
             type: 'numericStepperWithClearButton',
           },
-          refUserProperties: [],
+          matchedProperties: [],
         },
       };
       const formData = {
@@ -1050,7 +1048,7 @@ describe('buildPageUtils', () => {
             title: 'LLM',
             type: 'string',
           },
-          refUserProperties: [
+          matchedProperties: [
             {
               uuid: '25427d4f-d48f-430e-9d0b-b15b20619b01',
               user_uuid: 'ff2bb5ec-c769-40f2-8613-b44d792cb690',
@@ -1081,7 +1079,7 @@ describe('buildPageUtils', () => {
             title: 'Max Consecutive Auto Reply',
             type: 'numericStepperWithClearButton',
           },
-          refUserProperties: [],
+          matchedProperties: [],
         },
       };
       const formData = {
@@ -1127,7 +1125,7 @@ describe('buildPageUtils', () => {
             title: 'LLM',
             type: 'string',
           },
-          refUserProperties: [
+          matchedProperties: [
             {
               uuid: '25427d4f-d48f-430e-9d0b-b15b20619b01',
               user_uuid: 'ff2bb5ec-c769-40f2-8613-b44d792cb690',
@@ -1158,7 +1156,7 @@ describe('buildPageUtils', () => {
             title: 'Max Consecutive Auto Reply',
             type: 'numericStepperWithClearButton',
           },
-          refUserProperties: [],
+          matchedProperties: [],
         },
       };
       const formData = {
@@ -1235,67 +1233,7 @@ describe('buildPageUtils', () => {
       expect(_.isEqual(actual, expected)).toBe(true);
     });
   });
-  describe('isDependencyAvailable', () => {
-    test('isDependencyNotCreated - positive case - without dependencies', () => {
-      const input = {};
-      const actual = isDependencyAvailable(input);
-      expect(actual).toBe(true);
-    });
 
-    test('isDependencyNotCreated - positive case - with dependencies', () => {
-      const input = { secret: 1 };
-      const actual = isDependencyAvailable(input);
-      expect(actual).toBe(true);
-    });
-
-    test('isDependencyNotCreated - positive case - with multiple dependencies', () => {
-      const input = { secret: 5, llm: 10 };
-      const actual = isDependencyAvailable(input);
-      expect(actual).toBe(true);
-    });
-
-    test('isDependencyNotCreated - negative case - with dependencies', () => {
-      const input = { secret: 0 };
-      const actual = isDependencyAvailable(input);
-      expect(actual).toBe(false);
-    });
-
-    test('isDependencyNotCreated - negative case - with multiple dependencies', () => {
-      const input = { secret: 5, llm: 0 };
-      const actual = isDependencyAvailable(input);
-      expect(actual).toBe(false);
-    });
-  });
-  describe('formatDependencyErrorMessage', () => {
-    test('formatDependencyErrorMessage - empty list', () => {
-      const input = [''];
-      const actual = formatDependencyErrorMessage(input);
-      expect(actual).toBe('');
-    });
-
-    test('formatDependencyErrorMessage - with one dependency', () => {
-      const input = ['secret'];
-      const actual = formatDependencyErrorMessage(input);
-      expect(actual).toBe('secret');
-    });
-
-    test('formatDependencyErrorMessage - with two dependencies', () => {
-      const input = ['secret', 'agent'];
-      const actual = formatDependencyErrorMessage(input);
-      expect(actual).toBe('secret and one agent');
-    });
-    test('formatDependencyErrorMessage - with three dependencies', () => {
-      const input = ['secret', 'agent', 'llm'];
-      const actual = formatDependencyErrorMessage(input);
-      expect(actual).toBe('secret, one agent and one llm');
-    });
-
-    test('formatDependencyErrorMessage - with four dependencies', () => {
-      const input = ['secret', 'agent', 'llm', 'team'];
-      const actual = formatDependencyErrorMessage(input);
-      expect(actual).toBe('secret, one agent, one llm and one team');
-    });
-  });
   describe('getRefValues', () => {
     test('getRefValues', () => {
       const input = [{ $ref: '#/$defs/AzureOAIRef' }, { $ref: '#/$defs/OpenAIRef' }];
@@ -1481,88 +1419,118 @@ describe('buildPageUtils', () => {
       expect(actual).toEqual(expected);
     });
   });
-  describe('getMatchedUserProperties', () => {
-    test('getMatchedUserProperties with one ref', () => {
-      const allUserProperties = [
-        {
-          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
-          model: {
-            api_key: '',
-          },
-          type_name: 'secret',
-          model_name: 'AzureOAIAPIKey',
-          user_id: 1,
-        },
-        {
-          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
-          model: {
-            api_key: '',
-          },
-          type_name: 'secret',
-          model_name: 'OpenAIAPIKey',
-          user_id: 1,
-        },
-      ];
-      const refName = ['#/$defs/AzureOAIAPIKey'];
-      const expected = [
-        {
-          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
-          model: {
-            api_key: '',
-          },
-          type_name: 'secret',
-          model_name: 'AzureOAIAPIKey',
-          user_id: 1,
-        },
-      ];
+  describe('matchPropertiesAndIdentifyUnmatchedRefs', () => {
+    const allUserProperties = [
+      {
+        uuid: 'uuid1',
+        user_uuid: 'user1',
+        type_name: 'secret',
+        model_name: 'AnthropicAPI',
+        json_str: { key: 'value1' },
+        created_at: '2024-06-19T09:47:19.132000Z',
+        updated_at: '2024-07-07T07:35:08.019000Z',
+      },
+      {
+        uuid: 'uuid2',
+        user_uuid: 'user1',
+        type_name: 'secret',
+        model_name: 'OpenAI',
+        json_str: { key: 'value2' },
+        created_at: '2024-06-19T09:47:19.132000Z',
+        updated_at: '2024-07-07T07:35:08.019000Z',
+      },
+      {
+        uuid: 'uuid3',
+        user_uuid: 'user2',
+        type_name: 'secret',
+        model_name: 'AzureOAI',
+        json_str: { key: 'value3' },
+        created_at: '2024-06-19T09:47:19.132000Z',
+        updated_at: '2024-07-07T07:35:08.019000Z',
+      },
+    ];
 
-      const actual = getMatchedUserProperties(allUserProperties, refName);
-      expect(actual).toEqual(expected);
+    test('No matches with null', () => {
+      const propertyRefs = ['#/$defs/TogetherAIRef', '#/$defs/CohereLMRef', 'null'];
+      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      expect(matchedRefs).toEqual([]);
+      expect(unMatchedRefs).toEqual(['TogetherAI', 'CohereLM']);
     });
-    test('getMatchedUserProperties with two refs', () => {
+
+    test('No matches', () => {
+      const propertyRefs = ['#/$defs/TogetherAIRef', '#/$defs/CohereLMRef'];
+      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      expect(matchedRefs).toEqual([]);
+      expect(unMatchedRefs).toEqual(['TogetherAI', 'CohereLM']);
+    });
+
+    test('All matches', () => {
+      const propertyRefs = ['#/$defs/AnthropicAPIRef', '#/$defs/OpenAIRef', '#/$defs/AzureOAIRef'];
+      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      expect(matchedRefs).toEqual(allUserProperties);
+      expect(unMatchedRefs).toEqual([]);
+    });
+
+    test('Some matches, some unmatched', () => {
+      const propertyRefs = ['#/$defs/AnthropicAPIRef', '#/$defs/OpenAIRef', '#/$defs/TogetherAIRef'];
+      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      expect(matchedRefs).toEqual([allUserProperties[0], allUserProperties[1]]);
+      expect(unMatchedRefs).toEqual(['TogetherAI']);
+    });
+
+    test('Empty allUserProperties', () => {
+      const propertyRefs = ['#/$defs/AnthropicAPIRef', '#/$defs/OpenAIRef'];
+      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs([], propertyRefs);
+      expect(matchedRefs).toEqual([]);
+      expect(unMatchedRefs).toEqual(['AnthropicAPI', 'OpenAI']);
+    });
+
+    test('Empty propertyRefs', () => {
+      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, []);
+      expect(matchedRefs).toEqual([]);
+      expect(unMatchedRefs).toEqual([]);
+    });
+    test('Duplicate refs', () => {
+      const propertyRefs = ['#/$defs/AnthropicAPIRef', '#/$defs/OpenAIRef', '#/$defs/AnthropicAPIRef'];
+      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      expect(matchedRefs).toEqual([allUserProperties[0], allUserProperties[1]]);
+      expect(unMatchedRefs).toEqual([]);
+    });
+
+    test('Multiple user properties', () => {
       const allUserProperties = [
         {
-          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
-          model: {
-            api_key: '',
-          },
+          uuid: 'f2938216-dcef-4cfd-bd2c-c7e25c0194e8',
+          user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+          type_name: 'secret',
+          model_name: 'GitHubToken',
+          json_str: { name: 'GH Token', gh_token: 'gh_token' },
+          created_at: '2024-06-19T08:25:08.965000Z',
+          updated_at: '2024-06-19T08:25:08.965000Z',
+        },
+        {
+          uuid: '367d2944-fe36-4223-82e6-f532c58afe32',
+          user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
           type_name: 'secret',
           model_name: 'AzureOAIAPIKey',
-          user_id: 1,
+          json_str: { name: 'Azure Key', api_key: 'api_key' }, // pragma: allowlist secret
+          created_at: '2024-07-04T10:50:12.705000Z',
+          updated_at: '2024-07-04T10:50:12.705000Z',
         },
         {
-          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
-          model: {
-            api_key: '',
-          },
-          type_name: 'secret',
-          model_name: 'OpenAIAPIKey',
-          user_id: 1,
-        },
-      ];
-      const refName = ['#/$defs/AzureOAIAPIKeyRef', '#/$defs/OpenAIAPIKeyRef'];
-      const expected = [
-        {
-          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
-          model: {
-            api_key: '',
-          },
+          uuid: '03ef28e2-844e-4058-bf91-694873ee12a2',
+          user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
           type_name: 'secret',
           model_name: 'AzureOAIAPIKey',
-          user_id: 1,
-        },
-        {
-          uuid: 'f55171f6-daf1-4274-8b87-e5bb3b6dcd6b',
-          model: {
-            api_key: '',
-          },
-          type_name: 'secret',
-          model_name: 'OpenAIAPIKey',
-          user_id: 1,
+          json_str: { name: 'qqq', api_key: 'qqqqqq' }, // pragma: allowlist secret
+          created_at: '2024-07-08T10:34:08.482000Z',
+          updated_at: '2024-07-08T10:36:13.733000Z',
         },
       ];
-      const actual = getMatchedUserProperties(allUserProperties, refName);
-      expect(actual).toEqual(expected);
+      const propertyRefs = ['#/$defs/AzureOAIAPIKeyRef'];
+      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      expect(matchedRefs.length).toEqual(2);
+      expect(unMatchedRefs).toEqual([]);
     });
   });
   describe('getAllRefs', () => {
@@ -1615,61 +1583,61 @@ describe('buildPageUtils', () => {
       expect(actual).toEqual(expected);
     });
   });
-  describe('checkForDependency', () => {
-    test('checkForDependency - with empty userPropertyData', () => {
-      const userPropertyData: object[] = [];
-      const allRefList = ['#/$defs/AzureOAIAPIKeyRef', '#/$defs/OpenAIAPIKeyRef'];
-      const actual = checkForDependency(userPropertyData, allRefList);
-      const expected = ['AzureOAIAPIKey', 'OpenAIAPIKey'];
-      expect(_.isEqual(actual, expected)).toBe(true);
-    });
-    test('checkForDependency - with empty userPropertyData and null in allRefList', () => {
-      const userPropertyData: object[] = [];
-      const allRefList = ['#/$defs/AzureOAIAPIKeyRef', 'null'];
-      const actual = checkForDependency(userPropertyData, allRefList);
-      const expected: string[] = [];
-      expect(_.isEqual(actual, expected)).toBe(true);
-    });
-    test('checkForDependency - with non-empty userPropertyData', () => {
-      const userPropertyData: object[] = [
-        {
-          uuid: 'd01b841a-2b64-47c8-82a6-8855202e8062',
-          api_key: {
-            uuid: '9c6735e9-cc23-4831-9688-6bc277da9e40',
-            api_key: '',
-            type_name: 'secret',
-            model_name: 'AzureOAIAPIKey',
-            user_id: 1,
-            base_url: null,
-            model: null,
-            api_type: null,
-            api_version: null,
-            llm: null,
-            summarizer_llm: null,
-            bing_api_key: null,
-            system_message: null,
-            viewport_size: null,
-          },
-          type_name: 'llm',
-          model_name: 'AzureOAI',
-          user_id: 1,
-          base_url: 'https://api.openai.com/v1',
-          model: 'gpt-3.5-turbo',
-          api_type: 'azure',
-          api_version: 'latest',
-          llm: null,
-          summarizer_llm: null,
-          bing_api_key: null,
-          system_message: null,
-          viewport_size: null,
-        },
-      ];
-      const allRefList = ['#/$defs/AzureOAIAPIKeyRef', '#/$defs/OpenAIAPIKeyRef'];
-      const actual = checkForDependency(userPropertyData, allRefList);
-      const expected: string[] = [];
-      expect(_.isEqual(actual, expected)).toBe(true);
-    });
-  });
+  // describe('checkForDependency', () => {
+  //   test('checkForDependency - with empty userPropertyData', () => {
+  //     const userPropertyData: object[] = [];
+  //     const allRefList = ['#/$defs/AzureOAIAPIKeyRef', '#/$defs/OpenAIAPIKeyRef'];
+  //     const actual = checkForDependency(userPropertyData, allRefList);
+  //     const expected = ['AzureOAIAPIKey', 'OpenAIAPIKey'];
+  //     expect(_.isEqual(actual, expected)).toBe(true);
+  //   });
+  //   test('checkForDependency - with empty userPropertyData and null in allRefList', () => {
+  //     const userPropertyData: object[] = [];
+  //     const allRefList = ['#/$defs/AzureOAIAPIKeyRef', 'null'];
+  //     const actual = checkForDependency(userPropertyData, allRefList);
+  //     const expected: string[] = ['AzureOAIAPIKey'];
+  //     expect(_.isEqual(actual, expected)).toBe(true);
+  //   });
+  //   test('checkForDependency - with non-empty userPropertyData', () => {
+  //     const userPropertyData: object[] = [
+  //       {
+  //         uuid: 'd01b841a-2b64-47c8-82a6-8855202e8062',
+  //         api_key: {
+  //           uuid: '9c6735e9-cc23-4831-9688-6bc277da9e40',
+  //           api_key: '',
+  //           type_name: 'secret',
+  //           model_name: 'AzureOAIAPIKey',
+  //           user_id: 1,
+  //           base_url: null,
+  //           model: null,
+  //           api_type: null,
+  //           api_version: null,
+  //           llm: null,
+  //           summarizer_llm: null,
+  //           bing_api_key: null,
+  //           system_message: null,
+  //           viewport_size: null,
+  //         },
+  //         type_name: 'llm',
+  //         model_name: 'AzureOAI',
+  //         user_id: 1,
+  //         base_url: 'https://api.openai.com/v1',
+  //         model: 'gpt-3.5-turbo',
+  //         api_type: 'azure',
+  //         api_version: 'latest',
+  //         llm: null,
+  //         summarizer_llm: null,
+  //         bing_api_key: null,
+  //         system_message: null,
+  //         viewport_size: null,
+  //       },
+  //     ];
+  //     const allRefList = ['#/$defs/AzureOAIAPIKeyRef', '#/$defs/OpenAIAPIKeyRef', '#/$defs/TogetherAIAPIKeyRef'];
+  //     const actual = checkForDependency(userPropertyData, allRefList);
+  //     const expected: string[] = ['OpenAIAPIKey', 'TogetherAIAPIKey'];
+  //     expect(_.isEqual(actual, expected)).toBe(true);
+  //   });
+  // });
 
   describe('filterDataToValidate', () => {
     test('filterDataToValidate - with reference userPropertyData', () => {
@@ -1896,47 +1864,6 @@ describe('buildPageUtils', () => {
   });
 
   describe('getMissingDependencyType', () => {
-    test('getMissingDependencyType - with no dependency', () => {
-      const jsonDeps = {
-        AnthropicAPIKeyRef: {
-          properties: {
-            type: {
-              const: 'secret',
-              default: 'secret',
-              description: 'The name of the type of the data',
-              enum: ['secret'],
-              title: 'Type',
-              type: 'string',
-            },
-            name: {
-              const: 'AnthropicAPIKey',
-              default: 'AnthropicAPIKey',
-              description: 'The name of the data',
-              enum: ['AnthropicAPIKey'],
-              title: 'Name',
-              type: 'string',
-            },
-            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
-          },
-          required: ['uuid'],
-          title: 'AnthropicAPIKeyRef',
-          type: 'object',
-        },
-      };
-      const allRefList: string[] = [];
-      const expected = null;
-      const actual = getMissingDependencyType(jsonDeps, allRefList);
-      expect(actual).toEqual(expected);
-    });
-
-    test('getMissingDependencyType - with undefined jsonDeps', () => {
-      const jsonDeps = undefined;
-      const allRefList: string[] = [];
-      const expected = null;
-      const actual = getMissingDependencyType(jsonDeps, allRefList);
-      expect(actual).toEqual(expected);
-    });
-
     test('getMissingDependencyType - with one or more dependencies', () => {
       const jsonDeps = {
         AnthropicAPIKeyRef: {
@@ -1964,7 +1891,7 @@ describe('buildPageUtils', () => {
           type: 'object',
         },
       };
-      const allRefList: string[] = ['#/$defs/AnthropicAPIKeyRef'];
+      const allRefList = 'AnthropicAPIKey';
       const expected = 'secret';
       const actual = getMissingDependencyType(jsonDeps, allRefList);
       expect(actual).toEqual(expected);

@@ -67,6 +67,8 @@ jobs:
       - name: Push only if branch name is main or dev
         if: github.ref_name == 'main' || github.ref_name == 'dev'
         run: docker push ghcr.io/$GITHUB_REPOSITORY-node --all-tags
+      - name: Sleep for 10 seconds
+        run: sleep 10
 
   docker-build-push-fastapi:
     runs-on: ubuntu-22.04
@@ -98,6 +100,8 @@ jobs:
       - name: Push only if branch name is main or dev
         if: github.ref_name == 'main' || github.ref_name == 'dev'
         run: docker push ghcr.io/$GITHUB_REPOSITORY --all-tags
+      - name: Sleep for 10 seconds
+        run: sleep 10
 
   deploy-fastapi:
     runs-on: ubuntu-22.04
@@ -106,6 +110,7 @@ jobs:
         shell: bash
     needs:
       - docker-build-push-fastapi
+      - docker-build-push-node
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}
@@ -122,6 +127,7 @@ jobs:
       AZURE_API_ENDPOINT: ${{ vars.AZURE_API_ENDPOINT }}
       AZURE_GPT35_MODEL: ${{ vars.AZURE_GPT35_MODEL }}
       AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      BING_API_KEY: ${{ secrets.BING_API_KEY }}
 
     steps:
       - uses: actions/checkout@v3 # Don't change it to cheackout@v4. V4 is not working with container image.
@@ -151,6 +157,7 @@ jobs:
       run:
         shell: bash
     needs:
+      - docker-build-push-fastapi
       - docker-build-push-node
       - detect-deployment-environment
     environment:
@@ -198,8 +205,8 @@ jobs:
     permissions:
       contents: write
     needs:
-      - deploy-fastapi
-      - deploy-node
+      - docker-build-push-fastapi
+      - docker-build-push-node
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}

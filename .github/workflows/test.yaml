@@ -87,6 +87,9 @@ jobs:
           if [ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
             echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
           fi
+          if [ -n "${{ secrets.BING_API_KEY }}" ]; then
+            echo "BING_API_KEY=${{ secrets.BING_API_KEY }}" >> $GITHUB_ENV
+          fi
 
       - uses: actions/checkout@v4
       - name: Set up Python

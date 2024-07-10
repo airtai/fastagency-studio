@@ -97,6 +97,9 @@ class WebSurferChat:
             },
         }
 
+        if "human_input_mode" in self.websurfer_kwargs:
+            self.websurfer_kwargs.pop("human_input_mode")
+
         self.websurfer = AutoGenWebSurferAgent(
             name=f"{self.name_prefix}_inner_websurfer",
             llm_config=self.llm_config,
@@ -106,6 +109,9 @@ class WebSurferChat:
             is_termination_msg=self.is_termination_msg,
             **self.websurfer_kwargs,
         )
+
+        if "human_input_mode" in self.assistant_kwargs:
+            self.assistant_kwargs.pop("human_input_mode")
 
         self.assistant = AutoGenAssistantAgent(
             name=f"{self.name_prefix}_inner_assistant",

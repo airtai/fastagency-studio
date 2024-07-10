@@ -67,6 +67,8 @@ jobs:
       - name: Push only if branch name is main or dev
         if: github.ref_name == 'main' || github.ref_name == 'dev'
         run: docker push ghcr.io/$GITHUB_REPOSITORY-node --all-tags
+      - name: Sleep for 10 seconds
+        run: sleep 10
 
   docker-build-push-fastapi:
     runs-on: ubuntu-22.04
@@ -98,6 +100,8 @@ jobs:
       - name: Push only if branch name is main or dev
         if: github.ref_name == 'main' || github.ref_name == 'dev'
         run: docker push ghcr.io/$GITHUB_REPOSITORY --all-tags
+      - name: Sleep for 10 seconds
+        run: sleep 10
 
   deploy-fastapi:
     runs-on: ubuntu-22.04

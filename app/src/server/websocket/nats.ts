@@ -44,7 +44,7 @@ class NatsConnectionManager {
         });
         console.log(`Connected to ${nc.getServer()} for threadId ${threadId}`);
       } catch (error: any) {
-        console.error(`Failed to connect to NATS server for threadId ${threadId}:`, error); //nosemgrep
+        console.error('Failed to connect to NATS server for threadId %s:', threadId, error);
         throw new Error(`${error}`);
       }
     }

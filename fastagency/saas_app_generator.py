@@ -64,6 +64,7 @@ class SaasAppGenerator:
         app_name: str,
         repo_name: str,
         fly_app_name: str,
+        deployment_auth_token: Union[str, None] = None,
     ) -> None:
         """GitHubManager class."""
         self.template_repo_url = SaasAppGenerator.TEMPLATE_REPO_URL
@@ -73,6 +74,7 @@ class SaasAppGenerator:
         self.app_name = app_name
         self.repo_name = repo_name
         self.fly_app_name = fly_app_name
+        self.deployment_auth_token = deployment_auth_token
 
     @staticmethod
     def _get_env_var(var_name: str) -> str:
@@ -298,6 +300,10 @@ class SaasAppGenerator:
 
         secrets_env["FASTAGENCY_DEPLOYMENT_UUID"] = self.fastagency_deployment_uuid
         command = 'gh secret set FASTAGENCY_DEPLOYMENT_UUID --body "$FASTAGENCY_DEPLOYMENT_UUID" --app actions'
+        self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
+
+        secrets_env["AUTH_TOKEN"] = self.deployment_auth_token
+        command = 'gh secret set AUTH_TOKEN --body "$AUTH_TOKEN" --app actions'
         self._run_cli_command(command, cwd=cwd, env=secrets_env, print_output=True)
 
         command = 'gh secret set USER_GH_PAT --body "$GH_TOKEN" --app actions'

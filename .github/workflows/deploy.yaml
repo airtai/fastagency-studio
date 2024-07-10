@@ -106,6 +106,7 @@ jobs:
         shell: bash
     needs:
       - docker-build-push-fastapi
+      - docker-build-push-node
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}
@@ -152,6 +153,7 @@ jobs:
       run:
         shell: bash
     needs:
+      - docker-build-push-fastapi
       - docker-build-push-node
       - detect-deployment-environment
     environment:
@@ -199,8 +201,8 @@ jobs:
     permissions:
       contents: write
     needs:
-      - deploy-fastapi
-      - deploy-node
+      - docker-build-push-fastapi
+      - docker-build-push-node
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}

@@ -90,6 +90,7 @@ together_model_string = {
     "Meta Llama 3 70B Instruct": "meta-llama/Meta-Llama-3-70B-Instruct",
     "Gemma-2 Instruct (9B)": "google/gemma-2-9b-it",
     "Hermes 2 Theta Llama-3 70B": "NousResearch/Hermes-2-Theta-Llama-3-70B",
+    "Llama-3 70B Instruct Gradient 1048K": "gradientai/Llama-3-70B-Instruct-Gradient-1048k",
 }
 
 TogetherModels: TypeAlias = Literal[tuple(together_model_string.keys())]  # type: ignore[valid-type]

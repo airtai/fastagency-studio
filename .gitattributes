@@ -4,3 +4,5 @@
 *.woff2 filter=lfs diff=lfs merge=lfs -text
 *.eot filter=lfs diff=lfs merge=lfs -text
 *.ico filter=lfs diff=lfs merge=lfs -text
+*jpg filter=lfs diff=lfs merge=lfs -text
+docs/docs/assets/img/FA-Secondary-LOGO.jpg filter=lfs diff=lfs merge=lfs -text

@@ -17,6 +17,10 @@ check_variable "PY_DATABASE_URL"
 check_variable "AUTH_NATS_PASSWORD"
 check_variable "NATS_PRIV_NKEY"
 
+if [[ "$TAG" != "latest" && "$TAG" != "dev" ]]; then
+    echo "Error: TAG value is not 'dev' or 'latest'. It is '$TAG'. Exiting."
+    exit -1
+fi
 
 
 if [ ! -f key.pem ]; then

@@ -13,7 +13,7 @@ curl -sSL https://get.wasp-lang.dev/installer.sh | sh
 cd app && wasp db migrate-dev && cd ..
 
 prisma migrate deploy
-prisma generate --schema=prisma/schema.prisma --generator=pyclient
+prisma generate --schema=schema.prisma --generator=pyclient
 
 # Install packages for auth callout
 cd auth_callout && pnpm install && cd ..

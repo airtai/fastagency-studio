@@ -8,7 +8,7 @@ else
 fi
 
 prisma migrate deploy
-prisma generate --schema=schema.prisma --generator=pyclient
+prisma generate --schema=prisma/schema.prisma --generator=pyclient
 
 faststream run fastagency.io.ionats:app --workers $workers > faststream.log 2>&1 &
 

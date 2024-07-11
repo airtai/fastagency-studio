@@ -28,7 +28,8 @@ RUN python3 -m pip install --upgrade pip
 COPY migrations ./migrations
 COPY templates ./templates
 COPY fastagency ./fastagency
-COPY scripts/* schema.prisma pyproject.toml README.md ./
+COPY prisma ./prisma
+COPY scripts/* pyproject.toml README.md ./
 RUN pip install -e ".[dev]"
 
 # Install wasp

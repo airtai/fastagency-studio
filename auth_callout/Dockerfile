@@ -1,5 +1,5 @@
 # Use the official Node.js 20 image as a parent image
-FROM node:20
+FROM node:20-alpine
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
@@ -15,4 +15,4 @@ RUN pnpm install --force
 
 # Define the command to run your app using pnpm serve
 ENTRYPOINT []
-CMD ["/usr/bin/bash", "-c", "./run-auth-callout.sh"]
+CMD ["/bin/sh", "-c", "./run-auth-callout.sh"]

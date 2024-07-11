@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 pnpx prisma generate --schema=packages/auth-service/schema.prisma
 

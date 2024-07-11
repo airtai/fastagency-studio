@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.helpers.hash_auth_token
+::: fastagency.auth_token.auth.verify_auth_token

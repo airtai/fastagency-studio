@@ -23,6 +23,13 @@ search:
             - [validate_model](api/fastagency/app/validate_model.md)
             - [validate_secret_model](api/fastagency/app/validate_secret_model.md)
             - [validate_toolbox](api/fastagency/app/validate_toolbox.md)
+        - auth_token
+            - auth
+                - [DeploymentAuthToken](api/fastagency/auth_token/auth/DeploymentAuthToken.md)
+                - [create_deployment_auth_token](api/fastagency/auth_token/auth/create_deployment_auth_token.md)
+                - [generate_auth_token](api/fastagency/auth_token/auth/generate_auth_token.md)
+                - [hash_auth_token](api/fastagency/auth_token/auth/hash_auth_token.md)
+                - [verify_auth_token](api/fastagency/auth_token/auth/verify_auth_token.md)
         - db
             - helpers
                 - [find_model_using_raw](api/fastagency/db/helpers/find_model_using_raw.md)
@@ -32,20 +39,15 @@ search:
         - faststream_app
             - [ping_handler](api/fastagency/faststream_app/ping_handler.md)
         - helpers
-            - [DeploymentAuthToken](api/fastagency/helpers/DeploymentAuthToken.md)
             - [add_model_to_user](api/fastagency/helpers/add_model_to_user.md)
             - [create_autogen](api/fastagency/helpers/create_autogen.md)
-            - [create_deployment_auth_token](api/fastagency/helpers/create_deployment_auth_token.md)
             - [create_model](api/fastagency/helpers/create_model.md)
             - [create_model_ref](api/fastagency/helpers/create_model_ref.md)
             - [deploy_saas_app](api/fastagency/helpers/deploy_saas_app.md)
-            - [generate_auth_token](api/fastagency/helpers/generate_auth_token.md)
             - [get_all_models_for_user](api/fastagency/helpers/get_all_models_for_user.md)
             - [get_model_by_ref](api/fastagency/helpers/get_model_by_ref.md)
             - [get_model_by_uuid](api/fastagency/helpers/get_model_by_uuid.md)
-            - [hash_auth_token](api/fastagency/helpers/hash_auth_token.md)
             - [validate_tokens_and_create_gh_repo](api/fastagency/helpers/validate_tokens_and_create_gh_repo.md)
-            - [verify_auth_token](api/fastagency/helpers/verify_auth_token.md)
         - io
             - ionats
                 - [ErrorResoponseModel](api/fastagency/io/ionats/ErrorResoponseModel.md)

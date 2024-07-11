@@ -8,4 +8,4 @@ search:
   boost: 0.5
 ---
 
-::: fastagency.helpers.create_deployment_auth_token
+::: fastagency.auth_token.auth.create_deployment_auth_token

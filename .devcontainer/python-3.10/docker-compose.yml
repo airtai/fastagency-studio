@@ -16,7 +16,7 @@ services:
     networks:
       - fastagency-network
   nats-fastagency:  # nosemgrep
-    image: nats:2.10.14-alpine
+    image: nats:latest
     container_name: $USER-nats-py310-fastagency
     # ports:
       # - "${PORT_PREFIX}4222:4222"

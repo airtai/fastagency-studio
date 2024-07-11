@@ -11,8 +11,6 @@ check_variable() {
 
 # Check for required variables
 check_variable "TAG"
-check_variable "GITHUB_USERNAME"
-check_variable "GITHUB_PASSWORD"
 check_variable "DOMAIN"
 check_variable "DATABASE_URL"
 check_variable "PY_DATABASE_URL"
@@ -43,7 +41,6 @@ $ssh_command "docker stop $container_name || echo 'No containers available to st
 $ssh_command "docker container prune -f || echo 'No stopped containers to delete'"
 
 echo "INFO: pulling docker image"
-$ssh_command "echo $GITHUB_PASSWORD | docker login -u '$GITHUB_USERNAME' --password-stdin '$REGISTRY'"
 $ssh_command "docker pull ghcr.io/airtai/fastagency-auth-callout:'$TAG'"
 sleep 10
 

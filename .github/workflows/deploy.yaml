@@ -130,14 +130,29 @@ jobs:
         if: github.ref_name == 'main' || github.ref_name == 'dev'
         run: docker push ghcr.io/$GITHUB_REPOSITORY-auth-callout --all-tags
 
+  # https://github.com/marketplace/actions/alls-green#why
+  check: # This job does nothing and is only used for the branch protection
+    if: github.event.pull_request.draft == false
+    needs:
+      - docker-build-push-auth-callout
+      - docker-build-push-fastapi
+      - docker-build-push-node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@release/v1 # nosemgrep
+        with:
+          jobs: ${{ toJSON(needs) }}
+      - name: Sleep for 10 seconds
+        run: sleep 10
+
   deploy-fastapi:
     runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
     needs:
-      - docker-build-push-fastapi
-      - docker-build-push-node
+      - check
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}
@@ -185,8 +200,7 @@ jobs:
       run:
         shell: bash
     needs:
-      - docker-build-push-fastapi
-      - docker-build-push-node
+      - check
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}
@@ -235,7 +249,7 @@ jobs:
       run:
         shell: bash
     needs:
-      - docker-build-push-auth-callout
+      - check
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}

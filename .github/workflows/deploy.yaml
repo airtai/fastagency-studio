@@ -67,6 +67,8 @@ jobs:
       - name: Push only if branch name is main or dev
         if: github.ref_name == 'main' || github.ref_name == 'dev'
         run: docker push ghcr.io/$GITHUB_REPOSITORY-node --all-tags
+      - name: Sleep for 10 seconds
+        run: sleep 10
 
   docker-build-push-fastapi:
     runs-on: ubuntu-22.04
@@ -98,6 +100,8 @@ jobs:
       - name: Push only if branch name is main or dev
         if: github.ref_name == 'main' || github.ref_name == 'dev'
         run: docker push ghcr.io/$GITHUB_REPOSITORY --all-tags
+      - name: Sleep for 10 seconds
+        run: sleep 10
 
   docker-build-push-auth-callout:
     runs-on: ubuntu-22.04
@@ -133,6 +137,7 @@ jobs:
         shell: bash
     needs:
       - docker-build-push-fastapi
+      - docker-build-push-node
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}
@@ -180,6 +185,7 @@ jobs:
       run:
         shell: bash
     needs:
+      - docker-build-push-fastapi
       - docker-build-push-node
       - detect-deployment-environment
     environment:
@@ -270,8 +276,8 @@ jobs:
     permissions:
       contents: write
     needs:
-      - deploy-fastapi
-      - deploy-node
+      - docker-build-push-fastapi
+      - docker-build-push-node
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}

@@ -240,3 +240,13 @@ export function getMissingDependencyType(
 
   return jsonDeps[fullRefName].properties.type['const'] || null;
 }
+
+export function getPropertyTypes(propertyRefs: string[], jsonDeps: { [key: string]: SchemaDefinition }): string[] {
+  return _.uniq(
+    propertyRefs
+      .map((ref) => _.get(jsonDeps, ref.replace('#/$defs/', '')))
+      .filter(Boolean)
+      .map((schema) => _.get(schema, 'properties.type.const'))
+      .filter(Boolean)
+  );
+}

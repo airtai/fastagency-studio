@@ -19,6 +19,7 @@ import {
   getSecretUpdateValidationURL,
   formatApiKey,
   getMissingDependencyType,
+  getPropertyTypes,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -1894,6 +1895,277 @@ describe('buildPageUtils', () => {
       const allRefList = 'AnthropicAPIKey';
       const expected = 'secret';
       const actual = getMissingDependencyType(jsonDeps, allRefList);
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('getPropertyTypes', () => {
+    test('getPropertyTypes - with properties of same types', () => {
+      const propertyRefs = [
+        '#/$defs/AnthropicRef',
+        '#/$defs/AzureOAIRef',
+        '#/$defs/OpenAIRef',
+        '#/$defs/TogetherAIRef',
+      ];
+      const jsonDeps = {
+        AnthropicRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'Anthropic',
+              default: 'Anthropic',
+              description: 'The name of the data',
+              enum: ['Anthropic'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'AnthropicRef',
+          type: 'object',
+        },
+        AzureOAIRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'AzureOAI',
+              default: 'AzureOAI',
+              description: 'The name of the data',
+              enum: ['AzureOAI'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'AzureOAIRef',
+          type: 'object',
+        },
+        OpenAIRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'OpenAI',
+              default: 'OpenAI',
+              description: 'The name of the data',
+              enum: ['OpenAI'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'OpenAIRef',
+          type: 'object',
+        },
+        TogetherAIRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'TogetherAI',
+              default: 'TogetherAI',
+              description: 'The name of the data',
+              enum: ['TogetherAI'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'TogetherAIRef',
+          type: 'object',
+        },
+        ToolboxRef: {
+          properties: {
+            type: {
+              const: 'toolbox',
+              default: 'toolbox',
+              description: 'The name of the type of the data',
+              enum: ['toolbox'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'Toolbox',
+              default: 'Toolbox',
+              description: 'The name of the data',
+              enum: ['Toolbox'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'ToolboxRef',
+          type: 'object',
+        },
+      };
+      const expected = ['llm'];
+      const actual = getPropertyTypes(propertyRefs, jsonDeps);
+      expect(actual).toEqual(expected);
+    });
+
+    test('getPropertyTypes - with properties of different types', () => {
+      const propertyRefs = [
+        '#/$defs/AnthropicRef',
+        '#/$defs/AzureOAIRef',
+        '#/$defs/OpenAIRef',
+        '#/$defs/TogetherAIRef',
+        '#/$defs/ToolboxRef',
+      ];
+      const jsonDeps = {
+        AnthropicRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'Anthropic',
+              default: 'Anthropic',
+              description: 'The name of the data',
+              enum: ['Anthropic'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'AnthropicRef',
+          type: 'object',
+        },
+        AzureOAIRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'AzureOAI',
+              default: 'AzureOAI',
+              description: 'The name of the data',
+              enum: ['AzureOAI'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'AzureOAIRef',
+          type: 'object',
+        },
+        OpenAIRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'OpenAI',
+              default: 'OpenAI',
+              description: 'The name of the data',
+              enum: ['OpenAI'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'OpenAIRef',
+          type: 'object',
+        },
+        TogetherAIRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'TogetherAI',
+              default: 'TogetherAI',
+              description: 'The name of the data',
+              enum: ['TogetherAI'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'TogetherAIRef',
+          type: 'object',
+        },
+        ToolboxRef: {
+          properties: {
+            type: {
+              const: 'toolbox',
+              default: 'toolbox',
+              description: 'The name of the type of the data',
+              enum: ['toolbox'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'Toolbox',
+              default: 'Toolbox',
+              description: 'The name of the data',
+              enum: ['Toolbox'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'ToolboxRef',
+          type: 'object',
+        },
+      };
+      const expected = ['llm', 'toolbox'];
+      const actual = getPropertyTypes(propertyRefs, jsonDeps);
       expect(actual).toEqual(expected);
     });
   });

@@ -608,7 +608,6 @@ describe('buildPageUtils', () => {
         description: '',
         enum: ['None', 'production azure key', 'production bing key', 'production openai key'],
         title: 'Api Key',
-        type: 'string',
       };
       const property = {
         anyOf: [
@@ -681,7 +680,6 @@ describe('buildPageUtils', () => {
         description: '',
         enum: ['production bing key', 'production azure key', 'production openai key'],
         title: 'Api Key',
-        type: 'string',
       };
       const property = {
         anyOf: [
@@ -735,7 +733,6 @@ describe('buildPageUtils', () => {
         description: '',
         enum: ['production azure key', 'Azure staging key'],
         title: 'Api Key',
-        type: 'string',
       };
       const property = {
         anyOf: [
@@ -799,7 +796,6 @@ describe('buildPageUtils', () => {
         description: '',
         enum: ['production azure key', 'production bing key', 'production openai key'],
         title: 'Api Key',
-        type: 'string',
       };
       const property = {
         anyOf: [
@@ -826,7 +822,6 @@ describe('buildPageUtils', () => {
         description: 'The maximum number of consecutive auto-replies the agent can make',
         enum: ['None'],
         title: 'Max Consecutive Auto Reply',
-        type: 'numericStepperWithClearButton',
       };
       const property = {
         anyOf: [
@@ -851,7 +846,6 @@ describe('buildPageUtils', () => {
         description: 'The maximum number of consecutive auto-replies the agent can make',
         enum: ['None'],
         title: 'Max Consecutive Auto Reply',
-        type: 'numericStepperWithClearButton',
       };
       const property = {
         anyOf: [

@@ -47,11 +47,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         }
         const inputValue = formData[key] || '';
         let propertyTypes = null;
+        let isRequired = false;
         let formElementsObject = property;
         if (_.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf')) {
           if (refValues[key]) {
             formElementsObject = refValues[key].htmlSchema;
             propertyTypes = refValues[key].propertyTypes;
+            isRequired = refValues[key].isRequired;
           }
         }
         return (
@@ -65,6 +67,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 onChange={(value) => handleChange(key, value)}
                 propertyTypes={propertyTypes}
                 addPropertyClick={addPropertyClick}
+                isRequired={isRequired}
               />
             ) : key === 'system_message' ? (
               <TextArea

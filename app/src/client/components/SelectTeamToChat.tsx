@@ -74,6 +74,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
               onChange={handleTeamChange}
               propertyTypes={[]}
               addPropertyClick={() => {}}
+              isRequired={false}
             />
             {formError && (
               <div className='mb-2' style={{ color: 'red' }}>

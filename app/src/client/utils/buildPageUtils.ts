@@ -63,14 +63,12 @@ export const constructHTMLSchema = (
       ['integer', 'null']
     );
 
-  const returnType = isIntegerOrNull ? 'numericStepperWithClearButton' : 'string';
   const description = isIntegerOrNull ? property.description : '';
   return {
     default: defaultValue,
     description: description,
     enum: properties,
     title: capitalizeTitle,
-    type: returnType,
   };
 };
 

@@ -12,9 +12,13 @@ interface SelectInputProps {
   onChange: (value: string) => void;
   propertyTypes: string[];
   addPropertyClick: (property_type: string) => void;
+  isRequired: boolean;
 }
 
-export function getSelectOptions(options: string[], propertyTypes: string[] | null) {
+export function getSelectOptions(options: string[], propertyTypes: string[] | null, isRequired: boolean) {
+  if (options.length === 1 && options[0] === 'None' && isRequired) {
+    options = [];
+  }
   let selectOptions = options.map((option) => ({ value: option, label: option }));
 
   if (propertyTypes && propertyTypes.length > 0) {
@@ -36,10 +40,14 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   onChange,
   propertyTypes,
   addPropertyClick,
+  isRequired,
 }) => {
   const [selectedOption, setSelectedOption] = useState(value);
-  let selectOptions = getSelectOptions(options, propertyTypes);
+  let selectOptions = getSelectOptions(options, propertyTypes, isRequired);
   useEffect(() => {
+    if (options.length === 1 && options[0] === 'None' && isRequired) {
+      return;
+    }
     const defaultValue = value === '' ? selectOptions[0].value : value;
     setSelectedOption(defaultValue);
   }, [value, options]);
@@ -65,6 +73,12 @@ export const SelectInput: React.FC<SelectInputProps> = ({
         })}
         isSearchable={false}
         isClearable={true}
+        styles={{
+          control: (baseStyles, state) => ({
+            ...baseStyles,
+            borderColor: '#003257',
+          }),
+        }}
       />
     </div>
   );

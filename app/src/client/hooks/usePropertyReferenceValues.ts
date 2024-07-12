@@ -39,10 +39,12 @@ export const usePropertyReferenceValues = ({
         const selectedModelRefValues = _.get(updateExistingModel, key, null);
         const htmlSchema = constructHTMLSchema(matchedProperties, title, property, selectedModelRefValues);
         const propertyTypes = getPropertyTypes(propertyRefs, jsonSchema.$defs);
+        const isRequired = _.includes(jsonSchema.required, key);
         newRefValues[key] = {
           htmlSchema: htmlSchema,
           matchedProperties: matchedProperties,
           propertyTypes: propertyTypes,
+          isRequired: isRequired,
         };
       }
     });

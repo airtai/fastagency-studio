@@ -207,9 +207,10 @@ describe('usePropertyReferenceValues', () => {
 
     const expected = {
       api_key: {
-        htmlSchema: { description: '', enum: ['None'], title: 'Api Key', type: 'string' },
+        htmlSchema: { description: '', enum: ['None'], title: 'Api Key' },
         matchedProperties: [],
         propertyTypes: ['secret'],
+        isRequired: true,
       },
     };
     // Check the structure of the returned refValues
@@ -351,7 +352,6 @@ describe('usePropertyReferenceValues', () => {
       description: '',
       enum: ['Azure Key'],
       title: 'Api Key',
-      type: 'string',
     });
 
     // Check missingDependency
@@ -476,7 +476,6 @@ describe('usePropertyReferenceValues', () => {
       description: '',
       enum: ['None'],
       title: 'OpenAPI Auth',
-      type: 'string',
     });
 
     // Check missingDependency
@@ -589,7 +588,6 @@ describe('usePropertyReferenceValues', () => {
       description: '',
       enum: ['None', 'OpenAPIAuth'],
       title: 'OpenAPI Auth',
-      type: 'string',
     });
 
     // Check matchedProperties

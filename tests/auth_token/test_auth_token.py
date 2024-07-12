@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import Any, Dict
 
 import pytest
@@ -9,6 +10,7 @@ from fastagency.auth_token.auth import (
     create_deployment_auth_token,
     generate_auth_token,
     hash_auth_token,
+    parse_expiry,
     verify_auth_token,
 )
 
@@ -34,6 +36,34 @@ def test_verify_auth_token() -> None:
     assert not verify_auth_token(token, "wrong_hash")
     assert not verify_auth_token("wrong_token", hashed_token)
     assert not verify_auth_token("wrong_token", "wrong_hash")
+
+
+@pytest.mark.asyncio()
+async def test_parse_expiry() -> None:
+    expiry = await parse_expiry("1d")
+    assert expiry is not None
+    assert isinstance(expiry, datetime)
+    assert expiry > datetime.utcnow()
+
+
+@pytest.mark.asyncio()
+@pytest.mark.parametrize(
+    "expiry_str, expected",  # noqa: PT006
+    [
+        ("1", "Invalid expiry format - 1; expected format: <number>d"),
+        ("1h", "Invalid expiry format - 1h; expected format: <number>d"),
+        ("1w", "Invalid expiry format - 1w; expected format: <number>d"),
+        ("1m", "Invalid expiry format - 1m; expected format: <number>d"),
+        ("1y", "Invalid expiry format - 1y; expected format: <number>d"),
+        ("0d", "Expiry date cannot be in the past"),
+        ("-1d", "Invalid expiry format - -1d; expected format: <number>d"),
+    ],
+)
+async def test_parse_expiry_with_invalid_expiry(expiry_str: str, expected: str) -> None:
+    with pytest.raises(HTTPException) as e:
+        await parse_expiry(expiry_str)
+    assert e.value.status_code == 400
+    assert e.value.detail == expected
 
 
 @pytest.mark.db()

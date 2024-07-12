@@ -1,7 +1,7 @@
 import * as Nats from "nats";
 import * as Jwt from "nats-jwt";
 import * as Nkeys from "nkeys.js";
-import { Auth, checkChatUuid, fetchAuthToken, verifyAuthToken } from "./data";
+import { Auth, checkChatUuid, fetchAuthToken, verifyAuthTokens } from "./data";
 import { AuthorizationRequestClaims } from "./types";
 
 run();
@@ -84,12 +84,12 @@ async function msgHandler(req: Nats.Msg, enc: TextEncoder, dec: TextDecoder, iss
   const chat_uuid = parsedAuth.chat_uuid;
 
   // auth_user value is deployment_uuid, check authToken is not null
-  const authToken = await fetchAuthToken(auth_user);
-  if (!authToken) {
+  const authTokens = await fetchAuthToken(auth_user);
+  if (!authTokens) {
     return respondMsg(req, userNkey, serverId, "", "user " + auth_user + " not found");
   }
 
-  const isPasswordCorrect = await verifyAuthToken(auth_pass, authToken.auth_token);
+  const isPasswordCorrect = await verifyAuthTokens(auth_pass, authTokens);
   if (!isPasswordCorrect) {
     return respondMsg(req, userNkey, serverId, "", "invalid credentials");
   }
@@ -108,6 +108,7 @@ async function msgHandler(req: Nats.Msg, enc: TextEncoder, dec: TextDecoder, iss
     // `$JS.API.STREAM.NAMES.FastAgency`,
     "$JS.API.CONSUMER.INFO.FastAgency.*",
     "$JS.API.CONSUMER.CREATE.FastAgency",
+    "$JS.API.CONSUMER.DURABLE.CREATE.FastAgency.*",
   ];
   console.log(`Auth service user ${auth_user} granted permission to subjects: ${JSON.stringify(grantedRooms)}`);
 

@@ -14,8 +14,8 @@ const wasp_prisma = new PrismaClient({ datasources: { db: { url: process.env.DAT
 
 export async function fetchAuthToken(deployment_uuid: string) {
   try {
-    const authToken: AuthToken[] = await prisma.$queryRaw`SELECT * FROM "AuthToken" WHERE "deployment_uuid" = ${deployment_uuid}::uuid LIMIT 1`;
-    return authToken.length > 0 ? authToken[0] : null; // Return the first authToken if found, else return null
+    const authTokens: AuthToken[] = await prisma.$queryRaw`SELECT * FROM "AuthToken" WHERE "deployment_uuid" = ${deployment_uuid}::uuid and expires_at > NOW()`;
+    return authTokens.length > 0 ? authTokens : null; // Return the authTokens if found, else return null
   } catch (error) {
     console.error('Error fetching AuthToken by deployment_uuid:', error);
     return null; // Return null on error
@@ -31,6 +31,17 @@ export async function checkChatUuid(chat_uuid: string) {
     console.error('Error fetching Chat by chat_uuid:', error);
     return null; // Return null on error
   }
+}
+
+export async function verifyAuthTokens(auth_pass: string, authTokens: AuthToken[]) {
+  for (const authToken of authTokens) {
+    // check if password is correct
+    if (await verifyAuthToken(auth_pass, authToken.auth_token)) {
+      return true;
+    }
+
+  }
+  return false;
 }
 
 export async function verifyAuthToken(token: string, storedHash: string): Promise<boolean> {

@@ -10,8 +10,11 @@ generator authclient {
 
 model AuthToken {
   uuid String @id
+  user_uuid String @db.Uuid
   deployment_uuid String @db.Uuid
   auth_token String
+  expiry String
+  expires_at DateTime
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }

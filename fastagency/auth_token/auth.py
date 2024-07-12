@@ -1,7 +1,9 @@
 import hashlib
+import re
 import secrets
 import string
 import uuid
+from datetime import datetime, timedelta
 
 from fastapi import HTTPException
 from pydantic import BaseModel
@@ -52,8 +54,34 @@ class DeploymentAuthToken(BaseModel):
     auth_token: str
 
 
+async def parse_expiry(expiry: str) -> datetime:
+    match = re.match(r"(\d+)([d])", expiry)
+    if not match:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid expiry format - {expiry}; expected format: <number>d",
+        )
+
+    value, unit = match.groups()
+    value = int(value)
+
+    if unit == "d":
+        td = timedelta(days=value)
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown time unit - {expiry}; expected format: <number>d",
+        )
+
+    d = datetime.utcnow()
+    expires_at = d + td
+    if expires_at <= d:
+        raise HTTPException(status_code=400, detail="Expiry date cannot be in the past")
+    return expires_at
+
+
 async def create_deployment_auth_token(
-    user_uuid: str, deployment_uuid: str
+    user_uuid: str, deployment_uuid: str, expiry: str = "99999d"
 ) -> DeploymentAuthToken:
     user = await get_user(user_uuid=user_uuid)
     deployment = await find_model_using_raw(model_uuid=deployment_uuid)
@@ -62,6 +90,7 @@ async def create_deployment_auth_token(
         raise HTTPException(
             status_code=403, detail="User does not have access to this deployment"
         )
+    expires_at = await parse_expiry(expiry)
 
     auth_token = generate_auth_token()
     hashed_token = hash_auth_token(auth_token)
@@ -70,8 +99,11 @@ async def create_deployment_auth_token(
         await db.authtoken.create(  # type: ignore[attr-defined]
             data={
                 "uuid": str(uuid.uuid4()),
+                "user_uuid": user_uuid,
                 "deployment_uuid": deployment_uuid,
                 "auth_token": hashed_token,
+                "expiry": expiry,
+                "expires_at": expires_at,
             }
         )
 

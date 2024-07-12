@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import _ from 'lodash';
 import {
-  matchPropertiesAndIdentifyUnmatchedRefs,
+  matchPropertiesToRefs,
   constructHTMLSchema,
   getAllRefs,
   getMissingDependencyType,
+  getPropertyTypes,
 } from '../utils/buildPageUtils';
 import { JsonSchema, SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
@@ -33,24 +34,17 @@ export const usePropertyReferenceValues = ({
       if (propertyHasRef || propertyHasAnyOf) {
         const title: string = property.hasOwnProperty('title') ? property.title || '' : key;
         const propertyRefs = propertyHasRef ? [property['$ref']] : getAllRefs(property);
-        const [matchedProperties, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(
-          allUserProperties,
-          propertyRefs
-        );
+        const matchedProperties = matchPropertiesToRefs(allUserProperties, propertyRefs);
 
         const selectedModelRefValues = _.get(updateExistingModel, key, null);
         const htmlSchema = constructHTMLSchema(matchedProperties, title, property, selectedModelRefValues);
-
-        const missingDependencyList = unMatchedRefs.map((item) => ({
-          label: htmlSchema.title,
-          model_type: item,
-          property_type: getMissingDependencyType(jsonSchema.$defs, item),
-        }));
-
+        const propertyTypes = getPropertyTypes(propertyRefs, jsonSchema.$defs);
+        const isRequired = _.includes(jsonSchema.required, key);
         newRefValues[key] = {
           htmlSchema: htmlSchema,
           matchedProperties: matchedProperties,
-          missingDependency: missingDependencyList,
+          propertyTypes: propertyTypes,
+          isRequired: isRequired,
         };
       }
     });

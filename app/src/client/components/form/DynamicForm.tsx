@@ -3,7 +3,6 @@ import _ from 'lodash';
 import { TextInput } from './TextInput';
 import { SelectInput } from './SelectInput';
 import { TextArea } from './TextArea';
-import { NumericStepperWithClearButton } from './NumericStepperWithClearButton';
 import { SECRETS_TO_MASK } from '../../utils/constants';
 import { JsonSchema } from '../../interfaces/BuildPageInterfaces';
 import { FormData } from '../../hooks/useForm';
@@ -16,7 +15,7 @@ interface DynamicFormProps {
   formErrors: Record<string, string>;
   refValues: Record<string, any>;
   isLoading: boolean;
-  onMissingDependencyClick: (event: React.FormEvent, property_type: string, model_type: string) => void;
+  addPropertyClick: (property_type: string) => void;
   updateExistingModel: any;
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   instructionForDeployment: Record<string, string> | null;
@@ -32,7 +31,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   formErrors,
   refValues,
   isLoading,
-  onMissingDependencyClick,
+  addPropertyClick,
   updateExistingModel,
   handleSubmit,
   instructionForDeployment,
@@ -47,38 +46,29 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           return null;
         }
         const inputValue = formData[key] || '';
-        let missingDependencyForKey = null;
+        let propertyTypes = null;
+        let isRequired = false;
         let formElementsObject = property;
         if (_.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf')) {
           if (refValues[key]) {
             formElementsObject = refValues[key].htmlSchema;
-            missingDependencyForKey = refValues[key].missingDependency;
+            propertyTypes = refValues[key].propertyTypes;
+            isRequired = refValues[key].isRequired;
           }
         }
-        // return formElementsObject?.enum?.length === 1 ? null : (
         return (
           <div key={key} className='w-full mt-2'>
             <label htmlFor={key}>{formElementsObject.title}</label>
             {formElementsObject.enum ? (
-              formElementsObject.type === 'numericStepperWithClearButton' ? (
-                <div>
-                  <NumericStepperWithClearButton
-                    id={key}
-                    value={inputValue}
-                    formElementObject={formElementsObject}
-                    onChange={(value) => handleChange(key, value)}
-                  />
-                </div>
-              ) : (
-                <SelectInput
-                  id={key}
-                  value={inputValue}
-                  options={formElementsObject.enum}
-                  onChange={(value) => handleChange(key, value)}
-                  missingDependencies={missingDependencyForKey}
-                  onMissingDependencyClick={onMissingDependencyClick}
-                />
-              )
+              <SelectInput
+                id={key}
+                value={inputValue}
+                options={formElementsObject.enum}
+                onChange={(value) => handleChange(key, value)}
+                propertyTypes={propertyTypes}
+                addPropertyClick={addPropertyClick}
+                isRequired={isRequired}
+              />
             ) : key === 'system_message' ? (
               <TextArea
                 id={key}

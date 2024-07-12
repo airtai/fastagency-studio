@@ -90,7 +90,7 @@ describe('DynamicFormBuilder', () => {
         onSuccessCallback={vi.fn()}
         onCancelCallback={vi.fn()}
         onDeleteCallback={vi.fn()}
-        onMissingDependencyClick={vi.fn()}
+        addPropertyClick={vi.fn()}
       />
     );
     expect(screen.getByLabelText('Model')).toBeInTheDocument();
@@ -109,7 +109,7 @@ describe('DynamicFormBuilder', () => {
         onSuccessCallback={vi.fn()}
         onCancelCallback={vi.fn()}
         onDeleteCallback={vi.fn()}
-        onMissingDependencyClick={vi.fn()}
+        addPropertyClick={vi.fn()}
       />
     );
     expect(screen.getByLabelText('Model')).toBeInTheDocument();
@@ -128,7 +128,7 @@ describe('DynamicFormBuilder', () => {
         onSuccessCallback={onSuccessCallback}
         onCancelCallback={vi.fn()}
         onDeleteCallback={vi.fn()}
-        onMissingDependencyClick={vi.fn()}
+        addPropertyClick={vi.fn()}
       />
     );
 
@@ -168,7 +168,7 @@ describe('DynamicFormBuilder', () => {
         onSuccessCallback={onSuccessCallback}
         onCancelCallback={vi.fn()}
         onDeleteCallback={vi.fn()}
-        onMissingDependencyClick={vi.fn()}
+        addPropertyClick={vi.fn()}
       />
     );
 
@@ -192,7 +192,7 @@ describe('DynamicFormBuilder', () => {
         onSuccessCallback={vi.fn()}
         onCancelCallback={vi.fn()}
         onDeleteCallback={vi.fn()}
-        onMissingDependencyClick={vi.fn()}
+        addPropertyClick={vi.fn()}
       />
     );
 

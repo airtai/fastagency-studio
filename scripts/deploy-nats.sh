@@ -34,8 +34,8 @@ if [ "$CLEAR_JETSTREAM" = true ] ; then
 fi
 
 echo "INFO: SCPing nats-docker-compose.yaml and config files"
-scp -i key.pem ./nats-docker-compose.yaml azureuser@$DOMAIN:/home/azureuser/nats-docker-compose.yaml
-envsubst '${DOMAIN}' < ./nats_server.conf > ./nats_server.conf.tmp && mv ./nats_server.conf.tmp ./nats_server.conf
+scp -i key.pem ./docker-compose/nats/nats-docker-compose.yaml azureuser@$DOMAIN:/home/azureuser/nats-docker-compose.yaml
+envsubst '${DOMAIN}' < ./docker-compose/nats/nats_server.conf > ./nats_server.conf.tmp && mv ./nats_server.conf.tmp ./nats_server.conf
 scp -i key.pem ./nats_server.conf azureuser@$DOMAIN:/home/azureuser/nats_server.conf
 
 echo "INFO: starting NATS container"

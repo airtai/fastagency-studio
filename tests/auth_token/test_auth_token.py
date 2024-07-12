@@ -4,8 +4,11 @@ from typing import Any, Dict
 
 import pytest
 from fastapi import HTTPException
+from fastapi.testclient import TestClient
 
+import fastagency.app
 import fastagency.auth_token.auth
+from fastagency.app import app
 from fastagency.auth_token.auth import (
     create_deployment_auth_token,
     generate_auth_token,
@@ -13,6 +16,8 @@ from fastagency.auth_token.auth import (
     parse_expiry,
     verify_auth_token,
 )
+
+client = TestClient(app)
 
 
 def test_generate_auth_token() -> None:
@@ -110,3 +115,100 @@ async def test_create_deployment_token_with_wrong_user_uuid(
 
     assert e.value.status_code == 403
     assert e.value.detail == "User does not have access to this deployment"
+
+
+@pytest.mark.db()
+@pytest.mark.asyncio()
+async def test_create_deployment_auth_token_route(
+    user_uuid: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    deployment_uuid = str(uuid.uuid4())
+
+    async def mock_find_model_using_raw(*args: Any, **kwargs: Any) -> Dict[str, str]:
+        return {
+            "user_uuid": user_uuid,
+            "uuid": deployment_uuid,
+        }
+
+    monkeypatch.setattr(
+        fastagency.auth_token.auth, "find_model_using_raw", mock_find_model_using_raw
+    )
+
+    response = client.post(
+        f"/user/{user_uuid}/deployment/{deployment_uuid}",
+        json={"name": "Test token", "expiry": "99d"},
+    )
+    assert response.status_code == 200
+    assert "auth_token" in response.json()
+    assert response.json()["auth_token"] is not None
+
+
+@pytest.mark.db()
+@pytest.mark.asyncio()
+async def test_get_all_deployment_auth_tokens(
+    user_uuid: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    deployment_uuid = str(uuid.uuid4())
+
+    async def mock_find_model_using_raw(*args: Any, **kwargs: Any) -> Dict[str, str]:
+        return {
+            "user_uuid": user_uuid,
+            "uuid": deployment_uuid,
+        }
+
+    monkeypatch.setattr(
+        fastagency.auth_token.auth, "find_model_using_raw", mock_find_model_using_raw
+    )
+
+    response = client.post(
+        f"/user/{user_uuid}/deployment/{deployment_uuid}",
+        json={"name": "Test token", "expiry": "99d"},
+    )
+    assert response.status_code == 200
+
+    monkeypatch.setattr(
+        fastagency.app, "find_model_using_raw", mock_find_model_using_raw
+    )
+    response = client.get(f"/user/{user_uuid}/deployment/{deployment_uuid}")
+    assert response.status_code == 200
+    response_json = response.json()
+    assert len(response_json) == 1
+    assert "uuid" in response_json[0]
+    assert response_json[0]["name"] == "Test token"
+    assert response_json[0]["expiry"] == "99d"
+
+
+@pytest.mark.db()
+@pytest.mark.asyncio()
+async def test_delete_deployment_auth_token(
+    user_uuid: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    deployment_uuid = str(uuid.uuid4())
+
+    async def mock_find_model_using_raw(*args: Any, **kwargs: Any) -> Dict[str, str]:
+        return {
+            "user_uuid": user_uuid,
+            "uuid": deployment_uuid,
+        }
+
+    monkeypatch.setattr(
+        fastagency.auth_token.auth, "find_model_using_raw", mock_find_model_using_raw
+    )
+
+    response = client.post(
+        f"/user/{user_uuid}/deployment/{deployment_uuid}",
+        json={"name": "Test token", "expiry": "99d"},
+    )
+    assert response.status_code == 200
+
+    monkeypatch.setattr(
+        fastagency.app, "find_model_using_raw", mock_find_model_using_raw
+    )
+    response = client.get(f"/user/{user_uuid}/deployment/{deployment_uuid}")
+    assert len(response.json()) == 1
+    auth_token_uuid = str(response.json()[0]["uuid"])
+
+    response = client.delete(
+        url=f"/user/{user_uuid}/deployment/{deployment_uuid}/{auth_token_uuid}"
+    )
+    assert response.status_code == 200

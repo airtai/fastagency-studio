@@ -10,6 +10,7 @@ generator authclient {
 
 model AuthToken {
   uuid String @id
+  name String
   user_uuid String @db.Uuid
   deployment_uuid String @db.Uuid
   auth_token String

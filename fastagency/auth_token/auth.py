@@ -81,7 +81,10 @@ async def parse_expiry(expiry: str) -> datetime:
 
 
 async def create_deployment_auth_token(
-    user_uuid: str, deployment_uuid: str, expiry: str = "99999d"
+    user_uuid: str,
+    deployment_uuid: str,
+    name: str = "Default deployment token",
+    expiry: str = "99999d",
 ) -> DeploymentAuthToken:
     user = await get_user(user_uuid=user_uuid)
     deployment = await find_model_using_raw(model_uuid=deployment_uuid)
@@ -99,6 +102,7 @@ async def create_deployment_auth_token(
         await db.authtoken.create(  # type: ignore[attr-defined]
             data={
                 "uuid": str(uuid.uuid4()),
+                "name": name,
                 "user_uuid": user_uuid,
                 "deployment_uuid": deployment_uuid,
                 "auth_token": hashed_token,

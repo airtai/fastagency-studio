@@ -1,6 +1,7 @@
 -- CreateTable
 CREATE TABLE "AuthToken" (
     "uuid" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "user_uuid" UUID NOT NULL,
     "deployment_uuid" UUID NOT NULL,
     "auth_token" TEXT NOT NULL,

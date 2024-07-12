@@ -5,6 +5,7 @@ import {
   constructHTMLSchema,
   getAllRefs,
   getMissingDependencyType,
+  getPropertyTypes,
 } from '../utils/buildPageUtils';
 import { JsonSchema, SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
@@ -40,7 +41,7 @@ export const usePropertyReferenceValues = ({
 
         const selectedModelRefValues = _.get(updateExistingModel, key, null);
         const htmlSchema = constructHTMLSchema(matchedProperties, title, property, selectedModelRefValues);
-
+        const propertyTypes = getPropertyTypes(propertyRefs, jsonSchema.$defs);
         const missingDependencyList = unMatchedRefs.map((item) => ({
           label: htmlSchema.title,
           model_type: item,
@@ -50,7 +51,8 @@ export const usePropertyReferenceValues = ({
         newRefValues[key] = {
           htmlSchema: htmlSchema,
           matchedProperties: matchedProperties,
-          missingDependency: missingDependencyList,
+          // missingDependency: missingDependencyList,
+          propertyTypes: propertyTypes,
         };
       }
     });

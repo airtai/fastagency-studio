@@ -16,7 +16,7 @@ interface DynamicFormProps {
   formErrors: Record<string, string>;
   refValues: Record<string, any>;
   isLoading: boolean;
-  onMissingDependencyClick: (event: React.FormEvent, property_type: string, model_type: string) => void;
+  addPropertyClick: (property_type: string) => void;
   updateExistingModel: any;
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   instructionForDeployment: Record<string, string> | null;
@@ -32,7 +32,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   formErrors,
   refValues,
   isLoading,
-  onMissingDependencyClick,
+  addPropertyClick,
   updateExistingModel,
   handleSubmit,
   instructionForDeployment,
@@ -47,12 +47,12 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           return null;
         }
         const inputValue = formData[key] || '';
-        let missingDependencyForKey = null;
+        let propertyTypes = null;
         let formElementsObject = property;
         if (_.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf')) {
           if (refValues[key]) {
             formElementsObject = refValues[key].htmlSchema;
-            missingDependencyForKey = refValues[key].missingDependency;
+            propertyTypes = refValues[key].propertyTypes;
           }
         }
         // return formElementsObject?.enum?.length === 1 ? null : (
@@ -75,8 +75,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   value={inputValue}
                   options={formElementsObject.enum}
                   onChange={(value) => handleChange(key, value)}
-                  missingDependencies={missingDependencyForKey}
-                  onMissingDependencyClick={onMissingDependencyClick}
+                  propertyTypes={propertyTypes}
+                  addPropertyClick={addPropertyClick}
                 />
               )
             ) : key === 'system_message' ? (

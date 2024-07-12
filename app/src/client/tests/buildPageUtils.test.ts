@@ -2168,5 +2168,18 @@ describe('buildPageUtils', () => {
       const actual = getPropertyTypes(propertyRefs, jsonDeps);
       expect(actual).toEqual(expected);
     });
+    test('getPropertyTypes - with properties of different types', () => {
+      const propertyRefs = [
+        '#/$defs/AnthropicRef',
+        '#/$defs/AzureOAIRef',
+        '#/$defs/OpenAIRef',
+        '#/$defs/TogetherAIRef',
+        '#/$defs/ToolboxRef',
+      ];
+      const jsonDeps = undefined;
+      const expected: string[] = [];
+      const actual = getPropertyTypes(propertyRefs, jsonDeps);
+      expect(actual).toEqual(expected);
+    });
   });
 });

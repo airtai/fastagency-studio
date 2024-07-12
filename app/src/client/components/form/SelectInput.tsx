@@ -1,20 +1,32 @@
 import React, { useEffect, useState } from 'react';
 
+import _ from 'lodash';
 import Select from 'react-select';
 
-interface MissingDependency {
-  property_type: string;
-  model_type: string;
-  label: string;
-}
+import { capitalizeFirstLetter } from '../../utils/buildPageUtils';
 
 interface SelectInputProps {
   id: string;
   value: string;
   options: string[];
   onChange: (value: string) => void;
-  missingDependencies: MissingDependency[];
-  onMissingDependencyClick: (event: React.FormEvent, property_type: string, model_type: string) => void;
+  propertyTypes: string[];
+  addPropertyClick: (property_type: string) => void;
+}
+
+export function getSelectOptions(options: string[], propertyTypes: string[] | null) {
+  let selectOptions = options.map((option) => ({ value: option, label: option }));
+
+  if (propertyTypes && propertyTypes.length > 0) {
+    selectOptions = selectOptions.concat(
+      propertyTypes.map((option) => ({
+        value: option,
+        label: `+ Add new '${option === 'llm' ? 'LLM' : capitalizeFirstLetter(option)}'`,
+      })) as any
+    );
+  }
+
+  return selectOptions;
 }
 
 export const SelectInput: React.FC<SelectInputProps> = ({
@@ -22,22 +34,23 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   value,
   options,
   onChange,
-  missingDependencies,
-  onMissingDependencyClick,
+  propertyTypes,
+  addPropertyClick,
 }) => {
   const [selectedOption, setSelectedOption] = useState(value);
-  let selectOptions = options.map((option) => ({ value: option, label: option }));
-  selectOptions = selectOptions.concat([{ value: 'Add new', label: 'Add new' }]);
-
+  let selectOptions = getSelectOptions(options, propertyTypes);
   useEffect(() => {
     const defaultValue = value === '' ? selectOptions[0].value : value;
     setSelectedOption(defaultValue);
-  }, [value]);
+  }, [value, options]);
 
   const handleTypeSelect = (e: any) => {
     const selectedOption = e.value;
     setSelectedOption(selectedOption);
-    // onChange(selectedOption);
+    if (_.includes(propertyTypes, selectedOption)) {
+      addPropertyClick(selectedOption);
+    }
+    onChange(selectedOption);
   };
 
   return (
@@ -51,6 +64,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
           return option.value === selectedOption;
         })}
         isSearchable={false}
+        isClearable={true}
       />
     </div>
   );

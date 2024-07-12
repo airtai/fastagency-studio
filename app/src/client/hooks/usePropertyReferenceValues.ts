@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import _ from 'lodash';
 import {
-  matchPropertiesAndIdentifyUnmatchedRefs,
+  matchPropertiesToRefs,
   constructHTMLSchema,
   getAllRefs,
   getMissingDependencyType,
@@ -34,24 +34,14 @@ export const usePropertyReferenceValues = ({
       if (propertyHasRef || propertyHasAnyOf) {
         const title: string = property.hasOwnProperty('title') ? property.title || '' : key;
         const propertyRefs = propertyHasRef ? [property['$ref']] : getAllRefs(property);
-        const [matchedProperties, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(
-          allUserProperties,
-          propertyRefs
-        );
+        const matchedProperties = matchPropertiesToRefs(allUserProperties, propertyRefs);
 
         const selectedModelRefValues = _.get(updateExistingModel, key, null);
         const htmlSchema = constructHTMLSchema(matchedProperties, title, property, selectedModelRefValues);
         const propertyTypes = getPropertyTypes(propertyRefs, jsonSchema.$defs);
-        const missingDependencyList = unMatchedRefs.map((item) => ({
-          label: htmlSchema.title,
-          model_type: item,
-          property_type: getMissingDependencyType(jsonSchema.$defs, item),
-        }));
-
         newRefValues[key] = {
           htmlSchema: htmlSchema,
           matchedProperties: matchedProperties,
-          // missingDependency: missingDependencyList,
           propertyTypes: propertyTypes,
         };
       }

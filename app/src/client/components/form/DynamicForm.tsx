@@ -3,7 +3,6 @@ import _ from 'lodash';
 import { TextInput } from './TextInput';
 import { SelectInput } from './SelectInput';
 import { TextArea } from './TextArea';
-import { NumericStepperWithClearButton } from './NumericStepperWithClearButton';
 import { SECRETS_TO_MASK } from '../../utils/constants';
 import { JsonSchema } from '../../interfaces/BuildPageInterfaces';
 import { FormData } from '../../hooks/useForm';
@@ -55,30 +54,18 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             propertyTypes = refValues[key].propertyTypes;
           }
         }
-        // return formElementsObject?.enum?.length === 1 ? null : (
         return (
           <div key={key} className='w-full mt-2'>
             <label htmlFor={key}>{formElementsObject.title}</label>
             {formElementsObject.enum ? (
-              formElementsObject.type === 'numericStepperWithClearButton' ? (
-                <div>
-                  <NumericStepperWithClearButton
-                    id={key}
-                    value={inputValue}
-                    formElementObject={formElementsObject}
-                    onChange={(value) => handleChange(key, value)}
-                  />
-                </div>
-              ) : (
-                <SelectInput
-                  id={key}
-                  value={inputValue}
-                  options={formElementsObject.enum}
-                  onChange={(value) => handleChange(key, value)}
-                  propertyTypes={propertyTypes}
-                  addPropertyClick={addPropertyClick}
-                />
-              )
+              <SelectInput
+                id={key}
+                value={inputValue}
+                options={formElementsObject.enum}
+                onChange={(value) => handleChange(key, value)}
+                propertyTypes={propertyTypes}
+                addPropertyClick={addPropertyClick}
+              />
             ) : key === 'system_message' ? (
               <TextArea
                 id={key}

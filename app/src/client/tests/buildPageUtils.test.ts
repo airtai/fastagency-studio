@@ -9,7 +9,7 @@ import {
   constructHTMLSchema,
   getFormSubmitValues,
   getKeyType,
-  matchPropertiesAndIdentifyUnmatchedRefs,
+  matchPropertiesToRefs,
   removeRefSuffix,
   getAllRefs,
   // checkForDependency,
@@ -1420,7 +1420,7 @@ describe('buildPageUtils', () => {
       expect(actual).toEqual(expected);
     });
   });
-  describe('matchPropertiesAndIdentifyUnmatchedRefs', () => {
+  describe('matchPropertiesToRefs', () => {
     const allUserProperties = [
       {
         uuid: 'uuid1',
@@ -1453,49 +1453,42 @@ describe('buildPageUtils', () => {
 
     test('No matches with null', () => {
       const propertyRefs = ['#/$defs/TogetherAIRef', '#/$defs/CohereLMRef', 'null'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, propertyRefs);
       expect(matchedRefs).toEqual([]);
-      expect(unMatchedRefs).toEqual(['TogetherAI', 'CohereLM']);
     });
 
     test('No matches', () => {
       const propertyRefs = ['#/$defs/TogetherAIRef', '#/$defs/CohereLMRef'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, propertyRefs);
       expect(matchedRefs).toEqual([]);
-      expect(unMatchedRefs).toEqual(['TogetherAI', 'CohereLM']);
     });
 
     test('All matches', () => {
       const propertyRefs = ['#/$defs/AnthropicAPIRef', '#/$defs/OpenAIRef', '#/$defs/AzureOAIRef'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, propertyRefs);
       expect(matchedRefs).toEqual(allUserProperties);
-      expect(unMatchedRefs).toEqual([]);
     });
 
     test('Some matches, some unmatched', () => {
       const propertyRefs = ['#/$defs/AnthropicAPIRef', '#/$defs/OpenAIRef', '#/$defs/TogetherAIRef'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, propertyRefs);
       expect(matchedRefs).toEqual([allUserProperties[0], allUserProperties[1]]);
-      expect(unMatchedRefs).toEqual(['TogetherAI']);
     });
 
     test('Empty allUserProperties', () => {
       const propertyRefs = ['#/$defs/AnthropicAPIRef', '#/$defs/OpenAIRef'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs([], propertyRefs);
+      const matchedRefs = matchPropertiesToRefs([], propertyRefs);
       expect(matchedRefs).toEqual([]);
-      expect(unMatchedRefs).toEqual(['AnthropicAPI', 'OpenAI']);
     });
 
     test('Empty propertyRefs', () => {
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, []);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, []);
       expect(matchedRefs).toEqual([]);
-      expect(unMatchedRefs).toEqual([]);
     });
     test('Duplicate refs', () => {
       const propertyRefs = ['#/$defs/AnthropicAPIRef', '#/$defs/OpenAIRef', '#/$defs/AnthropicAPIRef'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, propertyRefs);
       expect(matchedRefs).toEqual([allUserProperties[0], allUserProperties[1]]);
-      expect(unMatchedRefs).toEqual([]);
     });
 
     test('Multiple user properties', () => {
@@ -1529,9 +1522,8 @@ describe('buildPageUtils', () => {
         },
       ];
       const propertyRefs = ['#/$defs/AzureOAIAPIKeyRef'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, propertyRefs);
       expect(matchedRefs.length).toEqual(2);
-      expect(unMatchedRefs).toEqual([]);
     });
   });
   describe('getAllRefs', () => {

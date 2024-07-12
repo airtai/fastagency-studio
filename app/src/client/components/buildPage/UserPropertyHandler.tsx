@@ -41,6 +41,12 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
     setShowAddModel(false);
   }, [togglePropertyList]);
 
+  useEffect(() => {
+    if (data && data.schemas && data.schemas[0].name) {
+      setSelectedModel(data.schemas[0].name);
+    }
+  }, [data]);
+
   const updateModel = (model_type: string) => {
     setSelectedModel(model_type);
     setShowAddModel(true);
@@ -139,6 +145,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const addPropertyClick = (property_type: string) => {
     setShowAddModel(false);
     setUpdateExistingModel(null);
+    handleClick();
     history.push(`/build/${property_type}`);
   };
 

@@ -25,7 +25,8 @@ export function getSelectOptions(options: string[], propertyTypes: string[] | nu
     selectOptions = selectOptions.concat(
       propertyTypes.map((option) => ({
         value: option,
-        label: `+ Add new '${option === 'llm' ? 'LLM' : capitalizeFirstLetter(option)}'`,
+        label: `Add new '${option === 'llm' ? 'LLM' : capitalizeFirstLetter(option)}'`,
+        isNewOption: true, // Flag to identify new property options
       })) as any
     );
   }
@@ -61,6 +62,25 @@ export const SelectInput: React.FC<SelectInputProps> = ({
     onChange(selectedOption);
   };
 
+  const customStyles = {
+    control: (baseStyles: any, state: any) => ({
+      ...baseStyles,
+      borderColor: '#003257',
+    }),
+    option: (styles: any, { data }: any) => {
+      return {
+        ...styles,
+        fontWeight: data.isNewOption ? 'bold' : 'normal',
+        '::before': data.isNewOption
+          ? {
+              content: '"➕"',
+              marginRight: '5px',
+            }
+          : {},
+      };
+    },
+  };
+
   return (
     <div className=''>
       <Select
@@ -73,12 +93,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
         })}
         isSearchable={false}
         isClearable={true}
-        styles={{
-          control: (baseStyles, state) => ({
-            ...baseStyles,
-            borderColor: '#003257',
-          }),
-        }}
+        styles={customStyles}
       />
     </div>
   );

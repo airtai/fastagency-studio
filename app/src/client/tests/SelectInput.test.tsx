@@ -21,7 +21,7 @@ describe('getSelectOptions', () => {
 
     expect(selectOptions).toEqual([
       { value: 'None', label: 'None' },
-      { value: 'secret', label: "+ Add new 'Secret'" },
+      { value: 'secret', label: "Add new 'Secret'", isNewOption: true },
     ]);
   });
 
@@ -31,6 +31,6 @@ describe('getSelectOptions', () => {
     const isRequired = true;
     const selectOptions = getSelectOptions(options, propertyTypes, isRequired);
 
-    expect(selectOptions).toEqual([{ value: 'secret', label: "+ Add new 'Secret'" }]);
+    expect(selectOptions).toEqual([{ value: 'secret', label: "Add new 'Secret'", isNewOption: true }]);
   });
 });

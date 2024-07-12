@@ -49,7 +49,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
     if (options.length === 1 && options[0] === 'None' && isRequired) {
       return;
     }
-    const defaultValue = value === '' ? selectOptions[0].value : value;
+    const defaultValue = value === '' && selectOptions.length > 0 ? selectOptions[0].value : value;
     setSelectedOption(defaultValue);
   }, [value, options]);
 

@@ -9,7 +9,7 @@ export type Auth = {
 
 const prisma = new PrismaClient();
 
-const wasp_prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } })
+// const wasp_prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } })
 
 
 export async function fetchAuthToken(deployment_uuid: string) {
@@ -22,22 +22,11 @@ export async function fetchAuthToken(deployment_uuid: string) {
   }
 }
 
-export async function checkChatUuid(chat_uuid: string) {
-  try {
-    const result = await wasp_prisma.$queryRaw`SELECT * FROM "Chat" WHERE "uuid" = ${chat_uuid} LIMIT 1`;
-    const chats = Array.isArray(result) ? result : [result];
-    return chats.length > 0 ? chats[0] : null; // Return the first chat if found, else return null
-  } catch (error) {
-    console.error('Error fetching Chat by chat_uuid:', error);
-    return null; // Return null on error
-  }
-}
-
 export async function verifyAuthTokens(auth_pass: string, authTokens: AuthToken[]) {
   for (const authToken of authTokens) {
     // check if password is correct
     if (await verifyAuthToken(auth_pass, authToken.auth_token)) {
-      return true;
+      return authToken;
     }
 
   }

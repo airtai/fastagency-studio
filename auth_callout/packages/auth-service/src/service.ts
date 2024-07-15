@@ -1,7 +1,7 @@
 import * as Nats from "nats";
 import * as Jwt from "nats-jwt";
 import * as Nkeys from "nkeys.js";
-import { Auth, checkChatUuid, fetchAuthToken, verifyAuthTokens } from "./data";
+import { Auth, fetchAuthToken, verifyAuthTokens } from "./data";
 import { AuthorizationRequestClaims } from "./types";
 
 run();
@@ -89,20 +89,15 @@ async function msgHandler(req: Nats.Msg, enc: TextEncoder, dec: TextDecoder, iss
     return respondMsg(req, userNkey, serverId, "", "user " + auth_user + " not found");
   }
 
-  const isPasswordCorrect = await verifyAuthTokens(auth_pass, authTokens);
-  if (!isPasswordCorrect) {
+  const authToken = await verifyAuthTokens(auth_pass, authTokens);
+  if (!authToken) {
     return respondMsg(req, userNkey, serverId, "", "invalid credentials");
-  }
-  // ToDo: Check deployment chat_uuid does not exist in main node database
-  const chat = await checkChatUuid(chat_uuid);
-  if (chat) {
-    return respondMsg(req, userNkey, serverId, "", "chat " + chat_uuid + " is not part of deployment");
   }
 
   const grantedRooms = [
     "chat.server.initiate_chat",
-    `chat.client.messages.${chat_uuid}`,
-    `chat.server.messages.${chat_uuid}`,
+    `chat.client.messages.${authToken.user_uuid}.${authToken.deployment_uuid}.${chat_uuid}`,
+    `chat.server.messages.${authToken.user_uuid}.${authToken.deployment_uuid}.${chat_uuid}`,
     "_INBOX.>",
     "$JS.API.STREAM.NAMES",
     // `$JS.API.STREAM.NAMES.FastAgency`,

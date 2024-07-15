@@ -23,10 +23,10 @@ stream = JStream(
     subjects=[
         # starts new conversation
         "chat.server.initiate_chat",
-        # server requests input from client
-        "chat.client.messages.*",
-        # server prints message to client
-        "chat.server.messages.*",
+        # server requests input from client; chat.client.messages.<user_uuid>.<deployment_uuid>.<chat_uuid>
+        "chat.client.messages.*.*.*",
+        # server prints message to client; chat.server.messages.<user_uuid>.<deployment_uuid>.<chat_uuid>
+        "chat.server.messages.*.*.*",
         # "function.server.call",
         # "function.client.call.*",
         # "code.server.execute",

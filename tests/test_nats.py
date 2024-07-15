@@ -118,13 +118,16 @@ class TestAutogen:
         actual = []
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(f"chat.client.messages.{thread_id}", stream=stream)
+        @broker.subscriber(
+            f"chat.client.messages.{user_id}.playground.{thread_id}", stream=stream
+        )
         async def client_input_handler(msg: ServerResponseModel) -> None:
             if msg.type == "input":
                 response = InputResponseModel(msg=input(msg.data.prompt))  # type: ignore [union-attr]
 
                 await broker.publish(
-                    response, subject=f"chat.server.messages.{thread_id}"
+                    response,
+                    subject=f"chat.server.messages.{user_id}.playground.{thread_id}",
                 )
             elif msg.type == "print":
                 actual.append(msg.data.model_dump())
@@ -266,13 +269,16 @@ class TestAutogen:
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
         error_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(f"chat.client.messages.{thread_id}", stream=stream)
+        @broker.subscriber(
+            f"chat.client.messages.{user_id}.playground.{thread_id}", stream=stream
+        )
         async def client_input_handler(msg: ServerResponseModel) -> None:
             if msg.type == "input":
                 response = InputResponseModel(msg=input(msg.data.prompt))  # type: ignore [union-attr]
 
                 await broker.publish(
-                    response, subject=f"chat.server.messages.{thread_id}"
+                    response,
+                    subject=f"chat.server.messages.{user_id}.playground.{thread_id}",
                 )
             elif msg.type == "print":
                 actual.append(msg.data.model_dump())
@@ -432,13 +438,16 @@ class TestAutogen:
         actual = []
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(f"chat.client.messages.{thread_id}", stream=stream)
+        @broker.subscriber(
+            f"chat.client.messages.{user_uuid}.playground.{thread_id}", stream=stream
+        )
         async def client_input_handler(msg: ServerResponseModel) -> None:
             if msg.type == "input":
                 response = InputResponseModel(msg=input(msg.data.prompt))  # type: ignore [union-attr]
 
                 await broker.publish(
-                    response, subject=f"chat.server.messages.{thread_id}"
+                    response,
+                    subject=f"chat.server.messages.{user_uuid}.playground.{thread_id}",
                 )
             elif msg.type == "print":
                 actual.append(msg.data.model_dump())

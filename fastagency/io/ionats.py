@@ -52,21 +52,38 @@ class ServerResponseModel(BaseModel):
 
 
 class IONats(IOStream):  # type: ignore[misc]
-    def __init__(self, thread_id: str) -> None:
+    def __init__(
+        self, user_id: str, thread_id: str, deployment_id: Optional[str] = "playground"
+    ) -> None:
         """Initialize the IO class."""
         self.queue: Queue = Queue()  # type: ignore[type-arg]
         self._publisher = broker.publish
+        self._user_id = user_id
         self._thread_id = thread_id
+        self._deployment_id = deployment_id
         self.subscriber: "AsyncAPISubscriber"
 
-        self._input_request_subject = f"chat.client.messages.{thread_id}"
-        self._input_receive_subject = f"chat.server.messages.{thread_id}"
+        self._input_request_subject = (
+            f"chat.client.messages.{user_id}.{deployment_id}.{thread_id}"
+        )
+        self._input_receive_subject = (
+            f"chat.server.messages.{user_id}.{deployment_id}.{thread_id}"
+        )
 
     @classmethod
-    async def create(cls, thread_id: Union[str, UUID]) -> "IONats":
+    async def create(
+        cls,
+        user_id: Union[str, UUID],
+        thread_id: Union[str, UUID],
+        deployment_id: Optional[Union[str, UUID]] = "playground",
+    ) -> "IONats":
         if isinstance(thread_id, UUID):
             thread_id = str(thread_id)
-        self = cls(thread_id)
+        if isinstance(user_id, UUID):
+            user_id = str(user_id)
+        if isinstance(deployment_id, UUID):
+            deployment_id = str(deployment_id)
+        self = cls(user_id=user_id, thread_id=thread_id, deployment_id=deployment_id)
 
         # dynamically subscribe to the chat server
         self.subscriber = broker.subscriber(
@@ -144,6 +161,7 @@ class InitiateModel(BaseModel):
     user_id: UUID
     thread_id: UUID
     team_id: UUID
+    deployment_id: Optional[Union[str, UUID]] = "playground"
     msg: str
 
 
@@ -182,7 +200,11 @@ async def initiate_handler(
     )
 
     try:
-        iostream = await IONats.create(body.thread_id)
+        iostream = await IONats.create(
+            user_id=body.user_id,
+            thread_id=body.thread_id,
+            deployment_id=body.deployment_id,
+        )
 
         def start_chat() -> Optional[List[Dict[str, Any]]]:  # type: ignore [return]
             try:

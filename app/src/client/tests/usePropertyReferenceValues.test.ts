@@ -207,9 +207,10 @@ describe('usePropertyReferenceValues', () => {
 
     const expected = {
       api_key: {
-        htmlSchema: { description: '', enum: ['None'], title: 'Api Key', type: 'string' },
+        htmlSchema: { description: '', enum: ['None'], title: 'Api Key' },
         matchedProperties: [],
-        missingDependency: [{ property_type: 'secret', label: 'Api Key', model_type: 'AnthropicAPIKey' }],
+        propertyTypes: ['secret'],
+        isRequired: true,
       },
     };
     // Check the structure of the returned refValues
@@ -351,7 +352,6 @@ describe('usePropertyReferenceValues', () => {
       description: '',
       enum: ['Azure Key'],
       title: 'Api Key',
-      type: 'string',
     });
 
     // Check missingDependency
@@ -371,7 +371,7 @@ describe('usePropertyReferenceValues', () => {
     ]);
 
     // Check missingDependency
-    expect(apiKeyResult.missingDependency).toEqual([]);
+    expect(apiKeyResult.propertyTypes).toEqual(['secret']);
 
     // Additional checks
     expect(Object.keys(result.current)).toHaveLength(1); // Only api_key should be processed
@@ -476,16 +476,13 @@ describe('usePropertyReferenceValues', () => {
       description: '',
       enum: ['None'],
       title: 'OpenAPI Auth',
-      type: 'string',
     });
 
     // Check missingDependency
     expect(openapiAuthResult.matchedProperties).toEqual([]);
 
     // Check missingDependency
-    expect(openapiAuthResult.missingDependency).toEqual([
-      { property_type: 'secret', label: 'OpenAPI Auth', model_type: 'OpenAPIAuth' },
-    ]);
+    expect(openapiAuthResult.propertyTypes).toEqual(['secret']);
 
     // Additional checks
     // expect(Object.keys(result.current)).toHaveLength(1); // Only openapi_auth should be processed
@@ -591,7 +588,6 @@ describe('usePropertyReferenceValues', () => {
       description: '',
       enum: ['None', 'OpenAPIAuth'],
       title: 'OpenAPI Auth',
-      type: 'string',
     });
 
     // Check matchedProperties
@@ -612,7 +608,7 @@ describe('usePropertyReferenceValues', () => {
     ]);
 
     // Check missingDependency
-    expect(openapiAuthResult.missingDependency).toEqual([]);
+    expect(openapiAuthResult.propertyTypes).toEqual(['secret']);
 
     // Additional checks
     expect(Object.keys(result.current)).toHaveLength(1); // Only openapi_auth should be processed

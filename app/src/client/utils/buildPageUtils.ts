@@ -63,14 +63,12 @@ export const constructHTMLSchema = (
       ['integer', 'null']
     );
 
-  const returnType = isIntegerOrNull ? 'numericStepperWithClearButton' : 'string';
   const description = isIntegerOrNull ? property.description : '';
   return {
     default: defaultValue,
     description: description,
     enum: properties,
     title: capitalizeTitle,
-    type: returnType,
   };
 };
 
@@ -122,24 +120,20 @@ export const removeRefSuffix = (ref: string): string => {
   return refName;
 };
 
-export function matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties: any[], ref: string[]): [any[], string[]] {
+export function matchPropertiesToRefs(allUserProperties: any[], ref: string[]): any[] {
   const removeRefSuffix = (ref: string): string => ref.replace('#/$defs/', '').replace('Ref', '');
 
   const refSet = new Set(ref.map(removeRefSuffix));
   const matchedRefs: any[] = [];
-  const unMatchedRefs: string[] = [];
 
   refSet.forEach((refName) => {
     const matchedProperties = allUserProperties.filter((property) => property.model_name === refName);
     if (matchedProperties.length > 0) {
       matchedRefs.push(...matchedProperties);
-    } else {
-      unMatchedRefs.push(refName);
     }
   });
 
-  _.remove(unMatchedRefs, (n: string) => n === 'null');
-  return [matchedRefs, unMatchedRefs];
+  return matchedRefs;
 }
 
 export function getAllRefs(property: any): any[] {
@@ -239,4 +233,20 @@ export function getMissingDependencyType(
   }
 
   return jsonDeps[fullRefName].properties.type['const'] || null;
+}
+
+export function getPropertyTypes(
+  propertyRefs: string[],
+  jsonDeps: { [key: string]: SchemaDefinition } | undefined
+): string[] {
+  if (!jsonDeps) {
+    return [];
+  }
+  return _.uniq(
+    propertyRefs
+      .map((ref) => _.get(jsonDeps, ref.replace('#/$defs/', '')))
+      .filter(Boolean)
+      .map((schema) => _.get(schema, 'properties.type.const'))
+      .filter(Boolean)
+  );
 }

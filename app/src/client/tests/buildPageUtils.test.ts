@@ -9,7 +9,7 @@ import {
   constructHTMLSchema,
   getFormSubmitValues,
   getKeyType,
-  matchPropertiesAndIdentifyUnmatchedRefs,
+  matchPropertiesToRefs,
   removeRefSuffix,
   getAllRefs,
   // checkForDependency,
@@ -19,6 +19,7 @@ import {
   getSecretUpdateValidationURL,
   formatApiKey,
   getMissingDependencyType,
+  getPropertyTypes,
 } from '../utils/buildPageUtils';
 import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
 
@@ -607,7 +608,6 @@ describe('buildPageUtils', () => {
         description: '',
         enum: ['None', 'production azure key', 'production bing key', 'production openai key'],
         title: 'Api Key',
-        type: 'string',
       };
       const property = {
         anyOf: [
@@ -680,7 +680,6 @@ describe('buildPageUtils', () => {
         description: '',
         enum: ['production bing key', 'production azure key', 'production openai key'],
         title: 'Api Key',
-        type: 'string',
       };
       const property = {
         anyOf: [
@@ -734,7 +733,6 @@ describe('buildPageUtils', () => {
         description: '',
         enum: ['production azure key', 'Azure staging key'],
         title: 'Api Key',
-        type: 'string',
       };
       const property = {
         anyOf: [
@@ -798,7 +796,6 @@ describe('buildPageUtils', () => {
         description: '',
         enum: ['production azure key', 'production bing key', 'production openai key'],
         title: 'Api Key',
-        type: 'string',
       };
       const property = {
         anyOf: [
@@ -825,7 +822,6 @@ describe('buildPageUtils', () => {
         description: 'The maximum number of consecutive auto-replies the agent can make',
         enum: ['None'],
         title: 'Max Consecutive Auto Reply',
-        type: 'numericStepperWithClearButton',
       };
       const property = {
         anyOf: [
@@ -850,7 +846,6 @@ describe('buildPageUtils', () => {
         description: 'The maximum number of consecutive auto-replies the agent can make',
         enum: ['None'],
         title: 'Max Consecutive Auto Reply',
-        type: 'numericStepperWithClearButton',
       };
       const property = {
         anyOf: [
@@ -1419,7 +1414,7 @@ describe('buildPageUtils', () => {
       expect(actual).toEqual(expected);
     });
   });
-  describe('matchPropertiesAndIdentifyUnmatchedRefs', () => {
+  describe('matchPropertiesToRefs', () => {
     const allUserProperties = [
       {
         uuid: 'uuid1',
@@ -1452,49 +1447,42 @@ describe('buildPageUtils', () => {
 
     test('No matches with null', () => {
       const propertyRefs = ['#/$defs/TogetherAIRef', '#/$defs/CohereLMRef', 'null'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, propertyRefs);
       expect(matchedRefs).toEqual([]);
-      expect(unMatchedRefs).toEqual(['TogetherAI', 'CohereLM']);
     });
 
     test('No matches', () => {
       const propertyRefs = ['#/$defs/TogetherAIRef', '#/$defs/CohereLMRef'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, propertyRefs);
       expect(matchedRefs).toEqual([]);
-      expect(unMatchedRefs).toEqual(['TogetherAI', 'CohereLM']);
     });
 
     test('All matches', () => {
       const propertyRefs = ['#/$defs/AnthropicAPIRef', '#/$defs/OpenAIRef', '#/$defs/AzureOAIRef'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, propertyRefs);
       expect(matchedRefs).toEqual(allUserProperties);
-      expect(unMatchedRefs).toEqual([]);
     });
 
     test('Some matches, some unmatched', () => {
       const propertyRefs = ['#/$defs/AnthropicAPIRef', '#/$defs/OpenAIRef', '#/$defs/TogetherAIRef'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, propertyRefs);
       expect(matchedRefs).toEqual([allUserProperties[0], allUserProperties[1]]);
-      expect(unMatchedRefs).toEqual(['TogetherAI']);
     });
 
     test('Empty allUserProperties', () => {
       const propertyRefs = ['#/$defs/AnthropicAPIRef', '#/$defs/OpenAIRef'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs([], propertyRefs);
+      const matchedRefs = matchPropertiesToRefs([], propertyRefs);
       expect(matchedRefs).toEqual([]);
-      expect(unMatchedRefs).toEqual(['AnthropicAPI', 'OpenAI']);
     });
 
     test('Empty propertyRefs', () => {
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, []);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, []);
       expect(matchedRefs).toEqual([]);
-      expect(unMatchedRefs).toEqual([]);
     });
     test('Duplicate refs', () => {
       const propertyRefs = ['#/$defs/AnthropicAPIRef', '#/$defs/OpenAIRef', '#/$defs/AnthropicAPIRef'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, propertyRefs);
       expect(matchedRefs).toEqual([allUserProperties[0], allUserProperties[1]]);
-      expect(unMatchedRefs).toEqual([]);
     });
 
     test('Multiple user properties', () => {
@@ -1528,9 +1516,8 @@ describe('buildPageUtils', () => {
         },
       ];
       const propertyRefs = ['#/$defs/AzureOAIAPIKeyRef'];
-      const [matchedRefs, unMatchedRefs] = matchPropertiesAndIdentifyUnmatchedRefs(allUserProperties, propertyRefs);
+      const matchedRefs = matchPropertiesToRefs(allUserProperties, propertyRefs);
       expect(matchedRefs.length).toEqual(2);
-      expect(unMatchedRefs).toEqual([]);
     });
   });
   describe('getAllRefs', () => {
@@ -1894,6 +1881,290 @@ describe('buildPageUtils', () => {
       const allRefList = 'AnthropicAPIKey';
       const expected = 'secret';
       const actual = getMissingDependencyType(jsonDeps, allRefList);
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('getPropertyTypes', () => {
+    test('getPropertyTypes - with properties of same types', () => {
+      const propertyRefs = [
+        '#/$defs/AnthropicRef',
+        '#/$defs/AzureOAIRef',
+        '#/$defs/OpenAIRef',
+        '#/$defs/TogetherAIRef',
+      ];
+      const jsonDeps = {
+        AnthropicRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'Anthropic',
+              default: 'Anthropic',
+              description: 'The name of the data',
+              enum: ['Anthropic'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'AnthropicRef',
+          type: 'object',
+        },
+        AzureOAIRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'AzureOAI',
+              default: 'AzureOAI',
+              description: 'The name of the data',
+              enum: ['AzureOAI'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'AzureOAIRef',
+          type: 'object',
+        },
+        OpenAIRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'OpenAI',
+              default: 'OpenAI',
+              description: 'The name of the data',
+              enum: ['OpenAI'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'OpenAIRef',
+          type: 'object',
+        },
+        TogetherAIRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'TogetherAI',
+              default: 'TogetherAI',
+              description: 'The name of the data',
+              enum: ['TogetherAI'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'TogetherAIRef',
+          type: 'object',
+        },
+        ToolboxRef: {
+          properties: {
+            type: {
+              const: 'toolbox',
+              default: 'toolbox',
+              description: 'The name of the type of the data',
+              enum: ['toolbox'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'Toolbox',
+              default: 'Toolbox',
+              description: 'The name of the data',
+              enum: ['Toolbox'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'ToolboxRef',
+          type: 'object',
+        },
+      };
+      const expected = ['llm'];
+      const actual = getPropertyTypes(propertyRefs, jsonDeps);
+      expect(actual).toEqual(expected);
+    });
+
+    test('getPropertyTypes - with properties of different types', () => {
+      const propertyRefs = [
+        '#/$defs/AnthropicRef',
+        '#/$defs/AzureOAIRef',
+        '#/$defs/OpenAIRef',
+        '#/$defs/TogetherAIRef',
+        '#/$defs/ToolboxRef',
+      ];
+      const jsonDeps = {
+        AnthropicRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'Anthropic',
+              default: 'Anthropic',
+              description: 'The name of the data',
+              enum: ['Anthropic'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'AnthropicRef',
+          type: 'object',
+        },
+        AzureOAIRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'AzureOAI',
+              default: 'AzureOAI',
+              description: 'The name of the data',
+              enum: ['AzureOAI'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'AzureOAIRef',
+          type: 'object',
+        },
+        OpenAIRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'OpenAI',
+              default: 'OpenAI',
+              description: 'The name of the data',
+              enum: ['OpenAI'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'OpenAIRef',
+          type: 'object',
+        },
+        TogetherAIRef: {
+          properties: {
+            type: {
+              const: 'llm',
+              default: 'llm',
+              description: 'The name of the type of the data',
+              enum: ['llm'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'TogetherAI',
+              default: 'TogetherAI',
+              description: 'The name of the data',
+              enum: ['TogetherAI'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'TogetherAIRef',
+          type: 'object',
+        },
+        ToolboxRef: {
+          properties: {
+            type: {
+              const: 'toolbox',
+              default: 'toolbox',
+              description: 'The name of the type of the data',
+              enum: ['toolbox'],
+              title: 'Type',
+              type: 'string',
+            },
+            name: {
+              const: 'Toolbox',
+              default: 'Toolbox',
+              description: 'The name of the data',
+              enum: ['Toolbox'],
+              title: 'Name',
+              type: 'string',
+            },
+            uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+          },
+          required: ['uuid'],
+          title: 'ToolboxRef',
+          type: 'object',
+        },
+      };
+      const expected = ['llm', 'toolbox'];
+      const actual = getPropertyTypes(propertyRefs, jsonDeps);
+      expect(actual).toEqual(expected);
+    });
+    test('getPropertyTypes - with properties of different types', () => {
+      const propertyRefs = [
+        '#/$defs/AnthropicRef',
+        '#/$defs/AzureOAIRef',
+        '#/$defs/OpenAIRef',
+        '#/$defs/TogetherAIRef',
+        '#/$defs/ToolboxRef',
+      ];
+      const jsonDeps = undefined;
+      const expected: string[] = [];
+      const actual = getPropertyTypes(propertyRefs, jsonDeps);
       expect(actual).toEqual(expected);
     });
   });

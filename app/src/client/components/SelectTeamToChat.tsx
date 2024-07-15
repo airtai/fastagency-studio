@@ -8,7 +8,7 @@ import { CreateNewChatProps } from '../interfaces/PlaygroundPageInterface';
 import CustomBreadcrumb from './CustomBreadcrumb';
 import NotificationBox from './NotificationBox';
 import { SelectInput } from './form/SelectInput';
-import { TextInput } from './form/TextInput';
+import TextareaAutosize from 'react-textarea-autosize';
 import { getModels, createNewChat, useQuery } from 'wasp/client/operations';
 
 const SelectTeamToChat = ({ userTeams }: any) => {
@@ -23,8 +23,8 @@ const SelectTeamToChat = ({ userTeams }: any) => {
     setTeam(value);
   };
 
-  const handleMessageChange = (value: string) => {
-    setMessage(value);
+  const handleMessageChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(event.target.value);
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -46,6 +46,8 @@ const SelectTeamToChat = ({ userTeams }: any) => {
       }
     }
   };
+
+  const debouncedHandleSubmit = _.debounce(handleSubmit, 1000);
 
   useEffect(() => {
     if (userTeams && userTeams.length > 0) {
@@ -72,8 +74,9 @@ const SelectTeamToChat = ({ userTeams }: any) => {
               value={team}
               options={_.map(allTeams, (team: SelectedModelSchema) => team.json_str.name)}
               onChange={handleTeamChange}
-              missingDependencies={[]}
-              onMissingDependencyClick={() => {}}
+              propertyTypes={[]}
+              addPropertyClick={() => {}}
+              isRequired={false}
             />
             {formError && (
               <div className='mb-2' style={{ color: 'red' }}>
@@ -83,12 +86,24 @@ const SelectTeamToChat = ({ userTeams }: any) => {
             <label className='text-airt-primary inline-block' htmlFor='setSystemMessage'>
               Message
             </label>
-            <TextInput
-              type='string'
+            <TextareaAutosize
+              minRows={4}
+              maxRows={8}
+              style={{
+                lineHeight: 2,
+                resize: 'none',
+              }}
               id='setSystemMessage'
-              value={message}
+              className='block rounded w-full h-12 text-sm text-airt-primary bg-airt-font-base focus:outline-none focus:ring-0 focus:border-captn-light-blue'
               placeholder=''
+              value={message}
               onChange={handleMessageChange}
+              onKeyDown={(e: any) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  debouncedHandleSubmit(e as any);
+                }
+              }}
             />
             {formError && (
               <div className='mb-2' style={{ color: 'red' }}>

@@ -41,6 +41,12 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
     setShowAddModel(false);
   }, [togglePropertyList]);
 
+  useEffect(() => {
+    if (data && data.schemas && data.schemas[0].name) {
+      setSelectedModel(data.schemas[0].name);
+    }
+  }, [data]);
+
   const updateModel = (model_type: string) => {
     setSelectedModel(model_type);
     setShowAddModel(true);
@@ -136,10 +142,10 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
     setNotificationErrorMessage(null);
   };
 
-  const onMissingDependencyClick = (event: React.FormEvent, property_type: string, model_type: string) => {
-    onCancelCallback(event);
+  const addPropertyClick = (property_type: string) => {
+    setShowAddModel(false);
     setUpdateExistingModel(null);
-    updateModel(model_type);
+    handleClick();
     history.push(`/build/${property_type}`);
   };
 
@@ -174,7 +180,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
                     onSuccessCallback={onSuccessCallback}
                     onCancelCallback={onCancelCallback}
                     onDeleteCallback={onDeleteCallback}
-                    onMissingDependencyClick={onMissingDependencyClick}
+                    addPropertyClick={addPropertyClick}
                   />
                 )}
               </div>

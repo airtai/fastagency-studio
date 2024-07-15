@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useEscapeKeyHandler } from '../hooks/useEscapeKeyHandler';
 
 interface NotificationBoxProps {
   type: 'success' | 'error';
@@ -7,6 +8,9 @@ interface NotificationBoxProps {
 }
 
 const NotificationBox: React.FC<NotificationBoxProps> = ({ type, message, onClick }) => {
+  const notificationCancelBtnRef = useRef<HTMLButtonElement>(null);
+  useEscapeKeyHandler(notificationCancelBtnRef);
+
   const isSuccess = type === 'success';
 
   return (
@@ -20,6 +24,7 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({ type, message, onClic
             className={`py-2 px-4 rounded text-airt-font-base focus:outline-none hover:bg-opacity-85 ${
               isSuccess ? 'bg-airt-secondary' : 'bg-airt-error'
             }`}
+            ref={notificationCancelBtnRef}
           >
             OK
           </button>

@@ -199,7 +199,7 @@ export async function sendMsgToNatsServer(
 
     // Initiate chat or continue conversation
     const initiateChatSubject = `chat.server.initiate_chat`;
-    const serverInputSubject = `chat.server.messages.${threadId}`;
+    const serverInputSubject = `chat.server.messages.${userUUID}.playground.${threadId}`;
     const subject = shouldCallInitiateChat ? initiateChatSubject : serverInputSubject;
 
     NatsConnectionManager.clearConversationHistory(threadId);
@@ -218,7 +218,7 @@ export async function sendMsgToNatsServer(
     NatsConnectionManager.setTimeout(threadId, timeoutCallback, 45000);
 
     if (shouldCallInitiateChat) {
-      const clientInputSubject = `chat.client.messages.${threadId}`;
+      const clientInputSubject = `chat.client.messages.${userUUID}.playground.${threadId}`;
       await setupSubscription(js, jc, clientInputSubject, threadId, socket, context, currentChatDetails);
     } else {
       NatsConnectionManager.setConversationId(threadId, conversationId);

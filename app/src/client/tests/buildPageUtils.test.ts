@@ -20,8 +20,13 @@ import {
   formatApiKey,
   getMissingDependencyType,
   getPropertyTypes,
+  getPropertyName,
+  findMatchingDependency,
+  getDefaultValue,
+  isIntegerOrNull,
+  getPropertiesWithDefaultFirst,
 } from '../utils/buildPageUtils';
-import { SchemaCategory, ApiResponse } from '../interfaces/BuildPageInterfaces';
+import { SchemaCategory, ApiResponse, SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
 describe('buildPageUtils', () => {
   describe('filerOutComponentData', () => {
@@ -563,6 +568,277 @@ describe('buildPageUtils', () => {
       expect(_.isEqual(actual, expected)).toBe(true);
     });
   });
+  describe('getPropertyName', () => {
+    test('should return the name from json_str when it exists', () => {
+      const dep: SelectedModelSchema = {
+        uuid: '123',
+        user_uuid: '456',
+        type_name: 'Type',
+        model_name: 'Model',
+        json_str: {
+          name: 'TestName',
+          api_key: 'key123', // pragma: allowlist secret
+        },
+        created_at: '2023-01-01',
+        updated_at: '2023-01-02',
+      };
+
+      expect(getPropertyName(dep)).toBe('TestName');
+    });
+
+    test('should return an empty string when json_str is undefined', () => {
+      const dep: SelectedModelSchema = {
+        uuid: '123',
+        user_uuid: '456',
+        type_name: 'Type',
+        model_name: 'Model',
+        json_str: undefined as any, // Forcing undefined for test purposes
+        created_at: '2023-01-01',
+        updated_at: '2023-01-02',
+      };
+
+      expect(getPropertyName(dep)).toBe('');
+    });
+  });
+
+  describe('findMatchingDependency', () => {
+    const dependencies: SelectedModelSchema[] = [
+      {
+        uuid: '123',
+        user_uuid: '456',
+        type_name: 'Type1',
+        model_name: 'Model1',
+        json_str: { name: 'Dep1', api_key: 'key1' }, // pragma: allowlist secret
+        created_at: '2023-01-01',
+        updated_at: '2023-01-02',
+      },
+      {
+        uuid: '789',
+        user_uuid: '012',
+        type_name: 'Type2',
+        model_name: 'Model2',
+        json_str: { name: 'Dep2', api_key: 'key2' }, // pragma: allowlist secret
+        created_at: '2023-01-03',
+        updated_at: '2023-01-04',
+      },
+      {
+        uuid: '345',
+        user_uuid: '678',
+        type_name: 'Type3',
+        model_name: 'Model3',
+        json_str: { name: 'Dep3', api_key: 'key3' }, // pragma: allowlist secret
+        created_at: '2023-01-05',
+        updated_at: '2023-01-06',
+      },
+    ];
+
+    test('should return the name of the matching dependency', () => {
+      const result = findMatchingDependency(dependencies, (dep) => dep.uuid === '789');
+      expect(result).toBe('Dep2');
+    });
+
+    test('should return an empty string if no dependency matches', () => {
+      const result = findMatchingDependency(dependencies, (dep) => dep.uuid === '999');
+      expect(result).toBe('');
+    });
+
+    test('should return an empty string if the matching dependency has no json_str', () => {
+      const modifiedDependencies = [...dependencies];
+      modifiedDependencies[1] = { ...modifiedDependencies[1], json_str: undefined as any };
+      const result = findMatchingDependency(modifiedDependencies, (dep) => dep.uuid === '789');
+      expect(result).toBe('');
+    });
+
+    test('should return an empty string if the matching dependency has no json_str.name', () => {
+      const modifiedDependencies = [...dependencies];
+      modifiedDependencies[1] = {
+        ...modifiedDependencies[1],
+        json_str: { ...modifiedDependencies[1].json_str, name: undefined as any },
+      };
+      const result = findMatchingDependency(modifiedDependencies, (dep) => dep.uuid === '789');
+      expect(result).toBe('');
+    });
+
+    test('should work with different predicate conditions', () => {
+      const result = findMatchingDependency(dependencies, (dep) => dep.model_name === 'Model3');
+      expect(result).toBe('Dep3');
+    });
+
+    test('should return the first matching dependency if multiple match', () => {
+      const duplicateDependencies = [...dependencies, dependencies[1]];
+      const result = findMatchingDependency(duplicateDependencies, (dep) => dep.type_name === 'Type2');
+      expect(result).toBe('Dep2');
+    });
+
+    test('should handle an empty dependencies array', () => {
+      const result = findMatchingDependency([], (dep) => dep.uuid === '123');
+      expect(result).toBe('');
+    });
+  });
+
+  describe('getDefaultValue', () => {
+    const propertyDependencies: SelectedModelSchema[] = [
+      {
+        uuid: '123',
+        user_uuid: '456',
+        type_name: 'Type1',
+        model_name: 'Model1',
+        json_str: { name: 'Dep1', api_key: 'key1' }, // pragma: allowlist secret
+        created_at: '2023-01-01',
+        updated_at: '2023-01-02',
+      },
+      {
+        uuid: '789',
+        user_uuid: '012',
+        type_name: 'Type2',
+        model_name: 'Model2_ref',
+        json_str: { name: 'Dep2', api_key: 'key2' }, // pragma: allowlist secret
+        created_at: '2023-01-03',
+        updated_at: '2023-01-04',
+      },
+    ];
+
+    test('should return selectedModelRefValues when it is a string', () => {
+      const result = getDefaultValue(propertyDependencies, {}, 'stringValue');
+      expect(result).toBe('stringValue');
+    });
+
+    test('should return selectedModelRefValues when it is a number', () => {
+      const result = getDefaultValue(propertyDependencies, {}, 42);
+      expect(result).toBe('42');
+    });
+
+    test('should return matching dependency name when selectedModelRefValues is an object with uuid', () => {
+      const result = getDefaultValue(propertyDependencies, {}, { uuid: '123' });
+      expect(result).toBe('Dep1');
+    });
+
+    test('should throw error for invalid selectedModelRefValues type', () => {
+      expect(() => getDefaultValue(propertyDependencies, {}, {} as any)).toThrow('Invalid selectedModelRefValues type');
+    });
+
+    test('should return "None" when property.default is null', () => {
+      const result = getDefaultValue(propertyDependencies, { default: null }, null);
+      expect(result).toBe('None');
+    });
+
+    test('should return matching dependency name based on property.default', () => {
+      const result = getDefaultValue(propertyDependencies, { default: 'Model2_ref' }, null);
+      console.log(result);
+      expect(result).toBe('Dep2');
+    });
+
+    test('should return first dependency name when no default is specified', () => {
+      const result = getDefaultValue(propertyDependencies, {}, null);
+      expect(result).toBe('Dep1');
+    });
+
+    test('should return empty string when no dependencies and no default', () => {
+      const result = getDefaultValue([], {}, null);
+      expect(result).toBe('');
+    });
+
+    test('should handle case when matching dependency is not found', () => {
+      const result = getDefaultValue(propertyDependencies, { default: 'NonExistentModel' }, null);
+      expect(result).toBe('');
+    });
+
+    test('should handle case when property dependencies are empty', () => {
+      const result = getDefaultValue([], { default: 'Model1' }, null);
+      expect(result).toBe('');
+    });
+  });
+
+  describe('isIntegerOrNull', () => {
+    test('should return true when propertyDependencies is empty and anyOf matches [integer, null]', () => {
+      const property = {
+        anyOf: [{ type: 'integer' }, { type: 'null' }],
+      };
+      const result = isIntegerOrNull(property, []);
+      expect(result).toBe(true);
+    });
+
+    test('should return false when propertyDependencies is not empty', () => {
+      const property = {
+        anyOf: [{ type: 'integer' }, { type: 'null' }],
+      };
+      const propertyDependencies = [
+        {
+          /* some dependency */
+        } as SelectedModelSchema,
+      ];
+      const result = isIntegerOrNull(property, propertyDependencies);
+      expect(result).toBe(false);
+    });
+
+    test('should return false when anyOf does not match [integer, null]', () => {
+      const property = {
+        anyOf: [{ type: 'string' }, { type: 'null' }],
+      };
+      const result = isIntegerOrNull(property, []);
+      expect(result).toBe(false);
+    });
+
+    test('should return false when property does not have anyOf', () => {
+      const property = {};
+      const result = isIntegerOrNull(property, []);
+      expect(result).toBe(false);
+    });
+
+    test('should return false when anyOf has additional types', () => {
+      const property = {
+        anyOf: [{ type: 'integer' }, { type: 'null' }, { type: 'string' }],
+      };
+      const result = isIntegerOrNull(property, []);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('getPropertiesWithDefaultFirst', () => {
+    test('should return array with default value first when it exists in properties', () => {
+      const properties = ['prop1', 'prop2', 'prop3'];
+      const defaultValue = 'prop2';
+      const result = getPropertiesWithDefaultFirst(properties, defaultValue);
+      expect(result).toEqual(['prop2', 'prop1', 'prop3']);
+    });
+
+    test('should return array with "None" first when default value does not exist in properties', () => {
+      const properties = ['prop1', 'prop2', 'prop3'];
+      const defaultValue = 'prop4';
+      const result = getPropertiesWithDefaultFirst(properties, defaultValue);
+      expect(result).toEqual(['None', 'prop1', 'prop2', 'prop3']);
+    });
+
+    test('should handle empty properties array', () => {
+      const properties: string[] = [];
+      const defaultValue = 'prop1';
+      const result = getPropertiesWithDefaultFirst(properties, defaultValue);
+      expect(result).toEqual(['None']);
+    });
+
+    test('should handle case when default value is empty string', () => {
+      const properties = ['prop1', 'prop2', ''];
+      const defaultValue = '';
+      const result = getPropertiesWithDefaultFirst(properties, defaultValue);
+      expect(result).toEqual(['', 'prop1', 'prop2']);
+    });
+
+    test('should not duplicate default value if it already exists in properties', () => {
+      const properties = ['prop1', 'prop2', 'prop3'];
+      const defaultValue = 'prop2';
+      const result = getPropertiesWithDefaultFirst(properties, defaultValue);
+      expect(result).toEqual(['prop2', 'prop1', 'prop3']);
+      expect(result.filter((prop) => prop === 'prop2').length).toBe(1);
+    });
+
+    test('should maintain order of other properties', () => {
+      const properties = ['prop1', 'prop2', 'prop3', 'prop4'];
+      const defaultValue = 'prop3';
+      const result = getPropertiesWithDefaultFirst(properties, defaultValue);
+      expect(result).toEqual(['prop3', 'prop1', 'prop2', 'prop4']);
+    });
+  });
+
   describe('constructHTMLSchema', () => {
     test('constructHTMLSchema - with null as default value', () => {
       const input = [
@@ -816,54 +1092,115 @@ describe('buildPageUtils', () => {
       const actual = constructHTMLSchema(input, title, property, null);
       expect(_.isEqual(actual, expected)).toBe(true);
     });
-    test('constructHTMLSchema - Numeric stepper with clear button', () => {
-      const expected = {
-        default: 'None',
-        description: 'The maximum number of consecutive auto-replies the agent can make',
-        enum: ['None'],
-        title: 'Max Consecutive Auto Reply',
-      };
-      const property = {
-        anyOf: [
-          {
-            type: 'integer',
-          },
-          {
-            type: 'null',
-          },
-        ],
-        default: null,
-        description: 'The maximum number of consecutive auto-replies the agent can make',
-        title: 'Max Consecutive Auto Reply',
-      };
-      const title = 'Max Consecutive Auto Reply';
-      const actual = constructHTMLSchema([], title, property, null);
-      expect(_.isEqual(actual, expected)).toBe(true);
+    const mockPropertyDependencies: SelectedModelSchema[] = [
+      {
+        uuid: '1',
+        user_uuid: 'user1',
+        type_name: 'Type1',
+        model_name: 'Model1',
+        json_str: { name: 'Prop1', api_key: 'key1' }, // pragma: allowlist secret
+        created_at: '2023-01-01',
+        updated_at: '2023-01-01',
+      },
+      {
+        uuid: '2',
+        user_uuid: 'user2',
+        type_name: 'Type2',
+        model_name: 'Model2',
+        json_str: { name: 'Prop2', api_key: 'key2' }, // pragma: allowlist secret
+        created_at: '2023-01-02',
+        updated_at: '2023-01-02',
+      },
+      {
+        uuid: '3',
+        user_uuid: 'user3',
+        type_name: 'Type3',
+        model_name: 'Model3',
+        json_str: { name: 'Prop3', api_key: 'key3' }, // pragma: allowlist secret
+        created_at: '2023-01-03',
+        updated_at: '2023-01-03',
+      },
+    ];
+
+    test('should construct HTML schema correctly', () => {
+      const result = constructHTMLSchema(mockPropertyDependencies, 'test_title', { default: 'Model2' }, null);
+
+      expect(result).toEqual({
+        default: 'Prop2',
+        description: '',
+        enum: ['Prop2', 'Prop1', 'Prop3'],
+        title: 'Test Title',
+      });
     });
-    test('constructHTMLSchema - Numeric stepper - editing existing model', () => {
-      const expected = {
-        default: 5,
-        description: 'The maximum number of consecutive auto-replies the agent can make',
+
+    test('should handle selectedModelRefValues', () => {
+      const result = constructHTMLSchema(mockPropertyDependencies, 'test_title', {}, 'Prop3');
+
+      expect(result).toEqual({
+        default: 'Prop3',
+        description: '',
+        enum: ['Prop3', 'Prop1', 'Prop2'],
+        title: 'Test Title',
+      });
+    });
+
+    test('should capitalize multi-word titles correctly', () => {
+      const result = constructHTMLSchema(mockPropertyDependencies, 'multi_word_test_title', {}, null);
+
+      expect(result.title).toBe('Multi Word Test Title');
+    });
+
+    test('should handle empty property dependencies', () => {
+      const result = constructHTMLSchema([], 'test_title', {}, null);
+
+      expect(result).toEqual({
+        default: '',
+        description: '',
         enum: ['None'],
-        title: 'Max Consecutive Auto Reply',
+        title: 'Test Title',
+      });
+    });
+
+    test('should handle null property default', () => {
+      const result = constructHTMLSchema(mockPropertyDependencies, 'test_title', { default: null }, null);
+
+      expect(result).toEqual({
+        default: 'None',
+        description: '',
+        enum: ['None', 'Prop1', 'Prop2', 'Prop3'],
+        title: 'Test Title',
+      });
+    });
+
+    test('should handle integer or null property', () => {
+      const result = constructHTMLSchema(
+        [],
+        'test_title',
+        {
+          anyOf: [{ type: 'integer' }, { type: 'null' }],
+          description: 'An integer or null value',
+        },
+        null
+      );
+
+      expect(result).toEqual({
+        default: '',
+        description: 'An integer or null value',
+        enum: ['None'],
+        title: 'Test Title',
+      });
+    });
+    test('should handle string selectedModelRefs', () => {
+      const property = { $ref: '#/$defs/AnthropicAPIKeyRef' };
+      const selectedModelRefValues = 'bd3*******7bd3';
+      const expected = {
+        default: 'bd3*******7bd3',
+        description: '',
+        enum: ['None'],
+        title: 'Api Key',
       };
-      const property = {
-        anyOf: [
-          {
-            type: 'integer',
-          },
-          {
-            type: 'null',
-          },
-        ],
-        default: null,
-        description: 'The maximum number of consecutive auto-replies the agent can make',
-        title: 'Max Consecutive Auto Reply',
-      };
-      const title = 'Max Consecutive Auto Reply';
-      const selectedModelRefValues = 5;
-      const actual = constructHTMLSchema([], title, property, selectedModelRefValues);
-      expect(_.isEqual(actual, expected)).toBe(true);
+      const actual = constructHTMLSchema([], 'api_key', property, selectedModelRefValues);
+      expect(actual).toEqual(expected);
     });
   });
   describe('getFormSubmitValues', () => {

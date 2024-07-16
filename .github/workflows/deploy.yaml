@@ -103,14 +103,56 @@ jobs:
       - name: Sleep for 10 seconds
         run: sleep 10
 
+  docker-build-push-auth-callout:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+    env:
+      PORT: ${{ vars.PORT }}
+    steps:
+      - name: Checkout repository with cached git lfs
+        uses: nschloe/action-cached-lfs-checkout@v1
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.2.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: docker pull ghcr.io/$GITHUB_REPOSITORY-auth-callout:$GITHUB_REF_NAME || docker pull ghcr.io/$GITHUB_REPOSITORY-auth-callout:dev || true
+      - run: docker build -t ghcr.io/$GITHUB_REPOSITORY-auth-callout:${GITHUB_REF_NAME////-} ./auth_callout
+      - name: Add tag latest if branch is main
+        if: github.ref_name == 'main'
+        run: docker tag ghcr.io/$GITHUB_REPOSITORY-auth-callout:$GITHUB_REF_NAME ghcr.io/$GITHUB_REPOSITORY-auth-callout:latest
+      - name: Push only if branch name is main or dev
+        if: github.ref_name == 'main' || github.ref_name == 'dev'
+        run: docker push ghcr.io/$GITHUB_REPOSITORY-auth-callout --all-tags
+
+  # https://github.com/marketplace/actions/alls-green#why
+  check: # This job does nothing and is only used for the branch protection
+    if: github.event.pull_request.draft == false
+    needs:
+      - docker-build-push-auth-callout
+      - docker-build-push-fastapi
+      - docker-build-push-node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@release/v1 # nosemgrep
+        with:
+          jobs: ${{ toJSON(needs) }}
+      - name: Sleep for 10 seconds
+        run: sleep 10
+
   deploy-fastapi:
     runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
     needs:
-      - docker-build-push-fastapi
-      - docker-build-push-node
+      - check
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}
@@ -121,6 +163,7 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PY_DATABASE_URL: ${{ secrets.PY_DATABASE_URL }}
       FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
+      FASTSTREAM_NATS_PASSWORD: ${{ secrets.FASTSTREAM_NATS_PASSWORD }}
       DOMAIN: ${{ vars.DOMAIN }}
       SSH_KEY: ${{ secrets.SSH_KEY }}
       AZURE_API_VERSION: ${{ vars.AZURE_API_VERSION }}
@@ -157,8 +200,7 @@ jobs:
       run:
         shell: bash
     needs:
-      - docker-build-push-fastapi
-      - docker-build-push-node
+      - check
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}
@@ -171,6 +213,7 @@ jobs:
       ADMIN_EMAILS: ${{ vars.ADMIN_EMAILS }}
       WASP_SERVER_URL: ${{ vars.WASP_SERVER_URL }}
       FASTAGENCY_SERVER_URL: ${{ vars.FASTAGENCY_SERVER_URL }}
+      WASP_NATS_PASSWORD: ${{ secrets.WASP_NATS_PASSWORD }}
       NODE_DOMAIN: ${{ vars.NODE_DOMAIN }}
       WASP_WEB_CLIENT_URL: ${{ vars.WASP_WEB_CLIENT_URL }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -200,13 +243,55 @@ jobs:
 
       - run: rm key.pem
 
+  deploy-auth-callout:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash
+    needs:
+      - check
+      - detect-deployment-environment
+    environment:
+      name: ${{ needs.detect-deployment-environment.outputs.environment }}
+    env:
+      GITHUB_USERNAME: ${{ github.actor }}
+      GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      DEVELOPER_TOKEN: ${{ secrets.DEVELOPER_TOKEN }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PY_DATABASE_URL: ${{ secrets.PY_DATABASE_URL }}
+      AUTH_NATS_PASSWORD: ${{ secrets.AUTH_NATS_PASSWORD }}
+      NATS_PRIV_NKEY: ${{ secrets.NATS_PRIV_NKEY }}
+      DOMAIN: ${{ vars.DOMAIN }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+
+    steps:
+      - uses: actions/checkout@v3 # Don't change it to cheackout@v4. V4 is not working with container image.
+      # This is to fix GIT not liking owner of the checkout dir - https://github.com/actions/runner/issues/2033#issuecomment-1204205989
+      - run: chown -R $(id -u):$(id -g) $PWD
+
+      - run: if [[ $GITHUB_REF_NAME == "main" ]]; then echo "TAG=latest" >> $GITHUB_ENV ; else echo "TAG=dev" >> $GITHUB_ENV ; fi;
+
+      - run: echo "PATH=$PATH:/github/home/.local/bin" >> $GITHUB_ENV
+      - run: "which ssh-agent || ( apt-get update -y && apt-get install openssh-client git gettext -y )"
+      - run: eval $(ssh-agent -s)
+      - run: mkdir -p ~/.ssh
+      - run: chmod 700 ~/.ssh
+      - run: ssh-keyscan "$DOMAIN" >> ~/.ssh/known_hosts
+      - run: chmod 644 ~/.ssh/known_hosts
+      - run: echo "$SSH_KEY" | base64 --decode > key.pem
+      - run: chmod 600 key.pem
+
+      - run: ssh -o StrictHostKeyChecking=no -i key.pem azureuser@"$DOMAIN" "docker images"
+      - run: bash scripts/deploy-auth-callout.sh
+
+      - run: rm key.pem
+
   deploy-frontend:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
     needs:
-      - docker-build-push-fastapi
-      - docker-build-push-node
+      - check
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}

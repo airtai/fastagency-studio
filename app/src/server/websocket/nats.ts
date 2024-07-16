@@ -1,5 +1,7 @@
-import { connect, consumerOpts, JSONCodec, Subscription, JetStreamClient } from 'nats';
+import { JSONCodec, JetStreamClient, Subscription, connect, consumerOpts } from 'nats';
 import { updateDB } from './webSocket';
+
+import { WASP_NATS_PASSWORD } from '../common/constants';
 
 function generateNatsUrl(natsUrl: string | undefined, fastAgencyServerUrl: string | undefined): string | undefined {
   if (natsUrl) return natsUrl;
@@ -26,16 +28,25 @@ class NatsConnectionManager {
 
   static async getConnection(threadId: string, conversationId: number) {
     if (!this.connections.has(threadId)) {
-      const nc = await connect({ servers: NATS_URL });
-      this.connections.set(threadId, {
-        nc,
-        subscriptions: new Map(),
-        socketConversationHistory: '',
-        lastSocketMessage: null,
-        conversationId: conversationId,
-        timeoutId: null,
-      });
-      console.log(`Connected to ${nc.getServer()} for threadId ${threadId}`);
+      try {
+        const nc = await connect({
+          servers: NATS_URL,
+          user: 'wasp',
+          pass: WASP_NATS_PASSWORD,
+        });
+        this.connections.set(threadId, {
+          nc,
+          subscriptions: new Map(),
+          socketConversationHistory: '',
+          lastSocketMessage: null,
+          conversationId: conversationId,
+          timeoutId: null,
+        });
+        console.log(`Connected to ${nc.getServer()} for threadId ${threadId}`);
+      } catch (error: any) {
+        console.error('Failed to connect to NATS server for threadId %s:', threadId, error);
+        throw new Error(`${error}`);
+      }
     }
     return this.connections.get(threadId);
   }
@@ -188,13 +199,19 @@ export async function sendMsgToNatsServer(
 
     // Initiate chat or continue conversation
     const initiateChatSubject = `chat.server.initiate_chat`;
-    const serverInputSubject = `chat.server.messages.${threadId}`;
+    const serverInputSubject = `chat.server.messages.${userUUID}.playground.${threadId}`;
     const subject = shouldCallInitiateChat ? initiateChatSubject : serverInputSubject;
 
     NatsConnectionManager.clearConversationHistory(threadId);
     await js.publish(
       subject,
-      jc.encode({ user_id: userUUID, thread_id: threadId, team_id: selectedTeamUUID, msg: message })
+      jc.encode({
+        user_id: userUUID,
+        thread_id: threadId,
+        team_id: selectedTeamUUID,
+        msg: message,
+        deployment_id: 'playground',
+      })
     );
 
     const timeoutCallback = async () => {
@@ -207,12 +224,14 @@ export async function sendMsgToNatsServer(
     NatsConnectionManager.setTimeout(threadId, timeoutCallback, 45000);
 
     if (shouldCallInitiateChat) {
-      const clientInputSubject = `chat.client.messages.${threadId}`;
+      const clientInputSubject = `chat.client.messages.${userUUID}.playground.${threadId}`;
       await setupSubscription(js, jc, clientInputSubject, threadId, socket, context, currentChatDetails);
     } else {
       NatsConnectionManager.setConversationId(threadId, conversationId);
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error(`Error in connectToNatsServer: ${err}`);
+    await updateDB(context, currentChatDetails.id, err.toString(), conversationId, '', true);
+    socket.emit('streamFromTeamFinished');
   }
 }

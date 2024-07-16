@@ -13,10 +13,13 @@ if nats_url is None:
     domain: str = environ.get("DOMAIN")  # type: ignore[assignment]
     nats_url = f"tls://{domain}:4222"
 
+username: str = "faststream"
+password: str = environ.get("FASTSTREAM_NATS_PASSWORD")  # type: ignore[assignment]
+
 print(f"{nats_url=}")  # noqa
 print("Starting PING PONG faststream app...")  # noqa
 
-broker = NatsBroker(nats_url)
+broker = NatsBroker(nats_url, user=username, password=password)
 app = FastStream(broker)
 
 stream = JStream(name="ping_pong", subjects=["ping.*", "pong.*"])

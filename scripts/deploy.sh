@@ -20,6 +20,7 @@ check_variable "AZURE_GPT35_MODEL"
 check_variable "AZURE_OPENAI_API_KEY"
 check_variable "BING_API_KEY"
 check_variable "FASTAGENCY_SERVER_URL"
+check_variable "FASTSTREAM_NATS_PASSWORD"
 
 
 if [ ! -f key.pem ]; then
@@ -44,7 +45,7 @@ $ssh_command "export PORT='$PORT' && docker compose down || echo 'No containers 
 $ssh_command "docker container prune -f || echo 'No stopped containers to delete'"
 
 echo "INFO: SCPing docker-compose.yaml"
-scp -i key.pem ./docker-compose.yaml azureuser@$DOMAIN:/home/azureuser/docker-compose.yaml
+scp -i key.pem ./docker-compose/fastapi/docker-compose.yaml azureuser@$DOMAIN:/home/azureuser/docker-compose.yaml
 scp -i key.pem -r ./etc azureuser@$DOMAIN:/home/azureuser
 
 echo "INFO: pulling docker image"
@@ -62,4 +63,5 @@ $ssh_command "export GITHUB_REPOSITORY='$GITHUB_REPOSITORY' TAG='$TAG' container
     AZURE_API_VERSION='$AZURE_API_VERSION' AZURE_API_ENDPOINT='$AZURE_API_ENDPOINT' \
     AZURE_GPT35_MODEL='$AZURE_GPT35_MODEL' AZURE_OPENAI_API_KEY='$AZURE_OPENAI_API_KEY' \
     FASTAGENCY_SERVER_URL='$FASTAGENCY_SERVER_URL' BING_API_KEY='$BING_API_KEY' \
+    FASTSTREAM_NATS_PASSWORD='$FASTSTREAM_NATS_PASSWORD' \
 	&& docker compose up -d"

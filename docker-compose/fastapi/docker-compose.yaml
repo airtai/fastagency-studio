@@ -18,6 +18,7 @@ services:
       - TOGETHER_API_KEY=${TOGETHER_API_KEY}
       - FASTAGENCY_SERVER_URL=${FASTAGENCY_SERVER_URL}
       - BING_API_KEY=${BING_API_KEY}
+      - FASTSTREAM_NATS_PASSWORD=${FASTSTREAM_NATS_PASSWORD}
     restart: always
     networks:
       - fastagency

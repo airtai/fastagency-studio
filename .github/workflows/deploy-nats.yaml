@@ -47,6 +47,10 @@ jobs:
       DEVELOPER_TOKEN: ${{ secrets.DEVELOPER_TOKEN }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PY_DATABASE_URL: ${{ secrets.PY_DATABASE_URL }}
+      FASTSTREAM_NATS_PASSWORD: ${{ secrets.FASTSTREAM_NATS_PASSWORD }}
+      WASP_NATS_PASSWORD: ${{ secrets.WASP_NATS_PASSWORD }}
+      AUTH_NATS_PASSWORD: ${{ secrets.AUTH_NATS_PASSWORD }}
+      NATS_PUB_NKEY: ${{ secrets.NATS_PUB_NKEY }}
       DOMAIN: ${{ vars.DOMAIN }}
       SSH_KEY: ${{ secrets.SSH_KEY }}
     steps:

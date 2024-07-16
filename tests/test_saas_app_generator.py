@@ -17,6 +17,8 @@ def saas_app_generator() -> SaasAppGenerator:
     app_name = "test fastagency template"
     repo_name = "test-fastagency-template"
     fly_app_name = "test-fastagency-template"
+    deployment_auth_token = "test-deployment_auth_token"
+    developer_uuid = "test-developer-uuid"
 
     return SaasAppGenerator(
         fly_api_token,
@@ -25,6 +27,8 @@ def saas_app_generator() -> SaasAppGenerator:
         app_name,
         repo_name,
         fly_app_name,
+        deployment_auth_token,
+        developer_uuid,
     )
 
 
@@ -203,6 +207,8 @@ def test_set_github_actions_secrets(
         expected_commands = [
             'gh secret set FLY_API_TOKEN --body "$FLY_API_TOKEN" --app actions',
             'gh secret set FASTAGENCY_DEPLOYMENT_UUID --body "$FASTAGENCY_DEPLOYMENT_UUID" --app actions',
+            'gh secret set AUTH_TOKEN --body "$AUTH_TOKEN" --app actions',
+            'gh secret set DEVELOPER_UUID --body "$DEVELOPER_UUID" --app actions',
             'gh secret set USER_GH_PAT --body "$GH_TOKEN" --app actions',
             f'gh variable set REACT_APP_NAME --body "{saas_app_generator.app_name}"',
             f'gh variable set FLY_IO_APP_NAME --body "{saas_app_generator.fly_app_name}"',
@@ -222,6 +228,8 @@ def test_set_github_actions_secrets(
                 env={
                     "FLY_API_TOKEN": saas_app_generator.fly_api_token,
                     "FASTAGENCY_DEPLOYMENT_UUID": saas_app_generator.fastagency_deployment_uuid,
+                    "AUTH_TOKEN": saas_app_generator.deployment_auth_token,
+                    "DEVELOPER_UUID": saas_app_generator.developer_uuid,
                 },
             )
 
@@ -331,6 +339,7 @@ def test_initialize_git_and_push(
             "git remote add origin https://account:$GH_TOKEN@github.com/account/repo.git",
             'gh secret set FLY_API_TOKEN --body "$FLY_API_TOKEN" --app actions',
             'gh secret set FASTAGENCY_DEPLOYMENT_UUID --body "$FASTAGENCY_DEPLOYMENT_UUID" --app actions',
+            'gh secret set AUTH_TOKEN --body "$AUTH_TOKEN" --app actions',
             "git push -u origin main",
         ]
 

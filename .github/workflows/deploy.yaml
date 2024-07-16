@@ -254,6 +254,8 @@ jobs:
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}
     env:
+      GITHUB_USERNAME: ${{ github.actor }}
+      GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       DEVELOPER_TOKEN: ${{ secrets.DEVELOPER_TOKEN }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PY_DATABASE_URL: ${{ secrets.PY_DATABASE_URL }}

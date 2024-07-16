@@ -77,6 +77,7 @@ async def deploy_saas_app(
 ) -> None:
     deployment_auth_token = await create_deployment_auth_token(user_uuid, model_uuid)
     saas_app.deployment_auth_token = deployment_auth_token.auth_token
+    saas_app.developer_uuid = user_uuid
 
     await asyncify(saas_app.execute)()
 

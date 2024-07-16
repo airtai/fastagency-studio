@@ -205,7 +205,13 @@ export async function sendMsgToNatsServer(
     NatsConnectionManager.clearConversationHistory(threadId);
     await js.publish(
       subject,
-      jc.encode({ user_id: userUUID, thread_id: threadId, team_id: selectedTeamUUID, msg: message })
+      jc.encode({
+        user_id: userUUID,
+        thread_id: threadId,
+        team_id: selectedTeamUUID,
+        msg: message,
+        deployment_id: 'playground',
+      })
     );
 
     const timeoutCallback = async () => {

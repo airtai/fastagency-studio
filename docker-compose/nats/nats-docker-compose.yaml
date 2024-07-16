@@ -3,11 +3,16 @@ version: "3.4"
 name: nats
 services:
   nats-fastagency:  # nosemgrep
-    image: nats:2.10.14
+    image: nats:2.10.17
     container_name: nats-fastagency
     ports:
       - "4222:4222"
       - "9222:9222"
+    environment:
+      - FASTSTREAM_NATS_PASSWORD=${FASTSTREAM_NATS_PASSWORD}
+      - WASP_NATS_PASSWORD=${WASP_NATS_PASSWORD}
+      - AUTH_NATS_PASSWORD=${AUTH_NATS_PASSWORD}
+      - NATS_PUB_NKEY=${NATS_PUB_NKEY}
     volumes:
       - ./nats_server.conf:/etc/nats/server.conf
       - /etc/letsencrypt:/etc/letsencrypt

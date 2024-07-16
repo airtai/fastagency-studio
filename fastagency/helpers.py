@@ -12,6 +12,8 @@ from fastagency.saas_app_generator import (
     SaasAppGenerator,
 )
 
+from .auth_token.auth import create_deployment_auth_token
+
 # from fastagency.app import add_model
 from .db.helpers import find_model_using_raw, get_db_connection, get_user
 from .models.base import Model, ObjectReference
@@ -73,6 +75,10 @@ async def deploy_saas_app(
     type_name: str,
     model_name: str,
 ) -> None:
+    deployment_auth_token = await create_deployment_auth_token(user_uuid, model_uuid)
+    saas_app.deployment_auth_token = deployment_auth_token.auth_token
+    saas_app.developer_uuid = user_uuid
+
     await asyncify(saas_app.execute)()
 
     async with get_db_connection() as db:

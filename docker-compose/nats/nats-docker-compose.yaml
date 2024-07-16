@@ -3,7 +3,7 @@ version: "3.4"
 name: nats
 services:
   nats-fastagency:  # nosemgrep
-    image: nats:2.10.14
+    image: nats:2.10.17
     container_name: nats-fastagency
     ports:
       - "4222:4222"

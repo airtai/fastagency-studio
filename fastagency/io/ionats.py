@@ -77,12 +77,9 @@ class IONats(IOStream):  # type: ignore[misc]
         thread_id: Union[str, UUID],
         deployment_id: Optional[Union[str, UUID]] = "playground",
     ) -> "IONats":
-        if isinstance(thread_id, UUID):
-            thread_id = str(thread_id)
-        if isinstance(user_id, UUID):
-            user_id = str(user_id)
-        if isinstance(deployment_id, UUID):
-            deployment_id = str(deployment_id)
+        thread_id = str(thread_id)
+        user_id = str(user_id)
+        deployment_id = str(deployment_id)
         self = cls(user_id=user_id, thread_id=thread_id, deployment_id=deployment_id)
 
         # dynamically subscribe to the chat server

@@ -6,9 +6,7 @@
     ],
     "service": "python-3.10",
     "forwardPorts": [
-        "${containerEnv:CONTAINER_PREFIX}-nats-py310-fastagency:9222",
-        "${containerEnv:CONTAINER_PREFIX}-postgres-py310-fastagency:5432",
-        "3001",
+        "${containerEnv:CONTAINER_PREFIX}-nats-py310-fastagency:9222"
     ],
     "shutdownAction": "stopCompose",
     "workspaceFolder": "/workspaces/fastagency",

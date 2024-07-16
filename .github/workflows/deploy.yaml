@@ -288,8 +288,7 @@ jobs:
     permissions:
       contents: write
     needs:
-      - docker-build-push-fastapi
-      - docker-build-push-node
+      - check
       - detect-deployment-environment
     environment:
       name: ${{ needs.detect-deployment-environment.outputs.environment }}

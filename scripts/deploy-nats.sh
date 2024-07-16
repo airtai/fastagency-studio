@@ -40,8 +40,7 @@ scp -i key.pem ./nats_server.conf azureuser@$DOMAIN:/home/azureuser/nats_server.
 
 echo "INFO: starting NATS container"
 
-$ssh_command "export DOMAIN='$DOMAIN' \
-    FASTSTREAM_NATS_PASSWORD='$FASTSTREAM_NATS_PASSWORD' \
+$ssh_command "export DOMAIN='$DOMAIN' FASTSTREAM_NATS_PASSWORD='$FASTSTREAM_NATS_PASSWORD' \
     WASP_NATS_PASSWORD='$WASP_NATS_PASSWORD' \
     AUTH_NATS_PASSWORD='$AUTH_NATS_PASSWORD' \
     NATS_PUB_NKEY='$NATS_PUB_NKEY' \

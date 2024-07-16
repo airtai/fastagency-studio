@@ -207,7 +207,7 @@ describe('usePropertyReferenceValues', () => {
 
     const expected = {
       api_key: {
-        htmlSchema: { description: '', enum: ['None'], title: 'Api Key' },
+        htmlSchema: { default: '', description: '', enum: ['None'], title: 'Api Key' },
         matchedProperties: [],
         propertyTypes: ['secret'],
         isRequired: true,

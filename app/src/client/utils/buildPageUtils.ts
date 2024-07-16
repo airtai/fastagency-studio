@@ -24,51 +24,94 @@ export const getSchemaByName = (schemas: ApiSchema[], schemaName: string): JsonS
   return apiSchema ? apiSchema.json_schema : schemas[0].json_schema;
 };
 
-interface constructHTMLSchemaValues {
-  [key: string]: string[] | string | number;
+interface ConstructHTMLSchemaValues {
+  default: string;
+  description: string;
+  enum: string[];
+  title: string;
 }
+
+type SelectedModelRefValues = null | number | string | { uuid: string };
+
+export const getPropertyName = (dep: SelectedModelSchema): string => dep.json_str?.name ?? '';
+
+export const findMatchingDependency = (
+  dependencies: SelectedModelSchema[],
+  predicate: (dep: SelectedModelSchema) => boolean
+): string => {
+  const matchingDep = dependencies.find(predicate);
+  return matchingDep?.json_str?.name ?? '';
+};
+
+export const getDefaultValue = (
+  propertyDependencies: SelectedModelSchema[],
+  property: any,
+  selectedModelRefValues: SelectedModelRefValues
+): string => {
+  if (selectedModelRefValues) {
+    if (typeof selectedModelRefValues === 'number' || typeof selectedModelRefValues === 'string') {
+      return selectedModelRefValues.toString();
+    }
+    if (typeof selectedModelRefValues === 'object' && 'uuid' in selectedModelRefValues) {
+      return findMatchingDependency(propertyDependencies, (dep) => dep.uuid === selectedModelRefValues.uuid);
+    }
+    throw new Error('Invalid selectedModelRefValues type');
+  }
+
+  if ('default' in property) {
+    if (property.default === null) {
+      return 'None';
+    }
+    return findMatchingDependency(propertyDependencies, (dep) => dep.model_name === removeRefSuffix(property.default));
+  }
+
+  return propertyDependencies[0]?.json_str?.name ?? '';
+};
+
+export const isIntegerOrNull = (property: any, propertyDependencies: SelectedModelSchema[]): boolean =>
+  propertyDependencies.length === 0 &&
+  JSON.stringify(property.anyOf?.map((o: any) => o.type)) === JSON.stringify(['integer', 'null']);
+
+export const getPropertiesWithDefaultFirst = (properties: string[], defaultValue: string): string[] => {
+  if (properties.includes(defaultValue)) {
+    return [defaultValue, ...properties.filter((item) => item !== defaultValue)];
+  }
+  return ['None', ...properties];
+};
 
 export const constructHTMLSchema = (
   propertyDependencies: SelectedModelSchema[],
   title: string,
   property: any,
-  selectedModelRefValues: null | number | object
-): constructHTMLSchemaValues => {
-  const capitalizeTitle = _.map(title.split('_'), capitalizeFirstLetter).join(' ');
-  let properties = _.map(propertyDependencies, 'json_str.name');
-  let defaultValue: string | number;
-  if (selectedModelRefValues) {
-    defaultValue =
-      typeof selectedModelRefValues === 'number'
-        ? selectedModelRefValues
-        : _.filter(propertyDependencies, ['uuid', (selectedModelRefValues as any).uuid])[0].json_str.name;
-  } else {
-    defaultValue = _.has(property, 'default')
-      ? property.default === null
-        ? 'None'
-        : _.find(propertyDependencies, ['model_name', removeRefSuffix(property.default)]).json_str.name
-      : propertyDependencies[0]?.json_str.name;
+  selectedModelRefValues: SelectedModelRefValues
+): ConstructHTMLSchemaValues => {
+  // Capitalize title
+  const capitalizedTitle = title.split('_').map(capitalizeFirstLetter).join(' ');
+
+  // Get property names
+  const propertyNames: string[] = propertyDependencies.map(getPropertyName);
+
+  // Determine default value
+  let defaultValue: string;
+  try {
+    defaultValue = getDefaultValue(propertyDependencies, property, selectedModelRefValues);
+  } catch (error) {
+    console.error('Error determining default value:', error);
+    defaultValue = '';
   }
 
-  if (properties.includes(defaultValue)) {
-    properties = properties.filter((item: string) => item !== defaultValue);
-    properties.unshift(defaultValue);
-  } else {
-    properties.unshift('None');
-  }
-  const isIntegerOrNull =
-    propertyDependencies.length === 0 &&
-    _.isEqual(
-      _.map(property.anyOf, (o: any) => o.type),
-      ['integer', 'null']
-    );
+  // Arrange properties with default value first
+  const arrangedProperties = getPropertiesWithDefaultFirst(propertyNames, defaultValue);
 
-  const description = isIntegerOrNull ? property.description : '';
+  // Determine description
+  const description = isIntegerOrNull(property, propertyDependencies) ? property.description ?? '' : '';
+
+  // Return constructed schema
   return {
     default: defaultValue,
-    description: description,
-    enum: properties,
-    title: capitalizeTitle,
+    description,
+    enum: arrangedProperties,
+    title: capitalizedTitle,
   };
 };
 
@@ -76,11 +119,6 @@ export const getKeyType = (refName: string, definitions: any): string => {
   const refObj = _.get(definitions, refName);
   return refObj.properties.type.enum[0];
 };
-
-interface PropertyReferenceValues {
-  htmlSchema: constructHTMLSchemaValues;
-  userPropertyData: SelectedModelSchema[];
-}
 
 export const getFormSubmitValues = (refValues: any, formData: any, isSecretUpdate: boolean) => {
   const newFormData = _.cloneDeep(formData);

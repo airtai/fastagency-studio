@@ -1,18 +1,23 @@
 import json
 import logging
 from os import environ
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Annotated, Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
 import httpx
 import yaml
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Path
 from openai import AsyncAzureOpenAI
 from prisma.models import Model
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
+from .auth_token.auth import DeploymentAuthToken, create_deployment_auth_token
 from .db.helpers import find_model_using_raw, get_db_connection, get_user
-from .helpers import add_model_to_user, create_model, get_all_models_for_user
+from .helpers import (
+    add_model_to_user,
+    create_model,
+    get_all_models_for_user,
+)
 from .models.registry import Registry, Schemas
 from .models.toolboxes.toolbox import Toolbox
 
@@ -352,3 +357,74 @@ async def deployment_ping() -> Dict[str, str]:
     return {
         "status": "ok",
     }
+
+
+@app.post("/user/{user_uuid}/deployment/{deployment_uuid}")
+async def create_auth_token(
+    user_uuid: Annotated[str, Path(title="User UUID")],
+    deployment_uuid: Annotated[str, Path(title="Deployment UUID")],
+    name: Annotated[str, Body(title="Name of the auth token")],
+    expiry: Annotated[str, Body(title="Expiry of the auth token")],
+) -> DeploymentAuthToken:
+    return await create_deployment_auth_token(
+        user_uuid=user_uuid, deployment_uuid=deployment_uuid, name=name, expiry=expiry
+    )
+
+
+class DeploymentAuthTokenInfo(BaseModel):
+    uuid: UUID
+    name: str
+    expiry: str
+
+
+@app.get("/user/{user_uuid}/deployment/{deployment_uuid}")
+async def get_all_deployment_auth_tokens(
+    user_uuid: str, deployment_uuid: str
+) -> List[DeploymentAuthTokenInfo]:
+    user = await get_user(user_uuid=user_uuid)
+    deployment = await find_model_using_raw(model_uuid=deployment_uuid)
+
+    if user["uuid"] != deployment["user_uuid"]:
+        raise HTTPException(  # pragma: no cover
+            status_code=403, detail="User does not have access to this deployment"
+        )
+
+    async with get_db_connection() as db:
+        auth_tokens = await db.authtoken.find_many(
+            where={"deployment_uuid": deployment_uuid, "user_uuid": user_uuid},
+        )
+    return [
+        DeploymentAuthTokenInfo(
+            uuid=auth_token.uuid, name=auth_token.name, expiry=auth_token.expiry
+        )
+        for auth_token in auth_tokens
+    ]
+
+
+@app.delete("/user/{user_uuid}/deployment/{deployment_uuid}/{auth_token_uuid}")
+async def delete_deployment_auth_token(
+    user_uuid: str,
+    deployment_uuid: str,
+    auth_token_uuid: str,
+) -> DeploymentAuthTokenInfo:
+    user = await get_user(user_uuid=user_uuid)
+    deployment = await find_model_using_raw(model_uuid=deployment_uuid)
+
+    if user["uuid"] != deployment["user_uuid"]:
+        raise HTTPException(  # pragma: no cover
+            status_code=403, detail="User does not have access to this deployment"
+        )
+
+    async with get_db_connection() as db:
+        auth_token = await db.authtoken.delete(
+            where={  # type: ignore[typeddict-unknown-key]
+                "uuid": auth_token_uuid,
+                "deployment_uuid": deployment_uuid,
+                "user_uuid": user_uuid,
+            },
+        )
+    return DeploymentAuthTokenInfo(
+        uuid=auth_token.uuid,  # type: ignore[union-attr]
+        name=auth_token.name,  # type: ignore[union-attr]
+        expiry=auth_token.expiry,  # type: ignore[union-attr]
+    )

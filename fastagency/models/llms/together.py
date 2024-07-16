@@ -49,6 +49,7 @@ together_model_string = {
     "Platypus2 Instruct (70B)": "garage-bAInd/Platypus2-70B-instruct",
     "Gemma Instruct (2B)": "google/gemma-2b-it",
     "Gemma Instruct (7B)": "google/gemma-7b-it",
+    "Gemma 2 Instruct (27B)": "google/gemma-2-27b-it",
     "OLMo Instruct (7B)": "allenai/OLMo-7B-Instruct",
     "Qwen 1.5 Chat (4B)": "Qwen/Qwen1.5-4B-Chat",
     "MythoMax-L2 (13B)": "Gryphe/MythoMax-L2-13b",

@@ -7,12 +7,16 @@ search:
     - fastagency
         - app
             - [ChatRequest](api/fastagency/app/ChatRequest.md)
+            - [DeploymentAuthTokenInfo](api/fastagency/app/DeploymentAuthTokenInfo.md)
             - [add_model](api/fastagency/app/add_model.md)
             - [chat](api/fastagency/app/chat.md)
+            - [create_auth_token](api/fastagency/app/create_auth_token.md)
             - [create_toolbox_for_new_user](api/fastagency/app/create_toolbox_for_new_user.md)
+            - [delete_deployment_auth_token](api/fastagency/app/delete_deployment_auth_token.md)
             - [deployment_chat](api/fastagency/app/deployment_chat.md)
             - [deployment_ping](api/fastagency/app/deployment_ping.md)
             - [generate_chat_name](api/fastagency/app/generate_chat_name.md)
+            - [get_all_deployment_auth_tokens](api/fastagency/app/get_all_deployment_auth_tokens.md)
             - [get_all_models](api/fastagency/app/get_all_models.md)
             - [get_azure_llm_client](api/fastagency/app/get_azure_llm_client.md)
             - [get_models_schemas](api/fastagency/app/get_models_schemas.md)
@@ -23,6 +27,14 @@ search:
             - [validate_model](api/fastagency/app/validate_model.md)
             - [validate_secret_model](api/fastagency/app/validate_secret_model.md)
             - [validate_toolbox](api/fastagency/app/validate_toolbox.md)
+        - auth_token
+            - auth
+                - [DeploymentAuthToken](api/fastagency/auth_token/auth/DeploymentAuthToken.md)
+                - [create_deployment_auth_token](api/fastagency/auth_token/auth/create_deployment_auth_token.md)
+                - [generate_auth_token](api/fastagency/auth_token/auth/generate_auth_token.md)
+                - [hash_auth_token](api/fastagency/auth_token/auth/hash_auth_token.md)
+                - [parse_expiry](api/fastagency/auth_token/auth/parse_expiry.md)
+                - [verify_auth_token](api/fastagency/auth_token/auth/verify_auth_token.md)
         - db
             - helpers
                 - [find_model_using_raw](api/fastagency/db/helpers/find_model_using_raw.md)

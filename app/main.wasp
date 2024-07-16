@@ -243,9 +243,9 @@ page ExamplesPage {
   component: import ExamplesPage from "@src/client/app/ExamplesPage",
 }
 
-route TutorialRoute { path: "/tutorial", to: tutorialPage }
-page tutorialPage {
-  component: import tutorialPage from "@src/client/app/tutorialPage",
+route TutorialRoute { path: "/tutorial", to: TutorialPage }
+page TutorialPage {
+  component: import TutorialPage from "@src/client/app/TutorialPage",
 }
 
 route AdminRoute { path: "/admin", to: DashboardPage }

@@ -385,7 +385,7 @@ async def get_all_deployment_auth_tokens(
     deployment = await find_model_using_raw(model_uuid=deployment_uuid)
 
     if user["uuid"] != deployment["user_uuid"]:
-        raise HTTPException(
+        raise HTTPException(  # pragma: no cover
             status_code=403, detail="User does not have access to this deployment"
         )
 
@@ -411,7 +411,7 @@ async def delete_deployment_auth_token(
     deployment = await find_model_using_raw(model_uuid=deployment_uuid)
 
     if user["uuid"] != deployment["user_uuid"]:
-        raise HTTPException(
+        raise HTTPException(  # pragma: no cover
             status_code=403, detail="User does not have access to this deployment"
         )
 

@@ -65,13 +65,7 @@ async def parse_expiry(expiry: str) -> datetime:
     value, unit = match.groups()
     value = int(value)
 
-    if unit == "d":
-        td = timedelta(days=value)
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unknown time unit - {expiry}; expected format: <number>d",
-        )
+    td = timedelta(days=value)
 
     d = datetime.utcnow()
     expires_at = d + td

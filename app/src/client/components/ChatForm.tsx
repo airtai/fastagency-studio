@@ -14,6 +14,7 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
   const [disableFormSubmit, setDisableFormSubmit] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isProcessing = useRef(false);
+  const isEmptyMessage = formInputValue.trim().length === 0;
 
   const formInputRef = useCallback(
     async (node: any) => {
@@ -33,7 +34,7 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
   }, [currentChatDetails]);
 
   const submitForm = async (inputValue: string) => {
-    if (isSubmitting || disableFormSubmit || isProcessing.current) return;
+    if (isSubmitting || disableFormSubmit || isProcessing.current || isEmptyMessage) return;
 
     setIsSubmitting(true);
     isProcessing.current = true;
@@ -96,10 +97,10 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
           />
           <button
             type='button'
-            disabled={disableFormSubmit || isSubmitting}
+            disabled={disableFormSubmit || isSubmitting || isEmptyMessage}
             onClick={handleButtonClick}
-            className={`text-airt-primary bg-airt-secondary hover:opacity-90 absolute right-2 font-medium rounded-lg text-sm px-1.5 py-1.5 ${
-              disableFormSubmit || isSubmitting
+            className={`text-airt-primary bg-airt-secondary hover:opacity-90 absolute right-2 font-medium rounded-lg text-sm px-1.5 py-1.5 transition-all duration-300 ${
+              disableFormSubmit || isSubmitting || isEmptyMessage
                 ? 'cursor-not-allowed bg-white opacity-70 hover:opacity-70'
                 : 'cursor-pointer'
             }`}

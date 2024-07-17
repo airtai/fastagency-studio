@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 
 import TextareaAutosize from 'react-textarea-autosize';
+import { useSocketListener } from 'wasp/client/webSocket';
 import { type Chat } from 'wasp/entities';
 
 interface ChatFormProps {
@@ -13,10 +14,12 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
   const [formInputValue, setFormInputValue] = useState('');
   const [disableFormSubmit, setDisableFormSubmit] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toggleTextAreaFocus, setToggleTextAreaFocus] = useState(false);
   const isProcessing = useRef(false);
+  const textAreaRef = React.useRef<HTMLTextAreaElement>();
   const isEmptyMessage = formInputValue.trim().length === 0;
 
-  const formInputRef = useCallback(
+  const formRef = useCallback(
     async (node: any) => {
       if (node !== null && triggerChatFormSubmitMsg) {
         await handleFormSubmit(triggerChatFormSubmitMsg, true);
@@ -24,6 +27,19 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
     },
     [triggerChatFormSubmitMsg]
   );
+
+  useEffect(() => {
+    if (toggleTextAreaFocus && (!disableFormSubmit || !isSubmitting || !isProcessing.current)) {
+      if (textAreaRef.current) {
+        textAreaRef.current.focus();
+      }
+    }
+  }, [disableFormSubmit, isSubmitting, isProcessing.current, toggleTextAreaFocus]);
+
+  const setFocusOnTextArea = () => {
+    setToggleTextAreaFocus(true);
+  };
+  useSocketListener('streamFromTeamFinished', setFocusOnTextArea);
 
   useEffect(() => {
     if (currentChatDetails) {
@@ -37,6 +53,7 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
     if (isSubmitting || disableFormSubmit || isProcessing.current || isEmptyMessage) return;
 
     setIsSubmitting(true);
+    setToggleTextAreaFocus(false);
     isProcessing.current = true;
 
     try {
@@ -69,7 +86,7 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
 
   return (
     <div className='mt-2 mb-2'>
-      <form data-testid='chat-form' onSubmit={handleSubmit} className=''>
+      <form data-testid='chat-form' onSubmit={handleSubmit} className='' ref={formRef}>
         <label
           htmlFor='search'
           className='mb-2 text-sm font-medium text-captn-dark-blue sr-only dark:text-airt-font-base'
@@ -90,7 +107,7 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
             placeholder='Enter your message...'
             required
             disabled={disableFormSubmit || isSubmitting}
-            ref={formInputRef}
+            ref={textAreaRef}
             value={formInputValue}
             onChange={(e) => setFormInputValue(e.target.value)}
             onKeyDown={handleKeyDown}

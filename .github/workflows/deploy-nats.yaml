@@ -6,7 +6,7 @@ on:
       - main
       - dev
     paths:
-      - docker-compose/nats/nats_server.conf
+      - docker-compose/nats/**
   workflow_dispatch:
     inputs:
       clear_jetstream:

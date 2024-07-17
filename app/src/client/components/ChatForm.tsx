@@ -47,6 +47,11 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
 
   const debouncedHandleSubmit = _.debounce(handleSubmit, 500);
 
+  const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    debouncedHandleSubmit(event as any as React.FormEvent<HTMLFormElement>);
+  };
+
   return (
     <div className='mt-2 mb-2'>
       <form data-testid='chat-form' onSubmit={debouncedHandleSubmit} className=''>
@@ -83,7 +88,7 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
           <button
             type='button'
             disabled={disableFormSubmit}
-            onClick={debouncedHandleSubmit}
+            onClick={handleButtonClick}
             className={`text-airt-primary bg-airt-secondary hover:opacity-90 absolute right-2 font-medium rounded-lg text-sm px-1.5 py-1.5 ${
               disableFormSubmit ? 'cursor-not-allowed bg-white opacity-70 hover:opacity-70' : 'cursor-pointer'
             }`}

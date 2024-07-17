@@ -16,7 +16,7 @@ jobs:
         with:
           # NOTE: at now only orgs is supported
           owner: airtai
-          name: fastagency
+          name: fastagency-studio
 
           token: ${{ secrets.GITHUB_TOKEN }}
           # Keep latest N untagged images
@@ -25,7 +25,7 @@ jobs:
         with:
           # NOTE: at now only orgs is supported
           owner: airtai
-          name: fastagency-node
+          name: fastagency-studio-node
 
           token: ${{ secrets.GITHUB_TOKEN }}
           # Keep latest N untagged images
@@ -34,7 +34,7 @@ jobs:
         with:
           # NOTE: at now only orgs is supported
           owner: airtai
-          name: fastagency-auth-callout
+          name: fastagency-studio-auth-callout
 
           token: ${{ secrets.GITHUB_TOKEN }}
           # Keep latest N untagged images

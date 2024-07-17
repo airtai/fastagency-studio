@@ -57,16 +57,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: docker pull ghcr.io/$GITHUB_REPOSITORY-node:$GITHUB_REF_NAME || docker pull ghcr.io/$GITHUB_REPOSITORY-node:dev || true
+      - run: docker pull ghcr.io/airtai/fastagency-studio-node:$GITHUB_REF_NAME || docker pull ghcr.io/airtai/fastagency-studio-node:dev || true
       - name: Build wasp
         run: cd app && wasp build
-      - run: docker build --build-arg PORT=$PORT -t ghcr.io/$GITHUB_REPOSITORY-node:${GITHUB_REF_NAME////-} ./app/.wasp/build/
+      - run: docker build --build-arg PORT=$PORT -t ghcr.io/airtai/fastagency-studio-node:${GITHUB_REF_NAME////-} ./app/.wasp/build/
       - name: Add tag latest if branch is main
         if: github.ref_name == 'main'
-        run: docker tag ghcr.io/$GITHUB_REPOSITORY-node:$GITHUB_REF_NAME ghcr.io/$GITHUB_REPOSITORY-node:latest
+        run: docker tag ghcr.io/airtai/fastagency-studio-node:$GITHUB_REF_NAME ghcr.io/airtai/fastagency-studio-node:latest
       - name: Push only if branch name is main or dev
         if: github.ref_name == 'main' || github.ref_name == 'dev'
-        run: docker push ghcr.io/$GITHUB_REPOSITORY-node --all-tags
+        run: docker push ghcr.io/airtai/fastagency-studio-node --all-tags
       - name: Sleep for 10 seconds
         run: sleep 10
 
@@ -92,14 +92,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: docker pull ghcr.io/$GITHUB_REPOSITORY:$GITHUB_REF_NAME || docker pull ghcr.io/$GITHUB_REPOSITORY:dev || true
-      - run: docker build --build-arg PORT=$PORT -t ghcr.io/$GITHUB_REPOSITORY:${GITHUB_REF_NAME////-} .
+      - run: docker pull ghcr.io/airtai/fastagency-studio:$GITHUB_REF_NAME || docker pull ghcr.io/airtai/fastagency-studio:dev || true
+      - run: docker build --build-arg PORT=$PORT -t ghcr.io/airtai/fastagency-studio:${GITHUB_REF_NAME////-} .
       - name: Add tag latest if branch is main
         if: github.ref_name == 'main'
-        run: docker tag ghcr.io/$GITHUB_REPOSITORY:$GITHUB_REF_NAME ghcr.io/$GITHUB_REPOSITORY:latest
+        run: docker tag ghcr.io/airtai/fastagency-studio:$GITHUB_REF_NAME ghcr.io/airtai/fastagency-studio:latest
       - name: Push only if branch name is main or dev
         if: github.ref_name == 'main' || github.ref_name == 'dev'
-        run: docker push ghcr.io/$GITHUB_REPOSITORY --all-tags
+        run: docker push ghcr.io/airtai/fastagency-studio --all-tags
       - name: Sleep for 10 seconds
         run: sleep 10
 
@@ -121,14 +121,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: docker pull ghcr.io/$GITHUB_REPOSITORY-auth-callout:$GITHUB_REF_NAME || docker pull ghcr.io/$GITHUB_REPOSITORY-auth-callout:dev || true
-      - run: docker build -t ghcr.io/$GITHUB_REPOSITORY-auth-callout:${GITHUB_REF_NAME////-} ./auth_callout
+      - run: docker pull ghcr.io/airtai/fastagency-studio-auth-callout:$GITHUB_REF_NAME || docker pull ghcr.io/airtai/fastagency-studio-auth-callout:dev || true
+      - run: docker build -t ghcr.io/airtai/fastagency-studio-auth-callout:${GITHUB_REF_NAME////-} ./auth_callout
       - name: Add tag latest if branch is main
         if: github.ref_name == 'main'
-        run: docker tag ghcr.io/$GITHUB_REPOSITORY-auth-callout:$GITHUB_REF_NAME ghcr.io/$GITHUB_REPOSITORY-auth-callout:latest
+        run: docker tag ghcr.io/airtai/fastagency-studio-auth-callout:$GITHUB_REF_NAME ghcr.io/airtai/fastagency-studio-auth-callout:latest
       - name: Push only if branch name is main or dev
         if: github.ref_name == 'main' || github.ref_name == 'dev'
-        run: docker push ghcr.io/$GITHUB_REPOSITORY-auth-callout --all-tags
+        run: docker push ghcr.io/airtai/fastagency-studio-auth-callout --all-tags
 
   # https://github.com/marketplace/actions/alls-green#why
   check: # This job does nothing and is only used for the branch protection

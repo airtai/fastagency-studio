@@ -1,6 +1,12 @@
 name: Deploy NATS
 
 on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - docker-compose/nats/nats_server.conf
   workflow_dispatch:
     inputs:
       clear_jetstream:

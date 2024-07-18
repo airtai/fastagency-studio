@@ -17,8 +17,8 @@ jobs:
       matrix:
         domain:
           [
-            "fastagency.ai",
-            "staging.fastagency.ai",
+            "studio.fastagency.ai",
+            "studio.staging.fastagency.ai",
             "api.fastagency.ai",
             "api.staging.fastagency.ai",
             "weather.tools.fastagency.ai",

@@ -8,7 +8,7 @@ pip install -e ".[dev]"
 pre-commit install
 
 # install wasp
-curl -sSL https://get.wasp-lang.dev/installer.sh | sh
+curl -sSL https://get.wasp-lang.dev/installer.sh | sh -s -- -v 0.13.2
 
 cd app && wasp db migrate-dev && cd ..
 

@@ -32,7 +32,7 @@ COPY scripts/* schema.prisma pyproject.toml README.md ./
 RUN pip install -e ".[dev]"
 
 # Install wasp
-RUN curl -sSL https://get.wasp-lang.dev/installer.sh | sh -s -- -v 0.13.2
+RUN curl -sSL https://get.wasp-lang.dev/installer.sh | sh -s -- -v 0.14.0
 # Install github cli
 RUN (type -p wget >/dev/null || (apt update && apt-get install wget -y)) \
     && mkdir -p -m 755 /etc/apt/keyrings \

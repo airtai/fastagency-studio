@@ -44,6 +44,7 @@ classifiers = [
 dynamic = ["version"]
 
 dependencies = [
+    "fastagency @ git+https://github.com/airtai/fastagencyapi.git",
     "pyautogen[anthropic,together]==0.2.32",
     "faststream[nats]>=0.5.10,<0.6",
     "typing-extensions>=4.8.0,<5",

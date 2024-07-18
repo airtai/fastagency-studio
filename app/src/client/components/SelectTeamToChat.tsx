@@ -41,7 +41,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
     }
 
     if (message.trim() === '') {
-      setFormError((prev) => ({ ...prev, message: 'Task description cannot be empty' }));
+      setFormError((prev) => ({ ...prev, message: 'Message cannot be empty' }));
       setIsSubmitting(false);
       return;
     }

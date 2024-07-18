@@ -3,7 +3,7 @@ version: "3.4"
 name: fastagency
 services:
   fastapi-app:  # nosemgrep
-    image: ghcr.io/${GITHUB_REPOSITORY}:${TAG}
+    image: ghcr.io/airtai/fastagency-studio:${TAG}
     container_name: ${container_name}
     ports:
       - "8000:8000"

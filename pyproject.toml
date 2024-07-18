@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "fastagency"
+name = "fastagency-studio"
 description = "FastAgency: a repository of open-source AI agents"
 readme = "README.md"
 authors = [
@@ -106,8 +106,8 @@ test-core = [
 ]
 
 testing = [
-    "fastagency[test-core]",
-    "fastagency[server]", # Uvicorn is needed for testing
+    "fastagency-studio[test-core]",
+    "fastagency-studio[server]", # Uvicorn is needed for testing
     "pydantic-settings==2.3.4",
     "PyYAML==6.0.1",
     "watchfiles==0.22.0",
@@ -115,7 +115,7 @@ testing = [
 ]
 
 dev = [
-    "fastagency[server,lint,testing,devdocs]",
+    "fastagency-studio[server,lint,testing,devdocs]",
     "pre-commit==3.7.1",
     "detect-secrets==1.5.0",
     "asyncer==0.0.7",

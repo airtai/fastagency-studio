@@ -131,7 +131,7 @@ class TogetherAI(Model):
     model: Annotated[  # type: ignore[valid-type]
         TogetherModels,
         Field(description="The model to use for the Together API"),
-    ] = "Meta Llama 3 70B Chat"
+    ] = "Meta Llama 3 70B Reference"
 
     api_key: TogetherAIAPIKeyRef
 

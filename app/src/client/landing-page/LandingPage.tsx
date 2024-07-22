@@ -6,13 +6,10 @@ import { AiFillCloseCircle } from 'react-icons/ai';
 import { HiBars3 } from 'react-icons/hi2';
 import { BiLogIn } from 'react-icons/bi';
 import logo from '../static/logo.svg';
-import openSaasBanner from '../static/open-saas-banner.png';
-import { features, navigation, faqs, footerNavigation, testimonials } from './contentSections';
+import { features, navigation } from './contentSections';
 import DropdownUser from '../components/DropdownUser';
-import { DOCS_URL } from '../../shared/constants';
 import { UserMenuItems } from '../components/UserMenuItems';
 import UserActionButton from '../components/UserActionButton';
-import DarkModeSwitcher from '../admin/components/DarkModeSwitcher';
 import SocialMediaIcons from '../components/SocialMediaIcons';
 
 export default function LandingPage() {

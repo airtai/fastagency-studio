@@ -1,7 +1,12 @@
-// import { renderHook, waitFor } from '@testing-library/react';
-import { test, expect, describe, it } from 'vitest';
-import { getTargetModel } from '../components/buildPage/UserPropertyHandler';
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, Mock } from 'vitest';
+import { BrowserRouter as Router } from 'react-router-dom';
 import _ from 'lodash';
+
+import { useQuery } from 'wasp/client/operations';
+
+import UserPropertyHandler, { getTargetModel } from '../components/buildPage/UserPropertyHandler';
 
 describe('getTargetModel', () => {
   const schemas = [
@@ -208,5 +213,261 @@ describe('getTargetModel', () => {
     const targetModel = getTargetModel(test_schemas, selectedModel, key);
     const expected = '';
     expect(targetModel).toEqual(expected);
+  });
+});
+
+// Mock the required hooks and components
+vi.mock('wasp/client/operations', () => ({
+  useQuery: vi.fn(() => ({
+    data: [
+      { uuid: '1', type_name: 'testProperty', model_name: 'Model1', json_str: {} },
+      { uuid: '2', type_name: 'testProperty', model_name: 'Model2', json_str: {} },
+    ],
+    isLoading: false,
+    refetch: vi.fn(),
+  })),
+  getModels: vi.fn(),
+}));
+
+vi.mock('../components/CustomBreadcrumb', () => ({
+  default: ({ pageName }: { pageName: string }) => <div data-testid='custom-breadcrumb'>{pageName}</div>,
+}));
+
+vi.mock('../components/ModelsList', () => ({
+  default: ({ onSelectModel }: { onSelectModel: (index: number) => void }) => (
+    <div data-testid='models-list'>
+      <button onClick={() => onSelectModel(0)}>Select Model 1</button>
+      <button onClick={() => onSelectModel(1)}>Select Model 2</button>
+    </div>
+  ),
+}));
+
+vi.mock('../components/ModelForm', () => ({
+  default: ({
+    selectedModel,
+    onModelChange,
+    onCancelCallback,
+  }: {
+    selectedModel: string;
+    onModelChange: (model: string) => void;
+    onCancelCallback: (event: React.FormEvent) => void;
+  }) => (
+    <div data-testid='model-form'>
+      <span>{selectedModel}</span>
+      <button onClick={() => onModelChange('NewModel')}>Change Model</button>
+      <button onClick={(e) => onCancelCallback(e as React.FormEvent)}>Cancel</button>
+    </div>
+  ),
+}));
+
+vi.mock('../components/CustomSidebar', () => ({
+  navLinkItems: [{ componentName: 'testProperty', label: 'Test Property' }],
+}));
+
+vi.mock('../components/Button', () => ({
+  default: ({ onClick, label }: { onClick: () => void; label: string }) => (
+    <button onClick={onClick} data-testid='add-button'>
+      {label}
+    </button>
+  ),
+}));
+
+vi.mock('../admin/common/Loader', () => ({
+  default: () => <div data-testid='loader'>Loader</div>,
+}));
+
+vi.mock('../components/NotificationBox', () => ({
+  default: ({ message }: { message: string }) => <div data-testid='notification-box'>{message}</div>,
+}));
+
+describe('UserPropertyHandler Initial Rendering', () => {
+  const mockProps = {
+    data: {
+      schemas: [{ name: 'TestSchema' }],
+      name: 'testProperty',
+    },
+    togglePropertyList: false,
+  };
+
+  it('renders without crashing', () => {
+    render(
+      <Router>
+        <UserPropertyHandler {...mockProps} />
+      </Router>
+    );
+    expect(screen.getByTestId('custom-breadcrumb')).toBeDefined();
+  });
+  it('displays "Add [propertyHeader]" button when showAddModel is false', () => {
+    render(
+      <Router>
+        <UserPropertyHandler {...mockProps} />
+      </Router>
+    );
+    expect(screen.getByText('Add TestProperty')).toBeDefined();
+  });
+  it('renders ModelsList when showAddModel is false', () => {
+    render(
+      <Router>
+        <UserPropertyHandler {...mockProps} />
+      </Router>
+    );
+    expect(screen.getByTestId('models-list')).toBeDefined();
+  });
+  it('does not render ModelForm initially', () => {
+    render(
+      <Router>
+        <UserPropertyHandler {...mockProps} />
+      </Router>
+    );
+    expect(screen.queryByTestId('model-form')).toBeNull();
+  });
+  describe('UserPropertyHandler State Management', () => {
+    it('initializes selectedModel with the first schema name', () => {
+      render(
+        <Router>
+          <UserPropertyHandler {...mockProps} />
+        </Router>
+      );
+
+      // We can't directly access component state, so we'll check if ModelForm (when shown) has the correct selectedModel
+      fireEvent.click(screen.getByTestId('add-button'));
+      expect(screen.getByTestId('model-form')).toHaveTextContent('TestSchema');
+    });
+    it('changes showAddModel state when the Add button is clicked', () => {
+      render(
+        <Router>
+          <UserPropertyHandler {...mockProps} />
+        </Router>
+      );
+
+      // Initially, ModelForm should not be visible
+      expect(screen.queryByTestId('model-form')).toBeNull();
+
+      // Click the Add button
+      fireEvent.click(screen.getByTestId('add-button'));
+
+      // Now, ModelForm should be visible
+      expect(screen.getByTestId('model-form')).toBeDefined();
+    });
+    it('initializes updateExistingModel as null', () => {
+      render(
+        <Router>
+          <UserPropertyHandler {...mockProps} />
+        </Router>
+      );
+
+      // Click the Add button to show ModelForm
+      fireEvent.click(screen.getByTestId('add-button'));
+
+      // If updateExistingModel is null, ModelForm should only show the initial selectedModel
+      // and not any pre-filled data from an existing model
+      const modelForm = screen.getByTestId('model-form');
+      expect(modelForm).toHaveTextContent('TestSchema');
+
+      // Check that the ModelForm doesn't contain any unexpected model data
+      expect(modelForm).not.toHaveTextContent('Model1');
+      expect(modelForm).not.toHaveTextContent('Model2');
+
+      // Verify the presence of the buttons without checking their exact text
+      expect(modelForm.querySelector('button')).toBeTruthy();
+    });
+  });
+  describe('UserPropertyHandler User Interactions', () => {
+    const mockProps = {
+      data: {
+        schemas: [{ name: 'TestSchema' }],
+        name: 'testProperty',
+      },
+      togglePropertyList: false,
+    };
+
+    it('shows ModelForm when Add button is clicked (handleClick function)', () => {
+      render(
+        <Router>
+          <UserPropertyHandler {...mockProps} />
+        </Router>
+      );
+
+      expect(screen.queryByTestId('model-form')).toBeNull();
+      fireEvent.click(screen.getByTestId('add-button'));
+      expect(screen.getByTestId('model-form')).toBeDefined();
+    });
+
+    it('updates selectedModel state when handleModelChange is called', () => {
+      render(
+        <Router>
+          <UserPropertyHandler {...mockProps} />
+        </Router>
+      );
+
+      fireEvent.click(screen.getByTestId('add-button'));
+      expect(screen.getByTestId('model-form')).toHaveTextContent('TestSchema');
+
+      fireEvent.click(screen.getByText('Change Model'));
+      expect(screen.getByTestId('model-form')).toHaveTextContent('NewModel');
+    });
+
+    it('calls updateSelectedModel when a model is selected from the list', () => {
+      render(
+        <Router>
+          <UserPropertyHandler {...mockProps} />
+        </Router>
+      );
+
+      fireEvent.click(screen.getByText('Select Model 2'));
+      expect(screen.getByTestId('model-form')).toBeDefined();
+      expect(screen.getByTestId('model-form')).toHaveTextContent('Model2');
+    });
+
+    it('sets showAddModel to false when onCancelCallback is called', () => {
+      render(
+        <Router>
+          <UserPropertyHandler {...mockProps} />
+        </Router>
+      );
+
+      fireEvent.click(screen.getByTestId('add-button'));
+      expect(screen.getByTestId('model-form')).toBeDefined();
+
+      fireEvent.click(screen.getByText('Cancel'));
+      expect(screen.queryByTestId('model-form')).toBeNull();
+    });
+  });
+  describe('UserPropertyHandler Conditional Rendering', () => {
+    const mockProps = {
+      data: {
+        schemas: [{ name: 'TestSchema' }],
+        name: 'testProperty',
+      },
+      togglePropertyList: false,
+    };
+
+    it('shows ModelsList when showAddModel is false', () => {
+      (useQuery as Mock).mockReturnValue({ data: [], isLoading: false, refetch: vi.fn() });
+
+      render(
+        <Router>
+          <UserPropertyHandler {...mockProps} />
+        </Router>
+      );
+
+      expect(screen.getByTestId('models-list')).toBeDefined();
+      expect(screen.queryByTestId('model-form')).toBeNull();
+    });
+
+    it('shows ModelForm when showAddModel is true', () => {
+      (useQuery as Mock).mockReturnValue({ data: [], isLoading: false, refetch: vi.fn() });
+
+      render(
+        <Router>
+          <UserPropertyHandler {...mockProps} />
+        </Router>
+      );
+
+      fireEvent.click(screen.getByTestId('add-button'));
+
+      expect(screen.queryByTestId('models-list')).toBeNull();
+      expect(screen.getByTestId('model-form')).toBeDefined();
+    });
   });
 });

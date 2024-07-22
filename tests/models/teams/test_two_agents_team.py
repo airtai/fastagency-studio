@@ -1,8 +1,6 @@
 import uuid
 
 import pytest
-from pydantic import ValidationError
-
 from fastagency.helpers import create_autogen
 from fastagency.models.agents.assistant import AssistantAgent
 from fastagency.models.agents.web_surfer import WebSurferAgent
@@ -10,6 +8,8 @@ from fastagency.models.base import Model, ObjectReference
 from fastagency.models.llms.azure import AzureOAI
 from fastagency.models.llms.openai import OpenAI
 from fastagency.models.teams.two_agent_teams import TwoAgentTeam
+from pydantic import ValidationError
+
 from tests.helpers import get_by_tag, parametrize_fixtures
 
 

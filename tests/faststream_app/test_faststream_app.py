@@ -3,9 +3,8 @@ import json
 import random
 
 import pytest
-from faststream.nats import TestNatsBroker
-
 from fastagency.faststream_app import broker, register_handler, stream
+from faststream.nats import TestNatsBroker
 
 
 @pytest.mark.nats()

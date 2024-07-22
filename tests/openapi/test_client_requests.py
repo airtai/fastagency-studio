@@ -2,9 +2,8 @@ from typing import Any, Dict, List, Optional, Union
 
 import requests
 from _pytest.monkeypatch import MonkeyPatch
-from pydantic import BaseModel, Field
-
 from fastagency.openapi.client import Client
+from pydantic import BaseModel, Field
 
 
 class Item(BaseModel):

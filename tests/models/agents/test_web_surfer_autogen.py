@@ -1,6 +1,6 @@
 import pytest
-
 from fastagency.models.agents.web_surfer_autogen import WebSurferAnswer, WebSurferChat
+
 from tests.helpers import get_by_tag, parametrize_fixtures
 
 

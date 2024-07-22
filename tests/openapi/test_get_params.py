@@ -1,8 +1,7 @@
 from typing import Any, List, Optional, Union
 
-from pydantic import BaseModel, Field
-
 from fastagency.openapi.client import Client
+from pydantic import BaseModel, Field
 
 
 class Item(BaseModel):

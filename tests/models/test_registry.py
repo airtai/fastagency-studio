@@ -1,5 +1,4 @@
 import pytest
-
 from fastagency.models.base import Model
 from fastagency.models.registry import ModelSchema, Registry
 

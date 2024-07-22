@@ -1,10 +1,10 @@
 import uuid
 
 import pytest
-
 from fastagency.helpers import get_model_by_ref
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
+
 from tests.helpers import get_by_tag, parametrize_fixtures
 
 

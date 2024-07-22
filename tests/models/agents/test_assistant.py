@@ -2,7 +2,6 @@ from typing import Any, Dict
 
 import autogen
 import pytest
-
 from fastagency.helpers import create_autogen
 from fastagency.models.agents.assistant import AssistantAgent
 from fastagency.models.base import ObjectReference

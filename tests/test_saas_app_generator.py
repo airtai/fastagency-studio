@@ -5,7 +5,6 @@ from pathlib import Path
 from unittest.mock import ANY, MagicMock, call, mock_open, patch
 
 import pytest
-
 from fastagency.saas_app_generator import InvalidGHTokenError, SaasAppGenerator
 
 

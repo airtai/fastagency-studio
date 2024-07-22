@@ -1,7 +1,6 @@
 from typing import Any, Dict
 
 import pytest
-
 from fastagency.helpers import create_autogen, get_model_by_ref
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey

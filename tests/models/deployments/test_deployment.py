@@ -1,14 +1,13 @@
 import uuid
 
 import pytest
-from pydantic import ValidationError
-
 from fastagency.models.base import Model
 from fastagency.models.deployments.deployment import Deployment
 from fastagency.models.secrets.fly_token import FlyToken
 from fastagency.models.secrets.github_token import GitHubToken
 from fastagency.models.teams.multi_agent_team import MultiAgentTeam
 from fastagency.models.teams.two_agent_teams import TwoAgentTeam
+from pydantic import ValidationError
 
 
 class TestDeployment:

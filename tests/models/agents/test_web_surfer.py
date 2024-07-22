@@ -4,14 +4,14 @@ from typing import Any, Dict
 import autogen.agentchat.contrib.web_surfer
 import pytest
 from asyncer import asyncify
-from fastapi import BackgroundTasks
-
 from fastagency.app import add_model
 from fastagency.helpers import create_autogen, get_model_by_ref
 from fastagency.models.agents.web_surfer import BingAPIKey, WebSurferAgent
 from fastagency.models.agents.web_surfer_autogen import WebSurferAnswer
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.azure import AzureOAIAPIKey
+from fastapi import BackgroundTasks
+
 from tests.helpers import get_by_tag, parametrize_fixtures
 
 

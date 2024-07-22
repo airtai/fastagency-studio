@@ -16,7 +16,7 @@ import CustomBreadcrumb from '../CustomBreadcrumb';
 import { useHistory } from 'react-router-dom';
 import { FormData } from '../../hooks/useForm';
 
-const FORM_DATA_STORAGE_KEY = 'formData';
+const FORM_DATA_STORAGE_KEY = 'formDataStack';
 
 interface Props {
   data: any;
@@ -30,16 +30,9 @@ interface SourceTarget {
 
 interface FormDataObj {
   [key: string]: any;
-  name: string;
-  model: string;
-  api_key: string;
-  base_url: string;
-  api_type: string;
-  api_version: string;
-  temperature: number;
 }
 
-interface FormDataInterface {
+interface FormDataStackItem {
   source: SourceTarget;
   target: SourceTarget;
   formData: FormDataObj;
@@ -69,7 +62,7 @@ export const storeFormData = (
   formData: FormData,
   key: string
 ) => {
-  const dataToStore = {
+  const newStackItem: FormDataStackItem = {
     source: {
       propertyName: propertyName,
       selectedModel: selectedModel,
@@ -82,8 +75,9 @@ export const storeFormData = (
     key: key,
   };
 
-  localStorage.removeItem(FORM_DATA_STORAGE_KEY);
-  localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(dataToStore));
+  let formDataStack: FormDataStackItem[] = JSON.parse(localStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
+  formDataStack.push(newStackItem);
+  localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
 };
 
 const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
@@ -122,26 +116,32 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   };
 
   const handleFormResume = (filteredData: any) => {
-    const formData = localStorage.getItem(FORM_DATA_STORAGE_KEY);
-    if (formData) {
-      let formDataObj: FormDataInterface = JSON.parse(formData);
-      const key: string = formDataObj.key;
-      formDataObj.formData[key] = {
-        name: formDataObj.target.selectedModel,
-        type: formDataObj.target.propertyName,
+    let formDataStack: FormDataStackItem[] = JSON.parse(localStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
+    if (formDataStack.length > 0) {
+      let currentItem = formDataStack[formDataStack.length - 1];
+      const key: string = currentItem.key;
+      currentItem.formData[key] = {
+        name: currentItem.target.selectedModel,
+        type: currentItem.target.propertyName,
         uuid: filteredData.uuid,
       };
       setShowAddModel(true);
-
       // @ts-ignore
-      setUpdateExistingModel(formDataObj.formData);
+      setUpdateExistingModel(currentItem.formData);
+      targetModelToAdd.current = currentItem.source.selectedModel;
 
-      // @ts-ignore
-      targetModelToAdd.current = formDataObj.source.selectedModel;
+      // Remove the completed item from the stack
+      formDataStack.pop();
+      localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
 
-      history.push(`/build/${formDataObj.source.propertyName}`);
-
-      localStorage.removeItem(FORM_DATA_STORAGE_KEY);
+      // Check if there are more levels to process
+      if (formDataStack.length > 0) {
+        const nextItem = formDataStack[formDataStack.length - 1];
+        history.push(`/build/${nextItem.target.propertyName}`);
+      } else {
+        // If the stack is empty, we've completed all levels
+        history.push(`/build/${currentItem.source.propertyName}`);
+      }
     }
   };
 

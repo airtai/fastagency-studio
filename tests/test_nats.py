@@ -117,7 +117,7 @@ class TestAutogen:
         actual = []
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(
+        @broker.subscriber(  # type: ignore[misc]
             f"chat.client.messages.{user_id}.playground.{thread_id}", stream=stream
         )
         async def client_input_handler(msg: ServerResponseModel) -> None:
@@ -268,7 +268,7 @@ class TestAutogen:
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
         error_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(
+        @broker.subscriber(  # type: ignore[misc]
             f"chat.client.messages.{user_id}.playground.{thread_id}", stream=stream
         )
         async def client_input_handler(msg: ServerResponseModel) -> None:
@@ -437,7 +437,7 @@ class TestAutogen:
         actual = []
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(
+        @broker.subscriber(  # type: ignore[misc]
             f"chat.client.messages.{user_uuid}.playground.{thread_id}", stream=stream
         )
         async def client_input_handler(msg: ServerResponseModel) -> None:

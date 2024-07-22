@@ -31,7 +31,7 @@ async def test_ping_handler() -> None:
 
     msg_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-    @broker.subscriber(f"pong.{client_id}", stream=stream)
+    @broker.subscriber(f"pong.{client_id}", stream=stream)  # type: ignore[misc]
     async def pong_handler(msg: str) -> None:
         await msg_queue.put(msg)
 
@@ -65,7 +65,7 @@ async def test_ping_handler_with_wrong_message() -> None:
 
     msg_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-    @broker.subscriber(f"pong.{client_id}", stream=stream)
+    @broker.subscriber(f"pong.{client_id}", stream=stream)  # type: ignore[misc]
     async def pong_handler(msg: str) -> None:
         await msg_queue.put(msg)
 

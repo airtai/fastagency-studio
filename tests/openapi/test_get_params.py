@@ -31,7 +31,7 @@ app = Client(
 
 
 def test_get_params_with_query_params_and_path_params() -> None:
-    @app.put(
+    @app.put(  # type: ignore[misc]
         "/items/{item_id}/ships/{ship}",
         response_model=Any,
         responses={"422": {"model": HTTPValidationError}},
@@ -56,7 +56,7 @@ def test_get_params_with_query_params_and_path_params() -> None:
 
 
 def test_get_params_with_query_params_only() -> None:
-    @app.get(
+    @app.get(  # type: ignore[misc]
         "/items",
         response_model=Any,
         responses={"422": {"model": HTTPValidationError}},
@@ -75,7 +75,7 @@ def test_get_params_with_query_params_only() -> None:
 
 
 def test_get_params_with_path_params_only() -> None:
-    @app.post(
+    @app.post(  # type: ignore[misc]
         "/items/{item_id}/ships/{ship}",
         response_model=Any,
         responses={"422": {"model": HTTPValidationError}},
@@ -98,7 +98,7 @@ def test_get_params_with_path_params_only() -> None:
 
 
 def test_get_params_with_no_query_params_or_path_params() -> None:
-    @app.delete(
+    @app.delete(  # type: ignore[misc]
         "/items",
         response_model=Any,
         responses={"422": {"model": HTTPValidationError}},

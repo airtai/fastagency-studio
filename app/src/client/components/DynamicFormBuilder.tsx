@@ -20,7 +20,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   onSuccessCallback,
   onCancelCallback,
   onDeleteCallback,
-  addPropertyClick,
+  handleAddProperty,
 }) => {
   const { formData, handleChange, formErrors, setFormErrors } = useForm({
     jsonSchema,
@@ -59,7 +59,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   };
 
   const addProperty = (property_type: string, key: string) => {
-    addPropertyClick(property_type, formData, key);
+    handleAddProperty(property_type, formData, key);
   };
 
   return (
@@ -80,7 +80,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
         formErrors={formErrors}
         refValues={refValues}
         isLoading={isLoading}
-        addPropertyClick={addProperty}
+        handleAddProperty={addProperty}
         updateExistingModel={updateExistingModel}
         handleSubmit={onSubmit}
         instructionForDeployment={instructionForDeployment}

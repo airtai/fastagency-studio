@@ -1,12 +1,45 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, Mock } from 'vitest';
+import { describe, it, expect, vi, Mock, beforeEach } from 'vitest';
 import { BrowserRouter as Router } from 'react-router-dom';
 import _ from 'lodash';
 
 import { useQuery } from 'wasp/client/operations';
 
-import UserPropertyHandler, { getTargetModel } from '../components/buildPage/UserPropertyHandler';
+import UserPropertyHandler, { getTargetModel, storeFormData } from '../components/buildPage/UserPropertyHandler';
+
+describe('storeFormData', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('stores form data correctly', () => {
+    const propertyName = 'llm';
+    const selectedModel = 'OpenAI';
+    const targetPropertyName = 'secret';
+    const targetModel = 'OpenAIAPIKey';
+    const formData = {
+      name: '',
+      model: 'gpt-3.5-turbo',
+      api_key: '',
+      base_url: 'https://api.openai.com/v1',
+      api_type: 'openai',
+      temperature: 0.8,
+    };
+    const key = 'api_key';
+
+    const result = storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key);
+    const saveFormData = localStorage.getItem('formData');
+    //@ts-ignore
+    const storedData = JSON.parse(saveFormData);
+    expect(storedData).toEqual({
+      source: { propertyName, selectedModel },
+      target: { propertyName: targetPropertyName, selectedModel: targetModel },
+      formData,
+      key,
+    });
+  });
+});
 
 describe('getTargetModel', () => {
   const schemas = [

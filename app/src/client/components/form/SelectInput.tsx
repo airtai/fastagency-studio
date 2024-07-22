@@ -11,7 +11,7 @@ interface SelectInputProps {
   options: string[];
   onChange: (value: string) => void;
   propertyTypes: string[];
-  addPropertyClick: (property_type: string) => void;
+  handleAddProperty: (property_type: string) => void;
   isRequired: boolean;
 }
 
@@ -40,7 +40,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   options,
   onChange,
   propertyTypes,
-  addPropertyClick,
+  handleAddProperty,
   isRequired,
 }) => {
   const [selectedOption, setSelectedOption] = useState(value);
@@ -57,7 +57,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
     const selectedOption = e.value;
     setSelectedOption(selectedOption);
     if (_.includes(propertyTypes, selectedOption)) {
-      addPropertyClick(selectedOption);
+      handleAddProperty(selectedOption);
     }
     onChange(selectedOption);
   };

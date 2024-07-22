@@ -23,6 +23,29 @@ interface Props {
   togglePropertyList: boolean;
 }
 
+interface SourceTarget {
+  propertyName: string;
+  selectedModel: string;
+}
+
+interface FormDataObj {
+  [key: string]: any;
+  name: string;
+  model: string;
+  api_key: string;
+  base_url: string;
+  api_type: string;
+  api_version: string;
+  temperature: number;
+}
+
+interface FormDataInterface {
+  source: SourceTarget;
+  target: SourceTarget;
+  formData: FormDataObj;
+  key: string;
+}
+
 export const getTargetModel = (schemas: any, selectedModel: string, key: string) => {
   const matchedModel = _.find(schemas, ['name', selectedModel]);
   if (!matchedModel) {
@@ -36,6 +59,31 @@ export const getTargetModel = (schemas: any, selectedModel: string, key: string)
     retVal = refValue.replace(/Ref$/, '');
   }
   return retVal;
+};
+
+export const storeFormData = (
+  propertyName: string,
+  selectedModel: string,
+  targetPropertyName: string,
+  targetModel: string,
+  formData: FormData,
+  key: string
+) => {
+  const dataToStore = {
+    source: {
+      propertyName: propertyName,
+      selectedModel: selectedModel,
+    },
+    target: {
+      propertyName: targetPropertyName,
+      selectedModel: targetModel,
+    },
+    formData: formData,
+    key: key,
+  };
+
+  localStorage.removeItem(FORM_DATA_STORAGE_KEY);
+  localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(dataToStore));
 };
 
 const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
@@ -73,22 +121,51 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
     setSelectedModel(newModel);
   };
 
+  const handleFormResume = (filteredData: any) => {
+    const formData = localStorage.getItem(FORM_DATA_STORAGE_KEY);
+    if (formData) {
+      let formDataObj: FormDataInterface = JSON.parse(formData);
+      const key: string = formDataObj.key;
+      formDataObj.formData[key] = {
+        name: formDataObj.target.selectedModel,
+        type: formDataObj.target.propertyName,
+        uuid: filteredData.uuid,
+      };
+      setShowAddModel(true);
+
+      // @ts-ignore
+      setUpdateExistingModel(formDataObj.formData);
+
+      // @ts-ignore
+      targetModelToAdd.current = formDataObj.source.selectedModel;
+
+      history.push(`/build/${formDataObj.source.propertyName}`);
+
+      localStorage.removeItem(FORM_DATA_STORAGE_KEY);
+    }
+  };
+
   const onSuccessCallback = async (payload: any): Promise<{ addUserModelResponse: any }> => {
     let addUserModelResponse;
     try {
       setIsLoading(true);
       const mergedData = { ...payload, type_name: propertyName, model_name: selectedModel, uuid: payload.uuid };
       const filteredData = filterDataToValidate(mergedData);
-      if (updateExistingModel) {
+      if (updateExistingModel && !targetModelToAdd.current) {
         await updateUserModels({ data: filteredData, uuid: updateExistingModel.uuid });
         setUpdateExistingModel(null);
       } else {
         //@ts-ignore
         addUserModelResponse = await addUserModels(filteredData);
+        if (targetModelToAdd.current) {
+          targetModelToAdd.current = null;
+        }
       }
       refetchModels();
       const isNewDeploymentAdded = propertyName === 'deployment' && !updateExistingModel;
       !isNewDeploymentAdded && setShowAddModel(false);
+
+      handleFormResume(filteredData);
     } catch (error) {
       console.log('error: ', error, 'error.message: ');
       // setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
@@ -155,31 +232,17 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
     setNotificationErrorMessage(null);
   };
 
-  const addPropertyClick = (targerPropertyName: string, formData: FormData, key: string) => {
+  const handleAddProperty = (targetPropertyName: string, formData: FormData, key: string) => {
     const targetModel = getTargetModel(data.schemas, selectedModel, key);
-    const dataToStore = {
-      source: {
-        propertyName: propertyName,
-        selectedModel: selectedModel,
-      },
-      target: {
-        propertyName: targerPropertyName,
-        selectedModel: targetModel,
-      },
-      formData: formData,
-      key: key,
-    };
+    storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key);
 
-    localStorage.removeItem(FORM_DATA_STORAGE_KEY);
-    localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(dataToStore));
-
-    setShowAddModel(false);
+    // setShowAddModel(false);
     setShowAddModel(true);
     setUpdateExistingModel(null);
     const modelToEdit = targetModel === '' ? data.schemas[0].name : targetModel;
     targetModelToAdd.current = modelToEdit;
 
-    history.push(`/build/${targerPropertyName}`);
+    history.push(`/build/${targetPropertyName}`);
   };
 
   const propertyHeader = propertyName === 'llm' ? 'LLM' : capitalizeFirstLetter(propertyName);
@@ -213,7 +276,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
                     onSuccessCallback={onSuccessCallback}
                     onCancelCallback={onCancelCallback}
                     onDeleteCallback={onDeleteCallback}
-                    addPropertyClick={addPropertyClick}
+                    handleAddProperty={handleAddProperty}
                   />
                 )}
               </div>

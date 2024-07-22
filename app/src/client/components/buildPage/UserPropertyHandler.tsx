@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import _ from 'lodash';
 
 import Button from '../Button';
@@ -9,23 +9,34 @@ import NotificationBox from '../NotificationBox';
 import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
 import { navLinkItems } from '../CustomSidebar';
 
-import {
-  getModels,
-  useQuery,
-  updateUserModels,
-  addUserModels,
-  deleteUserModels,
-  propertyDependencies,
-} from 'wasp/client/operations';
+import { getModels, useQuery, updateUserModels, addUserModels, deleteUserModels } from 'wasp/client/operations';
 import { capitalizeFirstLetter, filterDataToValidate, dependsOnProperty } from '../../utils/buildPageUtils';
 import Loader from '../../admin/common/Loader';
 import CustomBreadcrumb from '../CustomBreadcrumb';
 import { useHistory } from 'react-router-dom';
+import { FormData } from '../../hooks/useForm';
+
+const FORM_DATA_STORAGE_KEY = 'formData';
 
 interface Props {
   data: any;
   togglePropertyList: boolean;
 }
+
+export const getTargetModel = (schemas: any, selectedModel: string, key: string) => {
+  const matchedModel = _.find(schemas, ['name', selectedModel]);
+  if (!matchedModel) {
+    return '';
+  }
+  const matchedModeRef = matchedModel.json_schema.properties[key];
+  let retVal = '';
+  if (_.has(matchedModeRef, '$ref')) {
+    // remove "Ref" word from the end of the string
+    const refValue = matchedModeRef['$ref'].split('/').pop();
+    retVal = refValue.replace(/Ref$/, '');
+  }
+  return retVal;
+};
 
 const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const history = useHistory();
@@ -35,6 +46,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const [updateExistingModel, setUpdateExistingModel] = useState<SelectedModelSchema | null>(null);
   const propertyName = data.name;
   const { data: allUserProperties, refetch: refetchModels, isLoading: getModelsIsLoading } = useQuery(getModels);
+  const targetModelToAdd = useRef(null);
 
   const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
   useEffect(() => {
@@ -43,7 +55,8 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
 
   useEffect(() => {
     if (data && data.schemas && data.schemas[0].name) {
-      setSelectedModel(data.schemas[0].name);
+      const targetModel = targetModelToAdd.current || data.schemas[0].name;
+      setSelectedModel(targetModel);
     }
   }, [data]);
 
@@ -142,15 +155,35 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
     setNotificationErrorMessage(null);
   };
 
-  const addPropertyClick = (property_type: string) => {
+  const addPropertyClick = (targerPropertyName: string, formData: FormData, key: string) => {
+    const targetModel = getTargetModel(data.schemas, selectedModel, key);
+    const dataToStore = {
+      source: {
+        propertyName: propertyName,
+        selectedModel: selectedModel,
+      },
+      target: {
+        propertyName: targerPropertyName,
+        selectedModel: targetModel,
+      },
+      formData: formData,
+      key: key,
+    };
+
+    localStorage.removeItem(FORM_DATA_STORAGE_KEY);
+    localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(dataToStore));
+
     setShowAddModel(false);
+    setShowAddModel(true);
     setUpdateExistingModel(null);
-    handleClick();
-    history.push(`/build/${property_type}`);
+    const modelToEdit = targetModel === '' ? data.schemas[0].name : targetModel;
+    targetModelToAdd.current = modelToEdit;
+
+    history.push(`/build/${targerPropertyName}`);
   };
 
   const propertyHeader = propertyName === 'llm' ? 'LLM' : capitalizeFirstLetter(propertyName);
-  const propertyDisplayName = propertyName ? _.find(navLinkItems, ['componentName', propertyName]).label : '';
+  const propertyDisplayName = propertyName ? _.find(navLinkItems, ['componentName', propertyName])?.label : '';
 
   return (
     <>

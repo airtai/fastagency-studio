@@ -58,6 +58,10 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     handleSubmit(event, formData, refValues);
   };
 
+  const addProperty = (property_type: string, key: string) => {
+    addPropertyClick(property_type, formData, key);
+  };
+
   return (
     <>
       {!instructionForDeployment && isDeployment && (
@@ -76,7 +80,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
         formErrors={formErrors}
         refValues={refValues}
         isLoading={isLoading}
-        addPropertyClick={addPropertyClick}
+        addPropertyClick={addProperty}
         updateExistingModel={updateExistingModel}
         handleSubmit={onSubmit}
         instructionForDeployment={instructionForDeployment}

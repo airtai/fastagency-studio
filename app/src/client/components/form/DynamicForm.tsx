@@ -15,7 +15,7 @@ interface DynamicFormProps {
   formErrors: Record<string, string>;
   refValues: Record<string, any>;
   isLoading: boolean;
-  addPropertyClick: (property_type: string) => void;
+  addPropertyClick: (property_type: string, key: string) => void;
   updateExistingModel: any;
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   instructionForDeployment: Record<string, string> | null;
@@ -66,7 +66,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 options={formElementsObject.enum}
                 onChange={(value) => handleChange(key, value)}
                 propertyTypes={propertyTypes}
-                addPropertyClick={addPropertyClick}
+                addPropertyClick={(property_type) => addPropertyClick(property_type, key)}
                 isRequired={isRequired}
               />
             ) : key === 'system_message' ? (

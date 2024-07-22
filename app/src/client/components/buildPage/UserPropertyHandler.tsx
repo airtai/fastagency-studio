@@ -16,7 +16,7 @@ import CustomBreadcrumb from '../CustomBreadcrumb';
 import { useHistory } from 'react-router-dom';
 import { FormData } from '../../hooks/useForm';
 
-const FORM_DATA_STORAGE_KEY = 'formDataStack';
+export const FORM_DATA_STORAGE_KEY = 'formDataStack';
 
 interface Props {
   data: any;
@@ -80,6 +80,42 @@ export const storeFormData = (
   localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
 };
 
+export const processFormDataStack = (
+  filteredData: any
+): {
+  currentItem: FormDataStackItem | null;
+  nextRoute: string | null;
+  updatedStack: FormDataStackItem[];
+} => {
+  let formDataStack: FormDataStackItem[] = JSON.parse(localStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
+  let currentItem = null;
+  let nextRoute = null;
+
+  if (formDataStack.length > 0) {
+    currentItem = formDataStack[formDataStack.length - 1];
+    const key: string = currentItem.key;
+    currentItem.formData[key] = {
+      name: currentItem.target.selectedModel,
+      type: currentItem.target.propertyName,
+      uuid: filteredData.uuid,
+    };
+
+    // Remove the completed item from the stack
+    formDataStack.pop();
+
+    // Check if there are more levels to process
+    if (formDataStack.length > 0) {
+      const nextItem = formDataStack[formDataStack.length - 1];
+      nextRoute = `/build/${nextItem.target.propertyName}`;
+    } else {
+      // If the stack is empty, we've completed all levels
+      nextRoute = `/build/${currentItem.source.propertyName}`;
+    }
+  }
+
+  return { currentItem, nextRoute, updatedStack: formDataStack };
+};
+
 const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(false);
@@ -116,31 +152,18 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   };
 
   const handleFormResume = (filteredData: any) => {
-    let formDataStack: FormDataStackItem[] = JSON.parse(localStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
-    if (formDataStack.length > 0) {
-      let currentItem = formDataStack[formDataStack.length - 1];
-      const key: string = currentItem.key;
-      currentItem.formData[key] = {
-        name: currentItem.target.selectedModel,
-        type: currentItem.target.propertyName,
-        uuid: filteredData.uuid,
-      };
+    const { currentItem, nextRoute, updatedStack } = processFormDataStack(filteredData);
+
+    if (currentItem) {
       setShowAddModel(true);
       // @ts-ignore
       setUpdateExistingModel(currentItem.formData);
       targetModelToAdd.current = currentItem.source.selectedModel;
 
-      // Remove the completed item from the stack
-      formDataStack.pop();
-      localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+      localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(updatedStack));
 
-      // Check if there are more levels to process
-      if (formDataStack.length > 0) {
-        const nextItem = formDataStack[formDataStack.length - 1];
-        history.push(`/build/${nextItem.target.propertyName}`);
-      } else {
-        // If the stack is empty, we've completed all levels
-        history.push(`/build/${currentItem.source.propertyName}`);
+      if (nextRoute) {
+        history.push(nextRoute);
       }
     }
   };

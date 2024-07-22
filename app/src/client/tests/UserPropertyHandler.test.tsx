@@ -6,14 +6,19 @@ import _ from 'lodash';
 
 import { useQuery } from 'wasp/client/operations';
 
-import UserPropertyHandler, { getTargetModel, storeFormData } from '../components/buildPage/UserPropertyHandler';
+import UserPropertyHandler, {
+  getTargetModel,
+  storeFormData,
+  processFormDataStack,
+  FORM_DATA_STORAGE_KEY,
+} from '../components/buildPage/UserPropertyHandler';
 
 describe('storeFormData', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('stores form data correctly', () => {
+  it('stores form data correctly in an empty stack', () => {
     const propertyName = 'llm';
     const selectedModel = 'OpenAI';
     const targetPropertyName = 'secret';
@@ -28,16 +33,116 @@ describe('storeFormData', () => {
     };
     const key = 'api_key';
 
-    const result = storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key);
-    const saveFormData = localStorage.getItem('formData');
-    //@ts-ignore
-    const storedData = JSON.parse(saveFormData);
-    expect(storedData).toEqual({
-      source: { propertyName, selectedModel },
-      target: { propertyName: targetPropertyName, selectedModel: targetModel },
-      formData,
-      key,
+    storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key);
+    const savedFormData = localStorage.getItem('formDataStack');
+    // @ts-ignore
+    const storedData = JSON.parse(savedFormData);
+
+    expect(storedData).toEqual([
+      {
+        source: { propertyName, selectedModel },
+        target: { propertyName: targetPropertyName, selectedModel: targetModel },
+        formData,
+        key,
+      },
+    ]);
+  });
+  it('adds form data to an existing stack', () => {
+    // Pre-existing data
+    const existingData = [
+      {
+        source: { propertyName: 'team', selectedModel: 'TeamModel' },
+        target: { propertyName: 'agent', selectedModel: 'AgentModel' },
+        formData: { name: 'Team1' },
+        key: 'name',
+      },
+    ];
+    localStorage.setItem('formDataStack', JSON.stringify(existingData));
+
+    // New data to add
+    const propertyName = 'agent';
+    const selectedModel = 'AgentModel';
+    const targetPropertyName = 'llm';
+    const targetModel = 'OpenAI';
+    const formData = { name: 'Agent1' };
+    const key = 'name';
+
+    storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key);
+    const savedFormData = localStorage.getItem('formDataStack');
+    // @ts-ignore
+    const storedData = JSON.parse(savedFormData);
+
+    expect(storedData).toEqual([
+      ...existingData,
+      {
+        source: { propertyName, selectedModel },
+        target: { propertyName: targetPropertyName, selectedModel: targetModel },
+        formData,
+        key,
+      },
+    ]);
+  });
+  it('handles multiple additions to the stack', () => {
+    const additions = [
+      {
+        propertyName: 'team',
+        selectedModel: 'TeamModel',
+        targetPropertyName: 'agent',
+        targetModel: 'AgentModel',
+        formData: { name: 'Team1' },
+        key: 'name',
+      },
+      {
+        propertyName: 'agent',
+        selectedModel: 'AgentModel',
+        targetPropertyName: 'llm',
+        targetModel: 'OpenAI',
+        formData: { name: 'Agent1' },
+        key: 'name',
+      },
+      {
+        propertyName: 'llm',
+        selectedModel: 'OpenAI',
+        targetPropertyName: 'secret',
+        targetModel: 'OpenAIAPIKey',
+        formData: { name: 'LLM1' },
+        key: 'name',
+      },
+    ];
+
+    additions.forEach(({ propertyName, selectedModel, targetPropertyName, targetModel, formData, key }) => {
+      storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key);
     });
+
+    const savedFormData = localStorage.getItem('formDataStack');
+    // @ts-ignore
+    const storedData = JSON.parse(savedFormData);
+
+    expect(storedData).toHaveLength(3);
+    expect(storedData).toEqual(
+      additions.map(({ propertyName, selectedModel, targetPropertyName, targetModel, formData, key }) => ({
+        source: { propertyName, selectedModel },
+        target: { propertyName: targetPropertyName, selectedModel: targetModel },
+        formData,
+        key,
+      }))
+    );
+  });
+
+  it('preserves existing data when adding new items', () => {
+    // Add initial data
+    storeFormData('team', 'TeamModel', 'agent', 'AgentModel', { name: 'Team1' }, 'name');
+
+    // Add new data
+    storeFormData('agent', 'AgentModel', 'llm', 'OpenAI', { name: 'Agent1' }, 'name');
+
+    const savedFormData = localStorage.getItem('formDataStack');
+    // @ts-ignore
+    const storedData = JSON.parse(savedFormData);
+
+    expect(storedData).toHaveLength(2);
+    expect(storedData[0].source.propertyName).toBe('team');
+    expect(storedData[1].source.propertyName).toBe('agent');
   });
 });
 
@@ -246,6 +351,137 @@ describe('getTargetModel', () => {
     const targetModel = getTargetModel(test_schemas, selectedModel, key);
     const expected = null;
     expect(targetModel).toEqual(expected);
+  });
+});
+
+describe('processFormDataStack', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('handles empty form data stack', () => {
+    localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify([]));
+
+    const result = processFormDataStack({ uuid: 'test-uuid' });
+
+    expect(result).toEqual({
+      currentItem: null,
+      nextRoute: null,
+      updatedStack: [],
+    });
+  });
+  it('processes single item in form data stack', () => {
+    const formDataStack = [
+      {
+        source: { propertyName: 'llm', selectedModel: 'OpenAI' },
+        target: { propertyName: 'secret', selectedModel: 'OpenAIAPIKey' },
+        formData: { name: '', api_key: '' },
+        key: 'api_key',
+      },
+    ];
+    localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+
+    const result = processFormDataStack({ uuid: 'test-uuid' });
+
+    expect(result.currentItem).toEqual({
+      source: { propertyName: 'llm', selectedModel: 'OpenAI' },
+      target: { propertyName: 'secret', selectedModel: 'OpenAIAPIKey' },
+      formData: {
+        name: '',
+        api_key: { name: 'OpenAIAPIKey', type: 'secret', uuid: 'test-uuid' },
+      },
+      key: 'api_key',
+    });
+    expect(result.nextRoute).toBe('/build/llm');
+    expect(result.updatedStack).toEqual([]);
+  });
+  it('processes multiple items in form data stack', () => {
+    const formDataStack = [
+      {
+        source: { propertyName: 'team', selectedModel: 'TeamModel' },
+        target: { propertyName: 'agent', selectedModel: 'AgentModel' },
+        formData: { name: '' },
+        key: 'name',
+      },
+      {
+        source: { propertyName: 'agent', selectedModel: 'AgentModel' },
+        target: { propertyName: 'llm', selectedModel: 'OpenAI' },
+        formData: { name: '' },
+        key: 'name',
+      },
+    ];
+    localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+
+    const result = processFormDataStack({ uuid: 'test-uuid' });
+
+    expect(result.currentItem).toEqual({
+      source: { propertyName: 'agent', selectedModel: 'AgentModel' },
+      target: { propertyName: 'llm', selectedModel: 'OpenAI' },
+      formData: { name: { name: 'OpenAI', type: 'llm', uuid: 'test-uuid' } },
+      key: 'name',
+    });
+    expect(result.nextRoute).toBe('/build/agent');
+    expect(result.updatedStack).toEqual([formDataStack[0]]);
+  });
+
+  it('handles last item in form data stack', () => {
+    const formDataStack = [
+      {
+        source: { propertyName: 'secret', selectedModel: 'OpenAIAPIKey' },
+        target: { propertyName: '', selectedModel: '' },
+        formData: { name: '', value: '' },
+        key: 'value',
+      },
+    ];
+    localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+
+    const result = processFormDataStack({ uuid: 'test-uuid' });
+
+    expect(result.currentItem).toEqual({
+      source: { propertyName: 'secret', selectedModel: 'OpenAIAPIKey' },
+      target: { propertyName: '', selectedModel: '' },
+      formData: {
+        name: '',
+        value: { name: '', type: '', uuid: 'test-uuid' },
+      },
+      key: 'value',
+    });
+    expect(result.nextRoute).toBe('/build/secret');
+    expect(result.updatedStack).toEqual([]);
+  });
+  it('processes multiple items and deletes finished key', () => {
+    const formDataStack = [
+      {
+        source: { propertyName: 'team', selectedModel: 'TeamModel' },
+        target: { propertyName: 'agent', selectedModel: 'AgentModel' },
+        formData: { name: 'Team1', agent: '' },
+        key: 'agent',
+      },
+      {
+        source: { propertyName: 'agent', selectedModel: 'AgentModel' },
+        target: { propertyName: 'llm', selectedModel: 'OpenAI' },
+        formData: { name: 'Agent1', llm: '' },
+        key: 'llm',
+      },
+    ];
+    localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+
+    const result = processFormDataStack({ uuid: 'test-uuid' });
+    expect(result.currentItem).toEqual({
+      source: { propertyName: 'agent', selectedModel: 'AgentModel' },
+      target: { propertyName: 'llm', selectedModel: 'OpenAI' },
+      formData: { name: 'Agent1', llm: { name: 'OpenAI', type: 'llm', uuid: 'test-uuid' } }, // llm should be deleted
+      key: 'llm',
+    });
+    expect(result.nextRoute).toBe('/build/agent');
+    expect(result.updatedStack).toEqual([
+      {
+        source: { propertyName: 'team', selectedModel: 'TeamModel' },
+        target: { propertyName: 'agent', selectedModel: 'AgentModel' },
+        formData: { name: 'Team1', agent: '' },
+        key: 'agent',
+      },
+    ]);
   });
 });
 

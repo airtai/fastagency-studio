@@ -48,11 +48,11 @@ interface FormDataInterface {
 
 export const getTargetModel = (schemas: any, selectedModel: string, key: string) => {
   const matchedModel = _.find(schemas, ['name', selectedModel]);
+  let retVal = null;
   if (!matchedModel) {
-    return '';
+    return retVal;
   }
   const matchedModeRef = matchedModel.json_schema.properties[key];
-  let retVal = '';
   if (_.has(matchedModeRef, '$ref')) {
     // remove "Ref" word from the end of the string
     const refValue = matchedModeRef['$ref'].split('/').pop();
@@ -94,7 +94,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const [updateExistingModel, setUpdateExistingModel] = useState<SelectedModelSchema | null>(null);
   const propertyName = data.name;
   const { data: allUserProperties, refetch: refetchModels, isLoading: getModelsIsLoading } = useQuery(getModels);
-  const targetModelToAdd = useRef(null);
+  const targetModelToAdd = useRef<string | null>(null);
 
   const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
   useEffect(() => {
@@ -239,8 +239,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
     // setShowAddModel(false);
     setShowAddModel(true);
     setUpdateExistingModel(null);
-    const modelToEdit = targetModel === '' ? data.schemas[0].name : targetModel;
-    targetModelToAdd.current = modelToEdit;
+    targetModelToAdd.current = targetModel;
 
     history.push(`/build/${targetPropertyName}`);
   };

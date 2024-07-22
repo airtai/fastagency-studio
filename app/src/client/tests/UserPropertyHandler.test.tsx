@@ -220,15 +220,15 @@ describe('getTargetModel', () => {
     const expected = 'AzureRefOAIAPIKey';
     expect(targetModel).toEqual(expected);
   });
-  it('should return the empty string when no model is matched', () => {
+  it('should return null when no model is matched', () => {
     const test_schemas = _.cloneDeep(schemas);
     const selectedModel = 'InvalidModel';
     const key = 'api_key';
     const targetModel = getTargetModel(test_schemas, selectedModel, key);
-    const expected = '';
+    const expected = null;
     expect(targetModel).toEqual(expected);
   });
-  it('should return the empty strign if the model contains anyOf or allOf', () => {
+  it('should return null if the model contains anyOf or allOf', () => {
     const test_schemas = _.cloneDeep(schemas);
     test_schemas[1].json_schema.properties.api_key = {
       // @ts-ignore
@@ -244,7 +244,7 @@ describe('getTargetModel', () => {
     const selectedModel = 'AzureOAI';
     const key = 'api_key';
     const targetModel = getTargetModel(test_schemas, selectedModel, key);
-    const expected = '';
+    const expected = null;
     expect(targetModel).toEqual(expected);
   });
 });

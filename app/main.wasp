@@ -146,7 +146,7 @@ page ExamplesPage {
   component: import ExamplesPage from "@src/client/app/ExamplesPage",
 }
 
-route TutorialRoute { path: "/tutorial", to: TutorialPage }
+route TutorialRoute { path: "/tutorials", to: TutorialPage }
 page TutorialPage {
   component: import TutorialPage from "@src/client/app/TutorialPage",
 }

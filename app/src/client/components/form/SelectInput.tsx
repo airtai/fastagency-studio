@@ -70,7 +70,6 @@ export const SelectInput: React.FC<SelectInputProps> = ({
     option: (styles: any, { data }: any) => {
       return {
         ...styles,
-        fontWeight: data.isNewOption ? 'bold' : 'normal',
         '::before': data.isNewOption
           ? {
               content: '"➕"',

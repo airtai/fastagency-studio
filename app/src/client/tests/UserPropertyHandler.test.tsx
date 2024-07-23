@@ -6,12 +6,14 @@ import _ from 'lodash';
 
 import { useQuery } from 'wasp/client/operations';
 
-import UserPropertyHandler, {
+import UserPropertyHandler from '../components/buildPage/UserPropertyHandler';
+
+import {
   getTargetModel,
   storeFormData,
   processFormDataStack,
   FORM_DATA_STORAGE_KEY,
-} from '../components/buildPage/UserPropertyHandler';
+} from '../components/buildPage/utils';
 
 describe('storeFormData', () => {
   beforeEach(() => {

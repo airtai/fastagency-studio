@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import _ from 'lodash';
 
 import Button from '../Button';
@@ -6,132 +7,31 @@ import ModelForm from '../ModelForm';
 import ModelsList from '../ModelsList';
 import NotificationBox from '../NotificationBox';
 
-import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
 import { navLinkItems } from '../CustomSidebar';
 
 import { getModels, useQuery, updateUserModels, addUserModels, deleteUserModels } from 'wasp/client/operations';
 import { capitalizeFirstLetter, filterDataToValidate, dependsOnProperty } from '../../utils/buildPageUtils';
 import Loader from '../../admin/common/Loader';
 import CustomBreadcrumb from '../CustomBreadcrumb';
-import { useHistory } from 'react-router-dom';
+
 import { FormData } from '../../hooks/useForm';
-
-export const FORM_DATA_STORAGE_KEY = 'formDataStack';
-
-interface Props {
-  data: any;
-  togglePropertyList: boolean;
-}
-
-interface SourceTarget {
-  propertyName: string;
-  selectedModel: string;
-}
-
-interface FormDataObj {
-  [key: string]: any;
-}
-
-interface FormDataStackItem {
-  source: SourceTarget;
-  target: SourceTarget;
-  formData: FormDataObj;
-  key: string;
-}
-
-export const getTargetModel = (schemas: any, selectedModel: string, key: string) => {
-  const matchedModel = _.find(schemas, ['name', selectedModel]);
-  let retVal = null;
-  if (!matchedModel) {
-    return retVal;
-  }
-  const matchedModeRef = matchedModel.json_schema.properties[key];
-  if (_.has(matchedModeRef, '$ref')) {
-    // remove "Ref" word from the end of the string
-    const refValue = matchedModeRef['$ref'].split('/').pop();
-    retVal = refValue.replace(/Ref$/, '');
-  }
-  return retVal;
-};
-
-export const storeFormData = (
-  propertyName: string,
-  selectedModel: string,
-  targetPropertyName: string,
-  targetModel: string,
-  formData: FormData,
-  key: string,
-  updateExistingModel: any
-) => {
-  let formDataObj = _.cloneDeep(formData);
-  if (updateExistingModel) {
-    formDataObj.uuid = updateExistingModel.uuid;
-  }
-  const newStackItem: FormDataStackItem = {
-    source: {
-      propertyName: propertyName,
-      selectedModel: selectedModel,
-    },
-    target: {
-      propertyName: targetPropertyName,
-      selectedModel: targetModel,
-    },
-    formData: formDataObj,
-    key: key,
-  };
-
-  let formDataStack: FormDataStackItem[] = JSON.parse(localStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
-  formDataStack.push(newStackItem);
-  localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
-};
-
-export const processFormDataStack = (
-  filteredData: any
-): {
-  currentItem: FormDataStackItem | null;
-  nextRoute: string | null;
-  updatedStack: FormDataStackItem[];
-} => {
-  let formDataStack: FormDataStackItem[] = JSON.parse(localStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
-  let currentItem = null;
-  let nextRoute = null;
-
-  if (formDataStack.length > 0) {
-    currentItem = formDataStack[formDataStack.length - 1];
-    const key: string = currentItem.key;
-    currentItem.formData[key] = {
-      name: currentItem.target.selectedModel,
-      type: currentItem.target.propertyName,
-      uuid: filteredData.uuid,
-    };
-
-    // Remove the completed item from the stack
-    formDataStack.pop();
-
-    // Check if there are more levels to process
-    if (formDataStack.length > 0) {
-      const nextItem = formDataStack[formDataStack.length - 1];
-      nextRoute = `/build/${nextItem.target.propertyName}`;
-    } else {
-      // If the stack is empty, we've completed all levels
-      nextRoute = `/build/${currentItem.source.propertyName}`;
-    }
-  }
-
-  return { currentItem, nextRoute, updatedStack: formDataStack };
-};
+import { useFormDataStack } from './useFormDataStack';
+import { FormDataStackItem, Props } from './types';
+import { FORM_DATA_STORAGE_KEY } from './utils';
+import { getTargetModel, storeFormData } from './utils';
 
 const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(false);
   const [showAddModel, setShowAddModel] = useState(false);
   const [selectedModel, setSelectedModel] = useState(data.schemas[0].name);
-  const [updateExistingModel, setUpdateExistingModel] = useState<SelectedModelSchema | null>(null);
-  const propertyName = data.name;
-  const { data: allUserProperties, refetch: refetchModels, isLoading: getModelsIsLoading } = useQuery(getModels);
-  const targetModelToAdd = useRef<string | null>(null);
-
   const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
+  const { data: allUserProperties, refetch: refetchModels, isLoading: getModelsIsLoading } = useQuery(getModels);
+  const { updateExistingModel, setUpdateExistingModel, targetModelToAdd, handleFormResume } =
+    useFormDataStack(setShowAddModel);
+
+  const propertyName = data.name;
+
   useEffect(() => {
     setShowAddModel(false);
   }, [togglePropertyList]);
@@ -154,24 +54,6 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   };
   const handleModelChange = (newModel: string) => {
     setSelectedModel(newModel);
-  };
-
-  const handleFormResume = (filteredData: any) => {
-    const { currentItem, nextRoute, updatedStack } = processFormDataStack(filteredData);
-
-    if (currentItem) {
-      setShowAddModel(true);
-      // @ts-ignore
-      setUpdateExistingModel(currentItem.formData);
-
-      targetModelToAdd.current = currentItem.formData.uuid ? null : currentItem.source.selectedModel;
-
-      localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(updatedStack));
-
-      if (nextRoute) {
-        history.push(nextRoute);
-      }
-    }
   };
 
   const onSuccessCallback = async (payload: any): Promise<{ addUserModelResponse: any }> => {
@@ -265,6 +147,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
         // @ts-ignore
         setUpdateExistingModel({ ...selectedModel.json_str, ...{ uuid: selectedModel.uuid } });
         setShowAddModel(true);
+        targetModelToAdd.current = null;
       }
     }
   };

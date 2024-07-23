@@ -2,10 +2,9 @@ import uuid
 
 import autogen
 import pytest
-from fastapi import BackgroundTasks
-
 from fastagency.app import add_model
 from fastagency.models.agents.user_proxy import UserProxyAgent
+from fastapi import BackgroundTasks
 
 
 class TestUserProxyAgent:

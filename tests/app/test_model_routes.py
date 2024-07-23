@@ -3,11 +3,10 @@ from typing import List, Optional
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
-
 from fastagency.app import app, mask
 from fastagency.models.llms.azure import AzureOAIAPIKey
 from fastagency.saas_app_generator import SaasAppGenerator
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
 

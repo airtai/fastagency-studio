@@ -1,9 +1,8 @@
 from typing import Optional
 
 import pytest
-from fastapi_code_generator.parser import OpenAPIParser, ParameterObject
-
 from fastagency.openapi.fastapi_code_generator_helpers import patch_get_parameter_type
+from fastapi_code_generator.parser import OpenAPIParser, ParameterObject
 
 
 class TestPatching:

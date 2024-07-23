@@ -2,14 +2,13 @@ import uuid
 from typing import Any, Dict
 
 import pytest
-from pydantic import ValidationError
-
 from fastagency.models.agents.assistant import AssistantAgent
 from fastagency.models.agents.web_surfer import WebSurferAgent
 from fastagency.models.base import Model
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.llms.openai import OpenAI
 from fastagency.models.teams.multi_agent_team import MultiAgentTeam
+from pydantic import ValidationError
 
 
 @pytest.mark.skip(reason="Temporarily disabling multi agent team")

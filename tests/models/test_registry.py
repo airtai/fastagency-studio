@@ -1,5 +1,4 @@
 import pytest
-
 from fastagency.models.base import Model
 from fastagency.models.registry import ModelSchema, Registry
 
@@ -20,8 +19,8 @@ class TestRegistry:
     def test_create_reference_fail(self) -> None:
         registry = Registry()
 
-        @registry.register("my_secret")
-        class MySecret(Model):
+        @registry.register("my_secret")  # type: ignore[misc]
+        class MySecret(Model):  # type: ignore[misc]
             key: str
 
         with pytest.raises(ValueError, match="Reference already created for the model"):
@@ -31,7 +30,7 @@ class TestRegistry:
         registry = Registry()
 
         @registry.register("my_type")
-        class MyModel(Model):
+        class MyModel(Model):  # type: ignore[misc]
             i: int
             s: str
 
@@ -46,7 +45,7 @@ class TestRegistry:
         )
 
         @registry.register("my_type")
-        class MyModel(Model):
+        class MyModel(Model):  # type: ignore[misc]
             i: int
             s: str
             secret: MySecretRef  # type: ignore[valid-type]
@@ -58,13 +57,13 @@ class TestRegistry:
         registry = Registry()
 
         @registry.register("my_secret")
-        class MySecret(Model):
+        class MySecret(Model):  # type: ignore[misc]
             key: str
 
         MySecretRef = MySecret.get_reference_model()  # noqa: N806
 
         @registry.register("my_type")
-        class MyModel(Model):
+        class MyModel(Model):  # type: ignore[misc]
             i: int
             s: str
             secret: MySecretRef  # type: ignore[valid-type]
@@ -88,7 +87,7 @@ class TestRegistry:
         assert registry.get_dongling_references() == [MySecretRef]
 
         @registry.register("my_secret")
-        class MySecret(Model):
+        class MySecret(Model):  # type: ignore[misc]
             key: str
 
         assert registry.get_dongling_references() == []
@@ -97,7 +96,7 @@ class TestRegistry:
         registry = Registry()
 
         @registry.register("my_type")
-        class MyModel(Model):
+        class MyModel(Model):  # type: ignore[misc]
             i: int
             s: str
 
@@ -126,13 +125,13 @@ class TestRegistry:
         registry = Registry()
 
         @registry.register("my_secret")
-        class MySecret(Model):
+        class MySecret(Model):  # type: ignore[misc]
             key: str
 
         MySecretRef = MySecret.get_reference_model()  # noqa: N806
 
         @registry.register("my_type")
-        class MyModel(Model):
+        class MyModel(Model):  # type: ignore[misc]
             i: int
             s: str
             secret: MySecretRef  # type: ignore[valid-type]
@@ -194,7 +193,7 @@ class TestRegistry:
         registry = Registry()
 
         @registry.register("my_type")
-        class MyModel(Model):
+        class MyModel(Model):  # type: ignore[misc]
             i: int
             s: str
 
@@ -206,7 +205,7 @@ class TestRegistry:
         registry = Registry()
 
         @registry.register("my_type")
-        class MyModel(Model):
+        class MyModel(Model):  # type: ignore[misc]
             i: int
             s: str
 
@@ -219,7 +218,7 @@ class TestRegistry:
         registry = Registry()
 
         @registry.register("my_secret")
-        class MySecretOne(Model):
+        class MySecretOne(Model):  # type: ignore[misc]
             key: str
 
         MySecretTwoRef = registry.create_reference(  # noqa: N806

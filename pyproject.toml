@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "fastagency"
+name = "fastagency-studio"
 description = "FastAgency: a repository of open-source AI agents"
 readme = "README.md"
 authors = [
@@ -44,6 +44,7 @@ classifiers = [
 dynamic = ["version"]
 
 dependencies = [
+    "fastagency @ git+https://github.com/airtai/fastagencyapi.git@main",
     "pyautogen[anthropic,together]==0.2.32",
     "faststream[nats]>=0.5.10,<0.6",
     "typing-extensions>=4.8.0,<5",
@@ -105,8 +106,8 @@ test-core = [
 ]
 
 testing = [
-    "fastagency[test-core]",
-    "fastagency[server]", # Uvicorn is needed for testing
+    "fastagency-studio[test-core]",
+    "fastagency-studio[server]", # Uvicorn is needed for testing
     "pydantic-settings==2.3.4",
     "PyYAML==6.0.1",
     "watchfiles==0.22.0",
@@ -114,7 +115,7 @@ testing = [
 ]
 
 dev = [
-    "fastagency[server,lint,testing,devdocs]",
+    "fastagency-studio[server,lint,testing,devdocs]",
     "pre-commit==3.7.1",
     "detect-secrets==1.5.0",
     "asyncer==0.0.7",
@@ -128,10 +129,10 @@ Source = "https://github.com/airtai/fastagency"
 Discord = "https://discord.gg/qFm6aSqq59"
 
 [project.scripts]
-# fastagency = "fastagency.__main__:cli"
+# fastagency-studio = "fastagency_studio.__main__:cli"
 
 [tool.hatch.version]
-path = "fastagency/__about__.py"
+path = "fastagency_studio/__about__.py"
 
 [tool.hatch.build]
 skip-excluded-dirs = true
@@ -144,15 +145,15 @@ exclude = [
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-only-include = ["fastagency", "templates"]
+only-include = ["fastagency_studio", "templates"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src" = ""
-"scripts" = "fastagency/templates"
+"scripts" = "fastagency_studio/templates"
 
 [tool.mypy]
 
-files = ["fastagency", "tests"]
+files = ["fastagency_studio", "tests"]
 
 strict = true
 python_version = "3.9"
@@ -179,7 +180,7 @@ disallow_any_unimported = false
 fix = true
 line-length = 88
 # target-version = 'py39'
-include = ["fastagency/**/*.py", "fastagency/**/*.pyi", "tests/**/*.py", "docs/**/*.py", "pyproject.toml"]
+include = ["fastagency_studio/**/*.py", "fastagency_studio/**/*.pyi", "tests/**/*.py", "docs/**/*.py", "pyproject.toml"]
 exclude = ["docs/docs_src"]
 
 [tool.ruff.lint]
@@ -250,7 +251,7 @@ concurrency = [
 source = [
     "docs/docs_src",
     "examples",
-    "fastagency",
+    "fastagency_studio",
 #    "tests",
 ]
 context = '${CONTEXT}'

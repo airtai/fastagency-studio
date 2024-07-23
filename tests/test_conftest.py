@@ -2,7 +2,6 @@ from typing import Any, Dict
 
 import httpx
 import pytest
-
 from fastagency.helpers import get_model_by_ref
 from fastagency.models.base import ObjectReference
 

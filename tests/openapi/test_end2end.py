@@ -6,10 +6,9 @@ from typing import Annotated, Any, Dict, Iterator, Optional
 import fastapi
 import pytest
 from autogen.agentchat import ConversableAgent
+from fastagency.openapi.client import Client
 from fastapi import Body, FastAPI, Query
 from pydantic import BaseModel, Field
-
-from fastagency.openapi.client import Client
 
 
 class TestClientEnd2End:

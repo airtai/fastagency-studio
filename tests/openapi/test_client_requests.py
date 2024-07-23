@@ -2,9 +2,8 @@ from typing import Any, Dict, List, Optional, Union
 
 import requests
 from _pytest.monkeypatch import MonkeyPatch
-from pydantic import BaseModel, Field
-
 from fastagency.openapi.client import Client
+from pydantic import BaseModel, Field
 
 
 class Item(BaseModel):
@@ -47,7 +46,7 @@ class MockResponse:
 
 
 def test_process_params_with_query_params_and_path_params() -> None:
-    @app.put(
+    @app.put(  # type: ignore[misc]
         "/items/{item_id}/ships/{ship}",
         response_model=Any,
         responses={"422": {"model": HTTPValidationError}},
@@ -84,7 +83,7 @@ def test_process_params_with_query_params_and_path_params() -> None:
 
 
 def test_process_params_with_query_params_only() -> None:
-    @app.get(
+    @app.get(  # type: ignore[misc]
         "/items",
         response_model=Any,
         responses={"422": {"model": HTTPValidationError}},
@@ -117,7 +116,7 @@ def test_process_params_with_query_params_only() -> None:
 
 
 def test_process_params_with_path_params_only() -> None:
-    @app.post(
+    @app.post(  # type: ignore[misc]
         "/items/{item_id}/ships/{ship}",
         response_model=Any,
         responses={"422": {"model": HTTPValidationError}},
@@ -150,7 +149,7 @@ def test_process_params_with_path_params_only() -> None:
 
 
 def test_process_params_with_no_query_params_or_path_params() -> None:
-    @app.delete(
+    @app.delete(  # type: ignore[misc]
         "/items",
         response_model=Any,
         responses={"422": {"model": HTTPValidationError}},
@@ -165,7 +164,7 @@ def test_process_params_with_no_query_params_or_path_params() -> None:
 
 
 def test_client_put(monkeypatch: MonkeyPatch) -> None:
-    @app.put(
+    @app.put(  # type: ignore[misc]
         "/items/{item_id}/ships/{ship}",
         response_model=Item,
         responses={"422": {"model": HTTPValidationError}},
@@ -208,7 +207,7 @@ def test_client_put(monkeypatch: MonkeyPatch) -> None:
 
 
 def test_client_post(monkeypatch: MonkeyPatch) -> None:
-    @app.post(
+    @app.post(  # type: ignore[misc]
         "/items/{item_id}/ships/{ship}",
         response_model=Item,
         responses={"422": {"model": HTTPValidationError}},
@@ -249,7 +248,7 @@ def test_client_post(monkeypatch: MonkeyPatch) -> None:
 
 
 def test_client_get(monkeypatch: MonkeyPatch) -> None:
-    @app.get(
+    @app.get(  # type: ignore[misc]
         "/items",
         response_model=List[Item],
         responses={"422": {"model": HTTPValidationError}},
@@ -296,7 +295,7 @@ def test_client_get(monkeypatch: MonkeyPatch) -> None:
 
 
 def test_client_delete(monkeypatch: MonkeyPatch) -> None:
-    @app.delete(
+    @app.delete(  # type: ignore[misc]
         "/item",
         response_model=None,
         responses={"422": {"model": HTTPValidationError}},

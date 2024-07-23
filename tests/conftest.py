@@ -21,9 +21,6 @@ import openai
 import pytest
 import pytest_asyncio
 import uvicorn
-from fastapi import FastAPI, Path
-from pydantic import BaseModel
-
 from fastagency.db.helpers import (
     get_db_connection,
     get_wasp_db_url,
@@ -40,6 +37,8 @@ from fastagency.models.llms.openai import OpenAI, OpenAIAPIKey
 from fastagency.models.llms.together import TogetherAI, TogetherAIAPIKey
 from fastagency.models.teams.two_agent_teams import TwoAgentTeam
 from fastagency.models.toolboxes.toolbox import OpenAPIAuth, Toolbox
+from fastapi import FastAPI, Path
+from pydantic import BaseModel
 
 from .helpers import add_random_sufix, expand_fixture, get_by_tag, tag, tag_list
 

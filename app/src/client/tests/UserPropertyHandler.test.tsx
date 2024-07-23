@@ -727,6 +727,7 @@ describe('UserPropertyHandler Initial Rendering', () => {
     });
 
     it('sets showAddModel to false when onCancelCallback is called', () => {
+      localStorage.clear();
       render(
         <Router>
           <UserPropertyHandler {...mockProps} />
@@ -738,6 +739,31 @@ describe('UserPropertyHandler Initial Rendering', () => {
 
       fireEvent.click(screen.getByText('Cancel'));
       expect(screen.queryByTestId('model-form')).toBeNull();
+    });
+    it('sets showAddModel to true when onCancelCallback is called and the form data is available in the local storage', () => {
+      const existingData = [
+        {
+          source: { propertyName: 'team', selectedModel: 'TeamModel' },
+          target: { propertyName: 'agent', selectedModel: 'AgentModel' },
+          formData: { name: 'Team1' },
+          key: 'name',
+        },
+      ];
+      localStorage.setItem('formDataStack', JSON.stringify(existingData));
+
+      render(
+        <Router>
+          <UserPropertyHandler {...mockProps} />
+        </Router>
+      );
+
+      fireEvent.click(screen.getByTestId('add-button'));
+      expect(screen.getByTestId('model-form')).toBeDefined();
+
+      fireEvent.click(screen.getByText('Cancel'));
+      expect(screen.queryByTestId('model-form')).not.toBeNull();
+
+      localStorage.clear();
     });
   });
   describe('UserPropertyHandler Conditional Rendering', () => {

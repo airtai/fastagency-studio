@@ -199,13 +199,28 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
     } finally {
       setIsLoading(false);
     }
-
     return addUserModelResponse;
   };
 
   const onCancelCallback = (event: React.FormEvent) => {
     event.preventDefault();
-    setShowAddModel(false);
+    let formDataStack: FormDataStackItem[] = JSON.parse(localStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
+    if (formDataStack.length > 0) {
+      const currentItem = formDataStack[formDataStack.length - 1];
+      const nextRoute = `/build/${currentItem.source.propertyName}`;
+      // @ts-ignore
+      setUpdateExistingModel(currentItem.formData);
+      targetModelToAdd.current = currentItem.formData.uuid ? null : currentItem.source.selectedModel;
+
+      formDataStack.pop();
+      localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+
+      if (nextRoute) {
+        history.push(nextRoute);
+      }
+    } else {
+      setShowAddModel(false);
+    }
   };
 
   const onDeleteCallback = async () => {

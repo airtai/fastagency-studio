@@ -37,7 +37,7 @@ describe('storeFormData', () => {
     const updateExistingModel = {
       uuid: 'test-uuid',
     };
-    const expectedFormData = { ...formData, ...{ uuid: 'test-uuid' } };
+    const expectedFormData = updateExistingModel;
 
     storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key, updateExistingModel);
     const savedFormData = localStorage.getItem('formDataStack');

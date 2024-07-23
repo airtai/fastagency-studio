@@ -17,7 +17,7 @@ export const useFormDataStack = (setShowAddModel: React.Dispatch<React.SetStateA
       setUpdateExistingModel(currentItem.formData);
       targetModelToAdd.current = currentItem.formData.uuid ? null : currentItem.source.selectedModel;
 
-      localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(updatedStack));
+      sessionStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(updatedStack));
 
       if (nextRoute) {
         history.push(nextRoute);

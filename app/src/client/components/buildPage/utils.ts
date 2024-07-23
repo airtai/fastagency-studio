@@ -28,10 +28,6 @@ export const storeFormData = (
   key: string,
   updateExistingModel: any
 ) => {
-  let formDataObj = _.cloneDeep(formData);
-  if (updateExistingModel) {
-    formDataObj.uuid = updateExistingModel.uuid;
-  }
   const newStackItem: FormDataStackItem = {
     source: {
       propertyName: propertyName,
@@ -41,13 +37,13 @@ export const storeFormData = (
       propertyName: targetPropertyName,
       selectedModel: targetModel,
     },
-    formData: formDataObj,
+    formData: updateExistingModel ? updateExistingModel : formData,
     key: key,
   };
 
-  let formDataStack: FormDataStackItem[] = JSON.parse(localStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
+  let formDataStack: FormDataStackItem[] = JSON.parse(sessionStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
   formDataStack.push(newStackItem);
-  localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+  sessionStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
 };
 
 export const processFormDataStack = (
@@ -57,7 +53,7 @@ export const processFormDataStack = (
   nextRoute: string | null;
   updatedStack: FormDataStackItem[];
 } => {
-  let formDataStack: FormDataStackItem[] = JSON.parse(localStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
+  let formDataStack: FormDataStackItem[] = JSON.parse(sessionStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
   let currentItem = null;
   let nextRoute = null;
 

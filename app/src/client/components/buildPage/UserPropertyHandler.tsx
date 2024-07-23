@@ -19,6 +19,7 @@ import { useFormDataStack } from './useFormDataStack';
 import { FormDataStackItem, Props } from './types';
 import { FORM_DATA_STORAGE_KEY } from './utils';
 import { getTargetModel, storeFormData } from './utils';
+import useDetectRefresh from './useDetectRefresh';
 
 const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const history = useHistory();
@@ -42,6 +43,16 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
       setSelectedModel(targetModel);
     }
   }, [data]);
+
+  useDetectRefresh(() => {
+    // This function will be called on page refresh
+    sessionStorage.removeItem(FORM_DATA_STORAGE_KEY);
+    setShowAddModel(false);
+    setUpdateExistingModel(null);
+    if (targetModelToAdd.current) {
+      targetModelToAdd.current = null;
+    }
+  });
 
   const updateModel = (model_type: string) => {
     setSelectedModel(model_type);
@@ -86,7 +97,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
 
   const onCancelCallback = (event: React.FormEvent) => {
     event.preventDefault();
-    let formDataStack: FormDataStackItem[] = JSON.parse(localStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
+    let formDataStack: FormDataStackItem[] = JSON.parse(sessionStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
     if (formDataStack.length > 0) {
       const currentItem = formDataStack[formDataStack.length - 1];
       const nextRoute = `/build/${currentItem.source.propertyName}`;
@@ -95,7 +106,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
       targetModelToAdd.current = currentItem.formData.uuid ? null : currentItem.source.selectedModel;
 
       formDataStack.pop();
-      localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+      sessionStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
 
       if (nextRoute) {
         history.push(nextRoute);

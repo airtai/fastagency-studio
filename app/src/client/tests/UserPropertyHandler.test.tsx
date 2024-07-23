@@ -18,6 +18,40 @@ describe('storeFormData', () => {
     localStorage.clear();
   });
 
+  it('stores form data correctly in an empty stack while updading existing model', () => {
+    const propertyName = 'llm';
+    const selectedModel = 'OpenAI';
+    const targetPropertyName = 'secret';
+    const targetModel = 'OpenAIAPIKey';
+    const formData = {
+      name: '',
+      model: 'gpt-3.5-turbo',
+      api_key: '',
+      base_url: 'https://api.openai.com/v1',
+      api_type: 'openai',
+      temperature: 0.8,
+    };
+    const key = 'api_key';
+    const updateExistingModel = {
+      uuid: 'test-uuid',
+    };
+    const expectedFormData = { ...formData, ...{ uuid: 'test-uuid' } };
+
+    storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key, updateExistingModel);
+    const savedFormData = localStorage.getItem('formDataStack');
+    // @ts-ignore
+    const storedData = JSON.parse(savedFormData);
+
+    expect(storedData).toEqual([
+      {
+        source: { propertyName, selectedModel },
+        target: { propertyName: targetPropertyName, selectedModel: targetModel },
+        formData: expectedFormData,
+        key,
+      },
+    ]);
+  });
+
   it('stores form data correctly in an empty stack', () => {
     const propertyName = 'llm';
     const selectedModel = 'OpenAI';
@@ -32,8 +66,9 @@ describe('storeFormData', () => {
       temperature: 0.8,
     };
     const key = 'api_key';
+    const updateExistingModel = null;
 
-    storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key);
+    storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key, updateExistingModel);
     const savedFormData = localStorage.getItem('formDataStack');
     // @ts-ignore
     const storedData = JSON.parse(savedFormData);
@@ -67,7 +102,9 @@ describe('storeFormData', () => {
     const formData = { name: 'Agent1' };
     const key = 'name';
 
-    storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key);
+    const updateExistingModel = null;
+
+    storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key, updateExistingModel);
     const savedFormData = localStorage.getItem('formDataStack');
     // @ts-ignore
     const storedData = JSON.parse(savedFormData);
@@ -109,9 +146,9 @@ describe('storeFormData', () => {
         key: 'name',
       },
     ];
-
+    const updateExistingModel = null;
     additions.forEach(({ propertyName, selectedModel, targetPropertyName, targetModel, formData, key }) => {
-      storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key);
+      storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key, updateExistingModel);
     });
 
     const savedFormData = localStorage.getItem('formDataStack');
@@ -131,10 +168,11 @@ describe('storeFormData', () => {
 
   it('preserves existing data when adding new items', () => {
     // Add initial data
-    storeFormData('team', 'TeamModel', 'agent', 'AgentModel', { name: 'Team1' }, 'name');
+    const updateExistingModel = null;
+    storeFormData('team', 'TeamModel', 'agent', 'AgentModel', { name: 'Team1' }, 'name', updateExistingModel);
 
     // Add new data
-    storeFormData('agent', 'AgentModel', 'llm', 'OpenAI', { name: 'Agent1' }, 'name');
+    storeFormData('agent', 'AgentModel', 'llm', 'OpenAI', { name: 'Agent1' }, 'name', updateExistingModel);
 
     const savedFormData = localStorage.getItem('formDataStack');
     // @ts-ignore

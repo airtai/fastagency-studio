@@ -60,8 +60,13 @@ export const storeFormData = (
   targetPropertyName: string,
   targetModel: string,
   formData: FormData,
-  key: string
+  key: string,
+  updateExistingModel: any
 ) => {
+  let formDataObj = _.cloneDeep(formData);
+  if (updateExistingModel) {
+    formDataObj.uuid = updateExistingModel.uuid;
+  }
   const newStackItem: FormDataStackItem = {
     source: {
       propertyName: propertyName,
@@ -71,7 +76,7 @@ export const storeFormData = (
       propertyName: targetPropertyName,
       selectedModel: targetModel,
     },
-    formData: formData,
+    formData: formDataObj,
     key: key,
   };
 
@@ -158,7 +163,8 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
       setShowAddModel(true);
       // @ts-ignore
       setUpdateExistingModel(currentItem.formData);
-      targetModelToAdd.current = currentItem.source.selectedModel;
+
+      targetModelToAdd.current = currentItem.formData.uuid ? null : currentItem.source.selectedModel;
 
       localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(updatedStack));
 
@@ -180,9 +186,6 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
       } else {
         //@ts-ignore
         addUserModelResponse = await addUserModels(filteredData);
-        if (targetModelToAdd.current) {
-          targetModelToAdd.current = null;
-        }
       }
       refetchModels();
       const isNewDeploymentAdded = propertyName === 'deployment' && !updateExistingModel;
@@ -257,7 +260,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
 
   const handleAddProperty = (targetPropertyName: string, formData: FormData, key: string) => {
     const targetModel = getTargetModel(data.schemas, selectedModel, key);
-    storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key);
+    storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key, updateExistingModel);
 
     // setShowAddModel(false);
     setShowAddModel(true);

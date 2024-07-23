@@ -1,4 +1,5 @@
 import uuid
+from typing import Dict
 
 import pytest
 from fastagency.helpers import get_model_by_ref
@@ -6,7 +7,9 @@ from fastagency.models.base import ObjectReference
 from fastagency.models.llms.together import (
     TogetherAI,
     TogetherAIAPIKey,
+    together_model_string,
 )
+from together import Together
 
 
 def test_import(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -39,19 +42,19 @@ class TestTogetherAIAPIKey:
 
 
 class TestTogetherAI:
-    # @pytest.mark.togetherai()
-    # def test_together_model_string(self) -> None:
-    #     # requires that environment variables TOGETHER_API_KEY is set
-    #     client = Together()
+    @pytest.mark.togetherai()
+    def test_together_model_string(self) -> None:
+        # requires that environment variables TOGETHER_API_KEY is set
+        client = Together()
 
-    #     expected_together_model_string: Dict[str, str] = {
-    #         model.display_name: model.id
-    #         for model in client.models.list()
-    #         if model.type == "chat"
-    #     }
+        expected_together_model_string: Dict[str, str] = {
+            model.display_name: model.id
+            for model in client.models.list()
+            if model.type == "chat"
+        }
 
-    #     # print(expected_together_model_string)
-    #     assert together_model_string == expected_together_model_string
+        # print(expected_together_model_string)
+        assert together_model_string == expected_together_model_string
 
     @pytest.mark.db()
     @pytest.mark.asyncio()

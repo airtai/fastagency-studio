@@ -45,7 +45,6 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   }, [data]);
 
   useDetectRefresh(() => {
-    // This function will be called on page refresh
     sessionStorage.removeItem(FORM_DATA_STORAGE_KEY);
     setShowAddModel(false);
     setUpdateExistingModel(null);

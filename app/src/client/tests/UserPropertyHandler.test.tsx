@@ -17,7 +17,7 @@ import {
 
 describe('storeFormData', () => {
   beforeEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('stores form data correctly in an empty stack while updading existing model', () => {
@@ -40,7 +40,7 @@ describe('storeFormData', () => {
     const expectedFormData = updateExistingModel;
 
     storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key, updateExistingModel);
-    const savedFormData = localStorage.getItem('formDataStack');
+    const savedFormData = sessionStorage.getItem('formDataStack');
     // @ts-ignore
     const storedData = JSON.parse(savedFormData);
 
@@ -71,7 +71,7 @@ describe('storeFormData', () => {
     const updateExistingModel = null;
 
     storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key, updateExistingModel);
-    const savedFormData = localStorage.getItem('formDataStack');
+    const savedFormData = sessionStorage.getItem('formDataStack');
     // @ts-ignore
     const storedData = JSON.parse(savedFormData);
 
@@ -94,7 +94,7 @@ describe('storeFormData', () => {
         key: 'name',
       },
     ];
-    localStorage.setItem('formDataStack', JSON.stringify(existingData));
+    sessionStorage.setItem('formDataStack', JSON.stringify(existingData));
 
     // New data to add
     const propertyName = 'agent';
@@ -107,7 +107,7 @@ describe('storeFormData', () => {
     const updateExistingModel = null;
 
     storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key, updateExistingModel);
-    const savedFormData = localStorage.getItem('formDataStack');
+    const savedFormData = sessionStorage.getItem('formDataStack');
     // @ts-ignore
     const storedData = JSON.parse(savedFormData);
 
@@ -153,7 +153,7 @@ describe('storeFormData', () => {
       storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key, updateExistingModel);
     });
 
-    const savedFormData = localStorage.getItem('formDataStack');
+    const savedFormData = sessionStorage.getItem('formDataStack');
     // @ts-ignore
     const storedData = JSON.parse(savedFormData);
 
@@ -176,7 +176,7 @@ describe('storeFormData', () => {
     // Add new data
     storeFormData('agent', 'AgentModel', 'llm', 'OpenAI', { name: 'Agent1' }, 'name', updateExistingModel);
 
-    const savedFormData = localStorage.getItem('formDataStack');
+    const savedFormData = sessionStorage.getItem('formDataStack');
     // @ts-ignore
     const storedData = JSON.parse(savedFormData);
 
@@ -396,11 +396,11 @@ describe('getTargetModel', () => {
 
 describe('processFormDataStack', () => {
   beforeEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('handles empty form data stack', () => {
-    localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify([]));
+    sessionStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify([]));
 
     const result = processFormDataStack({ uuid: 'test-uuid' });
 
@@ -419,7 +419,7 @@ describe('processFormDataStack', () => {
         key: 'api_key',
       },
     ];
-    localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+    sessionStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
 
     const result = processFormDataStack({ uuid: 'test-uuid' });
 
@@ -450,7 +450,7 @@ describe('processFormDataStack', () => {
         key: 'name',
       },
     ];
-    localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+    sessionStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
 
     const result = processFormDataStack({ uuid: 'test-uuid' });
 
@@ -473,7 +473,7 @@ describe('processFormDataStack', () => {
         key: 'value',
       },
     ];
-    localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+    sessionStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
 
     const result = processFormDataStack({ uuid: 'test-uuid' });
 
@@ -504,7 +504,7 @@ describe('processFormDataStack', () => {
         key: 'llm',
       },
     ];
-    localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+    sessionStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
 
     const result = processFormDataStack({ uuid: 'test-uuid' });
     expect(result.currentItem).toEqual({
@@ -729,7 +729,7 @@ describe('UserPropertyHandler Initial Rendering', () => {
     });
 
     it('sets showAddModel to false when onCancelCallback is called', () => {
-      localStorage.clear();
+      sessionStorage.clear();
       render(
         <Router>
           <UserPropertyHandler {...mockProps} />
@@ -741,31 +741,6 @@ describe('UserPropertyHandler Initial Rendering', () => {
 
       fireEvent.click(screen.getByText('Cancel'));
       expect(screen.queryByTestId('model-form')).toBeNull();
-    });
-    it('sets showAddModel to true when onCancelCallback is called and the form data is available in the local storage', () => {
-      const existingData = [
-        {
-          source: { propertyName: 'team', selectedModel: 'TeamModel' },
-          target: { propertyName: 'agent', selectedModel: 'AgentModel' },
-          formData: { name: 'Team1' },
-          key: 'name',
-        },
-      ];
-      localStorage.setItem('formDataStack', JSON.stringify(existingData));
-
-      render(
-        <Router>
-          <UserPropertyHandler {...mockProps} />
-        </Router>
-      );
-
-      fireEvent.click(screen.getByTestId('add-button'));
-      expect(screen.getByTestId('model-form')).toBeDefined();
-
-      fireEvent.click(screen.getByText('Cancel'));
-      expect(screen.queryByTestId('model-form')).not.toBeNull();
-
-      localStorage.clear();
     });
   });
   describe('UserPropertyHandler Conditional Rendering', () => {

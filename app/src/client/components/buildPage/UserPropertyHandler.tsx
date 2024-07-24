@@ -86,7 +86,6 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
       handleFormResume(filteredData);
     } catch (error) {
       console.log('error: ', error, 'error.message: ');
-      // setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
       throw error;
     } finally {
       setIsLoading(false);

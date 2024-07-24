@@ -13,7 +13,9 @@ import { UserMenuItems } from '../components/UserMenuItems';
 import { navigation } from '../landing-page/contentSections';
 import SocialMediaIcons from './SocialMediaIcons';
 
-const NavLogo = () => <img className='h-8' src={logo} style={{ width: '1.8rem' }} alt='FastAgency' />;
+const NavLogo = () => (
+  <img className='h-5 sm:h-6 lg:h-5 xl:h-6' src={logo} style={{ width: '1.8rem' }} alt='FastAgency Studio' />
+);
 
 export default function AppNavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -25,12 +27,14 @@ export default function AppNavBar() {
         <div className='flex items-center lg:flex-1'>
           <a
             href='/'
-            className='flex items-center -m-1.5 p-1.5 text-airt-font-base duration-300 ease-in-out hover:text-airt-secondary'
+            className='flex items-center -m-1.5 py-1 sm:py-0 md:py-0 text-airt-font-base duration-300 ease-in-out hover:text-airt-secondary'
           >
             <NavLogo />
-            <span className='ml-2 text-4xl font-rubik text-airt-font-base leading-6 dark:text-white'>FastAgency</span>
-            <span className='ml-2 text-sm font-semibold leading-6 '>
-              <sup className='text-base text-airt-font-base'>αlpha</sup>
+            <span className='ml-1 mt-[6px] xl:mt-[7px] xl:mt-0 text-lg sm:text-2xl md:text-2xl min-[1024px]:text-sm min-[1100px]:text-lg xl:text-2xl font-rubik text-airt-font-base dark:text-white'>
+              FastAgency Studio
+            </span>
+            <span className='ml-1 text-xs font-semibold leading-6 '>
+              <sup className='text-xs text-airt-font-base'>αlpha</sup>
             </span>
           </a>
         </div>
@@ -85,7 +89,7 @@ export default function AppNavBar() {
         <Dialog.Panel className='fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white dark:text-white dark:bg-boxdark px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-airt-font-base'>
           <div className='flex items-center justify-between'>
             <a href='/' className='-m-1.5 p-1.5'>
-              <span className='sr-only'>FastAgency</span>
+              <span className='sr-only'>FastAgency Studio</span>
               <NavLogo />
             </a>
             <button

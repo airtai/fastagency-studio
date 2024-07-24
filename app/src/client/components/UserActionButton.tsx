@@ -29,9 +29,12 @@ const UserActionButton: React.FC<UserActionButtonProps> = ({ user, renderGoToCha
   return renderGoToChat ? (
     <a
       href='/build'
-      className={`rounded-md px-3.5 py-2.5 text-sm  ${themeClass}   hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
+      className={`rounded-md pl-3.5 pr-7 py-2.5 text-sm  ${themeClass}   hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
     >
-      Build team <span aria-hidden='true'>→</span>
+      Build team{' '}
+      <span aria-hidden='true' className='inline-block absolute mt-[1.4px] ml-1'>
+        →
+      </span>
     </a>
   ) : (
     <></>

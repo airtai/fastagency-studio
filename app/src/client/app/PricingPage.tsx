@@ -69,7 +69,7 @@ const PricingPage = () => {
           </h2>
         </div>
         {/* <p className='mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-airt-font-base dark:airt-font-base'>
-          Unlock FastAgency's full capabilities with an active subscription. Explore all features with a hassle-free
+          Unlock FastAgency Studio's full capabilities with an active subscription. Explore all features with a hassle-free
           30-day free trial—no credit card required.{' '}
           <span className='px-2 py-1 bg-gray-100 rounded-md text-gray-500'>4242 4242 4242 4242 4242</span>
         </p> */}

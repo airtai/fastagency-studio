@@ -8,15 +8,15 @@ export default function TocPage() {
 
           <section className='mb-8'>
             <p>
-              These terms and conditions ("Terms") govern your access to and use of FastAgency, a Software-as-a-Service
-              tool ("Service") provided by airt technologies, Inc. ("we" or "us"). By accessing or using the Service,
-              you agree to be bound by these Terms. If you do not agree to these Terms, you may not access or use the
-              Service.
+              These terms and conditions ("Terms") govern your access to and use of FastAgency Studio, a
+              Software-as-a-Service tool ("Service") provided by airt technologies, Inc. ("we" or "us"). By accessing or
+              using the Service, you agree to be bound by these Terms. If you do not agree to these Terms, you may not
+              access or use the Service.
             </p>
           </section>
 
           <section className='mb-8'>
-            <h2 className='text-xl font-semibold mb-2'>Use Terms for FastAgency</h2>
+            <h2 className='text-xl font-semibold mb-2'>Use Terms for FastAgency Studio</h2>
             <p>
               Subject to these Terms, we grant you a limited, non-exclusive, non-transferable, revocable license to use
               the Service for your internal business purposes during the term of these Terms.
@@ -39,13 +39,13 @@ export default function TocPage() {
 
           <section className='mb-8'>
             <h2 className='text-xl font-semibold mb-2'>Payment and Subscription</h2>
-            <p>By subscribing to FastAgency, you agree to the following terms and conditions:</p>
+            <p>By subscribing to FastAgency Studio, you agree to the following terms and conditions:</p>
             <br />
             <ul className='list-decimal pl-6'>
               <li>
-                <b>Subscription:</b> FastAgency is offered on a subscription basis. You will be billed in advance on a
-                recurring and periodic basis (each period is referred to as a "billing cycle"). Billing cycles are set
-                either on a monthly or annual basis, depending on the type of subscription plan you select when
+                <b>Subscription:</b> FastAgency Studio is offered on a subscription basis. You will be billed in advance
+                on a recurring and periodic basis (each period is referred to as a "billing cycle"). Billing cycles are
+                set either on a monthly or annual basis, depending on the type of subscription plan you select when
                 purchasing.
               </li>
               <li>
@@ -70,7 +70,8 @@ export default function TocPage() {
             </ul>
             <br />
             <p className='mb-4'>
-              If you have any questions about your FastAgency subscription or these terms, please reach out to us at{' '}
+              If you have any questions about your FastAgency Studio subscription or these terms, please reach out to us
+              at{' '}
               <a href='mailto:support@fastagency.ai' className='no-underline hover:underline text-airt-primary'>
                 support@fastagency.ai
               </a>

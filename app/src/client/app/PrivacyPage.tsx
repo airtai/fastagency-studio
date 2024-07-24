@@ -10,21 +10,21 @@ export default function PrivacyPage() {
             <p>
               Airt technologies, Inc. ("we", "us", or "our") is committed to protecting the privacy of our users. This
               Privacy Policy explains how we collect, use, and disclose information through our SaaS tool,{' '}
-              <b>FastAgency</b> (the "Service").
+              <b>FastAgency Studio</b> (the "Service").
             </p>
           </section>
 
           <section className='mb-8'>
             <h2 className='text-xl font-semibold mb-2'>Information We Collect</h2>
             <p>
-              At FastAgency, we value your privacy and are committed to ensuring the highest level of confidentiality
-              and security for your information. Here's what you need to know about the information we collect when you
-              use our Service:
+              At FastAgency Studio, we value your privacy and are committed to ensuring the highest level of
+              confidentiality and security for your information. Here's what you need to know about the information we
+              collect when you use our Service:
             </p>
             <br />
             <ul className='list-decimal pl-6'>
               <li>
-                <b>Account Information:</b> When you create a FastAgency account, we collect your name and email
+                <b>Account Information:</b> When you create a FastAgency Studio account, we collect your name and email
                 address. This information is essential to personalize your experience and enable various features of the
                 Service.
               </li>
@@ -47,9 +47,9 @@ export default function PrivacyPage() {
                 information, and other data related to your activities within our Service.
               </li>
               <li>
-                <b>Data Processing:</b> At FastAgency, your data's privacy is a top priority. We process data on-the-fly
-                and do not store any data in databases, except for chat history as detailed in the "Third-Party and
-                Proprietary AI Tools" section. This ensures your data stays where it belongs—with you.
+                <b>Data Processing:</b> At FastAgency Studio, your data's privacy is a top priority. We process data
+                on-the-fly and do not store any data in databases, except for chat history as detailed in the
+                "Third-Party and Proprietary AI Tools" section. This ensures your data stays where it belongs—with you.
               </li>
             </ul>
           </section>
@@ -60,7 +60,7 @@ export default function PrivacyPage() {
             <ul className='list-disc pl-6'>
               <li>
                 <b>Provide, Maintain, and Improve the Service:</b> We use your information to deliver the services you
-                request, maintain your account, and enhance your experience with FastAgency.
+                request, maintain your account, and enhance your experience with FastAgency Studio.
               </li>
               <li>
                 <b>Respond to Your Requests and Inquiries:</b> Your information helps us respond to your customer
@@ -122,7 +122,7 @@ export default function PrivacyPage() {
             <h2 className='text-xl font-semibold mb-2'>Google API Services User Data Policy</h2>
             <h3 className='text-l font-semibold mb-2'>Google API Services Disclosure</h3>
             <p>
-              FastAgency's use and transfer of information received from Google APIs adhere to{' '}
+              FastAgency Studio's use and transfer of information received from Google APIs adhere to{' '}
               <a
                 href='https://developers.google.com/terms/api-services-user-data-policy'
                 target='_blank'
@@ -136,8 +136,9 @@ export default function PrivacyPage() {
             <br />
             <h3 className='text-l font-semibold mb-2'>Use of Google API Services Data</h3>
             <p>
-              When you choose to connect various Google services to FastAgency, we require specific permissions to fetch
-              and display data for your interactive queries. Below are the permissions required for each Google service:
+              When you choose to connect various Google services to FastAgency Studio, we require specific permissions
+              to fetch and display data for your interactive queries. Below are the permissions required for each Google
+              service:
             </p>
             <br />
             <ul className='list-disc pl-6'>
@@ -150,7 +151,7 @@ export default function PrivacyPage() {
                 >
                   https://developers.google.com/analytics/devguides/config/admin/v1
                 </a>{' '}
-                - Enables you to interact with your Google Analytics data through FastAgency.
+                - Enables you to interact with your Google Analytics data through FastAgency Studio.
               </li>
 
               {/* <li>
@@ -162,7 +163,7 @@ export default function PrivacyPage() {
                 >
                   https://developers.google.com/google-ads/api/docs/oauth/internals
                 </a>{' '}
-                - Allows FastAgency to fetch and display your Google Ads data for interactive queries.
+                - Allows FastAgency Studio to fetch and display your Google Ads data for interactive queries.
               </li> */}
               <li>
                 Google Search Console:{' '}
@@ -173,8 +174,8 @@ export default function PrivacyPage() {
                 >
                   https://developers.google.com/webmaster-tools/v1/sites/get
                 </a>{' '}
-                - Permits FastAgency to access and display your Google Search Console data, making it available for
-                interactive chat.
+                - Permits FastAgency Studio to access and display your Google Search Console data, making it available
+                for interactive chat.
               </li>
             </ul>
             <br />
@@ -222,8 +223,9 @@ export default function PrivacyPage() {
             <br />
             <p>
               <b>Chat Interactions:</b> This refers to the text-based interactions you have with the chatbot within the
-              FastAgency platform. The content of these conversations, including your questions and responses. This data
-              aids in refining the AI's ability to comprehend inputs and generate contextually accurate responses.
+              FastAgency Studio platform. The content of these conversations, including your questions and responses.
+              This data aids in refining the AI's ability to comprehend inputs and generate contextually accurate
+              responses.
             </p>
             <br />
             <p>
@@ -258,7 +260,7 @@ export default function PrivacyPage() {
           <section className='mb-8'>
             <h3 className='text-l font-semibold mb-2'>User Consent Process</h3>
             <p>
-              During your registration with FastAgency, we require your explicit consent regarding our privacy
+              During your registration with FastAgency Studio, we require your explicit consent regarding our privacy
               practices. As part of the sign-up process, you will encounter a checkbox indicating that you have read and
               agree to our Terms and Conditions and Privacy Policy. By checking this box, you acknowledge your
               understanding and agreement to how we handle your data as detailed in these documents. Only upon agreeing
@@ -271,8 +273,8 @@ export default function PrivacyPage() {
             <h3 className='text-l font-semibold mb-2'>Opt-Out Options</h3>
             <p>
               If you choose to withdraw your consent and opt-out of data sharing with third-party tools, you will no
-              longer be able to use the FastAgency service. The nature of our tool requires data sharing for its basic
-              functionality. Therefore, opting out effectively means discontinuing use of the service.
+              longer be able to use the FastAgency Studio service. The nature of our tool requires data sharing for its
+              basic functionality. Therefore, opting out effectively means discontinuing use of the service.
             </p>
           </section>
 
@@ -285,7 +287,7 @@ export default function PrivacyPage() {
             </p>
             <br />
             <p>
-              <b>If you do not agree with this policy, please refrain from signing up and using FastAgency.</b>
+              <b>If you do not agree with this policy, please refrain from signing up and using FastAgency Studio.</b>
             </p>
           </section>
 

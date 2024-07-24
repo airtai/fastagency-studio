@@ -2,11 +2,10 @@ import uuid
 from typing import Any, Dict
 
 import pytest
-from fastapi import BackgroundTasks
-
 from fastagency.app import add_model
 from fastagency.models.base import Model
 from fastagency.models.secrets.github_token import GitHubToken
+from fastapi import BackgroundTasks
 
 
 class TestGitHubToken:

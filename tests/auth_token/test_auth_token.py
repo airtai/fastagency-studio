@@ -2,12 +2,9 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict
 
-import pytest
-from fastapi import HTTPException
-from fastapi.testclient import TestClient
-
 import fastagency.app
 import fastagency.auth_token.auth
+import pytest
 from fastagency.app import app
 from fastagency.auth_token.auth import (
     create_deployment_auth_token,
@@ -16,6 +13,8 @@ from fastagency.auth_token.auth import (
     parse_expiry,
     verify_auth_token,
 )
+from fastapi import HTTPException
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
 

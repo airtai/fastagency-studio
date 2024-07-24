@@ -1,17 +1,16 @@
 import uuid
 
 import pytest
-from pydantic import BaseModel
-
 from fastagency.models.base import (
     Model,
     create_reference_model,
     get_reference_model,
 )
+from pydantic import BaseModel
 
 
 def test_create_reference_model() -> None:
-    class MyModel(Model):
+    class MyModel(Model):  # type: ignore[misc]
         i: int
         s: str
 
@@ -63,7 +62,7 @@ def test_create_reference_model() -> None:
 
 
 def test_get_reference_model() -> None:
-    class MyModel(Model):
+    class MyModel(Model):  # type: ignore[misc]
         i: int
         s: str
 

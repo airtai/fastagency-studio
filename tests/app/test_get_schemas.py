@@ -1,7 +1,6 @@
-from fastapi.testclient import TestClient
-
 from fastagency.app import app
 from fastagency.models.registry import Schemas
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
 

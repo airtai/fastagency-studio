@@ -1,7 +1,6 @@
 import uuid
 
 import pytest
-
 from fastagency.helpers import get_model_by_ref
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.anthropic import Anthropic, AnthropicAPIKey

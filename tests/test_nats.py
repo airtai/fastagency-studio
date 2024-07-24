@@ -8,13 +8,9 @@ from unittest.mock import MagicMock
 
 # from autogen.agentchat import AssistantAgent, UserProxyAgent
 import autogen
+import fastagency.io.ionats
 import pytest
 from autogen.io.console import IOConsole
-from fastapi import BackgroundTasks
-from faststream.nats import TestNatsBroker
-from pydantic import BaseModel
-
-import fastagency.io.ionats
 from fastagency.app import add_model
 from fastagency.io.ionats import (  # type: ignore [attr-defined]
     InputResponseModel,
@@ -27,6 +23,9 @@ from fastagency.models.agents.user_proxy import UserProxyAgent
 from fastagency.models.base import Model
 from fastagency.models.llms.azure import AzureOAI, AzureOAIAPIKey
 from fastagency.models.teams.two_agent_teams import TwoAgentTeam
+from fastapi import BackgroundTasks
+from faststream.nats import TestNatsBroker
+from pydantic import BaseModel
 
 
 def as_dict(model: BaseModel) -> Dict[str, Any]:
@@ -118,7 +117,7 @@ class TestAutogen:
         actual = []
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(
+        @broker.subscriber(  # type: ignore[misc]
             f"chat.client.messages.{user_id}.playground.{thread_id}", stream=stream
         )
         async def client_input_handler(msg: ServerResponseModel) -> None:
@@ -269,7 +268,7 @@ class TestAutogen:
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
         error_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(
+        @broker.subscriber(  # type: ignore[misc]
             f"chat.client.messages.{user_id}.playground.{thread_id}", stream=stream
         )
         async def client_input_handler(msg: ServerResponseModel) -> None:
@@ -438,7 +437,7 @@ class TestAutogen:
         actual = []
         terminate_chat_queue: asyncio.Queue = asyncio.Queue(maxsize=1)  # type: ignore [type-arg]
 
-        @broker.subscriber(
+        @broker.subscriber(  # type: ignore[misc]
             f"chat.client.messages.{user_uuid}.playground.{thread_id}", stream=stream
         )
         async def client_input_handler(msg: ServerResponseModel) -> None:

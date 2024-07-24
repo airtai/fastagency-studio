@@ -2,8 +2,6 @@ import uuid
 from typing import Dict
 
 import pytest
-from together import Together
-
 from fastagency.helpers import get_model_by_ref
 from fastagency.models.base import ObjectReference
 from fastagency.models.llms.together import (
@@ -11,6 +9,7 @@ from fastagency.models.llms.together import (
     TogetherAIAPIKey,
     together_model_string,
 )
+from together import Together
 
 
 def test_import(monkeypatch: pytest.MonkeyPatch) -> None:

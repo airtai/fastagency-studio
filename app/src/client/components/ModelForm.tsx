@@ -5,6 +5,7 @@ import { SchemaCategory, ApiSchema, JsonSchema, SelectedModelSchema } from '../i
 import ModelFormContainer from './ModelFormContainer';
 import DynamicFormBuilder from './DynamicFormBuilder';
 import { getSchemaByName } from '../utils/buildPageUtils';
+import { FormData } from '../hooks/useForm';
 
 interface ModelFormProps {
   allUserProperties: any;
@@ -16,7 +17,7 @@ interface ModelFormProps {
   onSuccessCallback: (data: any) => void;
   onCancelCallback: (event: React.FormEvent) => void;
   onDeleteCallback: (data: any) => void;
-  addPropertyClick: (property_type: string) => void;
+  handleAddProperty: (property_type: string, formData: FormData, key: string) => void;
 }
 
 const ModelForm: React.FC<ModelFormProps> = ({
@@ -29,7 +30,7 @@ const ModelForm: React.FC<ModelFormProps> = ({
   onSuccessCallback,
   onCancelCallback,
   onDeleteCallback,
-  addPropertyClick,
+  handleAddProperty,
 }) => {
   const modelSchemas: ApiSchema[] = data.schemas;
   const initialModelSchema: JsonSchema = getSchemaByName(data.schemas, selectedModel);
@@ -58,7 +59,7 @@ const ModelForm: React.FC<ModelFormProps> = ({
               onSuccessCallback={onSuccessCallback}
               onCancelCallback={onCancelCallback}
               onDeleteCallback={onDeleteCallback}
-              addPropertyClick={addPropertyClick}
+              handleAddProperty={handleAddProperty}
             />
           )}
         </>

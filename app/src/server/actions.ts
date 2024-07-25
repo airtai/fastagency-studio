@@ -200,7 +200,6 @@ export const updateUserModels: UpdateUserModels<UpdateUserModelsPayload, void> =
   }
   try {
     const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models/${args.data.type_name}/${args.data.model_name}/${args.uuid}`;
-    console.log(JSON.stringify({ ...args.data }));
     const response = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

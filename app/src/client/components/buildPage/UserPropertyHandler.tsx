@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import _ from 'lodash';
 
 import Button from '../Button';
@@ -6,46 +7,51 @@ import ModelForm from '../ModelForm';
 import ModelsList from '../ModelsList';
 import NotificationBox from '../NotificationBox';
 
-import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
 import { navLinkItems } from '../CustomSidebar';
 
-import {
-  getModels,
-  useQuery,
-  updateUserModels,
-  addUserModels,
-  deleteUserModels,
-  propertyDependencies,
-} from 'wasp/client/operations';
+import { getModels, useQuery, updateUserModels, addUserModels, deleteUserModels } from 'wasp/client/operations';
 import { capitalizeFirstLetter, filterDataToValidate, dependsOnProperty } from '../../utils/buildPageUtils';
 import Loader from '../../admin/common/Loader';
 import CustomBreadcrumb from '../CustomBreadcrumb';
-import { useHistory } from 'react-router-dom';
 
-interface Props {
-  data: any;
-  togglePropertyList: boolean;
-}
+import { FormData } from '../../hooks/useForm';
+import { useFormDataStack } from './useFormDataStack';
+import { FormDataStackItem, Props } from './types';
+import { FORM_DATA_STORAGE_KEY } from './utils';
+import { getTargetModel, storeFormData } from './utils';
+import useDetectRefresh from './useDetectRefresh';
 
 const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(false);
   const [showAddModel, setShowAddModel] = useState(false);
   const [selectedModel, setSelectedModel] = useState(data.schemas[0].name);
-  const [updateExistingModel, setUpdateExistingModel] = useState<SelectedModelSchema | null>(null);
-  const propertyName = data.name;
-  const { data: allUserProperties, refetch: refetchModels, isLoading: getModelsIsLoading } = useQuery(getModels);
-
   const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
+  const { data: allUserProperties, refetch: refetchModels, isLoading: getModelsIsLoading } = useQuery(getModels);
+  const { updateExistingModel, setUpdateExistingModel, targetModelToAdd, handleFormResume } =
+    useFormDataStack(setShowAddModel);
+
+  const propertyName = data.name;
+
   useEffect(() => {
     setShowAddModel(false);
   }, [togglePropertyList]);
 
   useEffect(() => {
     if (data && data.schemas && data.schemas[0].name) {
-      setSelectedModel(data.schemas[0].name);
+      const targetModel = targetModelToAdd.current || data.schemas[0].name;
+      setSelectedModel(targetModel);
     }
   }, [data]);
+
+  useDetectRefresh(() => {
+    sessionStorage.removeItem(FORM_DATA_STORAGE_KEY);
+    setShowAddModel(false);
+    setUpdateExistingModel(null);
+    if (targetModelToAdd.current) {
+      targetModelToAdd.current = null;
+    }
+  });
 
   const updateModel = (model_type: string) => {
     setSelectedModel(model_type);
@@ -66,7 +72,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
       setIsLoading(true);
       const mergedData = { ...payload, type_name: propertyName, model_name: selectedModel, uuid: payload.uuid };
       const filteredData = filterDataToValidate(mergedData);
-      if (updateExistingModel) {
+      if (updateExistingModel && !targetModelToAdd.current) {
         await updateUserModels({ data: filteredData, uuid: updateExistingModel.uuid });
         setUpdateExistingModel(null);
       } else {
@@ -76,20 +82,36 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
       refetchModels();
       const isNewDeploymentAdded = propertyName === 'deployment' && !updateExistingModel;
       !isNewDeploymentAdded && setShowAddModel(false);
+
+      handleFormResume(filteredData);
     } catch (error) {
       console.log('error: ', error, 'error.message: ');
-      // setNotificationErrorMessage(`Error adding/updating ${propertyName}. Please try again later.`);
       throw error;
     } finally {
       setIsLoading(false);
     }
-
     return addUserModelResponse;
   };
 
   const onCancelCallback = (event: React.FormEvent) => {
     event.preventDefault();
-    setShowAddModel(false);
+    let formDataStack: FormDataStackItem[] = JSON.parse(sessionStorage.getItem(FORM_DATA_STORAGE_KEY) || '[]');
+    if (formDataStack.length > 0) {
+      const currentItem = formDataStack[formDataStack.length - 1];
+      const nextRoute = `/build/${currentItem.source.propertyName}`;
+      // @ts-ignore
+      setUpdateExistingModel(currentItem.formData);
+      targetModelToAdd.current = currentItem.formData.uuid ? null : currentItem.source.selectedModel;
+
+      formDataStack.pop();
+      sessionStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formDataStack));
+
+      if (nextRoute) {
+        history.push(nextRoute);
+      }
+    } else {
+      setShowAddModel(false);
+    }
   };
 
   const onDeleteCallback = async () => {
@@ -134,6 +156,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
         // @ts-ignore
         setUpdateExistingModel({ ...selectedModel.json_str, ...{ uuid: selectedModel.uuid } });
         setShowAddModel(true);
+        targetModelToAdd.current = null;
       }
     }
   };
@@ -142,15 +165,20 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
     setNotificationErrorMessage(null);
   };
 
-  const addPropertyClick = (property_type: string) => {
-    setShowAddModel(false);
+  const handleAddProperty = (targetPropertyName: string, formData: FormData, key: string) => {
+    const targetModel = getTargetModel(data.schemas, selectedModel, key);
+    storeFormData(propertyName, selectedModel, targetPropertyName, targetModel, formData, key, updateExistingModel);
+
+    // setShowAddModel(false);
+    setShowAddModel(true);
     setUpdateExistingModel(null);
-    handleClick();
-    history.push(`/build/${property_type}`);
+    targetModelToAdd.current = targetModel;
+
+    history.push(`/build/${targetPropertyName}`);
   };
 
   const propertyHeader = propertyName === 'llm' ? 'LLM' : capitalizeFirstLetter(propertyName);
-  const propertyDisplayName = propertyName ? _.find(navLinkItems, ['componentName', propertyName]).label : '';
+  const propertyDisplayName = propertyName ? _.find(navLinkItems, ['componentName', propertyName])?.label : '';
 
   return (
     <>
@@ -180,7 +208,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
                     onSuccessCallback={onSuccessCallback}
                     onCancelCallback={onCancelCallback}
                     onDeleteCallback={onDeleteCallback}
-                    addPropertyClick={addPropertyClick}
+                    handleAddProperty={handleAddProperty}
                   />
                 )}
               </div>

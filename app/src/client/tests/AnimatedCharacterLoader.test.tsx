@@ -8,7 +8,7 @@ describe('AnimatedCharacterLoader', () => {
   test('renders AnimatedCharacterLoader component with default props', async () => {
     renderInContext(<AnimatedCharacterLoader />);
 
-    const logo = screen.getByAltText('FastAgency logo');
+    const logo = screen.getByAltText('FastAgency Studio logo');
     expect(logo).toBeInTheDocument();
   });
 });

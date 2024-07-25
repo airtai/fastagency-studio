@@ -20,7 +20,7 @@ def test_anthropic() -> None:
     assert 1 == 1
 
 
-@pytest.mark.azure_aoi()
+@pytest.mark.azure_oai()
 def test_azure_aoi() -> None:
     assert 1 == 1
 

@@ -145,8 +145,8 @@ export default function LandingPage() {
             <div className='mx-auto max-w-8xl px-6 lg:px-8'>
               <div className='lg:mb-18 mx-auto max-w-5xl text-center'>
                 <h1 className='text-4xl font-rubik text-airt-font-base sm:text-5xl dark:text-white'>
-                  FastAgency Studio: A comprehensive tool for building <span className='italic'>multi-agent </span> AI
-                  services.
+                  FastAgency Studio: A Low-Code Platform for Building <span className='italic'>Multi-Agent </span> AI
+                  Services.
                 </h1>
                 <p className='mt-6 mx-auto max-w-2xl text-lg leading-8 text-airt-font-base dark:text-white'>
                   Quickly build scalable SaaS solutions using our powerful, multi-agent AI framework that streamlines

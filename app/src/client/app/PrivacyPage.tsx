@@ -17,7 +17,7 @@ export default function PrivacyPage() {
           <section className='mb-8'>
             <h2 className='text-xl font-semibold mb-2'>Information We Collect</h2>
             <p>
-              At FastAgency Studio, we value your privacy and are committed to ensuring the highest level of
+              At airt technologies, Inc., we value your privacy and are committed to ensuring the highest level of
               confidentiality and security for your information. Here's what you need to know about the information we
               collect when you use our Service:
             </p>
@@ -47,8 +47,8 @@ export default function PrivacyPage() {
                 information, and other data related to your activities within our Service.
               </li>
               <li>
-                <b>Data Processing:</b> At FastAgency Studio, your data's privacy is a top priority. We process data
-                on-the-fly and do not store any data in databases, except for chat history as detailed in the
+                <b>Data Processing:</b> At airt technologies, Inc., your data's privacy is a top priority. We process
+                data on-the-fly and do not store any data in databases, except for chat history as detailed in the
                 "Third-Party and Proprietary AI Tools" section. This ensures your data stays where it belongs—with you.
               </li>
             </ul>

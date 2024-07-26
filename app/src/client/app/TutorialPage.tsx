@@ -25,14 +25,14 @@ export default function TutorialPage() {
       link: 'https://www.youtube.com/embed/9y4cDOkWIBw',
       heading: 'Building and Deploying SaaS with AI Agents and Multi-Agent Teams',
       description:
-        'Build a powerful SaaS solution with FastAgency. This tutorial demonstrates how to incorporate AI agents and multi-agent teams into your app effortlessly.',
+        'Build a powerful SaaS solution with FastAgency Studio. This tutorial demonstrates how to incorporate AI agents and multi-agent teams into your app effortlessly.',
       thumbnail: `https://img.youtube.com/vi/9y4cDOkWIBw/0.jpg`,
     },
     {
       link: 'https://www.youtube.com/embed/mD105mzcbP8',
       heading: 'Creating and Integrating a Web Surfer Agent',
       description:
-        'Enhance your SaaS with web surfing capabilities using FastAgency. See how to build and deploy an app that utilizes this powerful agent.',
+        'Enhance your SaaS with web surfing capabilities using FastAgency Studio. See how to build and deploy an app that utilizes this powerful agent.',
       thumbnail: `https://img.youtube.com/vi/mD105mzcbP8/0.jpg`,
     },
   ];

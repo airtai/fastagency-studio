@@ -6,7 +6,7 @@ export const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Build', href: '/build' },
   { name: 'Playground', href: '/playground' },
-  { name: 'Tutorial', href: '/tutorial' },
+  { name: 'Tutorials', href: '/tutorials' },
   { name: 'Pricing', href: '/pricing' },
   { name: 'Examples', href: '/examples' },
 ];
@@ -14,7 +14,7 @@ export const features = [
   {
     name: 'Build with Your Own APIs: Integrate Seamlessly with Custom Agent Design',
     description:
-      'Integrate your existing systems seamlessly by defining agents with your own REST APIs. FastAgency allows you to craft bespoke agents tailored to your specific business processes, enabling a personalized approach to AI-driven solutions. This flexibility ensures that you can create highly specialized services that address unique challenges effectively.',
+      'Integrate your existing systems seamlessly by defining agents with your own REST APIs. FastAgency Studio allows you to craft bespoke agents tailored to your specific business processes, enabling a personalized approach to AI-driven solutions. This flexibility ensures that you can create highly specialized services that address unique challenges effectively.',
     icon: '⚙️', //'🤝',
     href: '',
   },
@@ -28,14 +28,14 @@ export const features = [
   {
     name: 'Launch Faster Than Ever: Accelerate Time-to-Market with Rapid Deployment',
     description:
-      "Accelerate your time-to-market with FastAgency's streamlined deployment process. Our framework is designed for speed, allowing you to move from concept to launch in record time. This rapid deployment capability ensures that you can quickly adapt to market changes and gain a competitive edge.",
+      "Accelerate your time-to-market with FastAgency Studio's streamlined deployment process. Our framework is designed for speed, allowing you to move from concept to launch in record time. This rapid deployment capability ensures that you can quickly adapt to market changes and gain a competitive edge.",
     icon: '⚡',
     href: '',
   },
   {
     name: 'Start Collecting Revenue in Just a Week with Rapid Monetization',
     description:
-      'Dive into the market swiftly with FastAgency. Our platform enables you to go from setup to sales within a week, allowing you to start generating revenue almost immediately. This rapid monetization feature is designed to give businesses a significant head start, accelerating the return on investment and enabling you to capitalize on AI-driven opportunities faster than ever.',
+      'Dive into the market swiftly with FastAgency Studio. Our platform enables you to go from setup to sales within a week, allowing you to start generating revenue almost immediately. This rapid monetization feature is designed to give businesses a significant head start, accelerating the return on investment and enabling you to capitalize on AI-driven opportunities faster than ever.',
     icon: '💸',
     href: '',
   },

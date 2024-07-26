@@ -65,7 +65,7 @@ export default function ConversationsList({
             style={{ borderRadius: '50%', width: '93%', height: '93%', paddingTop: '3px' }}
           >
             <img
-              alt='FastAgency logo'
+              alt='FastAgency Studio logo'
               className='w-full h-full'
               src={logo}
               style={{ width: '78%', height: '78%', marginLeft: '4px' }}

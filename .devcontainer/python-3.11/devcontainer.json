@@ -3,9 +3,9 @@
     "dockerComposeFile": [
         "./docker-compose.yml"
     ],
-    "service": "python-3.11",
+    "service": "python-3.11-fastagency-studio",
     "forwardPorts": [
-        "${containerEnv:CONTAINER_PREFIX}-nats-py311-fastagency:9222"
+        "${containerEnv:CONTAINER_PREFIX}-nats-py311-fastagency-studio:9222"
     ],
     "shutdownAction": "stopCompose",
     "workspaceFolder": "/workspaces/fastagency",

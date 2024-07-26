@@ -6,13 +6,10 @@ import { AiFillCloseCircle } from 'react-icons/ai';
 import { HiBars3 } from 'react-icons/hi2';
 import { BiLogIn } from 'react-icons/bi';
 import logo from '../static/logo.svg';
-import openSaasBanner from '../static/open-saas-banner.png';
-import { features, navigation, faqs, footerNavigation, testimonials } from './contentSections';
+import { features, navigation } from './contentSections';
 import DropdownUser from '../components/DropdownUser';
-import { DOCS_URL } from '../../shared/constants';
 import { UserMenuItems } from '../components/UserMenuItems';
 import UserActionButton from '../components/UserActionButton';
-import DarkModeSwitcher from '../admin/components/DarkModeSwitcher';
 import SocialMediaIcons from '../components/SocialMediaIcons';
 
 export default function LandingPage() {
@@ -20,7 +17,9 @@ export default function LandingPage() {
 
   const { data: user, isLoading: isUserLoading } = useAuth();
 
-  const NavLogo = () => <img className='h-8' src={logo} style={{ width: '1.8rem' }} alt='FastAgency' />;
+  const NavLogo = () => (
+    <img className='h-5 sm:h-6 lg:h-5 xl:h-6' src={logo} style={{ width: '1.8rem' }} alt='FastAgency Studio' />
+  );
 
   return (
     <div className='dark:text-white dark:bg-boxdark-2'>
@@ -30,12 +29,14 @@ export default function LandingPage() {
           <div className='flex items-center lg:flex-1'>
             <a
               href='/'
-              className='flex items-center -m-1.5 p-1.5 text-airt-font-base duration-300 ease-in-out hover:text-airt-secondary'
+              className='flex items-center -m-1.5 py-1 sm:py-0 md:py-0 text-airt-font-base duration-300 ease-in-out hover:text-airt-secondary'
             >
               <NavLogo />
-              <span className='ml-2 text-4xl font-rubik text-airt-font-base leading-6 dark:text-white'>FastAgency</span>
-              <span className='ml-2 text-sm font-semibold leading-6 '>
-                <sup className='text-base text-airt-font-base'>αlpha</sup>
+              <span className='ml-1 mt-[6px] xl:mt-[7px] xl:mt-0 text-lg sm:text-2xl md:text-2xl min-[1024px]:text-sm min-[1100px]:text-lg xl:text-2xl font-rubik text-airt-font-base dark:text-white'>
+                FastAgency Studio
+              </span>
+              <span className='ml-1 text-xs font-semibold leading-6 '>
+                <sup className='text-xs text-airt-font-base'>αlpha</sup>
               </span>
             </a>
           </div>
@@ -143,8 +144,9 @@ export default function LandingPage() {
           <div className='py-24 sm:py-32'>
             <div className='mx-auto max-w-8xl px-6 lg:px-8'>
               <div className='lg:mb-18 mx-auto max-w-5xl text-center'>
-                <h1 className='text-4xl font-rubik text-airt-font-base sm:text-6xl dark:text-white'>
-                  FastAgency: A framework for building <span className='italic'>multi-agent </span> AI services.
+                <h1 className='text-4xl font-rubik text-airt-font-base sm:text-5xl dark:text-white'>
+                  FastAgency Studio: A Low-Code Platform for Building <span className='italic'>Multi-Agent </span> AI
+                  Services.
                 </h1>
                 <p className='mt-6 mx-auto max-w-2xl text-lg leading-8 text-airt-font-base dark:text-white'>
                   Quickly build scalable SaaS solutions using our powerful, multi-agent AI framework that streamlines

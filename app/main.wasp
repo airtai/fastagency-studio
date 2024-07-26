@@ -2,20 +2,20 @@ app FastAgency {
   wasp: {
     version: "^0.14.0"
   },
-  title: "FastAgency",
+  title: "FastAgency Studio",
   head: [
         "<meta property='og:type' content='website' />",
-        "<meta property='og:title' content='FastAgency' />",
+        "<meta property='og:title' content='FastAgency Studio' />",
         "<meta property='og:description' content='Quickly build scalable SaaS solutions using our powerful, multi-agent AI framework that streamlines complex processes.' />",
-        "<meta property='og:url' content='https://fastagency.ai/' />",
-        "<meta property='og:image' content='https://fastagency.ai/public-banner.png' />",
+        "<meta property='og:url' content='https://studio.fastagency.ai/' />",
+        "<meta property='og:image' content='https://studio.fastagency.ai/public-banner.png' />",
         "<meta property='og:image:type' content='image/png' />",
         "<meta property='og:image:width' content='800' />",
         "<meta property='og:image:height' content='400' />",
         "<meta name='twitter:card' content='summary_large_image' />",
-        "<meta name='twitter:title' content='FastAgency' />",
+        "<meta name='twitter:title' content='FastAgency Studio' />",
         "<meta name='twitter:description' content='Quickly build scalable SaaS solutions using our powerful, multi-agent AI framework that streamlines complex processes.' />",
-        "<meta name='twitter:image' content='https://fastagency.ai/public-banner.png' />",
+        "<meta name='twitter:image' content='https://studio.fastagency.ai/public-banner.png' />",
         // you can put your analytics scripts here
         // "<script defer data-domain='<your-site-id>' src='https://plausible.io/js/script.js'></script>",
         // plausible has script extension `script.local.js` for local development
@@ -146,7 +146,7 @@ page ExamplesPage {
   component: import ExamplesPage from "@src/client/app/ExamplesPage",
 }
 
-route TutorialRoute { path: "/tutorial", to: TutorialPage }
+route TutorialRoute { path: "/tutorials", to: TutorialPage }
 page TutorialPage {
   component: import TutorialPage from "@src/client/app/TutorialPage",
 }

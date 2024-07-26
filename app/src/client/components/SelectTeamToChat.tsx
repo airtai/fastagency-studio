@@ -86,7 +86,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
               options={allTeams ? allTeams.map((team: SelectedModelSchema) => team.json_str.name) : []}
               onChange={handleTeamChange}
               propertyTypes={[]}
-              addPropertyClick={() => {}}
+              handleAddProperty={() => {}}
               isRequired={false}
             />
             {formError.team && <div style={{ color: 'red' }}>{formError.team}</div>}

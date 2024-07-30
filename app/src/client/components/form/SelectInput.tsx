@@ -70,9 +70,12 @@ export const SelectInput: React.FC<SelectInputProps> = ({
     option: (styles: any, { data }: any) => {
       return {
         ...styles,
+        display: 'flex',
+        alignItems: 'center',
         '::before': data.isNewOption
           ? {
-              content: '"➕"',
+              fontFamily: '"Material Symbols Outlined"',
+              content: '"\ue147"',
               marginRight: '5px',
             }
           : {},

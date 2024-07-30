@@ -106,7 +106,6 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
             className='block rounded-lg w-full h-12 text-sm text-airt-font-base bg-airt-primary focus:outline-none focus:ring-0 focus:border-captn-light-blue'
             placeholder='Enter your message...'
             required
-            disabled={disableFormSubmit || isSubmitting}
             ref={textAreaRef}
             value={formInputValue}
             onChange={(e) => setFormInputValue(e.target.value)}

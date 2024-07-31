@@ -1,102 +1,100 @@
-import React, { useEffect, useState } from 'react';
-
-import _ from 'lodash';
-import Select from 'react-select';
-
+import React from 'react';
+import Select, { StylesConfig } from 'react-select';
 import { capitalizeFirstLetter } from '../../utils/buildPageUtils';
+
+interface SelectOption {
+  value: string;
+  label: string;
+  isNewOption?: boolean;
+  originalValue?: string;
+}
 
 interface SelectInputProps {
   id: string;
   value: string;
   options: string[];
   onChange: (value: string) => void;
-  propertyTypes: string[];
-  handleAddProperty: (property_type: string) => void;
+  propertyTypes?: string[];
+  handleAddProperty?: (propertyType: string) => void;
   isRequired: boolean;
 }
 
-export function getSelectOptions(options: string[], propertyTypes: string[] | null, isRequired: boolean) {
-  if (options.length === 1 && options[0] === 'None' && isRequired) {
-    options = [];
-  }
-  let selectOptions = options.map((option) => ({ value: option, label: option }));
+const generateLabel = (option: string): string =>
+  `Add new '${option === 'llm' ? 'LLM' : capitalizeFirstLetter(option)}'`;
 
-  if (propertyTypes && propertyTypes.length > 0) {
-    selectOptions = selectOptions.concat(
-      propertyTypes.map((option) => ({
-        value: option,
-        label: `Add new '${option === 'llm' ? 'LLM' : capitalizeFirstLetter(option)}'`,
-        isNewOption: true, // Flag to identify new property options
-      })) as any
+export const getSelectOptions = (
+  options: string[],
+  propertyTypes: string[] | undefined,
+  isRequired: boolean
+): SelectOption[] => {
+  const baseOptions =
+    isRequired && options.length === 1 && options[0] === 'None'
+      ? []
+      : options.map((option) => ({ value: option, label: option }));
+
+  const newPropertyOptions =
+    propertyTypes?.map((option) => ({
+      value: generateLabel(option),
+      label: generateLabel(option),
+      isNewOption: true,
+      originalValue: option,
+    })) || [];
+
+  return [...baseOptions, ...newPropertyOptions];
+};
+
+export const getSelectedItem = (selectedValue: string, options: SelectOption[]): SelectOption | undefined =>
+  options.find((option) => option.value === selectedValue);
+
+const customStyles: StylesConfig<SelectOption, false> = {
+  control: (baseStyles) => ({
+    ...baseStyles,
+    borderColor: '#003257',
+  }),
+  option: (styles, { data }) => ({
+    ...styles,
+    display: 'flex',
+    alignItems: 'center',
+    '::before': data.isNewOption
+      ? {
+          fontFamily: '"Material Symbols Outlined"',
+          content: '"\ue147"',
+          marginRight: '5px',
+        }
+      : {},
+  }),
+};
+
+export const SelectInput: React.FC<SelectInputProps> = React.memo(
+  ({ id, value, options, onChange, propertyTypes, handleAddProperty, isRequired }) => {
+    const selectOptions = getSelectOptions(options, propertyTypes, isRequired);
+
+    const handleChange = (selectedOption: SelectOption | null) => {
+      if (!selectedOption) return;
+
+      const item = getSelectedItem(selectedOption.value, selectOptions);
+      if (item?.isNewOption && handleAddProperty) {
+        handleAddProperty(item.originalValue!);
+      }
+      onChange(selectedOption.value);
+    };
+
+    const isClearable = !isRequired && !!propertyTypes;
+    const defaultValue = !propertyTypes ? selectOptions[0] : null;
+
+    return (
+      <div data-testid='select-input-container' className=''>
+        <Select
+          inputId={id}
+          options={selectOptions}
+          onChange={handleChange}
+          className='pt-1 pb-1'
+          defaultValue={defaultValue}
+          isSearchable={true}
+          isClearable={isClearable}
+          styles={customStyles}
+        />
+      </div>
     );
   }
-
-  return selectOptions;
-}
-
-export const SelectInput: React.FC<SelectInputProps> = ({
-  id,
-  value,
-  options,
-  onChange,
-  propertyTypes,
-  handleAddProperty,
-  isRequired,
-}) => {
-  const [selectedOption, setSelectedOption] = useState(value);
-  let selectOptions = getSelectOptions(options, propertyTypes, isRequired);
-  useEffect(() => {
-    if (options.length === 1 && options[0] === 'None' && isRequired) {
-      return;
-    }
-    const defaultValue = value === '' && selectOptions.length > 0 ? selectOptions[0].value : value;
-    setSelectedOption(defaultValue);
-  }, [value, options]);
-
-  const handleTypeSelect = (e: any) => {
-    const selectedOption = e.value;
-    setSelectedOption(selectedOption);
-    if (_.includes(propertyTypes, selectedOption)) {
-      handleAddProperty(selectedOption);
-    }
-    onChange(selectedOption);
-  };
-
-  const customStyles = {
-    control: (baseStyles: any, state: any) => ({
-      ...baseStyles,
-      borderColor: '#003257',
-    }),
-    option: (styles: any, { data }: any) => {
-      return {
-        ...styles,
-        display: 'flex',
-        alignItems: 'center',
-        '::before': data.isNewOption
-          ? {
-              fontFamily: '"Material Symbols Outlined"',
-              content: '"\ue147"',
-              marginRight: '5px',
-            }
-          : {},
-      };
-    },
-  };
-
-  return (
-    <div className=''>
-      <Select
-        inputId={id}
-        options={selectOptions}
-        onChange={handleTypeSelect}
-        className='pt-1 pb-1'
-        value={selectOptions.filter(function (option) {
-          return option.value === selectedOption;
-        })}
-        isSearchable={false}
-        isClearable={true}
-        styles={customStyles}
-      />
-    </div>
-  );
-};
+);

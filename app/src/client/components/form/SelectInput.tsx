@@ -83,8 +83,10 @@ export const SelectInput: React.FC<SelectInputProps> = React.memo(
     const defaultValue = !propertyTypes ? selectOptions[0] : null;
 
     return (
-      <div data-testid='select-input-container' className=''>
+      <div className=''>
         <Select
+          data-testid='select-container'
+          classNamePrefix='react-select'
           inputId={id}
           options={selectOptions}
           onChange={handleChange}

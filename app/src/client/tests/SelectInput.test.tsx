@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import selectEvent from 'react-select-event';
 import { describe, it, expect, vi } from 'vitest';
 
@@ -96,18 +96,58 @@ describe('SelectInput', () => {
     isRequired: false,
   };
 
-  it('renders correctly with default props', () => {
-    render(<SelectInput {...defaultProps} />);
-    expect(screen.getByTestId('select-input-container')).toBeInTheDocument();
+  it('renders correctly with default props', async () => {
+    const { getByRole, getByText } = render(<SelectInput {...defaultProps} />);
+
+    // Expect default value to be present
+    expect(getByText('Option1')).toBeInTheDocument();
+
+    // Open the select dropdown
+    const selectElement = getByRole('combobox');
+    fireEvent.mouseDown(selectElement);
+
+    // Select an option
+    await selectEvent.select(selectElement, 'Option2');
+
+    // Check if the selected option is displayed directly by its text
+    expect(getByText('Option2')).toBeInTheDocument();
   });
+
   it('calls onChange when an option is selected', async () => {
-    const { getByText, queryByTestId } = render(<SelectInput {...defaultProps} />);
+    const { getByRole, getByText } = render(<SelectInput {...defaultProps} />);
 
-    const mySelectComponent = queryByTestId('my-select-component');
-    // @ts-ignore
-    await selectEvent.select(mySelectComponent, 'Option1');
+    // Open the select dropdown
+    const selectElement = getByRole('combobox');
+    fireEvent.mouseDown(selectElement);
 
-    expect(defaultProps.onChange).toHaveBeenCalledTimes(1);
-    expect(defaultProps.onChange).toHaveBeenCalledWith('Option1');
+    // Select an option
+    await selectEvent.select(selectElement, 'Option2');
+
+    expect(defaultProps.onChange).toHaveBeenCalled();
+    expect(defaultProps.onChange).toHaveBeenCalledWith('Option2');
+  });
+
+  it('handles property types correctly', async () => {
+    const props = {
+      ...defaultProps,
+      propertyTypes: ['llm'],
+      handleAddProperty: vi.fn(),
+    };
+
+    const { getByRole, getByText } = render(<SelectInput {...props} />);
+
+    const selectElement = getByRole('combobox');
+    fireEvent.mouseDown(selectElement);
+
+    await selectEvent.select(selectElement, "Add new 'LLM'");
+
+    expect(props.handleAddProperty).toHaveBeenCalledWith('llm');
+    expect(props.onChange).toHaveBeenCalledWith("Add new 'LLM'");
+  });
+
+  it('handles the case when options are empty', () => {
+    const { getByRole } = render(<SelectInput {...defaultProps} options={[]} />);
+    const selectElement = getByRole('combobox');
+    expect(selectElement).toBeInTheDocument();
   });
 });

@@ -144,10 +144,4 @@ describe('SelectInput', () => {
     expect(props.handleAddProperty).toHaveBeenCalledWith('llm');
     expect(props.onChange).toHaveBeenCalledWith("Add new 'LLM'");
   });
-
-  it('handles the case when options are empty', () => {
-    const { getByRole } = render(<SelectInput {...defaultProps} options={[]} />);
-    const selectElement = getByRole('combobox');
-    expect(selectElement).toBeInTheDocument();
-  });
 });

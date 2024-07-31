@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Select, { StylesConfig } from 'react-select';
 import { capitalizeFirstLetter } from '../../utils/buildPageUtils';
 
@@ -65,25 +65,43 @@ const customStyles: StylesConfig<SelectOption, false> = {
   }),
 };
 
-export const SelectInput: React.FC<SelectInputProps> = React.memo(
-  ({ id, value, options, onChange, propertyTypes, handleAddProperty, isRequired }) => {
-    const selectOptions = getSelectOptions(options, propertyTypes, isRequired);
+export const SelectInput: React.FC<SelectInputProps> = ({
+  id,
+  value,
+  options,
+  onChange,
+  propertyTypes,
+  handleAddProperty,
+  isRequired,
+}) => {
+  const [selectOptions, setSelectOptions] = useState<SelectOption[]>([]);
+  const [defaultValue, setDefaultValue] = useState<SelectOption | null>(null);
+  const [isClearable, setIsClearable] = useState(false);
 
-    const handleChange = (selectedOption: SelectOption | null) => {
-      if (!selectedOption) return;
+  console.log('id', id);
+  console.log('defaultValue', defaultValue);
 
-      const item = getSelectedItem(selectedOption.value, selectOptions);
-      if (item?.isNewOption && handleAddProperty) {
-        handleAddProperty(item.originalValue!);
-      }
-      onChange(selectedOption.value);
-    };
+  useEffect(() => {
+    const newSelectOptions = getSelectOptions(options, propertyTypes, isRequired);
+    setSelectOptions(newSelectOptions);
+    // check the default value after None is removed
+    setDefaultValue(newSelectOptions.length > 0 ? newSelectOptions[0] : null);
+    setIsClearable(!isRequired && !!propertyTypes);
+  }, [options, propertyTypes, isRequired]);
 
-    const isClearable = !isRequired && !!propertyTypes;
-    const defaultValue = !propertyTypes ? selectOptions[0] : null;
+  const handleChange = (selectedOption: SelectOption | null) => {
+    if (!selectedOption) return;
 
-    return (
-      <div className=''>
+    const item = getSelectedItem(selectedOption.value, selectOptions);
+    if (item?.isNewOption && handleAddProperty) {
+      handleAddProperty(item.originalValue!);
+    }
+    onChange(selectedOption.value);
+  };
+
+  return (
+    <div className=''>
+      {selectOptions.length > 0 && (
         <Select
           data-testid='select-container'
           classNamePrefix='react-select'
@@ -96,7 +114,7 @@ export const SelectInput: React.FC<SelectInputProps> = React.memo(
           isClearable={isClearable}
           styles={customStyles}
         />
-      </div>
-    );
-  }
-);
+      )}
+    </div>
+  );
+};

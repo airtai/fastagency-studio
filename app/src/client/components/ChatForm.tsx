@@ -11,76 +11,62 @@ interface ChatFormProps {
 }
 
 export default function ChatForm({ handleFormSubmit, currentChatDetails, triggerChatFormSubmitMsg }: ChatFormProps) {
-  const [formInputValue, setFormInputValue] = useState('');
-  const [disableFormSubmit, setDisableFormSubmit] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toggleTextAreaFocus, setToggleTextAreaFocus] = useState(false);
-  const isProcessing = useRef(false);
-  const textAreaRef = React.useRef<HTMLTextAreaElement>();
-  const isEmptyMessage = formInputValue.trim().length === 0;
+  const [message, setMessage] = useState<string>('');
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const hasTriggerSubmitted = useRef(false);
+
+  const isInputDisabled = useCallback(() => {
+    return (
+      hasTriggerSubmitted.current || currentChatDetails?.team_status === 'inprogress' || currentChatDetails?.showLoader
+    );
+  }, [currentChatDetails]);
 
   const formRef = useCallback(
-    async (node: any) => {
-      if (node !== null && triggerChatFormSubmitMsg) {
+    async (node: HTMLFormElement | null) => {
+      if (node !== null && triggerChatFormSubmitMsg && !hasTriggerSubmitted.current) {
+        hasTriggerSubmitted.current = true;
         await handleFormSubmit(triggerChatFormSubmitMsg, true);
       }
     },
-    [triggerChatFormSubmitMsg]
+    [triggerChatFormSubmitMsg, handleFormSubmit]
   );
 
   useEffect(() => {
-    if (toggleTextAreaFocus && (!disableFormSubmit || !isSubmitting || !isProcessing.current)) {
-      if (textAreaRef.current) {
-        textAreaRef.current.focus();
-      }
+    if (currentChatDetails && currentChatDetails.isChatTerminated) {
+      return;
     }
-  }, [disableFormSubmit, isSubmitting, isProcessing.current, toggleTextAreaFocus]);
-
-  const setFocusOnTextArea = () => {
-    setToggleTextAreaFocus(true);
-  };
-  useSocketListener('streamFromTeamFinished', setFocusOnTextArea);
-
-  useEffect(() => {
-    if (currentChatDetails) {
-      setDisableFormSubmit(currentChatDetails.team_status === 'inprogress');
-    } else {
-      setDisableFormSubmit(false);
-    }
+    textAreaRef.current?.focus();
   }, [currentChatDetails]);
 
-  const submitForm = async (inputValue: string) => {
-    if (isSubmitting || disableFormSubmit || isProcessing.current || isEmptyMessage) return;
+  useSocketListener('streamFromTeamFinished', () => {
+    textAreaRef.current?.focus();
+    hasTriggerSubmitted.current = false;
+  });
 
-    setIsSubmitting(true);
-    setToggleTextAreaFocus(false);
-    isProcessing.current = true;
+  const submitMessage = async () => {
+    if (isInputDisabled() || !message.trim()) return;
+
+    hasTriggerSubmitted.current = true;
 
     try {
-      await handleFormSubmit(inputValue);
-      setFormInputValue('');
+      await handleFormSubmit(message.trim());
+      setMessage('');
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {
-      setIsSubmitting(false);
-      isProcessing.current = false;
+      hasTriggerSubmitted.current = false;
     }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await submitForm(formInputValue);
-  };
-
-  const handleButtonClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    await submitForm(formInputValue);
+    await submitMessage();
   };
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      await submitForm(formInputValue);
+      await submitMessage();
     }
   };
 
@@ -95,31 +81,25 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
         </label>
         <div className='relative bottom-0 left-0 right-0 flex items-center justify-between m-1'>
           <TextareaAutosize
+            ref={textAreaRef}
+            value={message}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder='Enter your message...'
             minRows={1}
             maxRows={4}
-            style={{
-              lineHeight: 2,
-              resize: 'none',
-            }}
-            id='userQuery'
-            name='search'
-            className='block rounded-lg w-full h-12 text-sm text-airt-font-base bg-airt-primary focus:outline-none focus:ring-0 focus:border-captn-light-blue'
-            placeholder='Enter your message...'
-            required
-            ref={textAreaRef}
-            value={formInputValue}
-            onChange={(e) => setFormInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
+            className='w-full p-2 text-sm text-white bg-airt-primary rounded-lg focus:outline-none focus:ring-0'
+            style={{ resize: 'none', lineHeight: '1.5' }}
           />
           <button
-            type='button'
-            disabled={disableFormSubmit || isSubmitting || isEmptyMessage}
-            onClick={handleButtonClick}
-            className={`text-airt-primary bg-airt-secondary hover:opacity-90 absolute right-2 font-medium rounded-lg text-sm px-1.5 py-1.5 transition-all duration-300 ${
-              disableFormSubmit || isSubmitting || isEmptyMessage
-                ? 'cursor-not-allowed bg-white opacity-70 hover:opacity-70'
-                : 'cursor-pointer'
+            type='submit'
+            disabled={isInputDisabled() || !message.trim()}
+            className={`absolute right-2 p-1.5 rounded-lg ${
+              isInputDisabled() || !message.trim()
+                ? 'bg-gray-300 cursor-not-allowed'
+                : 'bg-secondary hover:opacity-90 cursor-pointer'
             }`}
+            aria-label='Send message'
           >
             <span className=''>
               <svg width='24' height='24' viewBox='0 0 24 24' fill='none' className='text-airt-primary'>

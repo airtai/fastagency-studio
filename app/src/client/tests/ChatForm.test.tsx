@@ -198,7 +198,7 @@ describe('ChatForm', () => {
     await waitFor(() => expect(handleFormSubmit).not.toHaveBeenCalled());
   });
 
-  test('disables form when team_status is inprogress', () => {
+  test('disables form submit button when team_status is inprogress', () => {
     const handleFormSubmit = vi.fn();
     const currentChatDetails = {
       ...defaultChatDetails,
@@ -210,7 +210,7 @@ describe('ChatForm', () => {
     const input = screen.getByPlaceholderText('Enter your message...');
     const submitButton = screen.getByRole('button');
 
-    expect(input).toBeDisabled();
+    expect(input).not.toBeDisabled();
     expect(submitButton).toBeDisabled();
   });
 

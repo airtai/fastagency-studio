@@ -88,7 +88,7 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
             placeholder='Enter your message...'
             minRows={1}
             maxRows={4}
-            className='w-full p-2 text-sm text-white bg-airt-primary rounded-lg focus:outline-none focus:ring-0'
+            className='w-full p-3 text-sm text-white bg-airt-primary rounded-lg focus:outline-none focus:ring-0'
             style={{ resize: 'none', lineHeight: '1.5' }}
           />
           <button

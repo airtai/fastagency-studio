@@ -62,3 +62,5 @@ Before you begin, ensure you have the following:
 <span class="ml-10"> while creating the Fly.io API Token in the deployment steps below.</span>
 </div>
 `;
+
+export const SELECT_PLACEHOLDER = '--- Select Placeholder ---';

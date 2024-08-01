@@ -9,7 +9,7 @@ import {
   SchemaDefinition,
 } from '../interfaces/BuildPageInterfaces';
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
-import { tr } from '@faker-js/faker';
+import { SELECT_PLACEHOLDER } from './constants';
 
 export const filerOutComponentData = (data: ApiResponse, componentName: string): SchemaCategory => {
   return data.list_of_schemas.filter((schema: any) => schema.name === componentName)[0];
@@ -60,7 +60,7 @@ export const getDefaultValue = (
 
   if ('default' in property) {
     if (property.default === null) {
-      return 'None';
+      return '';
     }
     return findMatchingDependency(propertyDependencies, (dep) => dep.model_name === removeRefSuffix(property.default));
   }
@@ -76,7 +76,8 @@ export const getPropertiesWithDefaultFirst = (properties: string[], defaultValue
   if (properties.includes(defaultValue)) {
     return [defaultValue, ...properties.filter((item) => item !== defaultValue)];
   }
-  return ['None', ...properties];
+  return [SELECT_PLACEHOLDER, ...properties];
+  // return [...properties];
 };
 
 export const constructHTMLSchema = (

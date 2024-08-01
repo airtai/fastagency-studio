@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Select, { StylesConfig } from 'react-select';
+import _ from 'lodash';
 import { capitalizeFirstLetter } from '../../utils/buildPageUtils';
+import { SELECT_PLACEHOLDER } from '../../utils/constants';
 
 interface SelectOption {
   value: string;
@@ -17,6 +19,7 @@ interface SelectInputProps {
   propertyTypes?: string[];
   handleAddProperty?: (propertyType: string) => void;
   isRequired: boolean;
+  updateExistingModel?: any;
 }
 
 const generateLabel = (option: string): string =>
@@ -27,10 +30,13 @@ export const getSelectOptions = (
   propertyTypes: string[] | undefined,
   isRequired: boolean
 ): SelectOption[] => {
+  // remove placeholder from the options if present
+  _.remove(options, function (o) {
+    return o === SELECT_PLACEHOLDER;
+  });
+
   const baseOptions =
-    isRequired && options.length === 1 && options[0] === 'None'
-      ? []
-      : options.map((option) => ({ value: option, label: option }));
+    isRequired && options.length === 0 ? [] : options.map((option) => ({ value: option, label: option }));
 
   const newPropertyOptions =
     propertyTypes?.map((option) => ({
@@ -73,29 +79,63 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   propertyTypes,
   handleAddProperty,
   isRequired,
+  updateExistingModel = null,
 }) => {
   const [selectOptions, setSelectOptions] = useState<SelectOption[]>([]);
   const [defaultValue, setDefaultValue] = useState<SelectOption | null>(null);
   const [isClearable, setIsClearable] = useState(false);
-
-  console.log('id', id);
-  console.log('defaultValue', defaultValue);
+  const [key, setKey] = useState(0);
 
   useEffect(() => {
     const newSelectOptions = getSelectOptions(options, propertyTypes, isRequired);
+    const isOptionalField = !isRequired && !!propertyTypes;
+
     setSelectOptions(newSelectOptions);
-    // check the default value after None is removed
-    setDefaultValue(newSelectOptions.length > 0 ? newSelectOptions[0] : null);
-    setIsClearable(!isRequired && !!propertyTypes);
-  }, [options, propertyTypes, isRequired]);
+    setIsClearable(isOptionalField);
+
+    let initialValue: SelectOption | null = null;
+    if (!propertyTypes) {
+      // non reference options
+      initialValue = newSelectOptions.length > 0 ? newSelectOptions[0] : null;
+    } else {
+      // reference options
+      if (!updateExistingModel) {
+        // add new scenario
+        if (!isRequired) {
+          // default option for optional fields
+          initialValue = null;
+        } else {
+          // default option for non-optional fields
+          initialValue = newSelectOptions.length > 1 ? newSelectOptions[0] : null;
+        }
+      } else {
+        // update existing scenario
+        if (!isRequired) {
+          // default option for optional fields
+          initialValue = updateExistingModel[id] !== null ? newSelectOptions[0] : null;
+        } else {
+          // default option for non-optional fields
+          initialValue = newSelectOptions.length > 1 ? newSelectOptions[0] : null;
+        }
+      }
+    }
+
+    setDefaultValue(initialValue);
+
+    // Increment the key to force a re-render of the Select component
+    setKey((prevKey) => prevKey + 1);
+  }, [options, propertyTypes, isRequired, updateExistingModel]);
 
   const handleChange = (selectedOption: SelectOption | null) => {
-    if (!selectedOption) return;
-
-    const item = getSelectedItem(selectedOption.value, selectOptions);
-    if (item?.isNewOption && handleAddProperty) {
-      handleAddProperty(item.originalValue!);
+    if (!selectedOption) {
+      selectedOption = { value: '', label: '' };
+    } else {
+      const item = getSelectedItem(selectedOption.value, selectOptions);
+      if (item?.isNewOption && handleAddProperty) {
+        handleAddProperty(item.originalValue!);
+      }
     }
+
     onChange(selectedOption.value);
   };
 
@@ -103,6 +143,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
     <div className=''>
       {selectOptions.length > 0 && (
         <Select
+          key={key}
           data-testid='select-container'
           classNamePrefix='react-select'
           inputId={id}

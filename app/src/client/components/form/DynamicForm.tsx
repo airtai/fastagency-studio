@@ -75,6 +75,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 propertyTypes={propertyTypes}
                 handleAddProperty={(property_type) => handleAddProperty(property_type, key)}
                 isRequired={isRequired}
+                updateExistingModel={updateExistingModel}
               />
             ) : key === 'system_message' ? (
               <TextArea

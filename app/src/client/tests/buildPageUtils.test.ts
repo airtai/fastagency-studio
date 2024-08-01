@@ -1,6 +1,8 @@
 import { test, expect, describe } from 'vitest';
 import _ from 'lodash';
 
+import { SELECT_CLEAR_PLACEHOLDER, SELECT_PLACEHOLDER } from '../utils/constants';
+
 import {
   filerOutComponentData,
   capitalizeFirstLetter,
@@ -717,9 +719,9 @@ describe('buildPageUtils', () => {
       expect(() => getDefaultValue(propertyDependencies, {}, {} as any)).toThrow('Invalid selectedModelRefValues type');
     });
 
-    test('should return "None" when property.default is null', () => {
+    test('should return "" when property.default is null', () => {
       const result = getDefaultValue(propertyDependencies, { default: null }, null);
-      expect(result).toBe('None');
+      expect(result).toBe('');
     });
 
     test('should return matching dependency name based on property.default', () => {
@@ -802,18 +804,18 @@ describe('buildPageUtils', () => {
       expect(result).toEqual(['prop2', 'prop1', 'prop3']);
     });
 
-    test('should return array with "None" first when default value does not exist in properties', () => {
+    test('should return array with SELECT_PLACEHOLDER first when default value does not exist in properties', () => {
       const properties = ['prop1', 'prop2', 'prop3'];
       const defaultValue = 'prop4';
       const result = getPropertiesWithDefaultFirst(properties, defaultValue);
-      expect(result).toEqual(['None', 'prop1', 'prop2', 'prop3']);
+      expect(result).toEqual([SELECT_PLACEHOLDER, 'prop1', 'prop2', 'prop3']);
     });
 
     test('should handle empty properties array', () => {
       const properties: string[] = [];
       const defaultValue = 'prop1';
       const result = getPropertiesWithDefaultFirst(properties, defaultValue);
-      expect(result).toEqual(['None']);
+      expect(result).toEqual([SELECT_PLACEHOLDER]);
     });
 
     test('should handle case when default value is empty string', () => {
@@ -880,9 +882,9 @@ describe('buildPageUtils', () => {
         },
       ];
       const expected = {
-        default: 'None',
+        default: '',
         description: '',
-        enum: ['None', 'production azure key', 'production bing key', 'production openai key'],
+        enum: [SELECT_PLACEHOLDER, 'production azure key', 'production bing key', 'production openai key'],
         title: 'Api Key',
       };
       const property = {
@@ -1156,7 +1158,7 @@ describe('buildPageUtils', () => {
       expect(result).toEqual({
         default: '',
         description: '',
-        enum: ['None'],
+        enum: [SELECT_PLACEHOLDER],
         title: 'Test Title',
       });
     });
@@ -1165,9 +1167,9 @@ describe('buildPageUtils', () => {
       const result = constructHTMLSchema(mockPropertyDependencies, 'test_title', { default: null }, null);
 
       expect(result).toEqual({
-        default: 'None',
+        default: '',
         description: '',
-        enum: ['None', 'Prop1', 'Prop2', 'Prop3'],
+        enum: [SELECT_PLACEHOLDER, 'Prop1', 'Prop2', 'Prop3'],
         title: 'Test Title',
       });
     });
@@ -1186,7 +1188,7 @@ describe('buildPageUtils', () => {
       expect(result).toEqual({
         default: '',
         description: 'An integer or null value',
-        enum: ['None'],
+        enum: [SELECT_PLACEHOLDER],
         title: 'Test Title',
       });
     });
@@ -1196,7 +1198,7 @@ describe('buildPageUtils', () => {
       const expected = {
         default: 'bd3*******7bd3',
         description: '',
-        enum: ['None'],
+        enum: [SELECT_PLACEHOLDER],
         title: 'Api Key',
       };
       const actual = constructHTMLSchema([], 'api_key', property, selectedModelRefValues);
@@ -1535,6 +1537,50 @@ describe('buildPageUtils', () => {
       const formData = { name: 'key_1', api_key: 'sk-123' }; //  pragma: allowlist secret
       const isSecretUpdate = true;
       const expected = { name: 'key_1' };
+
+      const actual = getFormSubmitValues(refValues, formData, isSecretUpdate);
+      expect(actual).toEqual(expected);
+    });
+
+    test('getFormSubmitValues - When clear button is clicked', () => {
+      const refValues = {
+        openapi_auth: {
+          htmlSchema: { default: 'asd', description: '', enum: ['asd', 'A'], title: 'OpenAPI Auth' },
+          matchedProperties: [
+            {
+              uuid: '6104c067-e63d-499a-84c0-712204239274',
+              user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+              type_name: 'secret',
+              model_name: 'OpenAPIAuth',
+              json_str: { name: 'A', password: 'asd', username: 'asd' }, // pragma: allowlist secret
+              created_at: '2024-08-01T05:04:19.512000Z',
+              updated_at: '2024-08-01T05:04:19.512000Z',
+            },
+            {
+              uuid: '152096e4-0712-4ba9-b3e6-8b7208607e0c',
+              user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+              type_name: 'secret',
+              model_name: 'OpenAPIAuth',
+              json_str: { name: 'asd', password: 'asd', username: 'asd' }, // pragma: allowlist secret
+              created_at: '2024-08-01T06:27:44.458000Z',
+              updated_at: '2024-08-01T06:27:44.458000Z',
+            },
+          ],
+          propertyTypes: ['secret'],
+          isRequired: false,
+        },
+      };
+      const formData = {
+        name: 'A',
+        openapi_url: 'https://weather.tools.staging.fastagency.ai/openapi.json',
+        openapi_auth: '--- Selected Option Cleared ---',
+      };
+      const isSecretUpdate = false;
+      const expected = {
+        name: 'A',
+        openapi_url: 'https://weather.tools.staging.fastagency.ai/openapi.json',
+        openapi_auth: undefined,
+      };
 
       const actual = getFormSubmitValues(refValues, formData, isSecretUpdate);
       expect(actual).toEqual(expected);

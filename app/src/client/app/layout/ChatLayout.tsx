@@ -48,7 +48,7 @@ const ChatLayout: FC<Props> = ({
 
   const wrapperClass = document.body.classList.contains('server-error')
     ? 'h-[calc(100vh-173px)]'
-    : 'h-[calc(100vh-80px)]';
+    : 'h-[calc(100vh-75px)]';
 
   return (
     <div className='dark:bg-boxdark-2 dark:text-bodydark'>

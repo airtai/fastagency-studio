@@ -270,6 +270,13 @@ code {
 }
 /* Google login button */
 
+/* react-select */
+input[type='text'][class^='react-select']:focus {
+  --tw-ring-shadow: none
+  user-select: none;
+}
+/* react-select */
+
 .social-icons-wrapper .discord-link:before {
   background-color: #8c9fae;
   content: "";

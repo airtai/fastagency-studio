@@ -101,7 +101,7 @@ const BuildPage = ({ user }: BuildPageProps) => {
 
   const wrapperClass = document.body.classList.contains('server-error')
     ? 'h-[calc(100vh-173px)]'
-    : 'h-[calc(100vh-80px)]';
+    : 'h-[calc(100vh-75px)]';
 
   const history = useHistory();
   useEffect(() => {

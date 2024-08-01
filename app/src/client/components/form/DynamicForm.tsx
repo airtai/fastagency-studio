@@ -49,7 +49,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         let propertyTypes = null;
         let isRequired = false;
         let formElementsObject = property;
-        if (_.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf')) {
+        const isReferenceField = _.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf');
+        if (isReferenceField) {
           if (refValues[key]) {
             formElementsObject = refValues[key].htmlSchema;
             propertyTypes = refValues[key].propertyTypes;
@@ -58,7 +59,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         }
         return (
           <div key={key} className='w-full mt-2'>
-            <label htmlFor={key}>{formElementsObject.title}</label>
+            <label htmlFor={key}>
+              {isRequired
+                ? formElementsObject.title
+                : isReferenceField
+                  ? `${formElementsObject.title} (Optional)`
+                  : formElementsObject.title}
+            </label>
             {formElementsObject.enum ? (
               <SelectInput
                 id={key}
@@ -68,6 +75,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 propertyTypes={propertyTypes}
                 handleAddProperty={(property_type) => handleAddProperty(property_type, key)}
                 isRequired={isRequired}
+                updateExistingModel={updateExistingModel}
               />
             ) : key === 'system_message' ? (
               <TextArea

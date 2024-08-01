@@ -1,38 +1,71 @@
-import React, { useEffect, useState } from 'react';
-
+import React, { useEffect, useMemo, useState } from 'react';
+import Select, { StylesConfig } from 'react-select';
 import _ from 'lodash';
-import Select from 'react-select';
-
 import { capitalizeFirstLetter } from '../../utils/buildPageUtils';
+import { SELECT_PLACEHOLDER, SELECT_CLEAR_PLACEHOLDER } from '../../utils/constants';
+
+interface SelectOption {
+  value: string;
+  label: string;
+  isNewOption?: boolean;
+  originalValue?: string;
+}
 
 interface SelectInputProps {
   id: string;
   value: string;
   options: string[];
   onChange: (value: string) => void;
-  propertyTypes: string[];
-  handleAddProperty: (property_type: string) => void;
+  propertyTypes?: string[] | null;
+  handleAddProperty?: (propertyType: string) => void;
   isRequired: boolean;
+  updateExistingModel?: any;
 }
 
-export function getSelectOptions(options: string[], propertyTypes: string[] | null, isRequired: boolean) {
-  if (options.length === 1 && options[0] === 'None' && isRequired) {
-    options = [];
-  }
-  let selectOptions = options.map((option) => ({ value: option, label: option }));
+const generateLabel = (option: string): string =>
+  `Add new '${option === 'llm' ? 'LLM' : capitalizeFirstLetter(option)}'`;
 
-  if (propertyTypes && propertyTypes.length > 0) {
-    selectOptions = selectOptions.concat(
-      propertyTypes.map((option) => ({
-        value: option,
-        label: `Add new '${option === 'llm' ? 'LLM' : capitalizeFirstLetter(option)}'`,
-        isNewOption: true, // Flag to identify new property options
-      })) as any
-    );
-  }
+export const getSelectOptions = (
+  options: string[],
+  propertyTypes: string[] | undefined | null,
+  isRequired: boolean
+): SelectOption[] => {
+  const filteredOptions = options.filter((o) => o !== SELECT_PLACEHOLDER);
 
-  return selectOptions;
-}
+  const baseOptions =
+    isRequired && filteredOptions.length === 0
+      ? []
+      : filteredOptions.map((option) => ({ value: option, label: option }));
+
+  const newPropertyOptions =
+    propertyTypes?.map((option) => ({
+      value: generateLabel(option),
+      label: generateLabel(option),
+      isNewOption: true,
+      originalValue: option,
+    })) || [];
+
+  return [...baseOptions, ...newPropertyOptions];
+};
+
+const customStyles: StylesConfig<SelectOption, false> = {
+  control: (baseStyles) => ({
+    ...baseStyles,
+    borderColor: '#003257',
+  }),
+  option: (styles, { data }) => ({
+    ...styles,
+    display: 'flex',
+    alignItems: 'center',
+    '::before': data.isNewOption
+      ? {
+          fontFamily: '"Material Symbols Outlined"',
+          content: '"\ue147"',
+          marginRight: '5px',
+        }
+      : {},
+  }),
+};
 
 export const SelectInput: React.FC<SelectInputProps> = ({
   id,
@@ -42,61 +75,65 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   propertyTypes,
   handleAddProperty,
   isRequired,
+  updateExistingModel = null,
 }) => {
-  const [selectedOption, setSelectedOption] = useState(value);
-  let selectOptions = getSelectOptions(options, propertyTypes, isRequired);
+  const selectOptions = useMemo(
+    () => getSelectOptions(options, propertyTypes, isRequired),
+    [options, propertyTypes, isRequired]
+  );
+
+  const isClearable = !isRequired && !!propertyTypes;
+
+  const getInitialValue = (): SelectOption | null => {
+    if (!propertyTypes) {
+      return selectOptions.length > 0 ? selectOptions[0] : null;
+    }
+
+    if (!updateExistingModel) {
+      return isRequired && selectOptions.length > 1 ? selectOptions[0] : null;
+    }
+
+    return isRequired || updateExistingModel[id] !== null ? (selectOptions.length > 1 ? selectOptions[0] : null) : null;
+  };
+
+  const [defaultValue, setDefaultValue] = useState<SelectOption | null>(getInitialValue());
+  const [key, setKey] = useState(0);
+
   useEffect(() => {
-    if (options.length === 1 && options[0] === 'None' && isRequired) {
+    setDefaultValue(getInitialValue());
+    setKey((prevKey) => prevKey + 1);
+  }, [options, propertyTypes, isRequired, updateExistingModel]);
+
+  const handleChange = (selectedOption: SelectOption | null) => {
+    if (!selectedOption) {
+      onChange(SELECT_CLEAR_PLACEHOLDER);
       return;
     }
-    const defaultValue = value === '' && selectOptions.length > 0 ? selectOptions[0].value : value;
-    setSelectedOption(defaultValue);
-  }, [value, options]);
 
-  const handleTypeSelect = (e: any) => {
-    const selectedOption = e.value;
-    setSelectedOption(selectedOption);
-    if (_.includes(propertyTypes, selectedOption)) {
-      handleAddProperty(selectedOption);
+    if (selectedOption.isNewOption && handleAddProperty) {
+      handleAddProperty(selectedOption.originalValue!);
     }
-    onChange(selectedOption);
+
+    onChange(selectedOption.value);
   };
 
-  const customStyles = {
-    control: (baseStyles: any, state: any) => ({
-      ...baseStyles,
-      borderColor: '#003257',
-    }),
-    option: (styles: any, { data }: any) => {
-      return {
-        ...styles,
-        display: 'flex',
-        alignItems: 'center',
-        '::before': data.isNewOption
-          ? {
-              fontFamily: '"Material Symbols Outlined"',
-              content: '"\ue147"',
-              marginRight: '5px',
-            }
-          : {},
-      };
-    },
-  };
+  if (selectOptions.length === 0) {
+    return null;
+  }
 
   return (
-    <div className=''>
-      <Select
-        inputId={id}
-        options={selectOptions}
-        onChange={handleTypeSelect}
-        className='pt-1 pb-1'
-        value={selectOptions.filter(function (option) {
-          return option.value === selectedOption;
-        })}
-        isSearchable={false}
-        isClearable={true}
-        styles={customStyles}
-      />
-    </div>
+    <Select
+      key={key}
+      data-testid='select-container'
+      classNamePrefix='react-select'
+      inputId={id}
+      options={selectOptions}
+      onChange={handleChange}
+      className='pt-1 pb-1'
+      defaultValue={defaultValue}
+      isSearchable={true}
+      isClearable={isClearable}
+      styles={customStyles}
+    />
   );
 };

@@ -7,6 +7,8 @@ export interface DynamicFormBuilderProps {
   jsonSchema: JsonSchema;
   validationURL: string;
   updateExistingModel: SelectedModelSchema | null;
+  resumeFormData: SelectedModelSchema | null;
+  setResumeFormData: React.Dispatch<React.SetStateAction<SelectedModelSchema | null>>;
   onSuccessCallback: (data: any) => void;
   onCancelCallback: (event: React.FormEvent) => void;
   onDeleteCallback: (data: any) => void;

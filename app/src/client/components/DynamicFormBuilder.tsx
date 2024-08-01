@@ -17,6 +17,8 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   jsonSchema,
   validationURL,
   updateExistingModel,
+  resumeFormData,
+  setResumeFormData,
   onSuccessCallback,
   onCancelCallback,
   onDeleteCallback,
@@ -24,7 +26,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 }) => {
   const { formData, handleChange, formErrors, setFormErrors } = useForm({
     jsonSchema,
-    defaultValues: updateExistingModel,
+    defaultValues: resumeFormData ? resumeFormData : updateExistingModel,
   });
 
   const {
@@ -46,6 +48,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     jsonSchema,
     allUserProperties,
     updateExistingModel,
+    resumeFormData,
   });
 
   const cancelButtonRef = useRef<HTMLButtonElement>(null);

@@ -71,6 +71,8 @@ const SelectTeamToChat = ({ userTeams }: any) => {
     setNotificationErrorMessage(null);
   };
 
+  const options = allTeams ? allTeams.map((team: SelectedModelSchema) => team.json_str.name) : [];
+
   return (
     <div className='lg:mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10'>
       <div className='w-full lg:min-w-[700px] 2xl:min-w-[1200px]'>
@@ -83,11 +85,11 @@ const SelectTeamToChat = ({ userTeams }: any) => {
             <SelectInput
               id='selectTeam'
               value={team}
-              options={allTeams ? allTeams.map((team: SelectedModelSchema) => team.json_str.name) : []}
+              options={options}
               onChange={handleTeamChange}
-              propertyTypes={[]}
+              propertyTypes={null}
               handleAddProperty={() => {}}
-              isRequired={false}
+              isRequired={true}
             />
             {formError.team && <div style={{ color: 'red' }}>{formError.team}</div>}
             <label className='mt-2  text-airt-primary inline-block' htmlFor='setSystemMessage'>

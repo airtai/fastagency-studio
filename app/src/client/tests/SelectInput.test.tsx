@@ -4,7 +4,7 @@ import selectEvent from 'react-select-event';
 import { describe, it, expect, vi } from 'vitest';
 import { SELECT_CLEAR_PLACEHOLDER, SELECT_PLACEHOLDER } from '../utils/constants';
 
-import { getSelectOptions, getSelectedItem, SelectInput } from '../components/form/SelectInput';
+import { getSelectOptions, SelectInput } from '../components/form/SelectInput';
 
 describe('getSelectOptions', () => {
   it('Generate options without refs', () => {
@@ -82,32 +82,11 @@ describe('getSelectOptions', () => {
     const options = [SELECT_PLACEHOLDER, 'Option1', 'Option2'];
     const propertyTypes = undefined;
     const isRequired = true;
-    console.log('options', options);
     const selectOptions = getSelectOptions(options, propertyTypes, isRequired);
     expect(selectOptions).toEqual([
       { value: 'Option1', label: 'Option1' },
       { value: 'Option2', label: 'Option2' },
     ]);
-  });
-});
-
-describe('getSelectedItem', () => {
-  it('Return selected Item', () => {
-    const selectedOption = "Add new 'Secret'";
-    const selectOptions = [
-      { value: 'Azure Key', label: 'Azure Key' },
-      { value: 'secret', label: 'secret' },
-      { value: "Add new 'Secret'", label: "Add new 'Secret'", isNewOption: true, originalValue: 'secret' },
-    ];
-    expect(getSelectedItem(selectedOption, selectOptions)).toBe(selectOptions[2]);
-  });
-  it('Return undefined for non-existent item', () => {
-    const selectedOption = 'Non-existent Option';
-    const selectOptions = [
-      { value: 'Option1', label: 'Option1' },
-      { value: 'Option2', label: 'Option2' },
-    ];
-    expect(getSelectedItem(selectedOption, selectOptions)).toBeUndefined();
   });
 });
 

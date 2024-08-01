@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Select, { StylesConfig } from 'react-select';
 import _ from 'lodash';
 import { capitalizeFirstLetter } from '../../utils/buildPageUtils';
@@ -16,7 +16,7 @@ interface SelectInputProps {
   value: string;
   options: string[];
   onChange: (value: string) => void;
-  propertyTypes?: string[];
+  propertyTypes?: string[] | null;
   handleAddProperty?: (propertyType: string) => void;
   isRequired: boolean;
   updateExistingModel?: any;
@@ -27,16 +27,15 @@ const generateLabel = (option: string): string =>
 
 export const getSelectOptions = (
   options: string[],
-  propertyTypes: string[] | undefined,
+  propertyTypes: string[] | undefined | null,
   isRequired: boolean
 ): SelectOption[] => {
-  // remove placeholder from the options if present
-  _.remove(options, function (o) {
-    return o === SELECT_PLACEHOLDER;
-  });
+  const filteredOptions = options.filter((o) => o !== SELECT_PLACEHOLDER);
 
   const baseOptions =
-    isRequired && options.length === 0 ? [] : options.map((option) => ({ value: option, label: option }));
+    isRequired && filteredOptions.length === 0
+      ? []
+      : filteredOptions.map((option) => ({ value: option, label: option }));
 
   const newPropertyOptions =
     propertyTypes?.map((option) => ({
@@ -48,9 +47,6 @@ export const getSelectOptions = (
 
   return [...baseOptions, ...newPropertyOptions];
 };
-
-export const getSelectedItem = (selectedValue: string, options: SelectOption[]): SelectOption | undefined =>
-  options.find((option) => option.value === selectedValue);
 
 const customStyles: StylesConfig<SelectOption, false> = {
   control: (baseStyles) => ({
@@ -81,81 +77,63 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   isRequired,
   updateExistingModel = null,
 }) => {
-  const [selectOptions, setSelectOptions] = useState<SelectOption[]>([]);
-  const [defaultValue, setDefaultValue] = useState<SelectOption | null>(null);
-  const [isClearable, setIsClearable] = useState(false);
+  const selectOptions = useMemo(
+    () => getSelectOptions(options, propertyTypes, isRequired),
+    [options, propertyTypes, isRequired]
+  );
+
+  const isClearable = !isRequired && !!propertyTypes;
+
+  const getInitialValue = (): SelectOption | null => {
+    if (!propertyTypes) {
+      return selectOptions.length > 0 ? selectOptions[0] : null;
+    }
+
+    if (!updateExistingModel) {
+      return isRequired && selectOptions.length > 1 ? selectOptions[0] : null;
+    }
+
+    return isRequired || updateExistingModel[id] !== null ? (selectOptions.length > 1 ? selectOptions[0] : null) : null;
+  };
+
+  const [defaultValue, setDefaultValue] = useState<SelectOption | null>(getInitialValue());
   const [key, setKey] = useState(0);
 
   useEffect(() => {
-    const newSelectOptions = getSelectOptions(options, propertyTypes, isRequired);
-    const isOptionalField = !isRequired && !!propertyTypes;
-
-    setSelectOptions(newSelectOptions);
-    setIsClearable(isOptionalField);
-
-    let initialValue: SelectOption | null = null;
-    if (!propertyTypes) {
-      // non reference options
-      initialValue = newSelectOptions.length > 0 ? newSelectOptions[0] : null;
-    } else {
-      // reference options
-      if (!updateExistingModel) {
-        // add new scenario
-        if (!isRequired) {
-          // default option for optional fields
-          initialValue = null;
-        } else {
-          // default option for non-optional fields
-          initialValue = newSelectOptions.length > 1 ? newSelectOptions[0] : null;
-        }
-      } else {
-        // update existing scenario
-        if (!isRequired) {
-          // default option for optional fields
-          initialValue = updateExistingModel[id] !== null ? newSelectOptions[0] : null;
-        } else {
-          // default option for non-optional fields
-          initialValue = newSelectOptions.length > 1 ? newSelectOptions[0] : null;
-        }
-      }
-    }
-
-    setDefaultValue(initialValue);
-
-    // Increment the key to force a re-render of the Select component
+    setDefaultValue(getInitialValue());
     setKey((prevKey) => prevKey + 1);
   }, [options, propertyTypes, isRequired, updateExistingModel]);
 
   const handleChange = (selectedOption: SelectOption | null) => {
     if (!selectedOption) {
-      selectedOption = { value: SELECT_CLEAR_PLACEHOLDER, label: '' };
-    } else {
-      const item = getSelectedItem(selectedOption.value, selectOptions);
-      if (item?.isNewOption && handleAddProperty) {
-        handleAddProperty(item.originalValue!);
-      }
+      onChange(SELECT_CLEAR_PLACEHOLDER);
+      return;
+    }
+
+    if (selectedOption.isNewOption && handleAddProperty) {
+      handleAddProperty(selectedOption.originalValue!);
     }
 
     onChange(selectedOption.value);
   };
 
+  if (selectOptions.length === 0) {
+    return null;
+  }
+
   return (
-    <div className=''>
-      {selectOptions.length > 0 && (
-        <Select
-          key={key}
-          data-testid='select-container'
-          classNamePrefix='react-select'
-          inputId={id}
-          options={selectOptions}
-          onChange={handleChange}
-          className='pt-1 pb-1'
-          defaultValue={defaultValue}
-          isSearchable={true}
-          isClearable={isClearable}
-          styles={customStyles}
-        />
-      )}
-    </div>
+    <Select
+      key={key}
+      data-testid='select-container'
+      classNamePrefix='react-select'
+      inputId={id}
+      options={selectOptions}
+      onChange={handleChange}
+      className='pt-1 pb-1'
+      defaultValue={defaultValue}
+      isSearchable={true}
+      isClearable={isClearable}
+      styles={customStyles}
+    />
   );
 };

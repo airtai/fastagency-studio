@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, prettyDOM } from '@testing-library/react';
 import selectEvent from 'react-select-event';
 import { describe, it, expect, vi } from 'vitest';
-import { SELECT_PLACEHOLDER } from '../utils/constants';
+import { SELECT_CLEAR_PLACEHOLDER, SELECT_PLACEHOLDER } from '../utils/constants';
 
 import { getSelectOptions, getSelectedItem, SelectInput } from '../components/form/SelectInput';
 
@@ -374,7 +374,6 @@ describe('SelectInput', () => {
 
     // Verify that the selected option is displayed
     expect(queryByText('Option2')).toBeInTheDocument();
-    console.log(prettyDOM(container));
 
     // Find and click the clear button
     const clearIndicator = container.querySelector('div.react-select__indicator.react-select__clear-indicator');
@@ -387,6 +386,6 @@ describe('SelectInput', () => {
     expect(queryByText('Option2')).not.toBeInTheDocument();
 
     // Verify that the onChange function was called with null
-    expect(props.onChange).toHaveBeenCalledWith('');
+    expect(props.onChange).toHaveBeenCalledWith(SELECT_CLEAR_PLACEHOLDER);
   });
 });

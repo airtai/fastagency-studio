@@ -1,6 +1,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { test, expect, describe, it } from 'vitest';
 import { usePropertyReferenceValues } from '../hooks/usePropertyReferenceValues';
+import { SELECT_PLACEHOLDER } from '../utils/constants';
 
 describe('usePropertyReferenceValues', () => {
   it('should return an empty object when jsonSchema is null', async () => {
@@ -207,7 +208,7 @@ describe('usePropertyReferenceValues', () => {
 
     const expected = {
       api_key: {
-        htmlSchema: { default: '', description: '', enum: ['None'], title: 'Api Key' },
+        htmlSchema: { default: '', description: '', enum: [SELECT_PLACEHOLDER], title: 'Api Key' },
         matchedProperties: [],
         propertyTypes: ['secret'],
         isRequired: true,
@@ -472,9 +473,9 @@ describe('usePropertyReferenceValues', () => {
 
     // Check htmlSchema
     expect(openapiAuthResult.htmlSchema).toEqual({
-      default: 'None',
+      default: '',
       description: '',
-      enum: ['None'],
+      enum: [SELECT_PLACEHOLDER],
       title: 'OpenAPI Auth',
     });
 
@@ -584,9 +585,9 @@ describe('usePropertyReferenceValues', () => {
 
     // Check htmlSchema
     expect(openapiAuthResult.htmlSchema).toEqual({
-      default: 'None',
+      default: '',
       description: '',
-      enum: ['None', 'OpenAPIAuth'],
+      enum: [SELECT_PLACEHOLDER, 'OpenAPIAuth'],
       title: 'OpenAPI Auth',
     });
 

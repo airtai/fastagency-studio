@@ -64,3 +64,4 @@ Before you begin, ensure you have the following:
 `;
 
 export const SELECT_PLACEHOLDER = '--- Select Placeholder ---';
+export const SELECT_CLEAR_PLACEHOLDER = '--- Selected Option Cleared ---';

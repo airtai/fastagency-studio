@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Select, { StylesConfig } from 'react-select';
 import _ from 'lodash';
 import { capitalizeFirstLetter } from '../../utils/buildPageUtils';
-import { SELECT_PLACEHOLDER } from '../../utils/constants';
+import { SELECT_PLACEHOLDER, SELECT_CLEAR_PLACEHOLDER } from '../../utils/constants';
 
 interface SelectOption {
   value: string;
@@ -128,7 +128,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
 
   const handleChange = (selectedOption: SelectOption | null) => {
     if (!selectedOption) {
-      selectedOption = { value: '', label: '' };
+      selectedOption = { value: SELECT_CLEAR_PLACEHOLDER, label: '' };
     } else {
       const item = getSelectedItem(selectedOption.value, selectOptions);
       if (item?.isNewOption && handleAddProperty) {

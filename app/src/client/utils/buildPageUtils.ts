@@ -9,7 +9,7 @@ import {
   SchemaDefinition,
 } from '../interfaces/BuildPageInterfaces';
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
-import { SELECT_PLACEHOLDER } from './constants';
+import { SELECT_PLACEHOLDER, SELECT_CLEAR_PLACEHOLDER } from './constants';
 
 export const filerOutComponentData = (data: ApiResponse, componentName: string): SchemaCategory => {
   return data.list_of_schemas.filter((schema: any) => schema.name === componentName)[0];
@@ -135,7 +135,9 @@ export const getFormSubmitValues = (refValues: any, formData: any, isSecretUpdat
       } else {
         selectedKey = formData[key]
           ? formData[key] && (typeof formData[key] === 'string' || typeof formData[key] === 'number')
-            ? formData[key]
+            ? formData[key] === SELECT_CLEAR_PLACEHOLDER
+              ? ''
+              : formData[key]
             : formData[key].json_str.name
           : refValues[key].htmlSchema.default;
       }

@@ -88,7 +88,12 @@ export const SelectInput: React.FC<SelectInputProps> = ({
 
   const getInitialValue = (): SelectOption | null => {
     if (!propertyTypes) {
-      return selectOptions.length > 0 ? selectOptions[0] : null;
+      const dataToCheck = resumeFormData ? resumeFormData : updateExistingModel;
+      return selectOptions.length > 0
+        ? dataToCheck
+          ? { value: dataToCheck[id], label: dataToCheck[id] }
+          : selectOptions[0]
+        : null;
     }
 
     if (!updateExistingModel && !resumeFormData) {
@@ -96,7 +101,6 @@ export const SelectInput: React.FC<SelectInputProps> = ({
     }
 
     const dataToCheck = resumeFormData ? resumeFormData : updateExistingModel;
-    console.log(dataToCheck);
 
     return isRequired || (dataToCheck[id] !== null && dataToCheck[id] !== '')
       ? selectOptions.length > 1

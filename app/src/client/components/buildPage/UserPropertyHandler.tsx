@@ -112,6 +112,8 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
       }
     } else {
       setShowAddModel(false);
+      setResumeFormData(null);
+      targetModelToAdd.current = null;
     }
   };
 

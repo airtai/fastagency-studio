@@ -207,7 +207,6 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
                     selectedModel={selectedModel}
                     updateExistingModel={updateExistingModel}
                     resumeFormData={resumeFormData}
-                    setResumeFormData={setResumeFormData}
                     propertyHeader={propertyHeader}
                     onModelChange={handleModelChange}
                     onSuccessCallback={onSuccessCallback}

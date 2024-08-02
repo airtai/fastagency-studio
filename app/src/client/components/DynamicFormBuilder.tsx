@@ -18,7 +18,6 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   validationURL,
   updateExistingModel,
   resumeFormData,
-  setResumeFormData,
   onSuccessCallback,
   onCancelCallback,
   onDeleteCallback,

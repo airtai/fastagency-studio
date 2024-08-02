@@ -85,6 +85,7 @@ const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
         isLoading={isLoading}
         handleAddProperty={addProperty}
         updateExistingModel={updateExistingModel}
+        resumeFormData={resumeFormData}
         handleSubmit={onSubmit}
         instructionForDeployment={instructionForDeployment}
         onCancelCallback={onCancelCallback}

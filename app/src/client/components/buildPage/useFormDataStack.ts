@@ -5,7 +5,7 @@ import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
 
 export const useFormDataStack = (setShowAddModel: React.Dispatch<React.SetStateAction<boolean>>) => {
   const history = useHistory();
-  const [updateExistingModel, setUpdateExistingModel] = useState<SelectedModelSchema | null>(null);
+  const [resumeFormData, setResumeFormData] = useState<SelectedModelSchema | null>(null);
   const targetModelToAdd = useRef<string | null>(null);
 
   const handleFormResume = (filteredData: any) => {
@@ -14,7 +14,7 @@ export const useFormDataStack = (setShowAddModel: React.Dispatch<React.SetStateA
     if (currentItem) {
       setShowAddModel(true);
       // @ts-ignore
-      setUpdateExistingModel(currentItem.formData);
+      setResumeFormData(currentItem.formData);
       targetModelToAdd.current = currentItem.formData.uuid ? null : currentItem.source.selectedModel;
 
       sessionStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(updatedStack));
@@ -22,12 +22,16 @@ export const useFormDataStack = (setShowAddModel: React.Dispatch<React.SetStateA
       if (nextRoute) {
         history.push(nextRoute);
       }
+    } else {
+      setShowAddModel(false);
+      setResumeFormData(null);
+      targetModelToAdd.current = null;
     }
   };
 
   return {
-    updateExistingModel,
-    setUpdateExistingModel,
+    resumeFormData,
+    setResumeFormData,
     targetModelToAdd,
     handleFormResume,
   };

@@ -146,7 +146,7 @@ describe('SelectInput', () => {
     const { getByRole, getByText } = render(<SelectInput {...props} />);
 
     // Expect default value to be present
-    expect(getByText('claude-3-haiku-20240307')).toBeInTheDocument();
+    expect(getByText('claude-3-5-sonnet-20240620')).toBeInTheDocument();
 
     // Open the select dropdown
     const selectElement = getByRole('combobox');
@@ -366,5 +366,185 @@ describe('SelectInput', () => {
 
     // Verify that the onChange function was called with null
     expect(props.onChange).toHaveBeenCalledWith(SELECT_CLEAR_PLACEHOLDER);
+  });
+
+  it('should render the default option correctly when propertyTypes is non-null, the isRequired is false, more than one value in options and resumeFormData is non-null - Updarte existing scenario', async () => {
+    const props = {
+      id: 'toolbox_1',
+      options: ['A', 'Weatherman Toolbox'],
+      onChange: vi.fn(),
+      propertyTypes: ['toolbox'],
+      handleAddProperty: vi.fn(),
+      isRequired: false,
+      updateExistingModel: null,
+      resumeFormData: {
+        name: 'A',
+        llm: '',
+        toolbox_1: { name: null, type: 'toolbox', uuid: '9f1adeea-54e8-4730-9d2b-d4968fa5d988' },
+        toolbox_2: '',
+        toolbox_3: '',
+        system_message:
+          "You are a helpful assistant. After you successfully answer all questions and there are no new questions asked after your response (e.g. there is no specific direction or question asked after you give a response), terminate the chat by outputting 'TERMINATE'",
+      },
+      value: '',
+    };
+    const { getByRole, getByText } = render(<SelectInput {...props} />);
+
+    // Expect default value to be present
+    expect(getByText('A')).toBeInTheDocument();
+
+    // Open the select dropdown
+    const selectElement = getByRole('combobox');
+    fireEvent.mouseDown(selectElement);
+
+    // Expect default value to be present
+    expect(getByText('Weatherman Toolbox')).toBeInTheDocument();
+    expect(getByText("Add new 'Toolbox'")).toBeInTheDocument();
+  });
+
+  it('should render the default option correctly when propertyTypes is non-null, the isRequired is false, more than one value in options and resumeFormData is null - Updarte existing scenario', async () => {
+    const props = {
+      id: 'toolbox_2',
+      options: ['--- Select Placeholder ---', 'Weatherman Toolbox', 'A'],
+      onChange: vi.fn(),
+      propertyTypes: ['toolbox'],
+      handleAddProperty: vi.fn(),
+      isRequired: false,
+      updateExistingModel: null,
+      resumeFormData: {
+        name: 'A',
+        llm: '',
+        toolbox_1: { name: null, type: 'toolbox', uuid: 'e9554ab8-7499-47cc-974c-f087c2d60f0b' },
+        toolbox_2: '',
+        toolbox_3: '',
+        system_message:
+          "You are a helpful assistant. After you successfully answer all questions and there are no new questions asked after your response (e.g. there is no specific direction or question asked after you give a response), terminate the chat by outputting 'TERMINATE'",
+      },
+      value: '',
+    };
+    const { getByRole, getByText } = render(<SelectInput {...props} />);
+
+    // Expect default value to be present
+    expect(getByText('Select...')).toBeInTheDocument();
+
+    // Open the select dropdown
+    const selectElement = getByRole('combobox');
+    fireEvent.mouseDown(selectElement);
+
+    // Expect default value to be present
+    expect(getByText('A')).toBeInTheDocument();
+    expect(getByText('Weatherman Toolbox')).toBeInTheDocument();
+    expect(getByText("Add new 'Toolbox'")).toBeInTheDocument();
+  });
+
+  it('should render the default option correctly when propertyTypes is non-null, the isRequired is false, more than one value in options and resumeFormData is null and updateExistingModel not null- Updarte existing scenario', async () => {
+    const props = {
+      id: 'toolbox_2',
+      options: ['--- Select Placeholder ---', 'Weatherman Toolbox', 'A'],
+      onChange: vi.fn(),
+      propertyTypes: ['toolbox'],
+      handleAddProperty: vi.fn(),
+      isRequired: false,
+      resumeFormData: null,
+      updateExistingModel: {
+        name: 'A',
+        llm: '',
+        toolbox_1: { name: null, type: 'toolbox', uuid: 'e9554ab8-7499-47cc-974c-f087c2d60f0b' },
+        toolbox_2: '',
+        toolbox_3: '',
+        system_message:
+          "You are a helpful assistant. After you successfully answer all questions and there are no new questions asked after your response (e.g. there is no specific direction or question asked after you give a response), terminate the chat by outputting 'TERMINATE'",
+      },
+      value: '',
+    };
+    const { getByRole, getByText } = render(<SelectInput {...props} />);
+
+    // Expect default value to be present
+    expect(getByText('Select...')).toBeInTheDocument();
+
+    // Open the select dropdown
+    const selectElement = getByRole('combobox');
+    fireEvent.mouseDown(selectElement);
+
+    // Expect default value to be present
+    expect(getByText('A')).toBeInTheDocument();
+    expect(getByText('Weatherman Toolbox')).toBeInTheDocument();
+    expect(getByText("Add new 'Toolbox'")).toBeInTheDocument();
+  });
+
+  it('should render the default option correctly when propertyTypes is null, the isRequired is false, more than one value in options and resumeFormData is null and updateExistingModel not null- Updarte existing scenario', async () => {
+    const props = {
+      id: 'api_version',
+      options: [
+        '2023-05-15',
+        '2023-06-01-preview',
+        '2023-10-01-preview',
+        '2024-02-15-preview',
+        '2024-03-01-preview',
+        '2024-04-01-preview',
+        '2024-05-01-preview',
+        '2024-02-01',
+      ],
+      onChange: vi.fn(),
+      propertyTypes: null,
+      handleAddProperty: vi.fn(),
+      isRequired: false,
+      resumeFormData: null,
+      updateExistingModel: {
+        name: 'Azure LLM',
+        model: 'gpt-35-turbo-16k',
+        api_key: { name: 'AzureOAIAPIKey', type: 'secret', uuid: '718e1c3a-57d7-49d6-8e96-89351c9e052c' },
+        api_type: 'azure',
+        base_url: 'https://staging-airt-openai-france.openai.azure.com',
+        api_version: '2023-06-01-preview',
+        temperature: 0.8,
+        uuid: 'a0cfc041-a86f-43a8-8a7f-5bce7d496d3b',
+      },
+      value: '',
+    };
+    const { getByRole, getByText } = render(<SelectInput {...props} />);
+
+    const selectElement = getByRole('combobox');
+
+    // Expect default value to be present
+    expect(getByText('2023-06-01-preview')).toBeInTheDocument();
+  });
+
+  it('should render the default option correctly when propertyTypes is null, the isRequired is false, more than one value in options and resumeFormData is not null and updateExistingModel null - Updarte existing scenario', async () => {
+    const props = {
+      id: 'api_version',
+      options: [
+        '2023-05-15',
+        '2023-06-01-preview',
+        '2023-10-01-preview',
+        '2024-02-15-preview',
+        '2024-03-01-preview',
+        '2024-04-01-preview',
+        '2024-05-01-preview',
+        '2024-02-01',
+      ],
+      onChange: vi.fn(),
+      propertyTypes: null,
+      handleAddProperty: vi.fn(),
+      isRequired: false,
+      resumeFormData: {
+        name: 'Azure LLM',
+        model: 'gpt-35-turbo-16k',
+        api_key: { name: 'AzureOAIAPIKey', type: 'secret', uuid: '718e1c3a-57d7-49d6-8e96-89351c9e052c' },
+        api_type: 'azure',
+        base_url: 'https://staging-airt-openai-france.openai.azure.com',
+        api_version: '2024-04-01-preview',
+        temperature: 0.8,
+        uuid: 'a0cfc041-a86f-43a8-8a7f-5bce7d496d3b',
+      },
+      updateExistingModel: null,
+      value: '',
+    };
+    const { getByRole, getByText } = render(<SelectInput {...props} />);
+
+    const selectElement = getByRole('combobox');
+
+    // Expect default value to be present
+    expect(getByText('2024-04-01-preview')).toBeInTheDocument();
   });
 });

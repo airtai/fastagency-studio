@@ -13,12 +13,14 @@ interface UsePropertyReferenceValuesProps {
   jsonSchema: JsonSchema | null;
   allUserProperties: any;
   updateExistingModel: SelectedModelSchema | null;
+  resumeFormData: SelectedModelSchema | null;
 }
 
 export const usePropertyReferenceValues = ({
   jsonSchema,
   allUserProperties,
   updateExistingModel,
+  resumeFormData,
 }: UsePropertyReferenceValuesProps) => {
   const [refValues, setRefValues] = useState<Record<string, any>>({});
 
@@ -35,8 +37,8 @@ export const usePropertyReferenceValues = ({
         const title: string = property.hasOwnProperty('title') ? property.title || '' : key;
         const propertyRefs = propertyHasRef ? [property['$ref']] : getAllRefs(property);
         const matchedProperties = matchPropertiesToRefs(allUserProperties, propertyRefs);
-
-        const selectedModelRefValues = _.get(updateExistingModel, key, null);
+        const dataToCheck = resumeFormData ? resumeFormData : updateExistingModel;
+        const selectedModelRefValues = _.get(dataToCheck, key, null);
         const htmlSchema = constructHTMLSchema(matchedProperties, title, property, selectedModelRefValues);
         const propertyTypes = getPropertyTypes(propertyRefs, jsonSchema.$defs);
         const isRequired = _.includes(jsonSchema.required, key);

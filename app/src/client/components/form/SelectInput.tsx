@@ -20,6 +20,7 @@ interface SelectInputProps {
   handleAddProperty?: (propertyType: string) => void;
   isRequired: boolean;
   updateExistingModel?: any;
+  resumeFormData?: any;
 }
 
 const generateLabel = (option: string): string =>
@@ -76,6 +77,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   handleAddProperty,
   isRequired,
   updateExistingModel = null,
+  resumeFormData = null,
 }) => {
   const selectOptions = useMemo(
     () => getSelectOptions(options, propertyTypes, isRequired),
@@ -86,14 +88,25 @@ export const SelectInput: React.FC<SelectInputProps> = ({
 
   const getInitialValue = (): SelectOption | null => {
     if (!propertyTypes) {
-      return selectOptions.length > 0 ? selectOptions[0] : null;
+      const dataToCheck = resumeFormData ? resumeFormData : updateExistingModel;
+      return selectOptions.length > 0
+        ? dataToCheck
+          ? { value: dataToCheck[id], label: dataToCheck[id] }
+          : selectOptions[0]
+        : null;
     }
 
-    if (!updateExistingModel) {
+    if (!updateExistingModel && !resumeFormData) {
       return isRequired && selectOptions.length > 1 ? selectOptions[0] : null;
     }
 
-    return isRequired || updateExistingModel[id] !== null ? (selectOptions.length > 1 ? selectOptions[0] : null) : null;
+    const dataToCheck = resumeFormData ? resumeFormData : updateExistingModel;
+
+    return isRequired || (dataToCheck[id] !== null && dataToCheck[id] !== '')
+      ? selectOptions.length > 1
+        ? selectOptions[0]
+        : null
+      : null;
   };
 
   const [defaultValue, setDefaultValue] = useState<SelectOption | null>(getInitialValue());

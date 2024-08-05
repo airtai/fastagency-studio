@@ -4,7 +4,7 @@ import { TextInput } from './TextInput';
 import { SelectInput } from './SelectInput';
 import { TextArea } from './TextArea';
 import { SECRETS_TO_MASK } from '../../utils/constants';
-import { JsonSchema } from '../../interfaces/BuildPageInterfaces';
+import { JsonSchema, SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
 import { FormData } from '../../hooks/useForm';
 import AgentConversationHistory from '../AgentConversationHistory';
 
@@ -16,7 +16,8 @@ interface DynamicFormProps {
   refValues: Record<string, any>;
   isLoading: boolean;
   handleAddProperty: (property_type: string, key: string) => void;
-  updateExistingModel: any;
+  updateExistingModel: SelectedModelSchema | null;
+  resumeFormData: SelectedModelSchema | null;
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   instructionForDeployment: Record<string, string> | null;
   onCancelCallback: (event: React.FormEvent) => void;
@@ -33,6 +34,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   isLoading,
   handleAddProperty,
   updateExistingModel,
+  resumeFormData,
   handleSubmit,
   instructionForDeployment,
   onCancelCallback,
@@ -76,6 +78,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 handleAddProperty={(property_type) => handleAddProperty(property_type, key)}
                 isRequired={isRequired}
                 updateExistingModel={updateExistingModel}
+                resumeFormData={resumeFormData}
               />
             ) : key === 'system_message' ? (
               <TextArea

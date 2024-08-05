@@ -20,6 +20,7 @@ import { FormDataStackItem, Props } from './types';
 import { FORM_DATA_STORAGE_KEY } from './utils';
 import { getTargetModel, storeFormData } from './utils';
 import useDetectRefresh from './useDetectRefresh';
+import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
 
 const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const history = useHistory();
@@ -28,8 +29,8 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
   const [selectedModel, setSelectedModel] = useState(data.schemas[0].name);
   const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
   const { data: allUserProperties, refetch: refetchModels, isLoading: getModelsIsLoading } = useQuery(getModels);
-  const { updateExistingModel, setUpdateExistingModel, targetModelToAdd, handleFormResume } =
-    useFormDataStack(setShowAddModel);
+  const [updateExistingModel, setUpdateExistingModel] = useState<SelectedModelSchema | null>(null);
+  const { resumeFormData, setResumeFormData, targetModelToAdd, handleFormResume } = useFormDataStack(setShowAddModel);
 
   const propertyName = data.name;
 
@@ -100,7 +101,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
       const currentItem = formDataStack[formDataStack.length - 1];
       const nextRoute = `/build/${currentItem.source.propertyName}`;
       // @ts-ignore
-      setUpdateExistingModel(currentItem.formData);
+      setResumeFormData(currentItem.formData);
       targetModelToAdd.current = currentItem.formData.uuid ? null : currentItem.source.selectedModel;
 
       formDataStack.pop();
@@ -111,6 +112,8 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
       }
     } else {
       setShowAddModel(false);
+      setResumeFormData(null);
+      targetModelToAdd.current = null;
     }
   };
 
@@ -203,6 +206,7 @@ const UserPropertyHandler = ({ data, togglePropertyList }: Props) => {
                     data={data}
                     selectedModel={selectedModel}
                     updateExistingModel={updateExistingModel}
+                    resumeFormData={resumeFormData}
                     propertyHeader={propertyHeader}
                     onModelChange={handleModelChange}
                     onSuccessCallback={onSuccessCallback}

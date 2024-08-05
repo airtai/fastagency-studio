@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { test, expect, describe, it } from 'vitest';
+import { test, expect, describe, it, vi } from 'vitest';
 import { usePropertyReferenceValues } from '../hooks/usePropertyReferenceValues';
 import { SELECT_PLACEHOLDER } from '../utils/constants';
 
@@ -21,9 +21,15 @@ describe('usePropertyReferenceValues', () => {
       },
     ];
     const updateExistingModel = null;
+    const resumeFormData = null;
 
     const { result } = renderHook(() =>
-      usePropertyReferenceValues({ jsonSchema, allUserProperties, updateExistingModel })
+      usePropertyReferenceValues({
+        jsonSchema,
+        allUserProperties,
+        updateExistingModel,
+        resumeFormData,
+      })
     );
 
     // Initial state should be an empty object
@@ -75,8 +81,15 @@ describe('usePropertyReferenceValues', () => {
 
     const updateExistingModel = null;
 
+    const resumeFormData = null;
+
     const { result } = renderHook(() =>
-      usePropertyReferenceValues({ jsonSchema, allUserProperties, updateExistingModel })
+      usePropertyReferenceValues({
+        jsonSchema,
+        allUserProperties,
+        updateExistingModel,
+        resumeFormData,
+      })
     );
 
     // Initial state should be an empty object
@@ -194,8 +207,15 @@ describe('usePropertyReferenceValues', () => {
 
     const updateExistingModel = null;
 
+    const resumeFormData = null;
+
     const { result } = renderHook(() =>
-      usePropertyReferenceValues({ jsonSchema, allUserProperties, updateExistingModel })
+      usePropertyReferenceValues({
+        jsonSchema,
+        allUserProperties,
+        updateExistingModel,
+        resumeFormData,
+      })
     );
 
     // Wait for asynchronous updates
@@ -330,8 +350,15 @@ describe('usePropertyReferenceValues', () => {
 
     const updateExistingModel = null;
 
+    const resumeFormData = null;
+
     const { result } = renderHook(() =>
-      usePropertyReferenceValues({ jsonSchema, allUserProperties, updateExistingModel })
+      usePropertyReferenceValues({
+        jsonSchema,
+        allUserProperties,
+        updateExistingModel,
+        resumeFormData,
+      })
     );
 
     // Wait for asynchronous updates
@@ -454,8 +481,15 @@ describe('usePropertyReferenceValues', () => {
 
     const updateExistingModel = null;
 
+    const resumeFormData = null;
+
     const { result } = renderHook(() =>
-      usePropertyReferenceValues({ jsonSchema, allUserProperties, updateExistingModel })
+      usePropertyReferenceValues({
+        jsonSchema,
+        allUserProperties,
+        updateExistingModel,
+        resumeFormData,
+      })
     );
 
     // Wait for asynchronous updates
@@ -566,10 +600,16 @@ describe('usePropertyReferenceValues', () => {
 
     const updateExistingModel = null;
 
-    const { result } = renderHook(() =>
-      usePropertyReferenceValues({ jsonSchema, allUserProperties, updateExistingModel })
-    );
+    const resumeFormData = null;
 
+    const { result } = renderHook(() =>
+      usePropertyReferenceValues({
+        jsonSchema,
+        allUserProperties,
+        updateExistingModel,
+        resumeFormData,
+      })
+    );
     // Wait for asynchronous updates
     await waitFor(
       () => {

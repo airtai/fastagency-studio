@@ -12,6 +12,7 @@ interface ModelFormProps {
   data: SchemaCategory;
   selectedModel: string;
   updateExistingModel: SelectedModelSchema | null;
+  resumeFormData: SelectedModelSchema | null;
   propertyHeader: string;
   onModelChange: (model: string) => void;
   onSuccessCallback: (data: any) => void;
@@ -25,6 +26,7 @@ const ModelForm: React.FC<ModelFormProps> = ({
   data,
   selectedModel,
   updateExistingModel,
+  resumeFormData,
   propertyHeader,
   onModelChange,
   onSuccessCallback,
@@ -56,6 +58,7 @@ const ModelForm: React.FC<ModelFormProps> = ({
               jsonSchema={initialModelSchema}
               validationURL={validationURL}
               updateExistingModel={updateExistingModel ?? null}
+              resumeFormData={resumeFormData ?? null}
               onSuccessCallback={onSuccessCallback}
               onCancelCallback={onCancelCallback}
               onDeleteCallback={onDeleteCallback}

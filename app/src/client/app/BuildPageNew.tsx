@@ -1,10 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { type User } from 'wasp/entities';
+import _ from 'lodash';
+
 import CustomAuthRequiredLayout from './layout/CustomAuthRequiredLayout';
-import CustomSidebar from '../components/CustomSidebar';
+import CustomSidebar, { navLinkItems } from '../components/CustomSidebar';
 import { useHistory } from 'react-router-dom';
 import { cn } from '../../shared/utils';
 import { useBuildPageNew } from '../hooks/useBuildPageNew';
+import LoadingComponent from '../components/LoadingComponent';
+import CustomBreadcrumb from '../components/CustomBreadcrumb';
+import { Schema } from '../interfaces/BuildPageInterfacesNew';
+import { filerOutComponentData, capitalizeFirstLetter, filterPropertiesByType } from '../utils/buildPageUtilsNew';
+import Button from '../components/Button';
+import { getModels, useQuery } from 'wasp/client/operations';
+import ModelsList from '../components/ModelsList';
 
 interface BuildPageProps {
   user: User;
@@ -89,48 +98,117 @@ const BuildPage = ({ user }: BuildPageProps) => {
   const history = useHistory();
   const { data: schema, loading, error } = useBuildPageNew();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sideNavSelectedItem, setSideNavSelectedItem] = useState('secret');
+  const [activeProperty, setActiveProperty] = useState<string | null>(null);
   const wrapperClass = document.body.classList.contains('server-error')
     ? 'h-[calc(100vh-173px)]'
     : 'h-[calc(100vh-75px)]';
 
   const handleSideNavItemClick = (selectedComponentName: string) => {
-    setSideNavSelectedItem(selectedComponentName);
-    // setTogglePropertyList(!togglePropertyList);
-    history.push(`/build-new/${selectedComponentName}`);
+    setActiveProperty(selectedComponentName);
+  };
+
+  const setActivePropertyInSessionStorage = (propertyName: string) => {
+    sessionStorage.setItem('activeProperty', propertyName);
   };
 
   useEffect(() => {
-    history.push(`/build-new/${sideNavSelectedItem}`);
-  }, [sideNavSelectedItem]);
+    if (schema) {
+      const propertyName = sessionStorage.getItem('activeProperty') || schema.list_of_schemas[0].name;
+      setActiveProperty(propertyName);
+    }
+  }, [schema]);
+
+  useEffect(() => {
+    if (activeProperty) {
+      history.push(`/build-new/${activeProperty}`);
+      setActivePropertyInSessionStorage(activeProperty);
+    }
+  }, [activeProperty]);
+
+  const canRenderProperty = schema && activeProperty;
 
   return (
     <div className='dark:bg-boxdark-2 dark:text-bodydark bg-captn-light-blue'>
+      {loading && <LoadingComponent />}
+      {error && (
+        <p
+          className='absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl md:text-xl text-airt-font-base'
+          style={{ lineHeight: 'normal' }}
+        >
+          Oops! Something went wrong. Our server is currently unavailable. Please try again later.
+        </p>
+      )}
       {/* <!-- ===== Page Wrapper Start ===== --> */}
-      <div className={`flex ${wrapperClass} overflow-hidden`}>
-        {/* <!-- ===== Sidebar Start ===== --> */}
-        <CustomSidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          onSideNavItemClick={handleSideNavItemClick}
-          sideNavSelectedItem={sideNavSelectedItem}
-        />
-        {/* <!-- ===== Sidebar End ===== --> */}
-        {/* <!-- ===== Content Area Start ===== --> */}
-        <div className='relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden'>
-          {/* <!-- ===== Mobile Header For Sidenav Start ===== --> */}
-          <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-          {/* <!-- ===== Mobile Header For Sidenav End ===== --> */}
+      {canRenderProperty && (
+        <div className={`flex ${wrapperClass} overflow-hidden`}>
+          {/* <!-- ===== Sidebar Start ===== --> */}
+          <CustomSidebar
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+            onSideNavItemClick={handleSideNavItemClick}
+            activeProperty={activeProperty}
+          />
+          {/* <!-- ===== Sidebar End ===== --> */}
+          {/* <!-- ===== Content Area Start ===== --> */}
+          <div className='relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden'>
+            {/* <!-- ===== Mobile Header For Sidenav Start ===== --> */}
+            <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+            {/* <!-- ===== Mobile Header For Sidenav End ===== --> */}
 
-          {/* <!-- ===== Main Content Start ===== --> */}
-          <main className='lg:mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10'>
-            <div className='w-full lg:min-w-[700px] 2xl:min-w-[1200px]'></div>
-          </main>
+            {/* <!-- ===== Main Content Start ===== --> */}
+            <main className='lg:mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10'>
+              <div className='w-full lg:min-w-[700px] 2xl:min-w-[1200px]'>
+                <UserProperty activeProperty={activeProperty} schema={schema} />
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
 
 const BuildPageNewWithCustomAuth = CustomAuthRequiredLayout(BuildPage);
 export default BuildPageNewWithCustomAuth;
+
+interface Props {
+  activeProperty: string;
+  schema: Schema;
+}
+
+export const UserProperty = memo(({ activeProperty, schema }: Props) => {
+  const propertyHeader = _.find(navLinkItems, ['componentName', activeProperty])?.label;
+  const propertyName = activeProperty === 'llm' ? 'LLM' : capitalizeFirstLetter(activeProperty);
+  const propertySchema = filerOutComponentData(schema, activeProperty);
+
+  const { data: userOwnedProperties, refetch: refetchModels, isLoading: isLoading } = useQuery(getModels);
+  const userOwnedPropertiesByType =
+    (userOwnedProperties && filterPropertiesByType(userOwnedProperties, activeProperty)) || [];
+  console.log('isLoading: ', isLoading);
+  console.log('userOwnedProperties', userOwnedProperties);
+  console.log('userOwnedPropertiesByType', userOwnedPropertiesByType);
+  return (
+    <>
+      <CustomBreadcrumb pageName={`${propertyHeader}`} />
+      <div className='flex flex-col gap-10'>
+        <div className='flex flex-col gap-4'>
+          <div className='rounded-lg border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[600px]'>
+            {isLoading && <LoadingComponent theme='dark' />}
+            {userOwnedPropertiesByType.length > 0 && (
+              <div className='flex-col flex items-start p-6 gap-3 w-full'>
+                <>
+                  <div className={`${false ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
+                    <Button onClick={() => {}} label={`Add ${propertyName}`} />
+                  </div>
+                  <div className='flex-col flex w-full'>
+                    <ModelsList models={userOwnedPropertiesByType} onSelectModel={() => {}} type_name={propertyName} />
+                  </div>
+                </>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+});

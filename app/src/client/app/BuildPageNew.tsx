@@ -1,19 +1,25 @@
 import React, { useEffect, useState, memo } from 'react';
+import { useHistory } from 'react-router-dom';
 import { type User } from 'wasp/entities';
+import { getModels, useQuery } from 'wasp/client/operations';
 import _ from 'lodash';
+
+import { cn } from '../../shared/utils';
+import { useBuildPageNew } from '../hooks/useBuildPageNew';
+import { PropertiesSchema } from '../interfaces/BuildPageInterfacesNew';
 
 import CustomAuthRequiredLayout from './layout/CustomAuthRequiredLayout';
 import CustomSidebar, { navLinkItems } from '../components/CustomSidebar';
-import { useHistory } from 'react-router-dom';
-import { cn } from '../../shared/utils';
-import { useBuildPageNew } from '../hooks/useBuildPageNew';
 import LoadingComponent from '../components/LoadingComponent';
 import CustomBreadcrumb from '../components/CustomBreadcrumb';
-import { Schema } from '../interfaces/BuildPageInterfacesNew';
-import { filerOutComponentData, capitalizeFirstLetter, filterPropertiesByType } from '../utils/buildPageUtilsNew';
 import Button from '../components/Button';
-import { getModels, useQuery } from 'wasp/client/operations';
 import ModelsList from '../components/ModelsList';
+
+import {
+  filerOutComponentData,
+  capitalizeFirstLetter,
+  filterPropertiesByType,
+} from '../components/buildPage/buildPageUtilsNew';
 
 interface BuildPageProps {
   user: User;
@@ -173,20 +179,25 @@ export default BuildPageNewWithCustomAuth;
 
 interface Props {
   activeProperty: string;
-  schema: Schema;
+  schema: PropertiesSchema;
 }
 
 export const UserProperty = memo(({ activeProperty, schema }: Props) => {
   const propertyHeader = _.find(navLinkItems, ['componentName', activeProperty])?.label;
   const propertyName = activeProperty === 'llm' ? 'LLM' : capitalizeFirstLetter(activeProperty);
-  const propertySchema = filerOutComponentData(schema, activeProperty);
+  const Property = filerOutComponentData(schema, activeProperty);
+  console.log('Property', JSON.stringify(Property));
+  // the Property contains schemas and name
+  // pass the schemas and generate the HTML for the selected model
+  // initially the selected model is the first item in the list
+  // on dropdown change, update the selected model
+  // so this component sould have the state for selected model
+
+  // based on the Property and the selected model, parse and generate the HTML
 
   const { data: userOwnedProperties, refetch: refetchModels, isLoading: isLoading } = useQuery(getModels);
   const userOwnedPropertiesByType =
     (userOwnedProperties && filterPropertiesByType(userOwnedProperties, activeProperty)) || [];
-  console.log('isLoading: ', isLoading);
-  console.log('userOwnedProperties', userOwnedProperties);
-  console.log('userOwnedPropertiesByType', userOwnedPropertiesByType);
   return (
     <>
       <CustomBreadcrumb pageName={`${propertyHeader}`} />
@@ -212,3 +223,7 @@ export const UserProperty = memo(({ activeProperty, schema }: Props) => {
     </>
   );
 });
+
+// export const DynamicForm = memo(({ activeProperty, schema }: Props) => {
+
+// });

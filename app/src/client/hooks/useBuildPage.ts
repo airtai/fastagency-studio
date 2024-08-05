@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 
 import { getAvailableModels } from '../services/modelService';
 
-import { ApiResponse } from '../interfaces/BuildPageInterfaces';
+import { Schema } from '../interfaces/BuildPageInterfaces';
 
 export const useBuildPage = () => {
-  const [data, setData] = useState<ApiResponse | null>(null);
+  const [data, setData] = useState<Schema | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -13,7 +13,7 @@ export const useBuildPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const response: ApiResponse = await getAvailableModels();
+      const response: Schema = await getAvailableModels();
       setData(response);
     } catch (error: any) {
       setError(error.message);

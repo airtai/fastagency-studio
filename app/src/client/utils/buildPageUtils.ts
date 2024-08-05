@@ -1,17 +1,11 @@
 import _ from 'lodash';
 
 import { getModels } from 'wasp/client/operations';
-import {
-  SchemaCategory,
-  ApiResponse,
-  ApiSchema,
-  JsonSchema,
-  SchemaDefinition,
-} from '../interfaces/BuildPageInterfaces';
+import { Property, Schema, Schemas, JsonSchema, SchemaDefs } from '../interfaces/BuildPageInterfaces';
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 import { SELECT_PLACEHOLDER, SELECT_CLEAR_PLACEHOLDER } from './constants';
 
-export const filerOutComponentData = (data: ApiResponse, componentName: string): SchemaCategory => {
+export const filerOutComponentData = (data: Schema, componentName: string): Property => {
   return data.list_of_schemas.filter((schema: any) => schema.name === componentName)[0];
 };
 
@@ -19,9 +13,9 @@ export function capitalizeFirstLetter(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export const getSchemaByName = (schemas: ApiSchema[], schemaName: string): JsonSchema => {
-  const apiSchema: ApiSchema | undefined = schemas.find((s) => s.name === schemaName);
-  return apiSchema ? apiSchema.json_schema : schemas[0].json_schema;
+export const getSchemaByName = (schemas: Schemas[], schemaName: string): JsonSchema => {
+  const Schemas: Schemas | undefined = schemas.find((s) => s.name === schemaName);
+  return Schemas ? Schemas.json_schema : schemas[0].json_schema;
 };
 
 interface ConstructHTMLSchemaValues {
@@ -260,7 +254,7 @@ export function formatApiKey(apiKey: string) {
 }
 
 export function getMissingDependencyType(
-  jsonDeps: { [key: string]: SchemaDefinition } | undefined,
+  jsonDeps: { [key: string]: SchemaDefs } | undefined,
   refName: string
 ): string | null {
   if (!refName || !jsonDeps) {
@@ -278,7 +272,7 @@ export function getMissingDependencyType(
 
 export function getPropertyTypes(
   propertyRefs: string[],
-  jsonDeps: { [key: string]: SchemaDefinition } | undefined
+  jsonDeps: { [key: string]: SchemaDefs } | undefined
 ): string[] {
   if (!jsonDeps) {
     return [];

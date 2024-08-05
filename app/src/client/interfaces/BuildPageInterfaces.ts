@@ -1,19 +1,19 @@
 export interface JsonSchema {
-  $defs?: { [key: string]: SchemaDefinition };
-  properties: { [key: string]: SchemaProperty };
+  $defs?: { [key: string]: SchemaDefs };
+  properties: { [key: string]: Properties };
   required?: string[];
   title: string;
   type: string;
 }
 
-export interface SchemaDefinition {
-  properties: { [key: string]: SchemaProperty };
+export interface SchemaDefs {
+  properties: { [key: string]: Properties };
   required?: string[];
   title: string;
   type: string;
 }
 
-interface SchemaProperty {
+interface Properties {
   description?: string;
   title?: string;
   type?: string;
@@ -33,18 +33,18 @@ interface SchemaReference {
   type?: string;
 }
 
-export interface ApiSchema {
+export interface Schemas {
   name: string;
   json_schema: JsonSchema;
 }
 
-export interface SchemaCategory {
+export interface Property {
   name: string;
-  schemas: ApiSchema[];
+  schemas: Schemas[];
 }
 
-export interface ApiResponse {
-  list_of_schemas: SchemaCategory[];
+export interface Schema {
+  list_of_schemas: Property[];
 }
 
 export interface SelectedModelSchema {

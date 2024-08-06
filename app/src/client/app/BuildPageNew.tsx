@@ -3,10 +3,13 @@ import { useHistory } from 'react-router-dom';
 import { type User } from 'wasp/entities';
 import { getModels, useQuery } from 'wasp/client/operations';
 import _ from 'lodash';
+import Select, { StylesConfig, SingleValue } from 'react-select';
+import type { FieldApi } from '@tanstack/react-form';
+import { useForm } from '@tanstack/react-form';
 
 import { cn } from '../../shared/utils';
 import { useBuildPageNew } from '../hooks/useBuildPageNew';
-import { PropertiesSchema } from '../interfaces/BuildPageInterfacesNew';
+import { PropertiesSchema, ListOfSchemas } from '../interfaces/BuildPageInterfacesNew';
 
 import CustomAuthRequiredLayout from './layout/CustomAuthRequiredLayout';
 import CustomSidebar, { navLinkItems } from '../components/CustomSidebar';
@@ -20,6 +23,10 @@ import {
   capitalizeFirstLetter,
   filterPropertiesByType,
 } from '../components/buildPage/buildPageUtilsNew';
+import { SelectInput } from '../components/form/SelectInput';
+import { PropertySchemaParser } from '../components/buildPage/PropertySchemaParser';
+import { TextInput } from '../components/form/TextInput';
+import { SECRETS_TO_MASK } from '../utils/constants';
 
 interface BuildPageProps {
   user: User;
@@ -102,15 +109,17 @@ export const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) =
 
 const BuildPage = ({ user }: BuildPageProps) => {
   const history = useHistory();
-  const { data: schema, loading, error } = useBuildPageNew();
+  const { data: propertiesSchema, loading, error } = useBuildPageNew();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeProperty, setActiveProperty] = useState<string | null>(null);
+  const [sideNavItemClickCount, setSideNavItemClickCount] = useState(0);
   const wrapperClass = document.body.classList.contains('server-error')
     ? 'h-[calc(100vh-173px)]'
     : 'h-[calc(100vh-75px)]';
 
   const handleSideNavItemClick = (selectedComponentName: string) => {
     setActiveProperty(selectedComponentName);
+    setSideNavItemClickCount(sideNavItemClickCount + 1);
   };
 
   const setActivePropertyInSessionStorage = (propertyName: string) => {
@@ -118,11 +127,11 @@ const BuildPage = ({ user }: BuildPageProps) => {
   };
 
   useEffect(() => {
-    if (schema) {
-      const propertyName = sessionStorage.getItem('activeProperty') || schema.list_of_schemas[0].name;
+    if (propertiesSchema) {
+      const propertyName = sessionStorage.getItem('activeProperty') || propertiesSchema.list_of_schemas[0].name;
       setActiveProperty(propertyName);
     }
-  }, [schema]);
+  }, [propertiesSchema]);
 
   useEffect(() => {
     if (activeProperty) {
@@ -131,7 +140,7 @@ const BuildPage = ({ user }: BuildPageProps) => {
     }
   }, [activeProperty]);
 
-  const canRenderProperty = schema && activeProperty;
+  const canRenderProperty = propertiesSchema && activeProperty;
 
   return (
     <div className='dark:bg-boxdark-2 dark:text-bodydark bg-captn-light-blue'>
@@ -164,7 +173,11 @@ const BuildPage = ({ user }: BuildPageProps) => {
             {/* <!-- ===== Main Content Start ===== --> */}
             <main className='lg:mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10'>
               <div className='w-full lg:min-w-[700px] 2xl:min-w-[1200px]'>
-                <UserProperty activeProperty={activeProperty} schema={schema} />
+                <UserProperty
+                  activeProperty={activeProperty}
+                  propertiesSchema={propertiesSchema}
+                  sideNavItemClickCount={sideNavItemClickCount}
+                />
               </div>
             </main>
           </div>
@@ -179,14 +192,15 @@ export default BuildPageNewWithCustomAuth;
 
 interface Props {
   activeProperty: string;
-  schema: PropertiesSchema;
+  propertiesSchema: PropertiesSchema;
+  sideNavItemClickCount: number;
 }
 
-export const UserProperty = memo(({ activeProperty, schema }: Props) => {
+export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavItemClickCount }: Props) => {
+  const [addOrUpdateModel, setAddOrUpdateModel] = useState<any>(null);
   const propertyHeader = _.find(navLinkItems, ['componentName', activeProperty])?.label;
   const propertyName = activeProperty === 'llm' ? 'LLM' : capitalizeFirstLetter(activeProperty);
-  const Property = filerOutComponentData(schema, activeProperty);
-  console.log('Property', JSON.stringify(Property));
+  const propertySchemasList = filerOutComponentData(propertiesSchema, activeProperty);
   // the Property contains schemas and name
   // pass the schemas and generate the HTML for the selected model
   // initially the selected model is the first item in the list
@@ -198,32 +212,200 @@ export const UserProperty = memo(({ activeProperty, schema }: Props) => {
   const { data: userOwnedProperties, refetch: refetchModels, isLoading: isLoading } = useQuery(getModels);
   const userOwnedPropertiesByType =
     (userOwnedProperties && filterPropertiesByType(userOwnedProperties, activeProperty)) || [];
+
+  const addProperty = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setAddOrUpdateModel(propertySchemasList.schemas[0].name);
+  };
+
+  useEffect(() => {
+    setAddOrUpdateModel(null);
+  }, [sideNavItemClickCount]);
   return (
     <>
       <CustomBreadcrumb pageName={`${propertyHeader}`} />
       <div className='flex flex-col gap-10'>
-        <div className='flex flex-col gap-4'>
-          <div className='rounded-lg border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[600px]'>
-            {isLoading && <LoadingComponent theme='dark' />}
-            {userOwnedPropertiesByType.length > 0 && (
-              <div className='flex-col flex items-start p-6 gap-3 w-full'>
+        <div className='rounded-lg border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[600px]'>
+          {isLoading ? (
+            <LoadingComponent theme='dark' />
+          ) : (
+            <div className='flex-col flex items-start p-6 gap-3 w-full'>
+              {!addOrUpdateModel ? (
                 <>
                   <div className={`${false ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
-                    <Button onClick={() => {}} label={`Add ${propertyName}`} />
+                    <Button onClick={addProperty} label={`Add ${propertyName}`} />
                   </div>
-                  <div className='flex-col flex w-full'>
-                    <ModelsList models={userOwnedPropertiesByType} onSelectModel={() => {}} type_name={propertyName} />
-                  </div>
+                  {userOwnedPropertiesByType.length === 0 && (
+                    <div className='flex flex-col gap-3'>
+                      {/* <h2 className='text-lg font-semibold text-airt-primary'>Available Models</h2> */}
+                      <p className='text-airt-primary mt-1 -mt-3 opacity-50'>{`No ${propertyHeader} found. Please add one.`}</p>
+                    </div>
+                  )}
+                  {userOwnedPropertiesByType.length > 0 && (
+                    <div className='flex-col flex w-full'>
+                      <ModelsList
+                        models={userOwnedPropertiesByType}
+                        onSelectModel={() => {}}
+                        type_name={propertyName}
+                      />
+                    </div>
+                  )}
                 </>
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className='flex flex-col w-full gap-9'>
+                  <div className='flex flex-col gap-5.5 px-6.5'>
+                    <h2 className='text-lg font-semibold text-airt-primary mt-6 '>{`Add a new ${propertyName}`}</h2>
+                    <div className='relative z-20 bg-white dark:bg-form-input'>
+                      <ModelSelector
+                        propertySchemasList={propertySchemasList}
+                        propertyName={propertyName}
+                        setAddOrUpdateModel={setAddOrUpdateModel}
+                      />
+                      <DynamicForm propertySchemasList={propertySchemasList} addOrUpdateModel={addOrUpdateModel} />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </>
   );
 });
 
-// export const DynamicForm = memo(({ activeProperty, schema }: Props) => {
+interface SelectOption {
+  value: string;
+  label: string;
+}
 
-// });
+export const ModelSelector = ({
+  propertySchemasList,
+  propertyName,
+  setAddOrUpdateModel,
+}: {
+  propertySchemasList: ListOfSchemas;
+  propertyName: string | undefined;
+  setAddOrUpdateModel: React.Dispatch<React.SetStateAction<string>>;
+}) => {
+  console.log('propertySchemasList', propertySchemasList);
+  const selectOptions = propertySchemasList.schemas.map((schema) => {
+    return {
+      value: schema.name,
+      label: schema.name,
+    };
+  });
+  const customStyles: StylesConfig<SelectOption, false> = {
+    control: (baseStyles) => ({
+      ...baseStyles,
+      borderColor: '#003257',
+    }),
+  };
+
+  const handleChange = (selectedOption: SingleValue<SelectOption>) => {
+    if (selectedOption) {
+      setAddOrUpdateModel(selectedOption.value);
+    }
+  };
+
+  return (
+    <>
+      <label className='mb-3 block text-black dark:text-white'>{`Select  ${propertyName}`}</label>
+      <div className='relative z-20 bg-white dark:bg-form-input'>
+        <Select
+          data-testid='select-model-type'
+          classNamePrefix='react-select-model-type'
+          options={selectOptions}
+          onChange={handleChange}
+          className='pt-1 pb-1'
+          defaultValue={selectOptions[0]}
+          isSearchable={true}
+          isClearable={false}
+          styles={customStyles}
+        />
+      </div>
+    </>
+  );
+};
+
+export const DynamicForm = ({
+  propertySchemasList,
+  addOrUpdateModel,
+}: {
+  propertySchemasList: ListOfSchemas;
+  addOrUpdateModel: string;
+}) => {
+  // initiate the PropertySchemaParser with the propertySchemasList
+  const propertySchemaParser = new PropertySchemaParser(propertySchemasList);
+
+  // get the schema for the selected model
+  const schema = propertySchemaParser.getSchemaForModel(addOrUpdateModel);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+  };
+
+  const generateHTML = (schema: any) => {
+    return Object.entries(schema.json_schema.properties).map(([key, property]: [string, any]) => {
+      if (key === 'uuid') {
+        return null;
+      }
+      return (
+        <div key={key} className='w-full mt-2'>
+          <form.Field
+            //@ts-ignore
+            name={`${key}`}
+            children={(field) => (
+              <>
+                <label htmlFor={key}>{property.title}</label>
+                <TextInput
+                  id={key}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e)}
+                  type={_.includes(SECRETS_TO_MASK, key) && typeof property.type === 'string' ? 'password' : 'text'}
+                  placeholder={property.description || ''}
+                />
+              </>
+            )}
+          />
+        </div>
+      );
+    });
+  };
+
+  const form = useForm({
+    defaultValues: {
+      name: '',
+      api_key: '',
+    },
+    onSubmit: async ({ value }) => {
+      // Do something with form data
+      console.log(value);
+    },
+  });
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+    >
+      {generateHTML(schema)}
+      <form.Subscribe
+        selector={(state) => [state.canSubmit, state.isSubmitting]}
+        children={([canSubmit, isSubmitting]) => (
+          <>
+            <button type='submit' disabled={!canSubmit}>
+              {isSubmitting ? '...' : 'Submit'}
+            </button>
+            <button type='reset' onClick={() => form.reset()}>
+              Reset
+            </button>
+          </>
+        )}
+      />
+    </form>
+  );
+};

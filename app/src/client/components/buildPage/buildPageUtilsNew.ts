@@ -2,13 +2,14 @@ import _ from 'lodash';
 
 import { getModels } from 'wasp/client/operations';
 import { Property, Schema, Schemas, JsonSchema, SchemaDefs } from '../../interfaces/BuildPageInterfaces';
+import { PropertiesSchema, ListOfSchemas } from '../../interfaces/BuildPageInterfacesNew';
 import { SelectedModelSchema } from '../../interfaces/BuildPageInterfaces';
 import { SELECT_PLACEHOLDER, SELECT_CLEAR_PLACEHOLDER } from '../../utils/constants';
 
 /* These are the function you need*/
 
-export const filerOutComponentData = (data: Schema, componentName: string): Property => {
-  return data.list_of_schemas.filter((schema: any) => schema.name === componentName)[0];
+export const filerOutComponentData = (propertiesSchema: PropertiesSchema, componentName: string): ListOfSchemas => {
+  return propertiesSchema.list_of_schemas.filter((schema: any) => schema.name === componentName)[0];
 };
 export const capitalizeFirstLetter = (s: string): string => {
   return s.charAt(0).toUpperCase() + s.slice(1);

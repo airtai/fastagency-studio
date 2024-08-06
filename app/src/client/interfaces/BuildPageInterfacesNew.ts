@@ -1,19 +1,19 @@
 export interface JsonSchema {
   $defs?: { [key: string]: SchemaDefs };
-  properties: { [key: string]: Properties };
+  properties: { [key: string]: Property };
   required?: string[];
   title: string;
   type: string;
 }
 
 export interface SchemaDefs {
-  properties: { [key: string]: Properties };
+  properties: { [key: string]: Property };
   required?: string[];
   title: string;
   type: string;
 }
 
-interface Properties {
+export interface Property {
   description?: string;
   title?: string;
   type?: string;

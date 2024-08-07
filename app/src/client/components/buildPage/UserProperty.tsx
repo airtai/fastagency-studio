@@ -26,7 +26,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
   const propertyName = activeProperty === 'llm' ? 'LLM' : capitalizeFirstLetter(activeProperty);
   const propertySchemasList = filerOutComponentData(propertiesSchema, activeProperty);
 
-  const { data: userOwnedProperties, refetch: refetchModels, isLoading: isLoading } = useQuery(getModels);
+  const { data: userOwnedProperties, refetch: refetchUserOwnedProperties, isLoading: isLoading } = useQuery(getModels);
   const userOwnedPropertiesByType =
     (userOwnedProperties && filterPropertiesByType(userOwnedProperties, activeProperty)) || [];
 
@@ -82,6 +82,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
                         propertySchemasList={propertySchemasList}
                         addOrUpdateModel={addOrUpdateModel}
                         setAddOrUpdateModel={setAddOrUpdateModel}
+                        refetchUserOwnedProperties={refetchUserOwnedProperties}
                       />
                     </div>
                   </div>

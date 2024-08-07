@@ -75,6 +75,7 @@ describe('DynamicForm', () => {
         propertySchemasList={mockPropertySchemasList}
         addOrUpdateModel='AnthropicAPIKey'
         setAddOrUpdateModel={vi.fn()}
+        refetchUserOwnedProperties={vi.fn()}
       />
     );
     expect(screen.getByLabelText('Name')).toBeInTheDocument();
@@ -89,6 +90,7 @@ describe('DynamicForm', () => {
         propertySchemasList={mockPropertySchemasList}
         addOrUpdateModel='AnthropicAPIKey'
         setAddOrUpdateModel={vi.fn()}
+        refetchUserOwnedProperties={vi.fn()}
       />
     );
 
@@ -122,6 +124,7 @@ describe('DynamicForm', () => {
         propertySchemasList={mockPropertySchemasList}
         addOrUpdateModel='AnthropicAPIKey'
         setAddOrUpdateModel={vi.fn()}
+        refetchUserOwnedProperties={vi.fn()}
       />
     );
 
@@ -141,6 +144,7 @@ describe('DynamicForm', () => {
         propertySchemasList={mockPropertySchemasList}
         addOrUpdateModel='AnthropicAPIKey'
         setAddOrUpdateModel={setAddOrUpdateModel}
+        refetchUserOwnedProperties={vi.fn()}
       />
     );
 
@@ -161,6 +165,7 @@ describe('DynamicForm', () => {
         propertySchemasList={mockPropertySchemasList}
         addOrUpdateModel='AnthropicAPIKey'
         setAddOrUpdateModel={vi.fn()}
+        refetchUserOwnedProperties={vi.fn()}
       />
     );
 

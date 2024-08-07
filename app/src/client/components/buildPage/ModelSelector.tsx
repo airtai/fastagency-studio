@@ -9,11 +9,11 @@ interface SelectOption {
 export const ModelSelector = ({
   propertySchemasList,
   propertyName,
-  setAddOrUpdateModel,
+  setModelName,
 }: {
   propertySchemasList: ListOfSchemas;
   propertyName: string | undefined;
-  setAddOrUpdateModel: React.Dispatch<React.SetStateAction<string>>;
+  setModelName: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const selectOptions = propertySchemasList.schemas.map((schema) => {
     return {
@@ -30,7 +30,7 @@ export const ModelSelector = ({
 
   const handleChange = (selectedOption: SingleValue<SelectOption>) => {
     if (selectedOption) {
-      setAddOrUpdateModel(selectedOption.value);
+      setModelName(selectedOption.value);
     }
   };
 

@@ -73,8 +73,8 @@ describe('DynamicForm', () => {
     renderInContext(
       <DynamicForm
         propertySchemasList={mockPropertySchemasList}
-        addOrUpdateModel='AnthropicAPIKey'
-        setAddOrUpdateModel={vi.fn()}
+        modelName='AnthropicAPIKey'
+        setModelName={vi.fn()}
         refetchUserOwnedProperties={vi.fn()}
       />
     );
@@ -88,8 +88,8 @@ describe('DynamicForm', () => {
     renderInContext(
       <DynamicForm
         propertySchemasList={mockPropertySchemasList}
-        addOrUpdateModel='AnthropicAPIKey'
-        setAddOrUpdateModel={vi.fn()}
+        modelName='AnthropicAPIKey'
+        setModelName={vi.fn()}
         refetchUserOwnedProperties={vi.fn()}
       />
     );
@@ -122,8 +122,8 @@ describe('DynamicForm', () => {
     renderInContext(
       <DynamicForm
         propertySchemasList={mockPropertySchemasList}
-        addOrUpdateModel='AnthropicAPIKey'
-        setAddOrUpdateModel={vi.fn()}
+        modelName='AnthropicAPIKey'
+        setModelName={vi.fn()}
         refetchUserOwnedProperties={vi.fn()}
       />
     );
@@ -138,12 +138,12 @@ describe('DynamicForm', () => {
 
   it('resets the form when cancel button is clicked', async () => {
     const user = userEvent.setup();
-    const setAddOrUpdateModel = vi.fn();
+    const setModelName = vi.fn();
     renderInContext(
       <DynamicForm
         propertySchemasList={mockPropertySchemasList}
-        addOrUpdateModel='AnthropicAPIKey'
-        setAddOrUpdateModel={setAddOrUpdateModel}
+        modelName='AnthropicAPIKey'
+        setModelName={setModelName}
         refetchUserOwnedProperties={vi.fn()}
       />
     );
@@ -156,15 +156,15 @@ describe('DynamicForm', () => {
 
     expect(screen.getByLabelText('Name')).toHaveValue('');
     expect(screen.getByLabelText('Api Key')).toHaveValue('');
-    expect(setAddOrUpdateModel).toHaveBeenCalledWith(null);
+    expect(setModelName).toHaveBeenCalledWith(null);
   });
 
   it('masks the API key input', () => {
     renderInContext(
       <DynamicForm
         propertySchemasList={mockPropertySchemasList}
-        addOrUpdateModel='AnthropicAPIKey'
-        setAddOrUpdateModel={vi.fn()}
+        modelName='AnthropicAPIKey'
+        setModelName={vi.fn()}
         refetchUserOwnedProperties={vi.fn()}
       />
     );
@@ -181,7 +181,7 @@ describe('DynamicForm', () => {
 
   //   const user = userEvent.setup();
 
-  //   renderInContext(<DynamicForm propertySchemasList={mockPropertySchemasList} addOrUpdateModel="AnthropicAPIKey" />);
+  //   renderInContext(<DynamicForm propertySchemasList={mockPropertySchemasList} modelName="AnthropicAPIKey" />);
 
   //   await user.type(screen.getByLabelText('Name'), 'My Anthropic Key');
   //   await user.type(screen.getByLabelText('Api Key'), 'anthropic-api-key-123');

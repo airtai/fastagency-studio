@@ -57,7 +57,7 @@ const mockPropertySchemasList: ListOfSchemas = {
   ],
 };
 
-const mockSetAddOrUpdateModel = vi.fn();
+const mocksetModelName = vi.fn();
 
 describe('ModelSelector', () => {
   it('renders correctly with provided props', () => {
@@ -65,7 +65,7 @@ describe('ModelSelector', () => {
       <ModelSelector
         propertySchemasList={mockPropertySchemasList}
         propertyName='Secret'
-        setAddOrUpdateModel={mockSetAddOrUpdateModel}
+        setModelName={mocksetModelName}
       />
     );
     expect(screen.getByText('Select Secret')).toBeInTheDocument();
@@ -76,7 +76,7 @@ describe('ModelSelector', () => {
       <ModelSelector
         propertySchemasList={mockPropertySchemasList}
         propertyName='Secret'
-        setAddOrUpdateModel={mockSetAddOrUpdateModel}
+        setModelName={mocksetModelName}
       />
     );
 
@@ -90,12 +90,12 @@ describe('ModelSelector', () => {
     expect(options).toHaveLength(mockPropertySchemasList.schemas.length);
   });
 
-  it('calls setAddOrUpdateModel with correct value when option is selected', async () => {
+  it('calls setModelName with correct value when option is selected', async () => {
     const { getByRole, getByText } = renderInContext(
       <ModelSelector
         propertySchemasList={mockPropertySchemasList}
         propertyName='Secret'
-        setAddOrUpdateModel={mockSetAddOrUpdateModel}
+        setModelName={mocksetModelName}
       />
     );
 
@@ -108,6 +108,6 @@ describe('ModelSelector', () => {
     // Select an option
     await selectEvent.select(selectElement, 'AzureOAIAPIKey');
 
-    expect(mockSetAddOrUpdateModel).toHaveBeenCalledWith('AzureOAIAPIKey');
+    expect(mocksetModelName).toHaveBeenCalledWith('AzureOAIAPIKey');
   });
 });

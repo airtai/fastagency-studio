@@ -7,21 +7,21 @@ import Loader from '../../admin/common/Loader';
 
 interface DynamicFormProps {
   propertySchemasList: ListOfSchemas;
-  addOrUpdateModel: string;
-  setAddOrUpdateModel: React.Dispatch<React.SetStateAction<string | null>>;
+  modelName: string;
+  setModelName: React.Dispatch<React.SetStateAction<string | null>>;
   refetchUserOwnedProperties: () => void;
 }
 
 export const DynamicForm: React.FC<DynamicFormProps> = ({
   propertySchemasList,
-  addOrUpdateModel,
-  setAddOrUpdateModel,
+  modelName,
+  setModelName,
   refetchUserOwnedProperties,
 }) => {
   const { form, schema, handleCancel } = useFormLogic(
     propertySchemasList,
-    addOrUpdateModel,
-    setAddOrUpdateModel,
+    modelName,
+    setModelName,
     refetchUserOwnedProperties
   );
 

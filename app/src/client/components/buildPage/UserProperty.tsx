@@ -21,7 +21,7 @@ interface Props {
 }
 
 export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavItemClickCount }: Props) => {
-  const [addOrUpdateModel, setAddOrUpdateModel] = useState<any>(null);
+  const [modelName, setModelName] = useState<any>(null);
   const propertyHeader = _.find(navLinkItems, ['componentName', activeProperty])?.label;
   const propertyName = activeProperty === 'llm' ? 'LLM' : capitalizeFirstLetter(activeProperty);
   const propertySchemasList = filerOutComponentData(propertiesSchema, activeProperty);
@@ -32,11 +32,11 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
 
   const addProperty = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setAddOrUpdateModel(propertySchemasList.schemas[0].name);
+    setModelName(propertySchemasList.schemas[0].name);
   };
 
   useEffect(() => {
-    setAddOrUpdateModel(null);
+    setModelName(null);
   }, [sideNavItemClickCount]);
   return (
     <>
@@ -47,7 +47,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
             <LoadingComponent theme='dark' />
           ) : (
             <div className='flex-col flex items-start p-6 gap-3 w-full'>
-              {!addOrUpdateModel ? (
+              {!modelName ? (
                 <>
                   <div className={`${false ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
                     <Button onClick={addProperty} label={`Add ${propertyName}`} />
@@ -76,12 +76,12 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
                       <ModelSelector
                         propertySchemasList={propertySchemasList}
                         propertyName={propertyName}
-                        setAddOrUpdateModel={setAddOrUpdateModel}
+                        setModelName={setModelName}
                       />
                       <DynamicForm
                         propertySchemasList={propertySchemasList}
-                        addOrUpdateModel={addOrUpdateModel}
-                        setAddOrUpdateModel={setAddOrUpdateModel}
+                        modelName={modelName}
+                        setModelName={setModelName}
                         refetchUserOwnedProperties={refetchUserOwnedProperties}
                       />
                     </div>

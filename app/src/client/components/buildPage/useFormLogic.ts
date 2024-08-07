@@ -5,12 +5,12 @@ import { ListOfSchemas } from '../../interfaces/BuildPageInterfacesNew';
 import { PropertySchemaParser } from './PropertySchemaParser';
 import { getDefaultValues, parseValidationErrors } from './formUtils';
 
-export const onSuccessCallback = async (validatedData: any, propertyName: string, addOrUpdateModel: string) => {
+export const onSuccessCallback = async (validatedData: any, propertyName: string, modelName: string) => {
   try {
     const payload = {
       ...validatedData,
       type_name: propertyName,
-      model_name: addOrUpdateModel,
+      model_name: modelName,
       uuid: validatedData.uuid,
     };
     return await addUserModels(payload);
@@ -22,24 +22,24 @@ export const onSuccessCallback = async (validatedData: any, propertyName: string
 
 export const useFormLogic = (
   propertySchemasList: ListOfSchemas,
-  addOrUpdateModel: string,
-  setAddOrUpdateModel: React.Dispatch<React.SetStateAction<any>>,
+  modelName: string,
+  setModelName: React.Dispatch<React.SetStateAction<any>>,
   refetchUserOwnedProperties: any
 ) => {
   const propertyName = propertySchemasList.name;
   const [defaultValues, setDefaultValues] = useState<{ [key: string]: any }>({});
   const propertySchemaParser = new PropertySchemaParser(propertySchemasList);
-  const schema = propertySchemaParser.getSchemaForModel(addOrUpdateModel);
+  const schema = propertySchemaParser.getSchemaForModel(modelName);
 
   const form = useForm({
     defaultValues: defaultValues,
     onSubmit: async ({ value, formApi }) => {
       try {
-        const validationURL: string = `models/${propertyName}/${addOrUpdateModel}/validate`;
+        const validationURL: string = `models/${propertyName}/${modelName}/validate`;
         const isSecretUpdate = false;
         const data = value;
         const validatedData = await validateForm({ data, validationURL, isSecretUpdate });
-        const onSuccessCallbackResponse: any = await onSuccessCallback(validatedData, propertyName, addOrUpdateModel);
+        const onSuccessCallbackResponse: any = await onSuccessCallback(validatedData, propertyName, modelName);
 
         // make sure to run the below code only when the above api call successful and the response is received
         await resetAndRefetchProperties();
@@ -68,7 +68,7 @@ export const useFormLogic = (
 
   const resetFormState = () => {
     form.reset();
-    setAddOrUpdateModel(null);
+    setModelName(null);
   };
 
   const resetAndRefetchProperties = async () => {

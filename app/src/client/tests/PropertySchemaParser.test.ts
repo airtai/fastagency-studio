@@ -52,5 +52,10 @@ describe('PropertySchemaParser', () => {
     const model = 'AzureOAIAPIKey';
     const schema = propertySchemaParser.getSchemaForModel(model);
     expect(schema).toEqual(expectedSchema);
+
+    // @ts-ignore
+    const defaultValues = propertySchemaParser.getDefaultValues(schema);
+    const expectedDefaultValues = { name: '', api_key: '' };
+    expect(defaultValues).toEqual(expectedDefaultValues);
   });
 });

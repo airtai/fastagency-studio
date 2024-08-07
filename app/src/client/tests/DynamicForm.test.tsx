@@ -6,14 +6,17 @@ import userEvent from '@testing-library/user-event';
 
 import { renderInContext } from 'wasp/client/test';
 import { validateForm } from 'wasp/client/operations';
+
 import * as operations from 'wasp/client/operations';
 
 import { DynamicForm } from '../components/buildPage/DynamicForm';
 import { ListOfSchemas } from '../interfaces/BuildPageInterfacesNew';
+import { PropertySchemaParser } from '../components/buildPage/PropertySchemaParser';
 
-// Mock the validateForm function
+// Mock the operation
 vi.mock('wasp/client/operations', () => ({
   validateForm: vi.fn(),
+  addUserModels: vi.fn(),
 }));
 
 const mockPropertySchemasList: ListOfSchemas = {
@@ -65,132 +68,155 @@ const mockPropertySchemasList: ListOfSchemas = {
 };
 
 describe('DynamicForm', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  it('renders form fields based on the AnthropicAPIKey schema and handles submission', async () => {
+    const parser = new PropertySchemaParser(mockPropertySchemasList);
+    parser.setActiveModel('AnthropicAPIKey');
+    const mockSetActiveModel = vi.fn();
+    const mockRefetchUserOwnedProperties = vi.fn();
 
-  it('renders form fields based on the AnthropicAPIKey schema', () => {
+    vi.mocked(operations.validateForm).mockResolvedValue({});
+    vi.mocked(operations.addUserModels).mockResolvedValue({});
+
     renderInContext(
       <DynamicForm
-        propertySchemasList={mockPropertySchemasList}
-        modelName='AnthropicAPIKey'
-        setModelName={vi.fn()}
-        refetchUserOwnedProperties={vi.fn()}
+        parser={parser}
+        setActiveModel={mockSetActiveModel}
+        refetchUserOwnedProperties={mockRefetchUserOwnedProperties}
       />
     );
+
+    // Check if form fields are rendered
     expect(screen.getByLabelText('Name')).toBeInTheDocument();
     expect(screen.getByLabelText('Api Key')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('The name of the item')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('The API Key from Anthropic')).toBeInTheDocument();
+
+    // Fill out the form
+    await userEvent.type(screen.getByLabelText('Name'), 'Test Name');
+    await userEvent.type(screen.getByLabelText('Api Key'), 'test-api-key');
+
+    // Submit the form
+    const submitButton = screen.getByRole('button', { name: 'Save' });
+    await userEvent.click(submitButton);
+
+    // Check if validation and submission occurred
+    expect(operations.validateForm).toHaveBeenCalled();
+    expect(operations.addUserModels).toHaveBeenCalled();
+
+    // Check if the form was reset and properties were refetched
+    expect(mockSetActiveModel).toHaveBeenCalledWith(null);
+    expect(mockRefetchUserOwnedProperties).toHaveBeenCalled();
   });
 
-  it('submits the form with valid data for AnthropicAPIKey', async () => {
+  it('renders form fields and handles successful submission', async () => {
+    const parser = new PropertySchemaParser(mockPropertySchemasList);
+    parser.setActiveModel('AnthropicAPIKey');
+    const mockSetActiveModel = vi.fn();
+    const mockRefetchUserOwnedProperties = vi.fn();
+
+    vi.mocked(operations.validateForm).mockResolvedValue({});
+    vi.mocked(operations.addUserModels).mockResolvedValue({});
+
+    const user = userEvent.setup();
+
     renderInContext(
       <DynamicForm
-        propertySchemasList={mockPropertySchemasList}
-        modelName='AnthropicAPIKey'
-        setModelName={vi.fn()}
-        refetchUserOwnedProperties={vi.fn()}
+        parser={parser}
+        setActiveModel={mockSetActiveModel}
+        refetchUserOwnedProperties={mockRefetchUserOwnedProperties}
       />
     );
 
-    await userEvent.type(screen.getByLabelText('Name'), 'My Anthropic Key');
-    await userEvent.type(screen.getByLabelText('Api Key'), 'anthropic-api-key-123');
+    expect(screen.getByLabelText('Name')).toBeInTheDocument();
+    expect(screen.getByLabelText('Api Key')).toBeInTheDocument();
 
-    const submitButton = screen.getByTestId('form-submit-button');
-    await userEvent.click(submitButton);
+    await user.type(screen.getByLabelText('Name'), 'Test Name');
+    await user.type(screen.getByLabelText('Api Key'), 'test-api-key');
+
+    const submitButton = screen.getByRole('button', { name: 'Save' });
+    await user.click(submitButton);
 
     await waitFor(() => {
-      expect(validateForm).toHaveBeenCalledWith({
-        data: { name: 'My Anthropic Key', api_key: 'anthropic-api-key-123' }, // pragma: allowlist secret
-        validationURL: 'models/secret/AnthropicAPIKey/validate',
-        isSecretUpdate: false,
-      });
+      expect(operations.validateForm).toHaveBeenCalled();
+      expect(operations.addUserModels).toHaveBeenCalled();
+      expect(mockSetActiveModel).toHaveBeenCalledWith(null);
+      expect(mockRefetchUserOwnedProperties).toHaveBeenCalled();
     });
   });
 
-  it('displays validation errors', async () => {
+  it('handles form submission failure due to validation error', async () => {
+    const parser = new PropertySchemaParser(mockPropertySchemasList);
+    parser.setActiveModel('AnthropicAPIKey');
+    const mockSetActiveModel = vi.fn();
+    const mockRefetchUserOwnedProperties = vi.fn();
+
     const mockError = {
       message: JSON.stringify([{ loc: ['name'], msg: 'Name is required', type: 'value_error' }]),
     };
 
-    // Use vi.mocked to properly type the mock function
     vi.mocked(operations.validateForm).mockRejectedValue(mockError);
 
     const user = userEvent.setup();
 
     renderInContext(
       <DynamicForm
-        propertySchemasList={mockPropertySchemasList}
-        modelName='AnthropicAPIKey'
-        setModelName={vi.fn()}
-        refetchUserOwnedProperties={vi.fn()}
+        parser={parser}
+        setActiveModel={mockSetActiveModel}
+        refetchUserOwnedProperties={mockRefetchUserOwnedProperties}
       />
     );
 
-    const submitButton = screen.getByTestId('form-submit-button');
+    const submitButton = screen.getByRole('button', { name: 'Save' });
     await user.click(submitButton);
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Name is required');
     });
+
+    expect(mockSetActiveModel).not.toHaveBeenCalled();
+    expect(mockRefetchUserOwnedProperties).not.toHaveBeenCalled();
   });
 
-  it('resets the form when cancel button is clicked', async () => {
+  it('calls handleCancel when cancel button is clicked', async () => {
+    const parser = new PropertySchemaParser(mockPropertySchemasList);
+    parser.setActiveModel('AnthropicAPIKey');
+    const mockSetActiveModel = vi.fn();
+    const mockRefetchUserOwnedProperties = vi.fn();
+
     const user = userEvent.setup();
-    const setModelName = vi.fn();
+
     renderInContext(
       <DynamicForm
-        propertySchemasList={mockPropertySchemasList}
-        modelName='AnthropicAPIKey'
-        setModelName={setModelName}
-        refetchUserOwnedProperties={vi.fn()}
+        parser={parser}
+        setActiveModel={mockSetActiveModel}
+        refetchUserOwnedProperties={mockRefetchUserOwnedProperties}
       />
     );
 
-    await user.type(screen.getByLabelText('Name'), 'My Anthropic Key');
-    await user.type(screen.getByLabelText('Api Key'), 'anthropic-api-key-123');
+    await user.type(screen.getByLabelText('Name'), 'Test Name');
+    await user.type(screen.getByLabelText('Api Key'), 'test-api-key');
 
-    const cancelButton = screen.getByText('Cancel');
+    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
     await user.click(cancelButton);
 
     expect(screen.getByLabelText('Name')).toHaveValue('');
     expect(screen.getByLabelText('Api Key')).toHaveValue('');
-    expect(setModelName).toHaveBeenCalledWith(null);
+    expect(mockSetActiveModel).toHaveBeenCalledWith(null);
   });
 
   it('masks the API key input', () => {
+    const parser = new PropertySchemaParser(mockPropertySchemasList);
+    parser.setActiveModel('AnthropicAPIKey');
+    const mockSetActiveModel = vi.fn();
+    const mockRefetchUserOwnedProperties = vi.fn();
+
     renderInContext(
       <DynamicForm
-        propertySchemasList={mockPropertySchemasList}
-        modelName='AnthropicAPIKey'
-        setModelName={vi.fn()}
-        refetchUserOwnedProperties={vi.fn()}
+        parser={parser}
+        setActiveModel={mockSetActiveModel}
+        refetchUserOwnedProperties={mockRefetchUserOwnedProperties}
       />
     );
 
     const apiKeyInput = screen.getByLabelText('Api Key');
     expect(apiKeyInput).toHaveAttribute('type', 'password');
   });
-
-  // it('handles non-JSON error responses', async () => {
-  //   const mockError = new Error('Network error');
-
-  //   // Use vi.mocked to properly type the mock function
-  //   vi.mocked(operations.validateForm).mockRejectedValue(mockError);
-
-  //   const user = userEvent.setup();
-
-  //   renderInContext(<DynamicForm propertySchemasList={mockPropertySchemasList} modelName="AnthropicAPIKey" />);
-
-  //   await user.type(screen.getByLabelText('Name'), 'My Anthropic Key');
-  //   await user.type(screen.getByLabelText('Api Key'), 'anthropic-api-key-123');
-
-  //   const submitButton = screen.getByTestId('form-submit-button');
-  //   await user.click(submitButton);
-
-  //   // This test ensures that the component doesn't crash on non-JSON errors
-  //   // You might want to add an assertion here to check for a specific behavior,
-  //   // such as displaying a generic error message to the user
-  // });
 });

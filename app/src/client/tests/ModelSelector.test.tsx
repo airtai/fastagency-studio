@@ -7,78 +7,64 @@ import { renderInContext } from 'wasp/client/test';
 import selectEvent from 'react-select-event';
 
 import { ModelSelector } from '../components/buildPage/ModelSelector';
-import { ListOfSchemas } from '../interfaces/BuildPageInterfacesNew';
+import { PropertySchemaParser, SetActiveModelType } from '../components/buildPage/PropertySchemaParser';
 
-const mockPropertySchemasList: ListOfSchemas = {
+const mockSchemas = [
+  {
+    name: 'AnthropicAPIKey',
+    json_schema: {
+      properties: {
+        name: {
+          description: 'The name of the item',
+          minLength: 1,
+          title: 'Name',
+          type: 'string',
+        },
+        api_key: {
+          description: 'The API Key from Anthropic',
+          title: 'Api Key',
+          type: 'string',
+        },
+      },
+      required: ['name', 'api_key'],
+      title: 'AnthropicAPIKey',
+      type: 'object',
+    },
+  },
+  {
+    name: 'AzureOAIAPIKey',
+    json_schema: {
+      properties: {
+        name: {
+          description: 'The name of the item',
+          minLength: 1,
+          title: 'Name',
+          type: 'string',
+        },
+        api_key: {
+          description: 'The API Key from Azure OpenAI',
+          title: 'Api Key',
+          type: 'string',
+        },
+      },
+      required: ['name', 'api_key'],
+      title: 'AzureOAIAPIKey',
+      type: 'object',
+    },
+  },
+];
+
+const mockPropertySchemasList = {
   name: 'secret',
-  schemas: [
-    {
-      name: 'AnthropicAPIKey',
-      json_schema: {
-        properties: {
-          name: {
-            description: 'The name of the item',
-            minLength: 1,
-            title: 'Name',
-            type: 'string',
-          },
-          api_key: {
-            description: 'The API Key from Anthropic',
-            title: 'Api Key',
-            type: 'string',
-          },
-        },
-        required: ['name', 'api_key'],
-        title: 'AnthropicAPIKey',
-        type: 'object',
-      },
-    },
-    {
-      name: 'AzureOAIAPIKey',
-      json_schema: {
-        properties: {
-          name: {
-            description: 'The name of the item',
-            minLength: 1,
-            title: 'Name',
-            type: 'string',
-          },
-          api_key: {
-            description: 'The API Key from Azure OpenAI',
-            title: 'Api Key',
-            type: 'string',
-          },
-        },
-        required: ['name', 'api_key'],
-        title: 'AzureOAIAPIKey',
-        type: 'object',
-      },
-    },
-  ],
+  schemas: mockSchemas,
 };
 
-const mocksetModelName = vi.fn();
+const parser = new PropertySchemaParser(mockPropertySchemasList);
+const mockSetActiveModel: SetActiveModelType = vi.fn();
 
 describe('ModelSelector', () => {
-  it('renders correctly with provided props', () => {
-    renderInContext(
-      <ModelSelector
-        propertySchemasList={mockPropertySchemasList}
-        propertyName='Secret'
-        setModelName={mocksetModelName}
-      />
-    );
-    expect(screen.getByText('Select Secret')).toBeInTheDocument();
-  });
-
   it('renders correct number of options', () => {
-    const { getByRole } = renderInContext(
-      <ModelSelector
-        propertySchemasList={mockPropertySchemasList}
-        propertyName='Secret'
-        setModelName={mocksetModelName}
-      />
-    );
+    const { getByRole } = renderInContext(<ModelSelector parser={parser} setActiveModel={mockSetActiveModel} />);
 
     expect(screen.getByText('Select Secret')).toBeInTheDocument();
 
@@ -90,13 +76,22 @@ describe('ModelSelector', () => {
     expect(options).toHaveLength(mockPropertySchemasList.schemas.length);
   });
 
-  it('calls setModelName with correct value when option is selected', async () => {
+  it('renders correct number of options', () => {
+    const { getByRole } = renderInContext(<ModelSelector parser={parser} setActiveModel={mockSetActiveModel} />);
+
+    expect(screen.getByText('Select Secret')).toBeInTheDocument();
+
+    // Open the select dropdown
+    const selectElement = getByRole('combobox');
+    fireEvent.mouseDown(selectElement);
+
+    const options = screen.getAllByRole('option');
+    expect(options).toHaveLength(mockSchemas.length);
+  });
+
+  it('calls setActiveModel with correct value when option is selected', async () => {
     const { getByRole, getByText } = renderInContext(
-      <ModelSelector
-        propertySchemasList={mockPropertySchemasList}
-        propertyName='Secret'
-        setModelName={mocksetModelName}
-      />
+      <ModelSelector parser={parser} setActiveModel={mockSetActiveModel} />
     );
 
     expect(getByText('AnthropicAPIKey')).toBeInTheDocument();
@@ -108,6 +103,6 @@ describe('ModelSelector', () => {
     // Select an option
     await selectEvent.select(selectElement, 'AzureOAIAPIKey');
 
-    expect(mocksetModelName).toHaveBeenCalledWith('AzureOAIAPIKey');
+    expect(mockSetActiveModel).toHaveBeenCalledWith('AzureOAIAPIKey');
   });
 });

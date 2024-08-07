@@ -1,30 +1,32 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PropertySchemaParser } from './PropertySchemaParser';
 import { ListOfSchemas } from '../../interfaces/BuildPageInterfacesNew';
 
 export function usePropertySchemaParser(propertySchemasList: ListOfSchemas) {
   const [activeModel, setActiveModel] = useState<string | null>(null);
-  const parserRef = useRef<PropertySchemaParser | null>(null);
+  const [parser, setParser] = useState<PropertySchemaParser | null>(null);
 
-  // Initialize or update the parser when propertySchemasList changes
-  useMemo(() => {
-    parserRef.current = new PropertySchemaParser(propertySchemasList);
-  }, [propertySchemasList]);
+  // Recreate the parser when propertySchemasList or activeModel changes
+  useEffect(() => {
+    const newParser = new PropertySchemaParser(propertySchemasList);
+    newParser.setActiveModel(activeModel);
+    setParser(newParser);
+  }, [propertySchemasList, activeModel]);
 
   const setActiveModelWrapper = useCallback((model: string | null) => {
-    if (parserRef.current) {
-      parserRef.current.setActiveModel(model);
-      setActiveModel(model);
-    }
+    setActiveModel(model);
   }, []);
 
   // Expose other methods of PropertySchemaParser as needed
-  const getSchemaForModel = useCallback((modelName: string) => {
-    return parserRef.current?.getSchemaForModel(modelName);
-  }, []);
+  const getSchemaForModel = useCallback(
+    (modelName: string) => {
+      return parser?.getSchemaForModel(modelName);
+    },
+    [parser]
+  );
 
   return {
-    parser: parserRef.current,
+    parser,
     activeModel,
     setActiveModel: setActiveModelWrapper,
   };

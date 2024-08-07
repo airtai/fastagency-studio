@@ -1,6 +1,7 @@
 import Select, { StylesConfig, SingleValue } from 'react-select';
 import { PropertySchemaParser, SetActiveModelType } from './PropertySchemaParser';
 import { SelectOption } from './PropertySchemaParser';
+import { capitalizeFirstLetter } from './buildPageUtilsNew';
 
 export const ModelSelector = ({
   parser,
@@ -11,6 +12,7 @@ export const ModelSelector = ({
 }) => {
   const selectOptions = parser?.getModelNames();
   const propertyName = parser?.getPropertyName();
+  const propertyHeader = propertyName ? capitalizeFirstLetter(propertyName) : propertyName;
   const customStyles: StylesConfig<SelectOption, false> = {
     control: (baseStyles) => ({
       ...baseStyles,
@@ -28,7 +30,7 @@ export const ModelSelector = ({
     <>
       {selectOptions && (
         <>
-          <label className='mb-3 block text-black dark:text-white'>{`Select  ${propertyName}`}</label>
+          <label className='mb-3 block text-black dark:text-white'>{`Select ${propertyHeader}`}</label>
           <div className='relative z-20 bg-white dark:bg-form-input'>
             <Select
               data-testid='select-model-type'

@@ -1,32 +1,21 @@
 import React, { useMemo, useRef } from 'react';
-import { ListOfSchemas } from '../../interfaces/BuildPageInterfacesNew';
+import { PropertySchemaParser, SetActiveModelType } from './PropertySchemaParser';
 import { useEscapeKeyHandler } from '../../hooks/useEscapeKeyHandler';
 import { useFormLogic } from './useFormLogic';
 import { FormField } from './FormField';
 import Loader from '../../admin/common/Loader';
 
 interface DynamicFormProps {
-  propertySchemasList: ListOfSchemas;
-  modelName: string;
-  setModelName: React.Dispatch<React.SetStateAction<string | null>>;
+  parser: PropertySchemaParser | null;
+  setActiveModel: SetActiveModelType;
   refetchUserOwnedProperties: () => void;
 }
 
-export const DynamicForm: React.FC<DynamicFormProps> = ({
-  propertySchemasList,
-  modelName,
-  setModelName,
-  refetchUserOwnedProperties,
-}) => {
-  const { form, schema, handleCancel } = useFormLogic(
-    propertySchemasList,
-    modelName,
-    setModelName,
-    refetchUserOwnedProperties
-  );
+export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel, refetchUserOwnedProperties }) => {
+  const { form, schema, handleCancel } = useFormLogic(parser, setActiveModel, refetchUserOwnedProperties);
 
   const formFields = useMemo(() => {
-    if ('json_schema' in schema) {
+    if (schema && 'json_schema' in schema) {
       return Object.entries(schema.json_schema.properties).map(([key, property]: [string, any]) => {
         if (key === 'uuid') {
           return null;

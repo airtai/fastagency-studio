@@ -1,16 +1,3 @@
-import { Schema } from '../../interfaces/BuildPageInterfacesNew';
-
-export function getDefaultValues(schema: Schema | {}) {
-  const defaultValues: { [key: string]: any } = {};
-
-  if ('json_schema' in schema) {
-    Object.entries(schema.json_schema.properties).forEach(([key, property]: [string, any]) => {
-      defaultValues[key] = property.default || '';
-    });
-  }
-  return defaultValues;
-}
-
 type ValidationError = {
   type: string;
   loc: string[];

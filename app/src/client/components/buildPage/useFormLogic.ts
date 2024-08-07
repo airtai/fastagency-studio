@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { validateForm, addUserModels } from 'wasp/client/operations';
-import { ListOfSchemas } from '../../interfaces/BuildPageInterfacesNew';
-import { PropertySchemaParser } from './PropertySchemaParser';
-import { getDefaultValues, parseValidationErrors } from './formUtils';
+import { PropertySchemaParser, SetActiveModelType } from './PropertySchemaParser';
+import { parseValidationErrors } from './formUtils';
 
 export const onSuccessCallback = async (validatedData: any, propertyName: string, modelName: string) => {
   try {
@@ -21,26 +20,24 @@ export const onSuccessCallback = async (validatedData: any, propertyName: string
 };
 
 export const useFormLogic = (
-  propertySchemasList: ListOfSchemas,
-  modelName: string,
-  setModelName: React.Dispatch<React.SetStateAction<any>>,
+  parser: PropertySchemaParser | null,
+  setActiveModel: SetActiveModelType,
   refetchUserOwnedProperties: any
 ) => {
-  const propertyName = propertySchemasList.name;
-  const [defaultValues, setDefaultValues] = useState<{ [key: string]: any }>({});
-  const propertySchemaParser = new PropertySchemaParser(propertySchemasList);
-  const schema = propertySchemaParser.getSchemaForModel(modelName);
+  const propertyName = parser?.getPropertyName() || '';
+  const modelName = parser?.getActiveModel() || '';
+  const schema = modelName ? parser?.getSchemaForModel(modelName) : null;
+  const defaultValues = schema ? parser?.getDefaultValues(schema) : {};
 
   const form = useForm({
     defaultValues: defaultValues,
     onSubmit: async ({ value, formApi }) => {
       try {
-        const validationURL: string = `models/${propertyName}/${modelName}/validate`;
+        const validationURL: string = parser?.getValidationURL() || '';
         const isSecretUpdate = false;
         const data = value;
         const validatedData = await validateForm({ data, validationURL, isSecretUpdate });
-        const onSuccessCallbackResponse: any = await onSuccessCallback(validatedData, propertyName, modelName);
-
+        await onSuccessCallback(validatedData, propertyName, modelName);
         // make sure to run the below code only when the above api call successful and the response is received
         await resetAndRefetchProperties();
       } catch (error: any) {
@@ -63,12 +60,11 @@ export const useFormLogic = (
 
   useEffect(() => {
     form.reset();
-    setDefaultValues(getDefaultValues(schema));
   }, [schema]);
 
   const resetFormState = () => {
     form.reset();
-    setModelName(null);
+    setActiveModel(null);
   };
 
   const resetAndRefetchProperties = async () => {

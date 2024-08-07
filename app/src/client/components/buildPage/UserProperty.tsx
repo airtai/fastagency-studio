@@ -11,8 +11,10 @@ import { ModelSelector } from '../buildPage/ModelSelector';
 import { navLinkItems } from '../CustomSidebar';
 import { PropertiesSchema } from '../../interfaces/BuildPageInterfacesNew';
 import LoadingComponent from '../LoadingComponent';
+import { usePropertySchemaParser } from './usePropertySchemaParser';
 
 import { filerOutComponentData, capitalizeFirstLetter, filterPropertiesByType } from '../buildPage/buildPageUtilsNew';
+import { PropertySchemaParser } from './PropertySchemaParser';
 
 interface Props {
   activeProperty: string;
@@ -21,10 +23,13 @@ interface Props {
 }
 
 export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavItemClickCount }: Props) => {
-  const [modelName, setModelName] = useState<any>(null);
   const propertyHeader = _.find(navLinkItems, ['componentName', activeProperty])?.label;
   const propertyName = activeProperty === 'llm' ? 'LLM' : capitalizeFirstLetter(activeProperty);
   const propertySchemasList = filerOutComponentData(propertiesSchema, activeProperty);
+
+  const { parser, activeModel, setActiveModel } = usePropertySchemaParser(propertySchemasList);
+
+  // const propertySchemaParser = new PropertySchemaParser(propertySchemasList);
 
   const { data: userOwnedProperties, refetch: refetchUserOwnedProperties, isLoading: isLoading } = useQuery(getModels);
   const userOwnedPropertiesByType =
@@ -32,12 +37,18 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
 
   const addProperty = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setModelName(propertySchemasList.schemas[0].name);
+    setActiveModel(propertySchemasList.schemas[0].name);
+  };
+
+  const getSelectedUserProperty = (index: number) => {
+    const selectedProperty = userOwnedPropertiesByType[index];
+    setActiveModel(selectedProperty.model_name);
   };
 
   useEffect(() => {
-    setModelName(null);
+    setActiveModel(null);
   }, [sideNavItemClickCount]);
+
   return (
     <>
       <CustomBreadcrumb pageName={`${propertyHeader}`} />
@@ -47,7 +58,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
             <LoadingComponent theme='dark' />
           ) : (
             <div className='flex-col flex items-start p-6 gap-3 w-full'>
-              {!modelName ? (
+              {!activeModel ? (
                 <>
                   <div className={`${false ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
                     <Button onClick={addProperty} label={`Add ${propertyName}`} />
@@ -62,7 +73,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
                     <div className='flex-col flex w-full'>
                       <ModelsList
                         models={userOwnedPropertiesByType}
-                        onSelectModel={() => {}}
+                        onSelectModel={getSelectedUserProperty}
                         type_name={propertyName}
                       />
                     </div>
@@ -73,15 +84,10 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
                   <div className='flex flex-col gap-5.5 px-6.5'>
                     <h2 className='text-lg font-semibold text-airt-primary mt-6 '>{`Add a new ${propertyName}`}</h2>
                     <div className='relative z-20 bg-white dark:bg-form-input'>
-                      <ModelSelector
-                        propertySchemasList={propertySchemasList}
-                        propertyName={propertyName}
-                        setModelName={setModelName}
-                      />
+                      <ModelSelector parser={parser} setActiveModel={setActiveModel} />
                       <DynamicForm
-                        propertySchemasList={propertySchemasList}
-                        modelName={modelName}
-                        setModelName={setModelName}
+                        parser={parser}
+                        setActiveModel={setActiveModel}
                         refetchUserOwnedProperties={refetchUserOwnedProperties}
                       />
                     </div>

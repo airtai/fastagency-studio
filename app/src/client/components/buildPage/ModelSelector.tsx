@@ -1,26 +1,16 @@
 import Select, { StylesConfig, SingleValue } from 'react-select';
-import { ListOfSchemas } from '../../interfaces/BuildPageInterfacesNew';
-
-interface SelectOption {
-  value: string;
-  label: string;
-}
+import { PropertySchemaParser, SetActiveModelType } from './PropertySchemaParser';
+import { SelectOption } from './PropertySchemaParser';
 
 export const ModelSelector = ({
-  propertySchemasList,
-  propertyName,
-  setModelName,
+  parser,
+  setActiveModel,
 }: {
-  propertySchemasList: ListOfSchemas;
-  propertyName: string | undefined;
-  setModelName: React.Dispatch<React.SetStateAction<string>>;
+  parser: PropertySchemaParser | null;
+  setActiveModel: SetActiveModelType;
 }) => {
-  const selectOptions = propertySchemasList.schemas.map((schema) => {
-    return {
-      value: schema.name,
-      label: schema.name,
-    };
-  });
+  const selectOptions = parser?.getModelNames();
+  const propertyName = parser?.getPropertyName();
   const customStyles: StylesConfig<SelectOption, false> = {
     control: (baseStyles) => ({
       ...baseStyles,
@@ -30,26 +20,30 @@ export const ModelSelector = ({
 
   const handleChange = (selectedOption: SingleValue<SelectOption>) => {
     if (selectedOption) {
-      setModelName(selectedOption.value);
+      setActiveModel(selectedOption.value);
     }
   };
 
   return (
     <>
-      <label className='mb-3 block text-black dark:text-white'>{`Select  ${propertyName}`}</label>
-      <div className='relative z-20 bg-white dark:bg-form-input'>
-        <Select
-          data-testid='select-model-type'
-          classNamePrefix='react-select-model-type'
-          options={selectOptions}
-          onChange={handleChange}
-          className='pt-1 pb-1'
-          defaultValue={selectOptions[0]}
-          isSearchable={true}
-          isClearable={false}
-          styles={customStyles}
-        />
-      </div>
+      {selectOptions && (
+        <>
+          <label className='mb-3 block text-black dark:text-white'>{`Select  ${propertyName}`}</label>
+          <div className='relative z-20 bg-white dark:bg-form-input'>
+            <Select
+              data-testid='select-model-type'
+              classNamePrefix='react-select-model-type'
+              options={selectOptions}
+              onChange={handleChange}
+              className='pt-1 pb-1'
+              defaultValue={selectOptions[0]}
+              isSearchable={true}
+              isClearable={false}
+              styles={customStyles}
+            />
+          </div>
+        </>
+      )}
     </>
   );
 };

@@ -78,7 +78,11 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
                         propertyName={propertyName}
                         setAddOrUpdateModel={setAddOrUpdateModel}
                       />
-                      <DynamicForm propertySchemasList={propertySchemasList} addOrUpdateModel={addOrUpdateModel} />
+                      <DynamicForm
+                        propertySchemasList={propertySchemasList}
+                        addOrUpdateModel={addOrUpdateModel}
+                        setAddOrUpdateModel={setAddOrUpdateModel}
+                      />
                     </div>
                   </div>
                 </div>

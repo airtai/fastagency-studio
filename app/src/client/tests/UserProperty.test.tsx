@@ -250,5 +250,12 @@ describe('UserProperty', () => {
     await waitFor(() => {
       expect(getByText('AzureOAIAPIKey')).toBeInTheDocument();
     });
+
+    // on cancel button click, the form should be closed
+    const cancelButton = getByText('Cancel');
+    fireEvent.click(cancelButton);
+
+    expect(screen.getByText('Add Secret')).toBeInTheDocument();
+    expect(screen.getByText('No Secrets found. Please add one.')).toBeInTheDocument();
   });
 });

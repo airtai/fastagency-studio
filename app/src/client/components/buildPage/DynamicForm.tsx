@@ -1,140 +1,43 @@
-import React, { useEffect, useState } from 'react';
-
-import _ from 'lodash';
-import type { FieldApi } from '@tanstack/react-form';
-import { useForm } from '@tanstack/react-form';
-
-import { validateForm } from 'wasp/client/operations';
+import React, { useMemo } from 'react';
 import { ListOfSchemas, Schema } from '../../interfaces/BuildPageInterfacesNew';
-import { PropertySchemaParser } from './PropertySchemaParser';
-import { TextInput } from '../form/TextInput';
-import { SECRETS_TO_MASK } from '../../utils/constants';
+import { useFormLogic } from './useFormLogic';
+import { FormField } from './FormField';
 
-export function getDefaultValues(schema: Schema | {}) {
-  const defaultValues: { [key: string]: any } = {};
-
-  if ('json_schema' in schema) {
-    Object.entries(schema.json_schema.properties).forEach(([key, property]: [string, any]) => {
-      defaultValues[key] = property.default || '';
-    });
-  }
-  return defaultValues;
-}
-
-type ValidationError = {
-  type: string;
-  loc: string[];
-  msg: string;
-  input: any;
-  url: string;
-  ctx?: any;
-};
-
-type ErrorOutput = { [key: string]: string };
-
-export function parseValidationErrors(errors: ValidationError[]): ErrorOutput {
-  const result: ErrorOutput = {};
-  errors.forEach((error) => {
-    const key = error.loc[error.loc.length - 1]; // Using the last item in 'loc' array as the key
-    result[key] = error.msg;
-  });
-  return result;
-}
-
-function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
-  return (
-    <>
-      {field.state.meta.isTouched && field.state.meta.errors.length ? (
-        <em role='alert' className='text-red-600'>
-          {field.state.meta.errors.join(',')}
-        </em>
-      ) : null}
-      {field.state.meta.isValidating ? 'Validating...' : null}
-    </>
-  );
-}
-
-export const DynamicForm = ({
-  propertySchemasList,
-  addOrUpdateModel,
-}: {
+interface DynamicFormProps {
   propertySchemasList: ListOfSchemas;
   addOrUpdateModel: string;
+  setAddOrUpdateModel: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+export const DynamicForm: React.FC<DynamicFormProps> = ({
+  propertySchemasList,
+  addOrUpdateModel,
+  setAddOrUpdateModel,
 }) => {
-  const [defaultValues, setDefaultValues] = useState<{ [key: string]: any }>({});
-  const propertySchemaParser = new PropertySchemaParser(propertySchemasList);
-  const schema = propertySchemaParser.getSchemaForModel(addOrUpdateModel);
+  const { form, schema, handleCancel } = useFormLogic(propertySchemasList, addOrUpdateModel, setAddOrUpdateModel);
 
-  const form = useForm({
-    defaultValues: defaultValues,
-    onSubmit: async ({ value, formApi }) => {
-      try {
-        const validationURL: string = `models/${propertySchemasList.name}/${addOrUpdateModel}/validate`;
-        const isSecretUpdate = false;
-        const data = value;
-        const response = await validateForm({ data, validationURL, isSecretUpdate });
-        console.log('No errors. can submit the form');
-        // form can be added to the database here
-      } catch (error: any) {
-        try {
-          const errorMsgObj = JSON.parse(error.message);
-          const errors = parseValidationErrors(errorMsgObj);
-          Object.entries(errors).forEach(([key, value]) => {
-            formApi.setFieldMeta(key, (meta) => ({
-              ...meta,
-              errorMap: { onChange: value },
-            }));
-          });
-        } catch (e: any) {
-          // set form level error. something went wrong. Please try again later. Unable to submit the form
-          console.log(e);
-        }
-      }
-    },
-  });
-
-  useEffect(() => {
-    form.reset();
-    setDefaultValues(getDefaultValues(schema));
-  }, [schema]);
-
-  const generateHTML = (schema: Schema | {}) => {
+  const formFields = useMemo(() => {
     if ('json_schema' in schema) {
       return Object.entries(schema.json_schema.properties).map(([key, property]: [string, any]) => {
         if (key === 'uuid') {
           return null;
         }
+
         return (
-          <div key={key} className='w-full mt-2'>
-            <form.Field
-              //@ts-ignore
-              name={`${key}`}
-              children={(field) => (
-                <>
-                  <label htmlFor={key}>{property.title}</label>
-                  <TextInput
-                    id={key}
-                    // @ts-ignore
-                    value={field.state.value}
-                    // @ts-ignore
-                    onChange={(e) => field.handleChange(e)}
-                    type={_.includes(SECRETS_TO_MASK, key) && typeof property.type === 'string' ? 'password' : 'text'}
-                    placeholder={property.description || ''}
-                  />
-                  <FieldInfo field={field} />
-                </>
-              )}
-              validators={{
-                onChange: ({ value }) => undefined,
-              }}
-            />
-          </div>
+          <form.Field
+            key={key}
+            name={key}
+            children={(field) => <FormField field={field} property={property} fieldKey={key} />}
+            validators={{
+              onChange: ({ value }) => undefined,
+            }}
+          />
         );
       });
     } else {
       return null;
     }
-  };
+  }, [schema, form]);
 
   return (
     <form
@@ -144,7 +47,7 @@ export const DynamicForm = ({
         form.handleSubmit();
       }}
     >
-      {generateHTML(schema)}
+      {formFields}
       <form.Subscribe
         selector={(state) => [state.canSubmit, state.isSubmitting]}
         children={([canSubmit, isSubmitting]) => (
@@ -153,7 +56,7 @@ export const DynamicForm = ({
               <button
                 className='rounded-md px-3.5 py-2.5 text-sm border border-airt-error text-airt-primary hover:bg-opacity-10 hover:bg-airt-error shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
                 type='reset'
-                onClick={() => form.reset()}
+                onClick={handleCancel}
               >
                 Cancel
               </button>

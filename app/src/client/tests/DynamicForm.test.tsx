@@ -70,7 +70,13 @@ describe('DynamicForm', () => {
   });
 
   it('renders form fields based on the AnthropicAPIKey schema', () => {
-    renderInContext(<DynamicForm propertySchemasList={mockPropertySchemasList} addOrUpdateModel='AnthropicAPIKey' />);
+    renderInContext(
+      <DynamicForm
+        propertySchemasList={mockPropertySchemasList}
+        addOrUpdateModel='AnthropicAPIKey'
+        setAddOrUpdateModel={vi.fn()}
+      />
+    );
     expect(screen.getByLabelText('Name')).toBeInTheDocument();
     expect(screen.getByLabelText('Api Key')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('The name of the item')).toBeInTheDocument();
@@ -78,7 +84,13 @@ describe('DynamicForm', () => {
   });
 
   it('submits the form with valid data for AnthropicAPIKey', async () => {
-    renderInContext(<DynamicForm propertySchemasList={mockPropertySchemasList} addOrUpdateModel='AnthropicAPIKey' />);
+    renderInContext(
+      <DynamicForm
+        propertySchemasList={mockPropertySchemasList}
+        addOrUpdateModel='AnthropicAPIKey'
+        setAddOrUpdateModel={vi.fn()}
+      />
+    );
 
     await userEvent.type(screen.getByLabelText('Name'), 'My Anthropic Key');
     await userEvent.type(screen.getByLabelText('Api Key'), 'anthropic-api-key-123');
@@ -105,7 +117,13 @@ describe('DynamicForm', () => {
 
     const user = userEvent.setup();
 
-    renderInContext(<DynamicForm propertySchemasList={mockPropertySchemasList} addOrUpdateModel='AnthropicAPIKey' />);
+    renderInContext(
+      <DynamicForm
+        propertySchemasList={mockPropertySchemasList}
+        addOrUpdateModel='AnthropicAPIKey'
+        setAddOrUpdateModel={vi.fn()}
+      />
+    );
 
     const submitButton = screen.getByTestId('form-submit-button');
     await user.click(submitButton);
@@ -117,7 +135,14 @@ describe('DynamicForm', () => {
 
   it('resets the form when cancel button is clicked', async () => {
     const user = userEvent.setup();
-    renderInContext(<DynamicForm propertySchemasList={mockPropertySchemasList} addOrUpdateModel='AnthropicAPIKey' />);
+    const setAddOrUpdateModel = vi.fn();
+    renderInContext(
+      <DynamicForm
+        propertySchemasList={mockPropertySchemasList}
+        addOrUpdateModel='AnthropicAPIKey'
+        setAddOrUpdateModel={setAddOrUpdateModel}
+      />
+    );
 
     await user.type(screen.getByLabelText('Name'), 'My Anthropic Key');
     await user.type(screen.getByLabelText('Api Key'), 'anthropic-api-key-123');
@@ -127,10 +152,17 @@ describe('DynamicForm', () => {
 
     expect(screen.getByLabelText('Name')).toHaveValue('');
     expect(screen.getByLabelText('Api Key')).toHaveValue('');
+    expect(setAddOrUpdateModel).toHaveBeenCalledWith(null);
   });
 
   it('masks the API key input', () => {
-    renderInContext(<DynamicForm propertySchemasList={mockPropertySchemasList} addOrUpdateModel='AnthropicAPIKey' />);
+    renderInContext(
+      <DynamicForm
+        propertySchemasList={mockPropertySchemasList}
+        addOrUpdateModel='AnthropicAPIKey'
+        setAddOrUpdateModel={vi.fn()}
+      />
+    );
 
     const apiKeyInput = screen.getByLabelText('Api Key');
     expect(apiKeyInput).toHaveAttribute('type', 'password');

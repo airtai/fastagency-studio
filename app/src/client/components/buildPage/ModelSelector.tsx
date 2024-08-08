@@ -27,12 +27,13 @@ export const ModelSelector = ({
   };
 
   const activeModel = parser?.getActiveModel();
+  const header = propertyHeader === 'Llm' ? 'Select LLM' : `Select ${propertyHeader}`;
 
   return (
     <>
       {selectOptions && (
         <>
-          <label className='mb-3 block text-black dark:text-white'>{`Select ${propertyHeader}`}</label>
+          <label className='mb-3 block text-black dark:text-white'>{header}</label>
           <div className='relative z-20 bg-white dark:bg-form-input'>
             <Select
               data-testid='select-model-type'

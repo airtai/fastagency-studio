@@ -41,8 +41,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   cancelButtonRef,
   onDeleteCallback,
 }) => {
-  console.log('jsonSchema');
-  console.log(JSON.stringify(jsonSchema));
   return (
     <form onSubmit={handleSubmit} className='px-6.5 py-2'>
       {Object.entries(jsonSchema.properties).map(([key, property]) => {

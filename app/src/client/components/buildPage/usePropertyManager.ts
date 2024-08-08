@@ -52,10 +52,11 @@ export const usePropertyManager = (
           ? parser?.getSecretUpdateValidationURL() || ''
           : parser?.getValidationURL() || '';
         const data = value;
-        const validatedData = await validateForm({ data, validationURL, isSecretUpdate });
-        const propertyUUIDToUpdate = parser?.getActiveModelObj()?.uuid;
-        await onSuccessCallback(validatedData, propertyName, modelName, propertyUUIDToUpdate);
-        await resetAndRefetchProperties();
+        console.log(data);
+        // const validatedData = await validateForm({ data, validationURL, isSecretUpdate });
+        // const propertyUUIDToUpdate = parser?.getActiveModelObj()?.uuid;
+        // await onSuccessCallback(validatedData, propertyName, modelName, propertyUUIDToUpdate);
+        // await resetAndRefetchProperties();
       } catch (error: any) {
         try {
           const errorMsgObj = JSON.parse(error.message);

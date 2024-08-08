@@ -1,4 +1,5 @@
 import React, { useMemo, useRef } from 'react';
+import _ from 'lodash';
 import { PropertySchemaParser, SetActiveModelType } from './PropertySchemaParser';
 import { useEscapeKeyHandler } from '../../hooks/useEscapeKeyHandler';
 import { usePropertyManager } from './usePropertyManager';
@@ -31,7 +32,10 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel
         if (key === 'uuid') {
           return null;
         }
-
+        const isReferenceField = _.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf');
+        if (isReferenceField) {
+          console.log(property);
+        }
         return (
           <form.Field
             key={key}

@@ -26,6 +26,8 @@ export const ModelSelector = ({
     }
   };
 
+  const activeModel = parser?.getActiveModel();
+
   return (
     <>
       {selectOptions && (
@@ -38,7 +40,7 @@ export const ModelSelector = ({
               options={selectOptions}
               onChange={handleChange}
               className='pt-1 pb-1'
-              defaultValue={selectOptions[0]}
+              defaultValue={activeModel ? { value: activeModel, label: activeModel } : selectOptions[0]}
               isSearchable={true}
               isClearable={false}
               styles={customStyles}

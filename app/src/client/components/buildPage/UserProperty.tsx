@@ -14,7 +14,7 @@ import LoadingComponent from '../LoadingComponent';
 import { usePropertySchemaParser } from './usePropertySchemaParser';
 
 import { filerOutComponentData, capitalizeFirstLetter, filterPropertiesByType } from '../buildPage/buildPageUtilsNew';
-import { PropertySchemaParser } from './PropertySchemaParser';
+import { UserFlow } from './PropertySchemaParser';
 
 interface Props {
   activeProperty: string;
@@ -27,13 +27,15 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
   const propertyName = activeProperty === 'llm' ? 'LLM' : capitalizeFirstLetter(activeProperty);
   const propertySchemasList = filerOutComponentData(propertiesSchema, activeProperty);
 
-  const { parser, activeModel, setActiveModel } = usePropertySchemaParser(propertySchemasList);
-
-  // const propertySchemaParser = new PropertySchemaParser(propertySchemasList);
+  const { parser, activeModel, createParser } = usePropertySchemaParser(propertySchemasList);
 
   const { data: userOwnedProperties, refetch: refetchUserOwnedProperties, isLoading: isLoading } = useQuery(getModels);
   const userOwnedPropertiesByType =
     (userOwnedProperties && filterPropertiesByType(userOwnedProperties, activeProperty)) || [];
+
+  const setActiveModel = (model: string | null, userFlow: UserFlow = 'add_model') => {
+    createParser({ propertySchemasList, activeModel: model, userFlow: userFlow });
+  };
 
   const addProperty = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -42,12 +44,19 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
 
   const getSelectedUserProperty = (index: number) => {
     const selectedProperty = userOwnedPropertiesByType[index];
-    setActiveModel(selectedProperty.model_name);
+    createParser({
+      propertySchemasList,
+      activeModel: selectedProperty.model_name,
+      activeModelObj: selectedProperty,
+      userFlow: 'update_model',
+    });
   };
 
   useEffect(() => {
     setActiveModel(null);
   }, [sideNavItemClickCount]);
+
+  const title = parser?.getUserFlow() === 'add_model' ? `Add a new ${propertyName}` : `Update ${propertyName}`;
 
   return (
     <>
@@ -82,7 +91,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
               ) : (
                 <div className='flex flex-col w-full gap-9'>
                   <div className='flex flex-col gap-5.5 px-6.5'>
-                    <h2 className='text-lg font-semibold text-airt-primary mt-6 '>{`Add a new ${propertyName}`}</h2>
+                    <h2 className='text-lg font-semibold text-airt-primary mt-6 '>{`${title}`}</h2>
                     <div className='relative z-20 bg-white dark:bg-form-input'>
                       <ModelSelector parser={parser} setActiveModel={setActiveModel} />
                       <DynamicForm

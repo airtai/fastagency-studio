@@ -1,6 +1,6 @@
 import { ListOfSchemas, Schema } from '../../interfaces/BuildPageInterfacesNew';
 
-type UserFlow = 'update_model' | 'add_model';
+export type UserFlow = 'update_model' | 'add_model';
 
 export type SetActiveModelType = (model: string | null) => void;
 
@@ -15,23 +15,49 @@ export class PropertySchemaParser {
   private userFlow: UserFlow;
   private activeModel: string | null;
   private propertyName: string;
+  private activeModelObj: any;
+  private schema: Schema | undefined;
 
   constructor(propertySchemas: ListOfSchemas) {
     this.propertySchemas = propertySchemas;
+    this.propertyName = propertySchemas.name;
     this.userFlow = 'add_model';
     this.activeModel = null;
-    this.propertyName = propertySchemas.name;
+    this.activeModelObj = null;
   }
 
-  getSchemaForModel(model: string): Schema | undefined {
-    return this.propertySchemas.schemas.find((s) => s.name === model);
+  getSchemaForModel(): Schema | undefined {
+    if (!this.activeModel) {
+      return undefined;
+    }
+
+    this.schema = this.propertySchemas.schemas.find((s) => s.name === this.activeModel);
+    return this.schema;
   }
 
-  getDefaultValues(schema: Schema): { [key: string]: any } {
+  getSchema(): Schema {
+    if (this.schema) {
+      return this.schema;
+    }
+
+    return this.propertySchemas.schemas[0];
+  }
+
+  getDefaultValues(): { [key: string]: any } {
     const defaultValues: { [key: string]: any } = {};
+    const schema = this.getSchema();
     if ('json_schema' in schema) {
       Object.entries(schema.json_schema.properties).forEach(([key, property]: [string, any]) => {
-        defaultValues[key] = property.default || '';
+        if (this.activeModelObj && this.activeModelObj.json_str) {
+          // If activeModelObj exists and has json_str, use its values
+          defaultValues[key] =
+            this.activeModelObj.json_str[key] !== undefined
+              ? this.activeModelObj.json_str[key]
+              : property.default || '';
+        } else {
+          // If activeModelObj is null or doesn't have json_str, use schema defaults
+          defaultValues[key] = property.default || '';
+        }
       });
     }
     return defaultValues;
@@ -67,5 +93,17 @@ export class PropertySchemaParser {
 
   getValidationURL(): string {
     return `models/${this.propertyName}/${this.activeModel}/validate`;
+  }
+
+  setActiveModelObj(obj: any): void {
+    this.activeModelObj = obj;
+  }
+
+  getActiveModelObj(): any {
+    return this.activeModelObj;
+  }
+
+  getSecretUpdateValidationURL(): string {
+    return `models/${this.propertyName}/${this.activeModel}/${this.activeModelObj.uuid}/validate`;
   }
 }

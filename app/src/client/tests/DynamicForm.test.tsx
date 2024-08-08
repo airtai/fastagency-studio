@@ -1,11 +1,10 @@
 import React from 'react';
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { renderInContext } from 'wasp/client/test';
-import { validateForm } from 'wasp/client/operations';
 
 import * as operations from 'wasp/client/operations';
 

@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { PropertySchemaParser } from './PropertySchemaParser';
+import { PropertySchemaParser, UserFlow } from './PropertySchemaParser';
 import { ListOfSchemas } from '../../interfaces/BuildPageInterfacesNew';
+
+interface CustomInitOptions {
+  propertySchemasList: ListOfSchemas;
+  activeModel: string | null;
+  userFlow: UserFlow;
+  activeModelObj?: any;
+}
 
 export function usePropertySchemaParser(propertySchemasList: ListOfSchemas) {
   const [activeModel, setActiveModel] = useState<string | null>(null);
@@ -11,23 +18,27 @@ export function usePropertySchemaParser(propertySchemasList: ListOfSchemas) {
     const newParser = new PropertySchemaParser(propertySchemasList);
     newParser.setActiveModel(activeModel);
     setParser(newParser);
-  }, [propertySchemasList, activeModel]);
+  }, [propertySchemasList]);
 
-  const setActiveModelWrapper = useCallback((model: string | null) => {
-    setActiveModel(model);
+  const createParser = useCallback((customOptions: CustomInitOptions) => {
+    const newParser = new PropertySchemaParser(customOptions.propertySchemasList);
+    newParser.setActiveModel(customOptions.activeModel);
+
+    if (customOptions.userFlow) {
+      newParser.setUserFlow(customOptions.userFlow);
+    }
+
+    if (customOptions.activeModelObj) {
+      newParser.setActiveModelObj(customOptions.activeModelObj);
+    }
+
+    setParser(newParser);
+    setActiveModel(customOptions.activeModel);
   }, []);
-
-  // Expose other methods of PropertySchemaParser as needed
-  const getSchemaForModel = useCallback(
-    (modelName: string) => {
-      return parser?.getSchemaForModel(modelName);
-    },
-    [parser]
-  );
 
   return {
     parser,
     activeModel,
-    setActiveModel: setActiveModelWrapper,
+    createParser,
   };
 }

@@ -34,6 +34,7 @@ describe('PropertySchemaParser', () => {
       ],
     };
     const propertySchemaParser = new PropertySchemaParser(property);
+    propertySchemaParser.setActiveModel('AzureOAIAPIKey');
     expect(propertySchemaParser).toBeInstanceOf(PropertySchemaParser);
 
     const expectedSchema = {
@@ -49,8 +50,7 @@ describe('PropertySchemaParser', () => {
       },
     };
 
-    const model = 'AzureOAIAPIKey';
-    const schema = propertySchemaParser.getSchemaForModel(model);
+    const schema = propertySchemaParser.getSchemaForModel();
     expect(schema).toEqual(expectedSchema);
 
     // @ts-ignore

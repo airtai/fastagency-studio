@@ -7,6 +7,7 @@ interface CustomInitOptions {
   activeModel: string | null;
   userFlow: UserFlow;
   activeModelObj?: any;
+  userProperties: any;
 }
 
 export function usePropertySchemaParser(propertySchemasList: ListOfSchemas) {
@@ -30,6 +31,10 @@ export function usePropertySchemaParser(propertySchemasList: ListOfSchemas) {
 
     if (customOptions.activeModelObj) {
       newParser.setActiveModelObj(customOptions.activeModelObj);
+    }
+
+    if (customOptions.userProperties) {
+      newParser.setUserProperties(customOptions.userProperties);
     }
 
     setParser(newParser);

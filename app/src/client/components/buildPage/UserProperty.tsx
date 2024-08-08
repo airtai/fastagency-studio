@@ -29,12 +29,11 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
 
   const { parser, activeModel, createParser } = usePropertySchemaParser(propertySchemasList);
 
-  const { data: userOwnedProperties, refetch: refetchUserOwnedProperties, isLoading: isLoading } = useQuery(getModels);
-  const userOwnedPropertiesByType =
-    (userOwnedProperties && filterPropertiesByType(userOwnedProperties, activeProperty)) || [];
+  const { data: userProperties, refetch: refetchUserProperties, isLoading: isLoading } = useQuery(getModels);
+  const userPropertiesByType = (userProperties && filterPropertiesByType(userProperties, activeProperty)) || [];
 
   const setActiveModel = (model: string | null, userFlow: UserFlow = 'add_model') => {
-    createParser({ propertySchemasList, activeModel: model, userFlow: userFlow });
+    createParser({ propertySchemasList, activeModel: model, userFlow: userFlow, userProperties });
   };
 
   const addProperty = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -43,12 +42,13 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
   };
 
   const getSelectedUserProperty = (index: number) => {
-    const selectedProperty = userOwnedPropertiesByType[index];
+    const selectedProperty = userPropertiesByType[index];
     createParser({
       propertySchemasList,
       activeModel: selectedProperty.model_name,
       activeModelObj: selectedProperty,
       userFlow: 'update_model',
+      userProperties: userProperties,
     });
   };
 
@@ -72,16 +72,16 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
                   <div className={`${false ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
                     <Button onClick={addProperty} label={`Add ${propertyName}`} />
                   </div>
-                  {userOwnedPropertiesByType.length === 0 && (
+                  {userPropertiesByType.length === 0 && (
                     <div className='flex flex-col gap-3'>
                       {/* <h2 className='text-lg font-semibold text-airt-primary'>Available Models</h2> */}
                       <p className='text-airt-primary mt-1 -mt-3 opacity-50'>{`No ${propertyHeader} found. Please add one.`}</p>
                     </div>
                   )}
-                  {userOwnedPropertiesByType.length > 0 && (
+                  {userPropertiesByType.length > 0 && (
                     <div className='flex-col flex w-full'>
                       <ModelsList
-                        models={userOwnedPropertiesByType}
+                        models={userPropertiesByType}
                         onSelectModel={getSelectedUserProperty}
                         type_name={propertyName}
                       />
@@ -97,7 +97,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
                       <DynamicForm
                         parser={parser}
                         setActiveModel={setActiveModel}
-                        refetchUserOwnedProperties={refetchUserOwnedProperties}
+                        refetchUserProperties={refetchUserProperties}
                       />
                     </div>
                   </div>

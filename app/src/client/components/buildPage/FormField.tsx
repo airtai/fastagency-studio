@@ -26,6 +26,7 @@ function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
 }
 
 const getSelectObject = (val: string): {} => {
+  // if ref property, the value should be the uuid and key should be the name
   return { value: val, label: val };
 };
 

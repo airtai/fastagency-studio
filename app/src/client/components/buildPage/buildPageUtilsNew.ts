@@ -15,9 +15,9 @@ export const capitalizeFirstLetter = (s: string): string => {
   return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
-export const filterPropertiesByType = (userOwnedProperties: any, activeProperty: string) => {
-  if (userOwnedProperties) {
-    const properties = _.filter(userOwnedProperties, ['type_name', activeProperty]);
+export const filterPropertiesByType = (userProperties: any, activeProperty: string) => {
+  if (userProperties) {
+    const properties = _.filter(userProperties, ['type_name', activeProperty]);
     return _.sortBy(properties, ['created_at']);
   }
 };

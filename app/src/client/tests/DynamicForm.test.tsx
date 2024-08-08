@@ -71,7 +71,7 @@ describe('DynamicForm', () => {
     const parser = new PropertySchemaParser(mockPropertySchemasList);
     parser.setActiveModel('AnthropicAPIKey');
     const mockSetActiveModel = vi.fn();
-    const mockRefetchUserOwnedProperties = vi.fn();
+    const mockRefetchUserProperties = vi.fn();
 
     vi.mocked(operations.validateForm).mockResolvedValue({});
     vi.mocked(operations.addUserModels).mockResolvedValue({});
@@ -80,7 +80,7 @@ describe('DynamicForm', () => {
       <DynamicForm
         parser={parser}
         setActiveModel={mockSetActiveModel}
-        refetchUserOwnedProperties={mockRefetchUserOwnedProperties}
+        refetchUserProperties={mockRefetchUserProperties}
       />
     );
 
@@ -102,14 +102,14 @@ describe('DynamicForm', () => {
 
     // Check if the form was reset and properties were refetched
     expect(mockSetActiveModel).toHaveBeenCalledWith(null);
-    expect(mockRefetchUserOwnedProperties).toHaveBeenCalled();
+    expect(mockRefetchUserProperties).toHaveBeenCalled();
   });
 
   it('renders form fields and handles successful submission', async () => {
     const parser = new PropertySchemaParser(mockPropertySchemasList);
     parser.setActiveModel('AnthropicAPIKey');
     const mockSetActiveModel = vi.fn();
-    const mockRefetchUserOwnedProperties = vi.fn();
+    const mockRefetchUserProperties = vi.fn();
 
     vi.mocked(operations.validateForm).mockResolvedValue({});
     vi.mocked(operations.addUserModels).mockResolvedValue({});
@@ -120,7 +120,7 @@ describe('DynamicForm', () => {
       <DynamicForm
         parser={parser}
         setActiveModel={mockSetActiveModel}
-        refetchUserOwnedProperties={mockRefetchUserOwnedProperties}
+        refetchUserProperties={mockRefetchUserProperties}
       />
     );
 
@@ -137,7 +137,7 @@ describe('DynamicForm', () => {
       expect(operations.validateForm).toHaveBeenCalled();
       expect(operations.addUserModels).toHaveBeenCalled();
       expect(mockSetActiveModel).toHaveBeenCalledWith(null);
-      expect(mockRefetchUserOwnedProperties).toHaveBeenCalled();
+      expect(mockRefetchUserProperties).toHaveBeenCalled();
     });
   });
 
@@ -145,7 +145,7 @@ describe('DynamicForm', () => {
     const parser = new PropertySchemaParser(mockPropertySchemasList);
     parser.setActiveModel('AnthropicAPIKey');
     const mockSetActiveModel = vi.fn();
-    const mockRefetchUserOwnedProperties = vi.fn();
+    const mockRefetchUserProperties = vi.fn();
 
     const mockError = {
       message: JSON.stringify([{ loc: ['name'], msg: 'Name is required', type: 'value_error' }]),
@@ -159,7 +159,7 @@ describe('DynamicForm', () => {
       <DynamicForm
         parser={parser}
         setActiveModel={mockSetActiveModel}
-        refetchUserOwnedProperties={mockRefetchUserOwnedProperties}
+        refetchUserProperties={mockRefetchUserProperties}
       />
     );
 
@@ -171,14 +171,14 @@ describe('DynamicForm', () => {
     });
 
     expect(mockSetActiveModel).not.toHaveBeenCalled();
-    expect(mockRefetchUserOwnedProperties).not.toHaveBeenCalled();
+    expect(mockRefetchUserProperties).not.toHaveBeenCalled();
   });
 
   it('calls handleCancel when cancel button is clicked', async () => {
     const parser = new PropertySchemaParser(mockPropertySchemasList);
     parser.setActiveModel('AnthropicAPIKey');
     const mockSetActiveModel = vi.fn();
-    const mockRefetchUserOwnedProperties = vi.fn();
+    const mockRefetchUserProperties = vi.fn();
 
     const user = userEvent.setup();
 
@@ -186,7 +186,7 @@ describe('DynamicForm', () => {
       <DynamicForm
         parser={parser}
         setActiveModel={mockSetActiveModel}
-        refetchUserOwnedProperties={mockRefetchUserOwnedProperties}
+        refetchUserProperties={mockRefetchUserProperties}
       />
     );
 
@@ -205,13 +205,13 @@ describe('DynamicForm', () => {
     const parser = new PropertySchemaParser(mockPropertySchemasList);
     parser.setActiveModel('AnthropicAPIKey');
     const mockSetActiveModel = vi.fn();
-    const mockRefetchUserOwnedProperties = vi.fn();
+    const mockRefetchUserProperties = vi.fn();
 
     renderInContext(
       <DynamicForm
         parser={parser}
         setActiveModel={mockSetActiveModel}
-        refetchUserOwnedProperties={mockRefetchUserOwnedProperties}
+        refetchUserProperties={mockRefetchUserProperties}
       />
     );
 

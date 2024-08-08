@@ -10,7 +10,7 @@ import NotificationBox from '../NotificationBox';
 interface DynamicFormProps {
   parser: PropertySchemaParser | null;
   setActiveModel: SetActiveModelType;
-  refetchUserOwnedProperties: () => void;
+  refetchUserProperties: () => void;
 }
 
 const LoaderContainer = () => (
@@ -19,11 +19,11 @@ const LoaderContainer = () => (
   </div>
 );
 
-export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel, refetchUserOwnedProperties }) => {
+export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel, refetchUserProperties }) => {
   const { form, schema, handleCtaAction, isLoading, setNotification, notification } = usePropertyManager(
     parser,
     setActiveModel,
-    refetchUserOwnedProperties
+    refetchUserProperties
   );
 
   const formFields = useMemo(() => {
@@ -32,15 +32,19 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel
         if (key === 'uuid') {
           return null;
         }
-        const isReferenceField = _.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf');
-        if (isReferenceField) {
-          console.log(property);
+        const isReferenceField = _.has(property, '$ref');
+        if (!isReferenceField) {
+          // console.log(property);
+          // parser.setUserRefsProperties(property['$ref']); // #/$defs/AzureOAIAPIKeyRef // [{uuid: '123', name: 'AzureOAIA', type_name: 'AzureOAIA', json_str: {}}]
+          // const refProperties = parser.getUserRefsProperties();  // {"default":"a","description":"","enum":[{key: "a": "value": "uuid"}],"title":"Api Key"}
+        } else {
+          // if its an enum field do all the data formatting here property.enum, property.default = {key: "a": "value": "a"}
         }
         return (
           <form.Field
             key={key}
             name={key}
-            children={(field) => <FormField field={field} property={property} fieldKey={key} />}
+            children={(field) => <FormField field={field} property={property} fieldKey={key} />} // pass if it is a ref property
             validators={{
               onChange: ({ value }) => undefined,
             }}

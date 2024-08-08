@@ -33,7 +33,7 @@ export const onSuccessCallback = async (
 export const usePropertyManager = (
   parser: PropertySchemaParser | null,
   setActiveModel: SetActiveModelType,
-  refetchUserOwnedProperties: any
+  refetchUserProperties: any
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
@@ -87,7 +87,7 @@ export const usePropertyManager = (
 
   const resetAndRefetchProperties = async () => {
     resetFormState();
-    refetchUserOwnedProperties();
+    refetchUserProperties();
   };
 
   const deleteProperty = async () => {

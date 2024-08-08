@@ -81,22 +81,28 @@ export class PropertySchemaParser {
           // Handle reference fields
           const refType = property.$ref.split('/').pop().replace(/Ref$/, ''); // Extract reference type
           const matchingProperties = this.userProperties?.filter((prop) => prop.model_name === refType) || [];
-          const enumValues = matchingProperties.map((prop) => prop.json_str.name);
+          const enumValues = matchingProperties.map((prop) => ({
+            value: prop.uuid,
+            label: prop.json_str.name,
+          }));
           const defaultValue = enumValues.length > 0 ? enumValues[0] : null;
+          const initialFormValue = defaultValue?.label || '';
 
           this.refFields[key] = {
             property: matchingProperties,
             htmlForSelectBox: {
               description: '',
-              enum: enumValues.length > 0 ? enumValues : null,
+              enum: enumValues,
               default: defaultValue,
               title: this.capitalizeWords(key),
             },
+            initialFormValue: initialFormValue,
           };
-          defaultValues[key] = defaultValue || '';
+          defaultValues[key] = initialFormValue;
         } else {
           // Handle non-reference fields
           if (this.activeModelObj && this.activeModelObj.json_str) {
+            // llm update the default value should follow the format
             defaultValues[key] =
               key in this.activeModelObj.json_str
                 ? this.activeModelObj.json_str[key]
@@ -164,5 +170,9 @@ export class PropertySchemaParser {
 
   getRefFields(): { [key: string]: any } {
     return this.refFields;
+  }
+
+  getMatchingUserProperty(uuid: string): UserProperties | null {
+    return this.userProperties?.find((prop) => prop.uuid === uuid) || null;
   }
 }

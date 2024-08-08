@@ -33,18 +33,22 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel
           return null;
         }
         const isReferenceField = _.has(property, '$ref');
-        if (!isReferenceField) {
-          // console.log(property);
-          // parser.setUserRefsProperties(property['$ref']); // #/$defs/AzureOAIAPIKeyRef // [{uuid: '123', name: 'AzureOAIA', type_name: 'AzureOAIA', json_str: {}}]
-          // const refProperties = parser.getUserRefsProperties();  // {"default":"a","description":"","enum":[{key: "a": "value": "uuid"}],"title":"Api Key"}
+        let propertyCopy = Object.assign({}, property);
+        if (isReferenceField) {
+          const refFields = parser?.getRefFields();
+          if (refFields && refFields[key]) {
+            propertyCopy = refFields[key].htmlForSelectBox;
+          }
         } else {
-          // if its an enum field do all the data formatting here property.enum, property.default = {key: "a": "value": "a"}
+          if (propertyCopy.enum) {
+            propertyCopy.enum = propertyCopy.enum.map((item: any) => ({ value: item, label: item }));
+          }
         }
         return (
           <form.Field
             key={key}
             name={key}
-            children={(field) => <FormField field={field} property={property} fieldKey={key} />} // pass if it is a ref property
+            children={(field) => <FormField field={field} property={propertyCopy} fieldKey={key} />} // pass if it is a ref property
             validators={{
               onChange: ({ value }) => undefined,
             }}

@@ -278,7 +278,13 @@ describe('PropertySchemaParser', () => {
     expect(refFields).toEqual({
       api_key: {
         property: [userProperties[0]],
-        htmlForSelectBox: { default: 'secret', description: '', enum: ['secret'], title: 'Api Key' },
+        htmlForSelectBox: {
+          default: { value: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b', label: 'secret' },
+          description: '',
+          enum: [{ value: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b', label: 'secret' }],
+          title: 'Api Key',
+        },
+        initialFormValue: 'secret',
       },
     });
   });
@@ -371,11 +377,23 @@ describe('PropertySchemaParser', () => {
     expect(refFields).toEqual({
       ref1: {
         property: [userProperties[0]],
-        htmlForSelectBox: { default: 'Ref1 Instance', description: '', enum: ['Ref1 Instance'], title: 'Ref1' },
+        htmlForSelectBox: {
+          default: { value: '1', label: 'Ref1 Instance' },
+          description: '',
+          enum: [{ value: '1', label: 'Ref1 Instance' }],
+          title: 'Ref1',
+        },
+        initialFormValue: 'Ref1 Instance',
       },
       ref2: {
         property: [userProperties[1]],
-        htmlForSelectBox: { default: 'Ref2 Instance', description: '', enum: ['Ref2 Instance'], title: 'Ref2' },
+        htmlForSelectBox: {
+          default: { value: '2', label: 'Ref2 Instance' },
+          description: '',
+          enum: [{ value: '2', label: 'Ref2 Instance' }],
+          title: 'Ref2',
+        },
+        initialFormValue: 'Ref2 Instance',
       },
     });
 
@@ -454,7 +472,7 @@ describe('PropertySchemaParser', () => {
     const refFields = parser.getRefFields();
 
     expect(refFields.ref.property).toHaveLength(0);
-    expect(refFields.ref.htmlForSelectBox.enum).toBeNull();
+    expect(refFields.ref.htmlForSelectBox.enum).toStrictEqual([]);
     expect(defaultValues).toEqual({
       name: '',
       ref: '',
@@ -523,7 +541,10 @@ describe('PropertySchemaParser', () => {
     const refFields = parser.getRefFields();
 
     expect(refFields.ref.property).toHaveLength(2);
-    expect(refFields.ref.htmlForSelectBox.enum).toEqual(['MultiRef Instance 1', 'MultiRef Instance 2']);
+    expect(refFields.ref.htmlForSelectBox.enum).toEqual([
+      { value: '1', label: 'MultiRef Instance 1' },
+      { value: '2', label: 'MultiRef Instance 2' },
+    ]);
     expect(defaultValues).toEqual({
       name: '',
       ref: 'MultiRef Instance 1',

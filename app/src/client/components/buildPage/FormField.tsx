@@ -43,8 +43,12 @@ export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey 
 
   useEffect(() => {
     if (property.enum) {
-      const opts = property.enum.map((option: string) => getSelectObject(option));
-      const optsDefault = opts.length > 0 ? (property.default ? getSelectObject(property.default) : opts[0]) : null;
+      const opts = property.enum;
+
+      let optsDefault = opts.length > 0 ? (property.default ? property.default : opts[0]) : null;
+      if (typeof optsDefault === 'string') {
+        optsDefault = getSelectObject(optsDefault);
+      }
 
       setSelectOptions(opts);
       setDefaultValue(optsDefault);

@@ -42,6 +42,7 @@ export const usePropertyManager = (
   const schema = modelName ? parser?.getSchemaForModel() : null;
   const defaultValues = schema ? parser?.getDefaultValues() : {};
   const userFlow = parser?.getUserFlow();
+  const refFields = parser?.getRefFields();
 
   const form = useForm({
     defaultValues: defaultValues,
@@ -52,11 +53,26 @@ export const usePropertyManager = (
           ? parser?.getSecretUpdateValidationURL() || ''
           : parser?.getValidationURL() || '';
         const data = value;
-        console.log(data);
-        // const validatedData = await validateForm({ data, validationURL, isSecretUpdate });
-        // const propertyUUIDToUpdate = parser?.getActiveModelObj()?.uuid;
-        // await onSuccessCallback(validatedData, propertyName, modelName, propertyUUIDToUpdate);
-        // await resetAndRefetchProperties();
+
+        // here I need to check if the data[key] is a refFields
+        // send only the required fields to the server
+        if (refFields) {
+          Object.entries(data).forEach(([key, val]) => {
+            if (refFields[key]) {
+              const userProperty = parser?.getMatchingUserProperty(val) || refFields[key].property[0];
+              data[key] = {
+                name: userProperty.model_name,
+                type: userProperty.type_name,
+                uuid: userProperty.uuid,
+              };
+            }
+          });
+        }
+        const validatedData = await validateForm({ data, validationURL, isSecretUpdate });
+        const propertyUUIDToUpdate = parser?.getActiveModelObj()?.uuid;
+
+        await onSuccessCallback(validatedData, propertyName, modelName, propertyUUIDToUpdate);
+        await resetAndRefetchProperties();
       } catch (error: any) {
         try {
           const errorMsgObj = JSON.parse(error.message);

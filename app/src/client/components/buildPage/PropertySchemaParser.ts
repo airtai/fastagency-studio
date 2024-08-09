@@ -1,6 +1,7 @@
 import _ from 'lodash';
 
 import { ListOfSchemas, Schema } from '../../interfaces/BuildPageInterfacesNew';
+import { de } from '@faker-js/faker';
 
 export type UserFlow = 'update_model' | 'add_model';
 
@@ -35,6 +36,7 @@ export class PropertySchemaParser {
   private schema: Schema | undefined;
   private userProperties: UserProperties[] | null;
   private refFields: { [key: string]: any } = {};
+  private nonRefButDropdownFields: { [key: string]: any } = {};
 
   constructor(propertySchemas: ListOfSchemas) {
     this.propertySchemas = propertySchemas;
@@ -85,7 +87,20 @@ export class PropertySchemaParser {
             value: prop.uuid,
             label: prop.json_str.name,
           }));
-          const defaultValue = enumValues.length > 0 ? enumValues[0] : null;
+          let defaultValue = null;
+          if (this.activeModelObj && this.activeModelObj.json_str) {
+            const matchingUserProperty = this.getMatchingUserProperty(this.activeModelObj.json_str[key].uuid);
+            if (matchingUserProperty && key in this.activeModelObj.json_str) {
+              const label = matchingUserProperty.json_str.name;
+              const value = matchingUserProperty.uuid;
+              defaultValue = { label: label, value: value };
+            } else {
+              defaultValue = null;
+            }
+          } else {
+            defaultValue = enumValues.length > 0 ? enumValues[0] : null;
+          }
+
           const initialFormValue = defaultValue?.label || '';
 
           this.refFields[key] = {
@@ -101,15 +116,44 @@ export class PropertySchemaParser {
           defaultValues[key] = initialFormValue;
         } else {
           // Handle non-reference fields
-          if (this.activeModelObj && this.activeModelObj.json_str) {
-            // llm update the default value should follow the format
+          const isNonRefButDropDownField = !!(property as { enum?: any }).enum;
+          let defaultValue = null;
+          if (isNonRefButDropDownField) {
+            if (this.activeModelObj && this.activeModelObj.json_str) {
+              // dropdown - update
+              const existingValue = this.activeModelObj.json_str[key];
+              defaultValue = { label: existingValue, value: existingValue };
+            } else {
+              const defaultValueFromSchema = (property as { default?: any }).default;
+              defaultValue = defaultValueFromSchema
+                ? { label: defaultValueFromSchema, value: defaultValueFromSchema }
+                : null;
+            }
+            const enumValues = (property as { enum?: any }).enum.map((i: string) => ({ label: i, value: i }));
+            this.nonRefButDropdownFields[key] = {
+              htmlForSelectBox: {
+                description: '',
+                enum: enumValues,
+                default: defaultValue,
+                title: this.capitalizeWords(key),
+              },
+              initialFormValue: defaultValue?.value || null,
+            };
+            defaultValues[key] = defaultValue?.value || null;
+            // }
+            // if (this.activeModelObj && this.activeModelObj.json_str) {
+            //   // llm update the default value should follow the format
+            //   defaultValues[key] =
+            //     key in this.activeModelObj.json_str
+            //       ? this.activeModelObj.json_str[key]
+            //       : (property as { default?: any }).default || '';
+          } else {
             defaultValues[key] =
-              key in this.activeModelObj.json_str
+              this.activeModelObj && this.activeModelObj.json_str && key in this.activeModelObj.json_str
                 ? this.activeModelObj.json_str[key]
                 : (property as { default?: any }).default || '';
-          } else {
-            defaultValues[key] = (property as { default?: any }).default || '';
           }
+          // defaultValues[key] = initialFormValue;
         }
       });
     }
@@ -170,6 +214,10 @@ export class PropertySchemaParser {
 
   getRefFields(): { [key: string]: any } {
     return this.refFields;
+  }
+
+  getNonRefButDropdownFields(): { [key: string]: any } {
+    return this.nonRefButDropdownFields;
   }
 
   getMatchingUserProperty(uuid: string): UserProperties | null {

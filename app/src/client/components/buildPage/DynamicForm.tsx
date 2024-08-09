@@ -40,15 +40,16 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel
             propertyCopy = refFields[key].htmlForSelectBox;
           }
         } else {
-          if (propertyCopy.enum) {
-            propertyCopy.enum = propertyCopy.enum.map((item: any) => ({ value: item, label: item }));
+          const isNonRefButDropDownFields = parser?.getNonRefButDropdownFields();
+          if (isNonRefButDropDownFields && isNonRefButDropDownFields[key]) {
+            propertyCopy = isNonRefButDropDownFields[key].htmlForSelectBox;
           }
         }
         return (
           <form.Field
             key={key}
             name={key}
-            children={(field) => <FormField field={field} property={propertyCopy} fieldKey={key} />} // pass if it is a ref property
+            children={(field) => <FormField field={field} property={propertyCopy} fieldKey={key} />}
             validators={{
               onChange: ({ value }) => undefined,
             }}

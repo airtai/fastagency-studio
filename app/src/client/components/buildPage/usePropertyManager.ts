@@ -53,9 +53,6 @@ export const usePropertyManager = (
           ? parser?.getSecretUpdateValidationURL() || ''
           : parser?.getValidationURL() || '';
         const data = value;
-
-        // here I need to check if the data[key] is a refFields
-        // send only the required fields to the server
         if (refFields) {
           Object.entries(data).forEach(([key, val]) => {
             if (refFields[key]) {

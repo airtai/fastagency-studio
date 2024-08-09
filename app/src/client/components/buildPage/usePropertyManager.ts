@@ -105,7 +105,15 @@ export const usePropertyManager = (
 
   const deleteProperty = async () => {
     const activeModelObj = parser?.getActiveModelObj();
+
     if (activeModelObj) {
+      const referringProperty = parser?.findFirstReferringPropertyName(activeModelObj.uuid);
+      if (referringProperty) {
+        setNotification(
+          `Cannot delete ${activeModelObj.type_name} as it is being referred in "${referringProperty.json_str.name}" ${referringProperty.type_name}. Please delete the referring property first.`
+        );
+        return;
+      }
       setIsLoading(true);
       try {
         await deleteUserModels({ uuid: activeModelObj.uuid, type_name: activeModelObj.type_name });

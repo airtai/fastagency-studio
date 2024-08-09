@@ -46,6 +46,7 @@ interface PropertySchemaParserInterface {
   getUserProperties(): UserProperties[] | null;
   getRefFields(): { [key: string]: any };
   getNonRefButDropdownFields(): { [key: string]: any };
+  findFirstReferringPropertyName(uuid: string): UserProperties | null;
 }
 
 export class PropertySchemaParser implements PropertySchemaParserInterface {
@@ -242,5 +243,27 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
 
   public getMatchingUserProperty(uuid: string): UserProperties | null {
     return this.userProperties?.find((prop) => prop.uuid === uuid) || null;
+  }
+
+  public findFirstReferringPropertyName(uuid: string): UserProperties | null {
+    if (!this.userProperties) {
+      return null;
+    }
+
+    for (const userProperty of this.userProperties) {
+      const jsonStr = userProperty.json_str;
+
+      for (const [key, value] of Object.entries(jsonStr)) {
+        if (typeof value !== 'object' || value === null) {
+          continue;
+        }
+
+        if ('uuid' in value && value.uuid === uuid) {
+          return userProperty;
+        }
+      }
+    }
+
+    return null;
   }
 }

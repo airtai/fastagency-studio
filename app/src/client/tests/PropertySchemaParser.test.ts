@@ -253,8 +253,8 @@ describe('PropertySchemaParser', () => {
     expect(Object.keys(refFields)).toHaveLength(0);
   });
   test('Should parse llm', () => {
-    const property: ListOfSchemas = llmProperty;
-    const userProperties: UserProperties[] = llmUserProperties;
+    const property: ListOfSchemas = _.cloneDeep(llmProperty);
+    const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
 
     const propertySchemaParser = new PropertySchemaParser(property);
     propertySchemaParser.setActiveModel('AzureOAI');
@@ -291,6 +291,82 @@ describe('PropertySchemaParser', () => {
         initialFormValue: 'secret',
       },
     });
+  });
+
+  test('Should delete a property only if its is not referred by any other property', () => {
+    const property: ListOfSchemas = _.cloneDeep(llmProperty);
+    const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
+
+    const propertySchemaParser = new PropertySchemaParser(property);
+    propertySchemaParser.setActiveModel('AzureOAIAPIKey');
+    expect(propertySchemaParser).toBeInstanceOf(PropertySchemaParser);
+
+    propertySchemaParser.setUserProperties(userProperties);
+    expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
+
+    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
+    expect(userProperties[0].type_name).toBe('secret');
+    propertySchemaParser.setActiveModelObj(userProperties[0]);
+
+    let propName = propertySchemaParser.findFirstReferringPropertyName(userProperties[0].uuid);
+    const expectedProperty = {
+      uuid: 'db945991-c142-4863-a96b-d81cc03e99de',
+      user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+      type_name: 'llm',
+      model_name: 'AzureOAI',
+      json_str: {
+        name: 'LLM',
+        model: 'gpt-3.5-turbo',
+        api_key: { name: 'AzureOAIAPIKey', type: 'secret', uuid: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b' },
+        api_type: 'azure',
+        base_url: 'https://api.openai.com/v1',
+        api_version: '2024-02-01',
+        temperature: 0.8,
+      },
+      created_at: '2024-08-08T09:09:52.523000Z',
+      updated_at: '2024-08-08T09:09:52.523000Z',
+    };
+    expect(propName).toStrictEqual(expectedProperty);
+
+    userProperties.push({
+      uuid: 'a0014b3f-bb43-4f64-8732-bb9444d13f7b',
+      user_uuid: 'b0014b3f-bb43-4f64-8732-bb9444d13f7b',
+      type_name: 'secret',
+      model_name: 'AzureOAIAPIKey',
+      json_str: { name: 'secret 2', api_key: 'asd*****dasd' }, // pragma: allowlist secret
+      created_at: '2024-08-08T08:59:02.111000Z',
+      updated_at: '2024-08-08T08:59:02.111000Z',
+    });
+
+    expect(userProperties[2].type_name).toBe('secret');
+    propertySchemaParser.setActiveModelObj(userProperties[2]);
+
+    propName = propertySchemaParser.findFirstReferringPropertyName(userProperties[2].uuid);
+    expect(propName).toBe(null);
+
+    userProperties.push({
+      uuid: 'ca945991-c142-4863-a96b-d81cc03e99de',
+      user_uuid: 'ace81928-8e99-48c2-be5d-61a5b422cf47',
+      type_name: 'llm',
+      model_name: 'AzureOAI',
+      json_str: {
+        name: 'LLM 2',
+        model: 'gpt-3.5-turbo',
+        api_key: { name: 'AzureOAIAPIKey', type: 'secret', uuid: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b' },
+        api_type: 'azure',
+        base_url: 'https://api.openai.com/v1',
+        api_version: '2024-02-01',
+        temperature: 0.8,
+      },
+      created_at: '2024-08-08T09:09:52.523000Z',
+      updated_at: '2024-08-08T09:09:52.523000Z',
+    });
+
+    expect(userProperties[0].type_name).toBe('secret');
+    propertySchemaParser.setActiveModelObj(userProperties[0]);
+
+    propName = propertySchemaParser.findFirstReferringPropertyName(userProperties[0].uuid);
+    expect(propName).toStrictEqual(expectedProperty);
   });
 
   test('Should update the default value of ref and non-fields dropdowns for LLM', () => {

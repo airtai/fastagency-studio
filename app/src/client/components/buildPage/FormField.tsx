@@ -5,20 +5,22 @@ import Select, { StylesConfig } from 'react-select';
 
 import { TextInput } from '../form/TextInput';
 import { SECRETS_TO_MASK } from '../../utils/constants';
+import { TextArea } from '../form/TextArea';
 
 interface FormFieldProps {
   field: FieldApi<any, any, any, any>;
   property: any;
   fieldKey: string;
+  isOptionalRefField: boolean;
 }
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
     <>
       {field.state.meta.isTouched && field.state.meta.errors.length ? (
-        <em role='alert' className='text-red-600'>
+        <p role='alert' className='text-red-600'>
           {field.state.meta.errors.join(',')}
-        </em>
+        </p>
       ) : null}
       {field.state.meta.isValidating ? 'Validating...' : null}
     </>
@@ -26,11 +28,10 @@ function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
 }
 
 const getSelectObject = (val: string): {} => {
-  // if ref property, the value should be the uuid and key should be the name
   return { value: val, label: val };
 };
 
-export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey }) => {
+export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey, isOptionalRefField }) => {
   const [selectOptions, setSelectOptions] = useState([]);
   const [defaultValue, setDefaultValue] = useState(null);
   const [key, setKey] = useState(0);
@@ -45,7 +46,7 @@ export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey 
     if (property.enum) {
       const opts = property.enum;
 
-      let optsDefault = opts.length > 0 ? (property.default ? property.default : opts[0]) : null;
+      let optsDefault = opts.length > 0 ? property.default : null;
       if (typeof optsDefault === 'string') {
         optsDefault = getSelectObject(optsDefault);
       }
@@ -61,7 +62,7 @@ export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey 
 
   return (
     <div className='w-full mt-2'>
-      <label htmlFor={fieldKey}>{property.title}</label>
+      <label htmlFor={fieldKey}>{`${property.title} ${isOptionalRefField ? ' (Optional)' : ''}`}</label>
       {property.enum ? (
         <Select
           key={key}
@@ -69,12 +70,19 @@ export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey 
           classNamePrefix='react-select'
           inputId={fieldKey}
           options={selectOptions}
-          onChange={(e: any) => field.handleChange(e.value)}
+          onChange={(e: any) => field.handleChange(e?.value || null)} // field.handleChange(e.value)
           className='pt-1 pb-1'
           defaultValue={defaultValue}
           isSearchable={true}
-          isClearable={true}
+          isClearable={isOptionalRefField}
           // styles={customStyles}
+        />
+      ) : fieldKey === 'system_message' ? (
+        <TextArea
+          id={fieldKey}
+          value={field.state.value}
+          placeholder={property.description || ''}
+          onChange={(e) => field.handleChange(e)}
         />
       ) : (
         <TextInput

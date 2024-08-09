@@ -47,6 +47,8 @@ interface PropertySchemaParserInterface {
   getRefFields(): { [key: string]: any };
   getNonRefButDropdownFields(): { [key: string]: any };
   findFirstReferringPropertyName(uuid: string): UserProperties | null;
+  checkIfRefField(property: any): boolean;
+  getRefTypes(property: any): string[];
 }
 
 export class PropertySchemaParser implements PropertySchemaParserInterface {
@@ -93,6 +95,10 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
     return this.propertySchemas.schemas[0];
   }
 
+  public checkIfRefField(property: any): boolean {
+    return _.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf');
+  }
+
   public getDefaultValues(): { [key: string]: any } {
     const schema = this.getSchema();
     const defaultValues: { [key: string]: any } = {};
@@ -101,7 +107,8 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
 
     if ('json_schema' in schema) {
       Object.entries(schema.json_schema.properties).forEach(([key, property]: [string, any]) => {
-        if (_.has(property, '$ref')) {
+        const isReferenceField = this.checkIfRefField(property);
+        if (isReferenceField) {
           this.handleReferenceField(key, property, defaultValues);
         } else {
           this.handleNonReferenceField(key, property, defaultValues);
@@ -112,10 +119,11 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
   }
 
   private handleReferenceField(key: string, property: any, defaultValues: { [key: string]: any }): void {
-    const refType = property.$ref.split('/').pop()?.replace(/Ref$/, '') ?? '';
-    const matchingProperties = this.userProperties?.filter((prop) => prop.model_name === refType) ?? [];
+    const refTypes = this.getRefTypes(property);
+    const matchingProperties = this.getMatchingProperties(refTypes);
     const enumValues = this.createEnumValues(matchingProperties);
-    const defaultValue = this.getDefaultValueForRefField(key, enumValues);
+    const isOptional = this.isOptionalField(property);
+    const defaultValue = this.getDefaultValueForRefField(key, enumValues, isOptional);
 
     this.refFields[key] = {
       property: matchingProperties,
@@ -125,9 +133,34 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
         default: defaultValue,
         title: this.capitalizeWords(key),
       },
-      initialFormValue: defaultValue?.label ?? '',
+      initialFormValue: defaultValue?.value ?? null,
+      isOptional: isOptional,
     };
     defaultValues[key] = this.refFields[key].initialFormValue;
+  }
+
+  public getRefTypes(property: any): string[] {
+    if (_.has(property, '$ref')) {
+      return [property.$ref.split('/').pop()?.replace(/Ref$/, '') ?? ''];
+    } else if (_.has(property, 'anyOf') || _.has(property, 'allOf')) {
+      const items: any[] = (property as any).anyOf || (property as any).allOf || [];
+      return items
+        .filter((item: any) => _.has(item, '$ref'))
+        .map((item: any) => item.$ref.split('/').pop()?.replace(/Ref$/, '') ?? '');
+    }
+    return [];
+  }
+
+  private getMatchingProperties(refTypes: string[]): UserProperties[] {
+    if (!this.userProperties) return [];
+    return this.userProperties.filter((prop) => refTypes.includes(prop.model_name));
+  }
+
+  private isOptionalField(property: any): boolean {
+    if (_.has(property, 'anyOf')) {
+      return property.anyOf.some((p: any) => p.type === 'null');
+    }
+    return false;
   }
 
   private handleNonReferenceField(key: string, property: any, defaultValues: { [key: string]: any }): void {
@@ -162,14 +195,18 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
     }));
   }
 
-  private getDefaultValueForRefField(key: string, enumValues: SelectOption[]): SelectOption | null {
+  private getDefaultValueForRefField(
+    key: string,
+    enumValues: SelectOption[],
+    isOptional: boolean
+  ): SelectOption | null {
     if (this.activeModelObj?.json_str?.[key]) {
       const matchingUserProperty = this.getMatchingUserProperty(this.activeModelObj.json_str[key].uuid);
       if (matchingUserProperty) {
         return { label: matchingUserProperty.json_str.name, value: matchingUserProperty.uuid };
       }
     }
-    return enumValues[0] ?? null;
+    return isOptional ? null : enumValues[0] || null;
   }
 
   private getDefaultValueForDropdownField(key: string, property: any): SelectOption | null {

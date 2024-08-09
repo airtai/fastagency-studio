@@ -32,12 +32,15 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel
         if (key === 'uuid') {
           return null;
         }
-        const isReferenceField = _.has(property, '$ref');
+        const isReferenceField = parser?.checkIfRefField(property);
         let propertyCopy = Object.assign({}, property);
+        let isOptionalRefField = false;
         if (isReferenceField) {
           const refFields = parser?.getRefFields();
-          if (refFields && refFields[key]) {
+          const refTypes = parser?.getRefTypes(property);
+          if (refTypes && refTypes.length > 0 && refFields && refFields[key]) {
             propertyCopy = refFields[key].htmlForSelectBox;
+            isOptionalRefField = refFields[key].isOptional;
           }
         } else {
           const isNonRefButDropDownFields = parser?.getNonRefButDropdownFields();
@@ -49,7 +52,9 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel
           <form.Field
             key={key}
             name={key}
-            children={(field) => <FormField field={field} property={propertyCopy} fieldKey={key} />}
+            children={(field) => (
+              <FormField field={field} property={propertyCopy} fieldKey={key} isOptionalRefField={isOptionalRefField} />
+            )}
             validators={{
               onChange: ({ value }) => undefined,
             }}

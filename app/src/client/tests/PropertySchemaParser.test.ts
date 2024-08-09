@@ -270,7 +270,7 @@ describe('PropertySchemaParser', () => {
     const expectedDefaultValues = {
       name: '',
       model: 'gpt-3.5-turbo',
-      api_key: 'secret', // pragma: allowlist secret
+      api_key: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b', // pragma: allowlist secret
       base_url: 'https://api.openai.com/v1',
       api_type: 'azure',
       api_version: '2024-02-01',
@@ -288,7 +288,8 @@ describe('PropertySchemaParser', () => {
           enum: [{ value: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b', label: 'secret' }],
           title: 'Api Key',
         },
-        initialFormValue: 'secret',
+        isOptional: false,
+        initialFormValue: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b',
       },
     });
   });
@@ -420,7 +421,7 @@ describe('PropertySchemaParser', () => {
     let expectedDefaultValues = {
       name: 'LLM 2',
       model: 'gpt-4',
-      api_key: 'secret 2', // pragma: allowlist secret
+      api_key: 'a0014b3f-bb43-4f64-8732-bb9444d13f7b', // pragma: allowlist secret
       base_url: 'https://api.openai.com/v1',
       api_type: 'azure',
       api_version: '2024-03-01-preview',
@@ -441,7 +442,8 @@ describe('PropertySchemaParser', () => {
           ],
           title: 'Api Key',
         },
-        initialFormValue: 'secret 2',
+        isOptional: false,
+        initialFormValue: 'a0014b3f-bb43-4f64-8732-bb9444d13f7b',
       },
     });
 
@@ -553,7 +555,7 @@ describe('PropertySchemaParser', () => {
     const expectedDefaultValues = {
       name: 'Anthropic',
       model: 'claude-3-opus-20240229',
-      api_key: 'Anthropic 2', // pragma: allowlist secret
+      api_key: '33b3b1f2-572b-4f55-86c8-3b906442040d', // pragma: allowlist secret
       base_url: 'https://api.anthropic.com/v1',
       api_type: 'anthropic',
       temperature: 0.8,
@@ -704,7 +706,8 @@ describe('PropertySchemaParser', () => {
           enum: [{ value: '1', label: 'Ref1 Instance' }],
           title: 'Ref1',
         },
-        initialFormValue: 'Ref1 Instance',
+        isOptional: false,
+        initialFormValue: '1',
       },
       ref2: {
         property: [userProperties[1]],
@@ -714,15 +717,16 @@ describe('PropertySchemaParser', () => {
           enum: [{ value: '2', label: 'Ref2 Instance' }],
           title: 'Ref2',
         },
-        initialFormValue: 'Ref2 Instance',
+        isOptional: false,
+        initialFormValue: '2',
       },
     });
 
     expect(Object.keys(refFields)).toHaveLength(2);
     expect(defaultValues).toEqual({
       name: '',
-      ref1: 'Ref1 Instance',
-      ref2: 'Ref2 Instance',
+      ref1: '1',
+      ref2: '2',
       api_type: 'multiref',
     });
   });
@@ -796,7 +800,7 @@ describe('PropertySchemaParser', () => {
     expect(refFields.ref.htmlForSelectBox.enum).toStrictEqual([]);
     expect(defaultValues).toEqual({
       name: '',
-      ref: '',
+      ref: null,
       api_type: 'nomatch',
     });
   });
@@ -868,8 +872,176 @@ describe('PropertySchemaParser', () => {
     ]);
     expect(defaultValues).toEqual({
       name: '',
-      ref: 'MultiRef Instance 1',
+      ref: '1',
       api_type: 'multimatch',
+    });
+  });
+
+  test('Should render toolbox - without reference', () => {
+    const property: ListOfSchemas = {
+      name: 'toolbox',
+      schemas: [
+        {
+          name: 'Toolbox',
+          json_schema: {
+            $defs: {
+              OpenAPIAuthRef: {
+                properties: {
+                  type: {
+                    const: 'secret',
+                    default: 'secret',
+                    description: 'The name of the type of the data',
+                    enum: ['secret'],
+                    title: 'Type',
+                    type: 'string',
+                  },
+                  name: {
+                    const: 'OpenAPIAuth',
+                    default: 'OpenAPIAuth',
+                    description: 'The name of the data',
+                    enum: ['OpenAPIAuth'],
+                    title: 'Name',
+                    type: 'string',
+                  },
+                  uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+                },
+                required: ['uuid'],
+                title: 'OpenAPIAuthRef',
+                type: 'object',
+              },
+            },
+            properties: {
+              name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
+              openapi_url: {
+                description: 'The URL of OpenAPI specification file',
+                format: 'uri',
+                maxLength: 2083,
+                minLength: 1,
+                title: 'OpenAPI URL',
+                type: 'string',
+              },
+              openapi_auth: {
+                anyOf: [{ $ref: '#/$defs/OpenAPIAuthRef' }, { type: 'null' }],
+                default: null,
+                description: 'Authentication information for the API mentioned in the OpenAPI specification',
+                title: 'OpenAPI Auth',
+              },
+            },
+            required: ['name', 'openapi_url'],
+            title: 'Toolbox',
+            type: 'object',
+          },
+        },
+      ],
+    };
+    const parser = new PropertySchemaParser(property);
+    parser.setActiveModel('toolbox');
+
+    let defaultValues = parser.getDefaultValues();
+    expect(defaultValues).toEqual({ name: '', openapi_url: '', openapi_auth: null });
+    let refFields = parser.getRefFields();
+    expect(refFields).toEqual({
+      openapi_auth: {
+        property: [],
+        htmlForSelectBox: { description: '', enum: [], default: null, title: 'Openapi Auth' },
+        initialFormValue: null,
+        isOptional: true,
+      },
+    });
+  });
+  test('Should render toolbox - with reference', () => {
+    const property: ListOfSchemas = {
+      name: 'toolbox',
+      schemas: [
+        {
+          name: 'Toolbox',
+          json_schema: {
+            $defs: {
+              OpenAPIAuthRef: {
+                properties: {
+                  type: {
+                    const: 'secret',
+                    default: 'secret',
+                    description: 'The name of the type of the data',
+                    enum: ['secret'],
+                    title: 'Type',
+                    type: 'string',
+                  },
+                  name: {
+                    const: 'OpenAPIAuth',
+                    default: 'OpenAPIAuth',
+                    description: 'The name of the data',
+                    enum: ['OpenAPIAuth'],
+                    title: 'Name',
+                    type: 'string',
+                  },
+                  uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+                },
+                required: ['uuid'],
+                title: 'OpenAPIAuthRef',
+                type: 'object',
+              },
+            },
+            properties: {
+              name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
+              openapi_url: {
+                description: 'The URL of OpenAPI specification file',
+                format: 'uri',
+                maxLength: 2083,
+                minLength: 1,
+                title: 'OpenAPI URL',
+                type: 'string',
+              },
+              openapi_auth: {
+                anyOf: [{ $ref: '#/$defs/OpenAPIAuthRef' }, { type: 'null' }],
+                default: null,
+                description: 'Authentication information for the API mentioned in the OpenAPI specification',
+                title: 'OpenAPI Auth',
+              },
+            },
+            required: ['name', 'openapi_url'],
+            title: 'Toolbox',
+            type: 'object',
+          },
+        },
+      ],
+    };
+    const userProperties: UserProperties[] = [
+      {
+        uuid: '06936c73-f22b-4c69-b107-6f8f9a4982bc',
+        user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+        type_name: 'secret',
+        model_name: 'OpenAPIAuth',
+        json_str: {
+          name: 'OpenAIAPI Auth Key',
+          password: 'password', // pragma: allowlist secret
+          username: 'username',
+        },
+        created_at: '2024-08-09T11:38:45.093000Z',
+        updated_at: '2024-08-09T11:38:45.093000Z',
+      },
+    ];
+
+    const parser = new PropertySchemaParser(property);
+    parser.setActiveModel('toolbox');
+    parser.setUserProperties(userProperties);
+
+    let defaultValues = parser.getDefaultValues();
+    expect(defaultValues).toEqual({ name: '', openapi_url: '', openapi_auth: null });
+
+    const refFields = parser.getRefFields();
+    expect(refFields).toEqual({
+      openapi_auth: {
+        property: [userProperties[0]],
+        htmlForSelectBox: {
+          description: '',
+          enum: [{ label: 'OpenAIAPI Auth Key', value: '06936c73-f22b-4c69-b107-6f8f9a4982bc' }],
+          default: null,
+          title: 'Openapi Auth',
+        },
+        initialFormValue: null,
+        isOptional: true,
+      },
     });
   });
 });

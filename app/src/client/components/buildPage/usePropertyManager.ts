@@ -56,12 +56,14 @@ export const usePropertyManager = (
         if (refFields) {
           Object.entries(data).forEach(([key, val]) => {
             if (refFields[key]) {
-              const userProperty = parser?.getMatchingUserProperty(val) || refFields[key].property[0];
-              data[key] = {
-                name: userProperty.model_name,
-                type: userProperty.type_name,
-                uuid: userProperty.uuid,
-              };
+              const userProperty = parser?.getMatchingUserProperty(val);
+              if (userProperty) {
+                data[key] = {
+                  name: userProperty.model_name,
+                  type: userProperty.type_name,
+                  uuid: userProperty.uuid,
+                };
+              }
             }
           });
         }
@@ -81,7 +83,6 @@ export const usePropertyManager = (
             }));
           });
         } catch (e: any) {
-          // set global notification
           setNotification(e.message);
           console.log(e);
         }

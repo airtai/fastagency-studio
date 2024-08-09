@@ -1,6 +1,7 @@
 import { test, expect, describe } from 'vitest';
+import _ from 'lodash';
 
-import { PropertySchemaParser, UserProperties } from '../components/buildPage/PropertySchemaParser';
+import { PropertySchemaParser, UserProperties, UserFlow } from '../components/buildPage/PropertySchemaParser';
 import { ListOfSchemas } from '../interfaces/BuildPageInterfacesNew';
 
 describe('PropertySchemaParser', () => {
@@ -293,8 +294,8 @@ describe('PropertySchemaParser', () => {
   });
 
   test('Should update the default value of ref and non-fields dropdowns for LLM', () => {
-    const property: ListOfSchemas = llmProperty;
-    const userProperties: UserProperties[] = llmUserProperties;
+    const property: ListOfSchemas = _.cloneDeep(llmProperty);
+    const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
     // append the following to the userProperties
     userProperties.push(
       {
@@ -335,7 +336,7 @@ describe('PropertySchemaParser', () => {
     const schema = propertySchemaParser.getSchemaForModel();
     expect(schema).toEqual(property.schemas[1]);
 
-    propertySchemaParser.setUserFlow('update_model');
+    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
     expect(userProperties[3].type_name).toBe('llm');
     propertySchemaParser.setActiveModelObj(userProperties[3]);
 
@@ -422,7 +423,11 @@ describe('PropertySchemaParser', () => {
         initialFormValue: '2024-03-01-preview',
       },
     });
+  });
 
+  test('Should update the default value of non-fields dropdowns for LLM', () => {
+    const property: ListOfSchemas = _.cloneDeep(llmProperty);
+    const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
     userProperties.push(
       {
         uuid: '33b3b1f2-572b-4f55-86c8-3b906442040d',
@@ -454,12 +459,22 @@ describe('PropertySchemaParser', () => {
       }
     );
 
-    expect(userProperties[5].type_name).toBe('llm');
-    propertySchemaParser.setActiveModelObj(userProperties[5]);
+    const propertySchemaParser = new PropertySchemaParser(property);
+    propertySchemaParser.setActiveModelObj(userProperties[3]);
+    expect(propertySchemaParser).toBeInstanceOf(PropertySchemaParser);
 
-    defaultValues = propertySchemaParser.getDefaultValues();
+    propertySchemaParser.setUserProperties(userProperties);
+    expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
+
+    const schema = propertySchemaParser.getSchemaForModel();
+    expect(schema).toEqual(property.schemas[3]);
+
+    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
+    expect(userProperties[3].type_name).toBe('llm');
+
+    let defaultValues = propertySchemaParser.getDefaultValues();
     // @ts-ignore
-    expectedDefaultValues = {
+    const expectedDefaultValues = {
       name: 'Anthropic',
       model: 'claude-3-opus-20240229',
       api_key: 'Anthropic 2', // pragma: allowlist secret
@@ -467,17 +482,46 @@ describe('PropertySchemaParser', () => {
       api_type: 'anthropic',
       temperature: 0.8,
     };
+    expect(defaultValues).toEqual(expectedDefaultValues);
 
-    nonRefButDropdownFields = propertySchemaParser.getNonRefButDropdownFields();
-    console.log('nonRefButDropdownFields', JSON.stringify(nonRefButDropdownFields));
+    const nonRefButDropdownFields = propertySchemaParser.getNonRefButDropdownFields();
     expect(nonRefButDropdownFields).toEqual({
+      model: {
+        htmlForSelectBox: {
+          description: '',
+          enum: [
+            {
+              label: 'claude-3-5-sonnet-20240620',
+              value: 'claude-3-5-sonnet-20240620',
+            },
+            {
+              label: 'claude-3-opus-20240229',
+              value: 'claude-3-opus-20240229',
+            },
+            {
+              label: 'claude-3-sonnet-20240229',
+              value: 'claude-3-sonnet-20240229',
+            },
+            {
+              label: 'claude-3-haiku-20240307',
+              value: 'claude-3-haiku-20240307',
+            },
+          ],
+          default: {
+            label: 'claude-3-opus-20240229',
+            value: 'claude-3-opus-20240229',
+          },
+          title: 'Model',
+        },
+        initialFormValue: 'claude-3-opus-20240229',
+      },
       api_type: {
         htmlForSelectBox: {
           description: '',
           enum: [
             {
-              label: 'azure',
-              value: 'azure',
+              label: 'anthropic',
+              value: 'anthropic',
             },
           ],
           default: {
@@ -487,48 +531,6 @@ describe('PropertySchemaParser', () => {
           title: 'Api Type',
         },
         initialFormValue: 'anthropic',
-      },
-      api_version: {
-        htmlForSelectBox: {
-          description: '',
-          enum: [
-            {
-              label: '2023-05-15',
-              value: '2023-05-15',
-            },
-            {
-              label: '2023-06-01-preview',
-              value: '2023-06-01-preview',
-            },
-            {
-              label: '2023-10-01-preview',
-              value: '2023-10-01-preview',
-            },
-            {
-              label: '2024-02-15-preview',
-              value: '2024-02-15-preview',
-            },
-            {
-              label: '2024-03-01-preview',
-              value: '2024-03-01-preview',
-            },
-            {
-              label: '2024-04-01-preview',
-              value: '2024-04-01-preview',
-            },
-            {
-              label: '2024-05-01-preview',
-              value: '2024-05-01-preview',
-            },
-            {
-              label: '2024-02-01',
-              value: '2024-02-01',
-            },
-          ],
-          default: {},
-          title: 'Api Version',
-        },
-        initialFormValue: null,
       },
     });
   });
@@ -617,7 +619,6 @@ describe('PropertySchemaParser', () => {
 
     const defaultValues = parser.getDefaultValues();
     const refFields = parser.getRefFields();
-    console.log(refFields);
     expect(refFields).toEqual({
       ref1: {
         property: [userProperties[0]],

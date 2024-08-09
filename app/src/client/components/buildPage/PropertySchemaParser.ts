@@ -1,9 +1,11 @@
 import _ from 'lodash';
 
 import { ListOfSchemas, Schema } from '../../interfaces/BuildPageInterfacesNew';
-import { de } from '@faker-js/faker';
 
-export type UserFlow = 'update_model' | 'add_model';
+export enum UserFlow {
+  UPDATE_MODEL = 'update_model',
+  ADD_MODEL = 'add_model',
+}
 
 export type SetActiveModelType = (model: string | null) => void;
 
@@ -26,12 +28,31 @@ export interface UserProperties {
   updated_at: string;
 }
 
-export class PropertySchemaParser {
-  // this class should take only the schema for the property (secret, llm) in the init
+interface PropertySchemaParserInterface {
+  getUserFlow(): UserFlow;
+  setUserFlow(flow: UserFlow): void;
+  getModelNames(): SelectOption[];
+  getActiveModel(): string | null;
+  setActiveModel(model: string | null): void;
+  getPropertyName(): string;
+  getValidationURL(): string;
+  getDefaultValues(): { [key: string]: any };
+  getSchemaForModel(): Schema | undefined;
+  getSchema(): Schema;
+  setActiveModelObj(obj: any): void;
+  getActiveModelObj(): any | null;
+  getSecretUpdateValidationURL(): string;
+  setUserProperties(o: UserProperties[]): void;
+  getUserProperties(): UserProperties[] | null;
+  getRefFields(): { [key: string]: any };
+  getNonRefButDropdownFields(): { [key: string]: any };
+}
+
+export class PropertySchemaParser implements PropertySchemaParserInterface {
   private readonly propertySchemas: ListOfSchemas;
   private userFlow: UserFlow;
   private activeModel: string | null;
-  private propertyName: string;
+  private readonly propertyName: string;
   private activeModelObj: any;
   private schema: Schema | undefined;
   private userProperties: UserProperties[] | null;
@@ -41,7 +62,7 @@ export class PropertySchemaParser {
   constructor(propertySchemas: ListOfSchemas) {
     this.propertySchemas = propertySchemas;
     this.propertyName = propertySchemas.name;
-    this.userFlow = 'add_model';
+    this.userFlow = UserFlow.ADD_MODEL;
     this.activeModel = null;
     this.activeModelObj = null;
     this.userProperties = null;
@@ -54,7 +75,7 @@ export class PropertySchemaParser {
       .join(' ');
   }
 
-  getSchemaForModel(): Schema | undefined {
+  public getSchemaForModel(): Schema | undefined {
     if (!this.activeModel) {
       return undefined;
     }
@@ -63,7 +84,7 @@ export class PropertySchemaParser {
     return this.schema;
   }
 
-  getSchema(): Schema {
+  public getSchema(): Schema {
     if (this.schema) {
       return this.schema;
     }
@@ -71,156 +92,155 @@ export class PropertySchemaParser {
     return this.propertySchemas.schemas[0];
   }
 
-  getDefaultValues(): { [key: string]: any } {
-    const defaultValues: { [key: string]: any } = {};
+  public getDefaultValues(): { [key: string]: any } {
     const schema = this.getSchema();
-    this.refFields = {}; // Reset refFields
+    const defaultValues: { [key: string]: any } = {};
+    this.refFields = {};
+    this.nonRefButDropdownFields = {};
 
     if ('json_schema' in schema) {
       Object.entries(schema.json_schema.properties).forEach(([key, property]: [string, any]) => {
-        const isReferenceField = _.has(property, '$ref');
-        if (isReferenceField) {
-          // Handle reference fields
-          const refType = property.$ref.split('/').pop().replace(/Ref$/, ''); // Extract reference type
-          const matchingProperties = this.userProperties?.filter((prop) => prop.model_name === refType) || [];
-          const enumValues = matchingProperties.map((prop) => ({
-            value: prop.uuid,
-            label: prop.json_str.name,
-          }));
-          let defaultValue = null;
-          if (this.activeModelObj && this.activeModelObj.json_str) {
-            const matchingUserProperty = this.getMatchingUserProperty(this.activeModelObj.json_str[key].uuid);
-            if (matchingUserProperty && key in this.activeModelObj.json_str) {
-              const label = matchingUserProperty.json_str.name;
-              const value = matchingUserProperty.uuid;
-              defaultValue = { label: label, value: value };
-            } else {
-              defaultValue = null;
-            }
-          } else {
-            defaultValue = enumValues.length > 0 ? enumValues[0] : null;
-          }
-
-          const initialFormValue = defaultValue?.label || '';
-
-          this.refFields[key] = {
-            property: matchingProperties,
-            htmlForSelectBox: {
-              description: '',
-              enum: enumValues,
-              default: defaultValue,
-              title: this.capitalizeWords(key),
-            },
-            initialFormValue: initialFormValue,
-          };
-          defaultValues[key] = initialFormValue;
+        if (_.has(property, '$ref')) {
+          this.handleReferenceField(key, property, defaultValues);
         } else {
-          // Handle non-reference fields
-          const isNonRefButDropDownField = !!(property as { enum?: any }).enum;
-          let defaultValue = null;
-          if (isNonRefButDropDownField) {
-            if (this.activeModelObj && this.activeModelObj.json_str) {
-              // dropdown - update
-              const existingValue = this.activeModelObj.json_str[key];
-              defaultValue = { label: existingValue, value: existingValue };
-            } else {
-              const defaultValueFromSchema = (property as { default?: any }).default;
-              defaultValue = defaultValueFromSchema
-                ? { label: defaultValueFromSchema, value: defaultValueFromSchema }
-                : null;
-            }
-            const enumValues = (property as { enum?: any }).enum.map((i: string) => ({ label: i, value: i }));
-            this.nonRefButDropdownFields[key] = {
-              htmlForSelectBox: {
-                description: '',
-                enum: enumValues,
-                default: defaultValue,
-                title: this.capitalizeWords(key),
-              },
-              initialFormValue: defaultValue?.value || null,
-            };
-            defaultValues[key] = defaultValue?.value || null;
-            // }
-            // if (this.activeModelObj && this.activeModelObj.json_str) {
-            //   // llm update the default value should follow the format
-            //   defaultValues[key] =
-            //     key in this.activeModelObj.json_str
-            //       ? this.activeModelObj.json_str[key]
-            //       : (property as { default?: any }).default || '';
-          } else {
-            defaultValues[key] =
-              this.activeModelObj && this.activeModelObj.json_str && key in this.activeModelObj.json_str
-                ? this.activeModelObj.json_str[key]
-                : (property as { default?: any }).default || '';
-          }
-          // defaultValues[key] = initialFormValue;
+          this.handleNonReferenceField(key, property, defaultValues);
         }
       });
     }
     return defaultValues;
   }
 
-  getUserFlow(): string {
+  private handleReferenceField(key: string, property: any, defaultValues: { [key: string]: any }): void {
+    const refType = property.$ref.split('/').pop()?.replace(/Ref$/, '') ?? '';
+    const matchingProperties = this.userProperties?.filter((prop) => prop.model_name === refType) ?? [];
+    const enumValues = this.createEnumValues(matchingProperties);
+    const defaultValue = this.getDefaultValueForRefField(key, enumValues);
+
+    this.refFields[key] = {
+      property: matchingProperties,
+      htmlForSelectBox: {
+        description: '',
+        enum: enumValues,
+        default: defaultValue,
+        title: this.capitalizeWords(key),
+      },
+      initialFormValue: defaultValue?.label ?? '',
+    };
+    defaultValues[key] = this.refFields[key].initialFormValue;
+  }
+
+  private handleNonReferenceField(key: string, property: any, defaultValues: { [key: string]: any }): void {
+    const isDropDownField = Array.isArray(property.enum);
+    if (isDropDownField) {
+      this.handleDropdownField(key, property, defaultValues);
+    } else {
+      defaultValues[key] = this.getNonDropdownDefaultValue(key, property);
+    }
+  }
+
+  private handleDropdownField(key: string, property: any, defaultValues: { [key: string]: any }): void {
+    const defaultValue = this.getDefaultValueForDropdownField(key, property);
+    const enumValues = property.enum.map((i: string) => ({ label: i, value: i }));
+
+    this.nonRefButDropdownFields[key] = {
+      htmlForSelectBox: {
+        description: '',
+        enum: enumValues,
+        default: defaultValue,
+        title: this.capitalizeWords(key),
+      },
+      initialFormValue: defaultValue?.value ?? null,
+    };
+    defaultValues[key] = this.nonRefButDropdownFields[key].initialFormValue;
+  }
+
+  private createEnumValues(properties: UserProperties[]): SelectOption[] {
+    return properties.map((prop) => ({
+      value: prop.uuid,
+      label: prop.json_str.name,
+    }));
+  }
+
+  private getDefaultValueForRefField(key: string, enumValues: SelectOption[]): SelectOption | null {
+    if (this.activeModelObj?.json_str?.[key]) {
+      const matchingUserProperty = this.getMatchingUserProperty(this.activeModelObj.json_str[key].uuid);
+      if (matchingUserProperty) {
+        return { label: matchingUserProperty.json_str.name, value: matchingUserProperty.uuid };
+      }
+    }
+    return enumValues[0] ?? null;
+  }
+
+  private getDefaultValueForDropdownField(key: string, property: any): SelectOption | null {
+    if (this.activeModelObj?.json_str?.[key]) {
+      const existingValue = this.activeModelObj.json_str[key];
+      return { label: existingValue, value: existingValue };
+    }
+    const defaultValueFromSchema = property.default;
+    return defaultValueFromSchema ? { label: defaultValueFromSchema, value: defaultValueFromSchema } : null;
+  }
+
+  private getNonDropdownDefaultValue(key: string, property: any): any {
+    return this.activeModelObj?.json_str?.[key] ?? property.default ?? '';
+  }
+
+  public getUserFlow(): UserFlow {
     return this.userFlow;
   }
 
-  setUserFlow(flow: UserFlow): void {
+  public setUserFlow(flow: UserFlow): void {
     this.userFlow = flow;
   }
 
-  getModelNames(): SelectOption[] {
+  public getModelNames(): SelectOption[] {
     return this.propertySchemas.schemas.map((s) => ({ value: s.name, label: s.name }));
   }
 
-  getActiveModel(): string | null {
+  public getActiveModel(): string | null {
     return this.activeModel;
   }
 
-  setActiveModel(model: string | null): void {
+  public setActiveModel(model: string | null): void {
     this.activeModel = model;
   }
 
-  getPropertyName(): string {
+  public getPropertyName(): string {
     return this.propertyName;
   }
 
-  setPropertyName(name: string): void {
-    this.propertyName = name;
-  }
-
-  getValidationURL(): string {
+  public getValidationURL(): string {
     return `models/${this.propertyName}/${this.activeModel}/validate`;
   }
 
-  setActiveModelObj(obj: any): void {
+  public setActiveModelObj(obj: any): void {
     this.activeModelObj = obj;
   }
 
-  getActiveModelObj(): any {
+  public getActiveModelObj(): any {
     return this.activeModelObj;
   }
 
-  getSecretUpdateValidationURL(): string {
+  public getSecretUpdateValidationURL(): string {
     return `models/${this.propertyName}/${this.activeModel}/${this.activeModelObj.uuid}/validate`;
   }
 
-  setUserProperties(o: UserProperties[]): void {
+  public setUserProperties(o: UserProperties[]): void {
     this.userProperties = o;
   }
 
-  getUserProperties(): UserProperties[] | null {
+  public getUserProperties(): UserProperties[] | null {
     return this.userProperties;
   }
 
-  getRefFields(): { [key: string]: any } {
+  public getRefFields(): { [key: string]: any } {
     return this.refFields;
   }
 
-  getNonRefButDropdownFields(): { [key: string]: any } {
+  public getNonRefButDropdownFields(): { [key: string]: any } {
     return this.nonRefButDropdownFields;
   }
 
-  getMatchingUserProperty(uuid: string): UserProperties | null {
+  public getMatchingUserProperty(uuid: string): UserProperties | null {
     return this.userProperties?.find((prop) => prop.uuid === uuid) || null;
   }
 }

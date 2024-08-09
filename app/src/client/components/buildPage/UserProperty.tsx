@@ -32,7 +32,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
   const { data: userProperties, refetch: refetchUserProperties, isLoading: isLoading } = useQuery(getModels);
   const userPropertiesByType = (userProperties && filterPropertiesByType(userProperties, activeProperty)) || [];
 
-  const setActiveModel = (model: string | null, userFlow: UserFlow = 'add_model') => {
+  const setActiveModel = (model: string | null, userFlow: UserFlow = UserFlow.ADD_MODEL) => {
     createParser({ propertySchemasList, activeModel: model, userFlow: userFlow, userProperties });
   };
 
@@ -47,7 +47,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
       propertySchemasList,
       activeModel: selectedProperty.model_name,
       activeModelObj: selectedProperty,
-      userFlow: 'update_model',
+      userFlow: UserFlow.UPDATE_MODEL,
       userProperties: userProperties,
     });
   };
@@ -56,7 +56,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
     setActiveModel(null);
   }, [sideNavItemClickCount]);
 
-  const title = parser?.getUserFlow() === 'add_model' ? `Add a new ${propertyName}` : `Update ${propertyName}`;
+  const title = parser?.getUserFlow() === UserFlow.ADD_MODEL ? `Add a new ${propertyName}` : `Update ${propertyName}`;
 
   return (
     <>

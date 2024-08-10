@@ -37,12 +37,15 @@ export const usePropertyManager = (
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
+  const [successResponse, setSuccessResponse] = useState<any>(null);
+
   const propertyName = parser?.getPropertyName() || '';
   const modelName = parser?.getActiveModel() || '';
   const schema = modelName ? parser?.getSchemaForModel() : null;
   const defaultValues = schema ? parser?.getDefaultValues() : {};
   const userFlow = parser?.getUserFlow();
   const refFields = parser?.getRefFields();
+  const isDeploymentProperty = propertyName === 'deployment';
 
   const form = useForm({
     defaultValues: defaultValues,
@@ -70,8 +73,12 @@ export const usePropertyManager = (
         const validatedData = await validateForm({ data, validationURL, isSecretUpdate });
         const propertyUUIDToUpdate = parser?.getActiveModelObj()?.uuid;
 
-        await onSuccessCallback(validatedData, propertyName, modelName, propertyUUIDToUpdate);
-        await resetAndRefetchProperties();
+        const response = await onSuccessCallback(validatedData, propertyName, modelName, propertyUUIDToUpdate);
+        await setSuccessResponse(response);
+
+        if (!isDeploymentProperty) {
+          await resetAndRefetchProperties();
+        }
       } catch (error: any) {
         try {
           const errorMsgObj = JSON.parse(error.message);
@@ -97,6 +104,7 @@ export const usePropertyManager = (
   const resetFormState = () => {
     form.reset();
     setActiveModel(null);
+    setSuccessResponse(null);
   };
 
   const resetAndRefetchProperties = async () => {
@@ -130,7 +138,7 @@ export const usePropertyManager = (
 
   const handleCtaAction = async (ctaAction: ctaAction) => {
     if (ctaAction === 'cancel') {
-      resetFormState();
+      resetAndRefetchProperties();
     } else {
       await deleteProperty();
     }
@@ -143,5 +151,6 @@ export const usePropertyManager = (
     isLoading,
     setNotification,
     notification,
+    successResponse,
   };
 };

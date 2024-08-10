@@ -31,7 +31,7 @@ export const ModelSelector = ({
 
   return (
     <>
-      {selectOptions && (
+      {selectOptions && selectOptions.length > 1 && (
         <>
           <label className='mb-3 block text-black dark:text-white'>{header}</label>
           <div className='relative z-20 bg-white dark:bg-form-input'>
@@ -45,6 +45,7 @@ export const ModelSelector = ({
               isSearchable={true}
               isClearable={false}
               styles={customStyles}
+              autoFocus={true}
             />
           </div>
         </>

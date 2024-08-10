@@ -56,7 +56,9 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
     setActiveModel(null);
   }, [sideNavItemClickCount]);
 
-  const title = parser?.getUserFlow() === UserFlow.ADD_MODEL ? `Add a new ${propertyName}` : `Update ${propertyName}`;
+  const userFlow = parser?.getUserFlow();
+
+  const title = userFlow === UserFlow.ADD_MODEL ? `Add a new ${propertyName}` : `Update ${propertyName}`;
 
   return (
     <>
@@ -93,7 +95,9 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
                   <div className='flex flex-col gap-5.5 px-6.5'>
                     <h2 className='text-lg font-semibold text-airt-primary mt-6 '>{`${title}`}</h2>
                     <div className='relative z-20 bg-white dark:bg-form-input'>
-                      <ModelSelector parser={parser} setActiveModel={setActiveModel} />
+                      {userFlow === UserFlow.ADD_MODEL && (
+                        <ModelSelector parser={parser} setActiveModel={setActiveModel} />
+                      )}
                       <DynamicForm
                         parser={parser}
                         setActiveModel={setActiveModel}

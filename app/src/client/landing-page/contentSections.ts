@@ -4,7 +4,6 @@ import avatarPlaceholder from '../static/avatar-placeholder.png';
 
 export const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Build', href: '/build' },
   { name: 'Build-new', href: '/build-new' },
   { name: 'Playground', href: '/playground' },
   { name: 'Tutorials', href: '/tutorials' },

@@ -2,7 +2,7 @@ import React from 'react';
 import _ from 'lodash';
 
 import { navLinkItems } from './CustomSidebar';
-import { formatApiKey } from '../utils/buildPageUtils';
+import { formatApiKey } from './buildPage/buildPageUtilsNew';
 
 interface JsonStr {
   name: string;

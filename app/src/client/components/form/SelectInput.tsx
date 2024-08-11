@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Select, { StylesConfig } from 'react-select';
 import _ from 'lodash';
-import { capitalizeFirstLetter } from '../../utils/buildPageUtils';
-import { SELECT_PLACEHOLDER, SELECT_CLEAR_PLACEHOLDER } from '../../utils/constants';
+import { capitalizeFirstLetter } from '../buildPage/buildPageUtilsNew';
 
 interface SelectOption {
   value: string;
@@ -31,12 +30,10 @@ export const getSelectOptions = (
   propertyTypes: string[] | undefined | null,
   isRequired: boolean
 ): SelectOption[] => {
-  const filteredOptions = options.filter((o) => o !== SELECT_PLACEHOLDER);
+  // const filteredOptions = options.filter((o) => o !== SELECT_PLACEHOLDER);
 
   const baseOptions =
-    isRequired && filteredOptions.length === 0
-      ? []
-      : filteredOptions.map((option) => ({ value: option, label: option }));
+    isRequired && options.length === 0 ? [] : options.map((option) => ({ value: option, label: option }));
 
   const newPropertyOptions =
     propertyTypes?.map((option) => ({
@@ -119,7 +116,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
 
   const handleChange = (selectedOption: SelectOption | null) => {
     if (!selectedOption) {
-      onChange(SELECT_CLEAR_PLACEHOLDER);
+      // onChange(SELECT_CLEAR_PLACEHOLDER);
       return;
     }
 

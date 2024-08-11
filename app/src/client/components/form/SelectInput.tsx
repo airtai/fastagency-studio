@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Select, { StylesConfig } from 'react-select';
 import _ from 'lodash';
-import { capitalizeFirstLetter } from '../buildPage/buildPageUtilsNew';
+import { capitalizeFirstLetter } from '../buildPage/buildPageUtils';
 
 interface SelectOption {
   value: string;

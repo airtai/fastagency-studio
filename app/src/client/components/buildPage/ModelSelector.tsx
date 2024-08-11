@@ -1,7 +1,7 @@
 import Select, { StylesConfig, SingleValue } from 'react-select';
 import { PropertySchemaParser, SetActiveModelType } from './PropertySchemaParser';
 import { SelectOption } from './PropertySchemaParser';
-import { capitalizeFirstLetter } from './buildPageUtilsNew';
+import { capitalizeFirstLetter } from './buildPageUtils';
 
 export const ModelSelector = ({
   parser,

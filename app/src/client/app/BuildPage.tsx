@@ -45,7 +45,7 @@ const BuildPage = ({ user }: BuildPageProps) => {
 
   useEffect(() => {
     if (activeProperty) {
-      history.push(`/build-new/${activeProperty}`);
+      history.push(`/build/${activeProperty}`);
       setActivePropertyInSessionStorage(activeProperty);
     }
   }, [activeProperty]);
@@ -97,5 +97,5 @@ const BuildPage = ({ user }: BuildPageProps) => {
   );
 };
 
-const BuildPageNewWithCustomAuth = CustomAuthRequiredLayout(BuildPage);
-export default BuildPageNewWithCustomAuth;
+const BuildPageWithCustomAuth = CustomAuthRequiredLayout(BuildPage);
+export default BuildPageWithCustomAuth;

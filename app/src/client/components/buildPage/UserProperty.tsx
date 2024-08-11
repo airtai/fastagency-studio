@@ -13,7 +13,7 @@ import { PropertiesSchema } from '../../interfaces/BuildPageInterfacesNew';
 import LoadingComponent from '../LoadingComponent';
 import { usePropertySchemaParser } from './usePropertySchemaParser';
 
-import { filerOutComponentData, capitalizeFirstLetter, filterPropertiesByType } from '../buildPage/buildPageUtilsNew';
+import { filerOutComponentData, capitalizeFirstLetter, filterPropertiesByType } from './buildPageUtils';
 import { UserFlow } from './PropertySchemaParser';
 
 interface Props {

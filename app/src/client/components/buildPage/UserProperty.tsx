@@ -9,7 +9,7 @@ import ModelsList from '../ModelsList';
 import { DynamicForm } from '../buildPage/DynamicForm';
 import { ModelSelector } from '../buildPage/ModelSelector';
 import { navLinkItems } from '../CustomSidebar';
-import { PropertiesSchema } from '../../interfaces/BuildPageInterfacesNew';
+import { PropertiesSchema } from '../../interfaces/BuildPageInterfaces';
 import LoadingComponent from '../LoadingComponent';
 import { usePropertySchemaParser } from './usePropertySchemaParser';
 

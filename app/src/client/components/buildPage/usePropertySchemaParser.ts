@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PropertySchemaParser, UserFlow } from './PropertySchemaParser';
-import { ListOfSchemas } from '../../interfaces/BuildPageInterfacesNew';
+import { ListOfSchemas } from '../../interfaces/BuildPageInterfaces';
 
 interface CustomInitOptions {
   propertySchemasList: ListOfSchemas;

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { PropertiesSchema, ListOfSchemas } from '../../interfaces/BuildPageInterfacesNew';
+import { PropertiesSchema, ListOfSchemas } from '../../interfaces/BuildPageInterfaces';
 
 /* These are the function you need*/
 

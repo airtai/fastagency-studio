@@ -9,7 +9,7 @@ import { renderInContext } from 'wasp/client/test';
 import * as operations from 'wasp/client/operations';
 
 import { DynamicForm } from '../components/buildPage/DynamicForm';
-import { ListOfSchemas } from '../interfaces/BuildPageInterfacesNew';
+import { ListOfSchemas } from '../interfaces/BuildPageInterfaces';
 import { PropertySchemaParser } from '../components/buildPage/PropertySchemaParser';
 
 // Mock the operation

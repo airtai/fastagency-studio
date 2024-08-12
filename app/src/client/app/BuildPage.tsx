@@ -4,11 +4,12 @@ import { type User } from 'wasp/entities';
 
 import _ from 'lodash';
 
-import { useBuildPageNew } from '../hooks/useBuildPageNew';
+import { useBuildPage } from '../hooks/useBuildPage';
 
 import CustomAuthRequiredLayout from './layout/CustomAuthRequiredLayout';
 import CustomSidebar from '../components/CustomSidebar';
 import LoadingComponent from '../components/LoadingComponent';
+import { ErrorComponent } from '../components/ErrorComponent';
 
 import { SubHeader } from '../components/buildPage/SubHeader';
 import { UserProperty } from '../components/buildPage/UserProperty';
@@ -19,7 +20,7 @@ interface BuildPageProps {
 
 const BuildPage = ({ user }: BuildPageProps) => {
   const history = useHistory();
-  const { data: propertiesSchema, loading, error } = useBuildPageNew();
+  const { data: propertiesSchema, loading, error } = useBuildPage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeProperty, setActiveProperty] = useState<string | null>(null);
   const [sideNavItemClickCount, setSideNavItemClickCount] = useState(0);
@@ -55,14 +56,7 @@ const BuildPage = ({ user }: BuildPageProps) => {
   return (
     <div className='dark:bg-boxdark-2 dark:text-bodydark bg-captn-light-blue'>
       {loading && <LoadingComponent />}
-      {error && (
-        <p
-          className='absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl md:text-xl text-airt-font-base'
-          style={{ lineHeight: 'normal' }}
-        >
-          Oops! Something went wrong. Our server is currently unavailable. Please try again later.
-        </p>
-      )}
+      {error && <ErrorComponent />}
       {/* <!-- ===== Page Wrapper Start ===== --> */}
       {canRenderProperty && (
         <div className={`flex ${wrapperClass} overflow-hidden`}>

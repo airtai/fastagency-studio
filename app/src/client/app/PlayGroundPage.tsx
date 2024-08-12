@@ -29,7 +29,7 @@ import {
 } from '../utils/chatUtils';
 import SelectTeamToChat from '../components/SelectTeamToChat';
 import Loader from '../admin/common/Loader';
-import { SelectedModelSchema } from '../interfaces/BuildPageInterfacesNew';
+import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
 const PlayGroundPage = ({ user }: { user: User }) => {
   const { data: userTeams, isLoading: isLoading } = useQuery(getModels, { type_name: 'team' });

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { ListOfSchemas, Schema } from '../../interfaces/BuildPageInterfacesNew';
+import { ListOfSchemas, Schema } from '../../interfaces/BuildPageInterfaces';
 
 export enum UserFlow {
   UPDATE_MODEL = 'update_model',

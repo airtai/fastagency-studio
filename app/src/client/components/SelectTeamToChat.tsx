@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { type Chat } from 'wasp/entities';
-import { SelectedModelSchema } from '../interfaces/BuildPageInterfacesNew';
+import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 import { CreateNewChatProps } from '../interfaces/PlaygroundPageInterface';
 import CustomBreadcrumb from './CustomBreadcrumb';
 import NotificationBox from './NotificationBox';

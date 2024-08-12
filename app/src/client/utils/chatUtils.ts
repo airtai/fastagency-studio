@@ -8,7 +8,7 @@ import {
 } from 'wasp/client/operations';
 
 import { type Conversation, type Chat } from 'wasp/entities';
-import { SelectedModelSchema } from '../interfaces/BuildPageInterfacesNew';
+import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
 export const exceptionMessage = 'Oops! An unexpected problem occurred. Please click the button below to retry.';
 

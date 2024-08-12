@@ -2,7 +2,7 @@ import { test, expect, describe } from 'vitest';
 import _ from 'lodash';
 
 import { filerOutComponentData, capitalizeFirstLetter, formatApiKey } from '../components/buildPage/buildPageUtils';
-import { ListOfSchemas, PropertiesSchema } from '../interfaces/BuildPageInterfacesNew';
+import { ListOfSchemas, PropertiesSchema } from '../interfaces/BuildPageInterfaces';
 
 describe('buildPageUtils', () => {
   describe('filerOutComponentData', () => {

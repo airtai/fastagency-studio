@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { PropertiesSchema } from '../interfaces/BuildPageInterfacesNew';
+import { PropertiesSchema } from '../interfaces/BuildPageInterfaces';
 import { getSchema } from 'wasp/client/operations';
 
-export const useBuildPageNew = () => {
+export const useBuildPage = () => {
   const [data, setData] = useState<PropertiesSchema | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

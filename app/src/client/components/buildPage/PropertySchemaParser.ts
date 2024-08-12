@@ -108,8 +108,9 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
     if ('json_schema' in schema) {
       Object.entries(schema.json_schema.properties).forEach(([key, property]: [string, any]) => {
         const isReferenceField = this.checkIfRefField(property);
-        if (isReferenceField) {
-          this.handleReferenceField(key, property, defaultValues);
+        const refTypes = this.getRefTypes(property);
+        if (isReferenceField && refTypes.length > 0) {
+          this.handleReferenceField(key, property, refTypes, defaultValues);
         } else {
           this.handleNonReferenceField(key, property, defaultValues);
         }
@@ -118,8 +119,12 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
     return defaultValues;
   }
 
-  private handleReferenceField(key: string, property: any, defaultValues: { [key: string]: any }): void {
-    const refTypes = this.getRefTypes(property);
+  private handleReferenceField(
+    key: string,
+    property: any,
+    refTypes: string[],
+    defaultValues: { [key: string]: any }
+  ): void {
     const matchingProperties = this.getMatchingProperties(refTypes);
     const enumValues = this.createEnumValues(matchingProperties);
     const isOptional = this.isOptionalField(property);
@@ -219,7 +224,11 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
   }
 
   private getNonDropdownDefaultValue(key: string, property: any): any {
-    return this.activeModelObj?.json_str?.[key] ?? property.default ?? '';
+    if (this.activeModelObj) {
+      return this.activeModelObj?.json_str?.[key] ?? '';
+    } else {
+      return property.default !== undefined ? property.default : '';
+    }
   }
 
   public getUserFlow(): UserFlow {

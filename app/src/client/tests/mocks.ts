@@ -120,7 +120,7 @@ export const mockProps = {
   sideNavItemClickCount: 0,
 };
 
-export const llmProperty: ListOfSchemas = {
+export const llmSchema: ListOfSchemas = {
   name: 'llm',
   schemas: [
     {
@@ -310,3 +310,95 @@ export const llmUserProperties: UserProperties[] = [
     updated_at: '2024-08-08T09:09:52.523000Z',
   },
 ];
+
+export const toolboxSchema: ListOfSchemas = {
+  name: 'toolbox',
+  schemas: [
+    {
+      name: 'Toolbox',
+      json_schema: {
+        $defs: {
+          OpenAPIAuthRef: {
+            properties: {
+              type: {
+                const: 'secret',
+                default: 'secret',
+                description: 'The name of the type of the data',
+                enum: ['secret'],
+                title: 'Type',
+                type: 'string',
+              },
+              name: {
+                const: 'OpenAPIAuth',
+                default: 'OpenAPIAuth',
+                description: 'The name of the data',
+                enum: ['OpenAPIAuth'],
+                title: 'Name',
+                type: 'string',
+              },
+              uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+            },
+            required: ['uuid'],
+            title: 'OpenAPIAuthRef',
+            type: 'object',
+          },
+        },
+        properties: {
+          name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
+          openapi_url: {
+            description: 'The URL of OpenAPI specification file',
+            format: 'uri',
+            maxLength: 2083,
+            minLength: 1,
+            title: 'OpenAPI URL',
+            type: 'string',
+          },
+          openapi_auth: {
+            anyOf: [{ $ref: '#/$defs/OpenAPIAuthRef' }, { type: 'null' }],
+            default: null,
+            description: 'Authentication information for the API mentioned in the OpenAPI specification',
+            title: 'OpenAPI Auth',
+          },
+        },
+        required: ['name', 'openapi_url'],
+        title: 'Toolbox',
+        type: 'object',
+      },
+    },
+  ],
+};
+
+export const userProxySchema: ListOfSchemas = {
+  name: 'agent',
+  schemas: [
+    {
+      name: 'UserProxyAgent',
+      json_schema: {
+        properties: {
+          name: {
+            description: 'The name of the item',
+            minLength: 1,
+            title: 'Name',
+            type: 'string',
+          },
+          max_consecutive_auto_reply: {
+            anyOf: [
+              {
+                type: 'integer',
+              },
+              {
+                type: 'null',
+              },
+            ],
+            default: null,
+            description: 'The maximum number of consecutive auto-replies the agent can make',
+            title: 'Max Consecutive Auto Reply',
+          },
+        },
+        required: ['name'],
+        title: 'UserProxyAgent',
+        type: 'object',
+      },
+    },
+  ],
+};

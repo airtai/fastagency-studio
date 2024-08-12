@@ -14,7 +14,7 @@ function deepFreeze(object: any) {
   return Object.freeze(object);
 }
 
-export const SECRETS_TO_MASK = ['api_key', 'gh_token', 'fly_token'];
+export const SECRETS_TO_MASK = ['api_key', 'gh_token', 'fly_token', 'password'];
 
 export const DEPLOYMENT_INSTRUCTIONS = `<div class="leading-loose ml-2 mr-2"><span class="text-l inline-block my-2 underline">GitHub Repository Created</span>
 <span class="ml-5">- We have created a new <a class="underline" href="<gh_repo_url>" target="_blank" rel="noopener noreferrer">GitHub repository</a> in your GitHub account.</span>
@@ -62,6 +62,3 @@ Before you begin, ensure you have the following:
 <span class="ml-10"> while creating the Fly.io API Token in the deployment steps below.</span>
 </div>
 `;
-
-export const SELECT_PLACEHOLDER = '--- Select Placeholder ---';
-export const SELECT_CLEAR_PLACEHOLDER = '--- Selected Option Cleared ---';

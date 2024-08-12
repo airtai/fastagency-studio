@@ -2,7 +2,7 @@ import React from 'react';
 import _ from 'lodash';
 
 import { navLinkItems } from './CustomSidebar';
-import { formatApiKey } from '../utils/buildPageUtils';
+import { formatApiKey } from './buildPage/buildPageUtils';
 
 interface JsonStr {
   name: string;
@@ -38,6 +38,7 @@ const ModelItem: React.FC<ModelItemProps> = ({ model, onClick }) => {
     <div
       className='group relative cursor-pointer overflow-hidden bg-airt-primary text-airt-font-base px-6 pt-10 pb-8 transition-all duration-300 hover:-translate-y-1 sm:max-w-sm sm:rounded-lg sm:pl-8 sm:pr-24'
       onClick={onClick}
+      data-testid={`model-item-${model.model_uuid}`}
     >
       <div className='relative z-10 mx-auto max-w-md'>
         <div className='flex items-center mb-3'>

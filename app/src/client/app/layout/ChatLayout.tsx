@@ -3,7 +3,7 @@ import { type Chat } from 'wasp/entities';
 import { useSocketListener } from 'wasp/client/webSocket';
 import { useAuth } from 'wasp/client/auth';
 import { useState, ReactNode, FC, useRef, useEffect } from 'react';
-import { Header } from '../BuildPage';
+import { SubHeader } from '../../components/buildPage/SubHeader';
 import ChatSidebar from '../../components/ChatSidebar';
 import ChatForm from '../../components/ChatForm';
 import { useHistory } from 'react-router-dom';
@@ -65,7 +65,7 @@ const ChatLayout: FC<Props> = ({
         {/* <!-- ===== Content Area Start ===== --> */}
         <div className='relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden'>
           {/* <!-- ===== Header Start ===== --> */}
-          <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+          <SubHeader sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
           {/* <!-- ===== Header End ===== --> */}
 
           {/* <!-- ===== Main Content Start ===== --> */}

@@ -57,7 +57,6 @@ jobs:
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
-      # environment: testing
       use-llms: "anthropic"
     secrets: inherit  # pragma: allowlist secret
     needs:
@@ -67,7 +66,6 @@ jobs:
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
-      # environment: testing
       use-llms: "azure_oai"
     secrets: inherit  # pragma: allowlist secret
     needs:
@@ -77,7 +75,6 @@ jobs:
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
-      # environment: testing
       use-llms: "openai"
     secrets: inherit  # pragma: allowlist secret
     needs:
@@ -87,7 +84,6 @@ jobs:
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
-      # environment: testing
       use-llms: "togetherai"
     secrets: inherit  # pragma: allowlist secret
     needs:
@@ -97,7 +93,6 @@ jobs:
     uses: ./.github/workflows/test.yaml
     with:
       python-version: "3.9"
-      # environment: testing
       use-llms: "llm"
     secrets: inherit  # pragma: allowlist secret
     needs:

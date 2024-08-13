@@ -1,9 +1,9 @@
 import { test, expect, describe } from 'vitest';
 import _ from 'lodash';
 
-import { PropertySchemaParser, UserProperties, UserFlow } from '../components/buildPage/PropertySchemaParser';
+import { PropertySchemaParser, UserProperties, Flow } from '../components/buildPage/PropertySchemaParser';
 import { ListOfSchemas } from '../interfaces/BuildPageInterfaces';
-import { llmProperty, llmUserProperties } from './mocks';
+import { llmSchema, llmUserProperties, toolboxSchema, userProxySchema } from './mocks';
 
 describe('PropertySchemaParser', () => {
   test('Should parse secret', () => {
@@ -64,7 +64,7 @@ describe('PropertySchemaParser', () => {
     expect(Object.keys(refFields)).toHaveLength(0);
   });
   test('Should parse llm', () => {
-    const property: ListOfSchemas = _.cloneDeep(llmProperty);
+    const property: ListOfSchemas = _.cloneDeep(llmSchema);
     const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
 
     const propertySchemaParser = new PropertySchemaParser(property);
@@ -106,7 +106,7 @@ describe('PropertySchemaParser', () => {
   });
 
   test('Should delete a property only if its is not referred by any other property', () => {
-    const property: ListOfSchemas = _.cloneDeep(llmProperty);
+    const property: ListOfSchemas = _.cloneDeep(llmSchema);
     const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
 
     const propertySchemaParser = new PropertySchemaParser(property);
@@ -116,7 +116,7 @@ describe('PropertySchemaParser', () => {
     propertySchemaParser.setUserProperties(userProperties);
     expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
 
-    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
+    propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
     expect(userProperties[0].type_name).toBe('secret');
     propertySchemaParser.setActiveModelObj(userProperties[0]);
 
@@ -182,7 +182,7 @@ describe('PropertySchemaParser', () => {
   });
 
   test('Should update the default value of ref and non-fields dropdowns for LLM', () => {
-    const property: ListOfSchemas = _.cloneDeep(llmProperty);
+    const property: ListOfSchemas = _.cloneDeep(llmSchema);
     const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
     // append the following to the userProperties
     userProperties.push(
@@ -224,7 +224,7 @@ describe('PropertySchemaParser', () => {
     const schema = propertySchemaParser.getSchemaForModel();
     expect(schema).toEqual(property.schemas[1]);
 
-    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
+    propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
     expect(userProperties[3].type_name).toBe('llm');
     propertySchemaParser.setActiveModelObj(userProperties[3]);
 
@@ -315,7 +315,7 @@ describe('PropertySchemaParser', () => {
   });
 
   test('Should update the default value of non-fields dropdowns for LLM', () => {
-    const property: ListOfSchemas = _.cloneDeep(llmProperty);
+    const property: ListOfSchemas = _.cloneDeep(llmSchema);
     const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
     userProperties.push(
       {
@@ -358,7 +358,7 @@ describe('PropertySchemaParser', () => {
     const schema = propertySchemaParser.getSchemaForModel();
     expect(schema).toEqual(property.schemas[3]);
 
-    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
+    propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
     expect(userProperties[3].type_name).toBe('llm');
 
     let defaultValues = propertySchemaParser.getDefaultValues();
@@ -689,63 +689,7 @@ describe('PropertySchemaParser', () => {
   });
 
   test('Should render toolbox - without reference', () => {
-    const property: ListOfSchemas = {
-      name: 'toolbox',
-      schemas: [
-        {
-          name: 'Toolbox',
-          json_schema: {
-            $defs: {
-              OpenAPIAuthRef: {
-                properties: {
-                  type: {
-                    const: 'secret',
-                    default: 'secret',
-                    description: 'The name of the type of the data',
-                    enum: ['secret'],
-                    title: 'Type',
-                    type: 'string',
-                  },
-                  name: {
-                    const: 'OpenAPIAuth',
-                    default: 'OpenAPIAuth',
-                    description: 'The name of the data',
-                    enum: ['OpenAPIAuth'],
-                    title: 'Name',
-                    type: 'string',
-                  },
-                  uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
-                },
-                required: ['uuid'],
-                title: 'OpenAPIAuthRef',
-                type: 'object',
-              },
-            },
-            properties: {
-              name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
-              openapi_url: {
-                description: 'The URL of OpenAPI specification file',
-                format: 'uri',
-                maxLength: 2083,
-                minLength: 1,
-                title: 'OpenAPI URL',
-                type: 'string',
-              },
-              openapi_auth: {
-                anyOf: [{ $ref: '#/$defs/OpenAPIAuthRef' }, { type: 'null' }],
-                default: null,
-                description: 'Authentication information for the API mentioned in the OpenAPI specification',
-                title: 'OpenAPI Auth',
-              },
-            },
-            required: ['name', 'openapi_url'],
-            title: 'Toolbox',
-            type: 'object',
-          },
-        },
-      ],
-    };
-    const parser = new PropertySchemaParser(property);
+    const parser = new PropertySchemaParser(toolboxSchema);
     parser.setActiveModel('toolbox');
 
     let defaultValues = parser.getDefaultValues();
@@ -854,5 +798,64 @@ describe('PropertySchemaParser', () => {
         isOptional: true,
       },
     });
+  });
+
+  test('Should display correct default values while adding the user proxy agent', () => {
+    const property: ListOfSchemas = _.cloneDeep(userProxySchema);
+    const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
+
+    const propertySchemaParser = new PropertySchemaParser(property);
+    propertySchemaParser.setActiveModel('UserProxyAgent');
+    expect(propertySchemaParser).toBeInstanceOf(PropertySchemaParser);
+
+    propertySchemaParser.setUserProperties(userProperties);
+    expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
+
+    const schema = propertySchemaParser.getSchemaForModel();
+    expect(schema).toEqual(property.schemas[0]);
+
+    propertySchemaParser.setFlow(Flow.ADD_MODEL);
+
+    let defaultValues = propertySchemaParser.getDefaultValues();
+
+    // @ts-ignore
+    const expectedDefaultValues = { name: '', max_consecutive_auto_reply: null };
+    expect(defaultValues).toEqual(expectedDefaultValues);
+  });
+
+  test('Should display correct default values while updating the user proxy agent', () => {
+    const property: ListOfSchemas = _.cloneDeep(userProxySchema);
+    const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
+
+    // append the following to the userProperties
+    userProperties.push({
+      uuid: '9619e8cb-58d1-4cd6-8206-4c9173d0c63a',
+      user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+      type_name: 'agent',
+      model_name: 'UserProxyAgent',
+      json_str: { name: 'User Proxy Agent', max_consecutive_auto_reply: 1000 },
+      created_at: '2024-08-09T13:09:30.192000Z',
+      updated_at: '2024-08-09T13:09:30.192000Z',
+    });
+
+    const propertySchemaParser = new PropertySchemaParser(property);
+    propertySchemaParser.setActiveModel('UserProxyAgent');
+    propertySchemaParser.setActiveModelObj(userProperties[2]);
+    expect(propertySchemaParser).toBeInstanceOf(PropertySchemaParser);
+
+    propertySchemaParser.setUserProperties(userProperties);
+    expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
+
+    const schema = propertySchemaParser.getSchemaForModel();
+    expect(schema).toEqual(property.schemas[0]);
+
+    propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
+    expect(userProperties[2].type_name).toBe('agent');
+
+    let defaultValues = propertySchemaParser.getDefaultValues();
+
+    // @ts-ignore
+    const expectedDefaultValues = { name: 'User Proxy Agent', max_consecutive_auto_reply: 1000 };
+    expect(defaultValues).toEqual(expectedDefaultValues);
   });
 });

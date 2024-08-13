@@ -230,16 +230,12 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pre-commit
-          key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+          key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}|${{ hashFiles('pyproject.toml') }}
       - name: Install Dependencies
         run: pip install .[docs,testing]
       - name: Prisma
         run: prisma generate
       - uses: pre-commit/action@v3.0.1
-      # - uses: actions/cache@v4
-      #   with:
-      #     path: ~/.cache/pre-commit
-      #     key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
   # https://github.com/marketplace/actions/alls-green#why
   check: # This job does nothing and is only used for the branch protection

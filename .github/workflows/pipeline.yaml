@@ -227,10 +227,10 @@ jobs:
       - uses: actions/setup-python@v5
       - name: Set $PY environment variable
         run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
-      # - uses: actions/cache@v4
-      #   with:
-      #     path: ~/.cache/pre-commit
-      #     key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
       - name: Install Dependencies
         run: pip install .[docs,testing]
       - name: Prisma

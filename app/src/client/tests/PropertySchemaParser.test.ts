@@ -1,7 +1,7 @@
 import { test, expect, describe } from 'vitest';
 import _ from 'lodash';
 
-import { PropertySchemaParser, UserProperties, UserFlow } from '../components/buildPage/PropertySchemaParser';
+import { PropertySchemaParser, UserProperties, Flow } from '../components/buildPage/PropertySchemaParser';
 import { ListOfSchemas } from '../interfaces/BuildPageInterfaces';
 import { llmSchema, llmUserProperties, toolboxSchema, userProxySchema } from './mocks';
 
@@ -116,7 +116,7 @@ describe('PropertySchemaParser', () => {
     propertySchemaParser.setUserProperties(userProperties);
     expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
 
-    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
+    propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
     expect(userProperties[0].type_name).toBe('secret');
     propertySchemaParser.setActiveModelObj(userProperties[0]);
 
@@ -224,7 +224,7 @@ describe('PropertySchemaParser', () => {
     const schema = propertySchemaParser.getSchemaForModel();
     expect(schema).toEqual(property.schemas[1]);
 
-    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
+    propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
     expect(userProperties[3].type_name).toBe('llm');
     propertySchemaParser.setActiveModelObj(userProperties[3]);
 
@@ -358,7 +358,7 @@ describe('PropertySchemaParser', () => {
     const schema = propertySchemaParser.getSchemaForModel();
     expect(schema).toEqual(property.schemas[3]);
 
-    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
+    propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
     expect(userProperties[3].type_name).toBe('llm');
 
     let defaultValues = propertySchemaParser.getDefaultValues();
@@ -814,7 +814,7 @@ describe('PropertySchemaParser', () => {
     const schema = propertySchemaParser.getSchemaForModel();
     expect(schema).toEqual(property.schemas[0]);
 
-    propertySchemaParser.setUserFlow(UserFlow.ADD_MODEL);
+    propertySchemaParser.setFlow(Flow.ADD_MODEL);
 
     let defaultValues = propertySchemaParser.getDefaultValues();
 
@@ -849,7 +849,7 @@ describe('PropertySchemaParser', () => {
     const schema = propertySchemaParser.getSchemaForModel();
     expect(schema).toEqual(property.schemas[0]);
 
-    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
+    propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
     expect(userProperties[2].type_name).toBe('agent');
 
     let defaultValues = propertySchemaParser.getDefaultValues();

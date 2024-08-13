@@ -14,7 +14,7 @@ import LoadingComponent from '../LoadingComponent';
 import { usePropertySchemaParser } from './usePropertySchemaParser';
 
 import { filerOutComponentData, capitalizeFirstLetter, filterPropertiesByType } from './buildPageUtils';
-import { UserFlow } from './PropertySchemaParser';
+import { Flow } from './PropertySchemaParser';
 
 interface Props {
   activeProperty: string;
@@ -32,8 +32,8 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
   const { data: userProperties, refetch: refetchUserProperties, isLoading: isLoading } = useQuery(getModels);
   const userPropertiesByType = (userProperties && filterPropertiesByType(userProperties, activeProperty)) || [];
 
-  const setActiveModel = (model: string | null, userFlow: UserFlow = UserFlow.ADD_MODEL) => {
-    createParser({ propertySchemasList, activeModel: model, userFlow: userFlow, userProperties });
+  const setActiveModel = (model: string | null, flow: Flow = Flow.ADD_MODEL) => {
+    createParser({ propertySchemasList, activeModel: model, flow: flow, userProperties });
   };
 
   const addProperty = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -47,7 +47,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
       propertySchemasList,
       activeModel: selectedProperty.model_name,
       activeModelObj: selectedProperty,
-      userFlow: UserFlow.UPDATE_MODEL,
+      flow: Flow.UPDATE_MODEL,
       userProperties: userProperties,
     });
   };
@@ -56,9 +56,9 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
     setActiveModel(null);
   }, [sideNavItemClickCount]);
 
-  const userFlow = parser?.getUserFlow();
+  const flow = parser?.getFlow();
 
-  const title = userFlow === UserFlow.ADD_MODEL ? `Add a new ${propertyName}` : `Update ${propertyName}`;
+  const title = flow === Flow.ADD_MODEL ? `Add a new ${propertyName}` : `Update ${propertyName}`;
 
   return (
     <>
@@ -95,9 +95,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
                   <div className='flex flex-col gap-5.5 px-6.5'>
                     <h2 className='text-lg font-semibold text-airt-primary mt-6 '>{`${title}`}</h2>
                     <div className='relative z-20 bg-white dark:bg-form-input'>
-                      {userFlow === UserFlow.ADD_MODEL && (
-                        <ModelSelector parser={parser} setActiveModel={setActiveModel} />
-                      )}
+                      {flow === Flow.ADD_MODEL && <ModelSelector parser={parser} setActiveModel={setActiveModel} />}
                       <DynamicForm
                         parser={parser}
                         setActiveModel={setActiveModel}

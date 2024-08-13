@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { validateForm, addUserModels, deleteUserModels, updateUserModels } from 'wasp/client/operations';
-import { PropertySchemaParser, SetActiveModelType, UserFlow } from './PropertySchemaParser';
+import { PropertySchemaParser, SetActiveModelType, Flow } from './PropertySchemaParser';
 import { parseValidationErrors } from './formUtils';
 
 export type ctaAction = 'cancel' | 'delete';
@@ -43,7 +43,7 @@ export const usePropertyManager = (
   const modelName = parser?.getActiveModel() || '';
   const schema = modelName ? parser?.getSchemaForModel() : null;
   const defaultValues = schema ? parser?.getDefaultValues() : {};
-  const userFlow = parser?.getUserFlow();
+  const flow = parser?.getFlow();
   const refFields = parser?.getRefFields();
   const isDeploymentProperty = propertyName === 'deployment';
 
@@ -51,7 +51,7 @@ export const usePropertyManager = (
     defaultValues: defaultValues,
     onSubmit: async ({ value, formApi }) => {
       try {
-        const isSecretUpdate = propertyName === 'secret' && userFlow === UserFlow.UPDATE_MODEL;
+        const isSecretUpdate = propertyName === 'secret' && flow === Flow.UPDATE_MODEL;
         const validationURL: string = isSecretUpdate
           ? parser?.getSecretUpdateValidationURL() || ''
           : parser?.getValidationURL() || '';

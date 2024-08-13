@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 import { ListOfSchemas, Schema } from '../../interfaces/BuildPageInterfaces';
 
-export enum UserFlow {
+export enum Flow {
   UPDATE_MODEL = 'update_model',
   ADD_MODEL = 'add_model',
 }
@@ -29,8 +29,8 @@ export interface UserProperties {
 }
 
 interface PropertySchemaParserInterface {
-  getUserFlow(): UserFlow;
-  setUserFlow(flow: UserFlow): void;
+  getFlow(): Flow;
+  setFlow(flow: Flow): void;
   getModelNames(): SelectOption[];
   getActiveModel(): string | null;
   setActiveModel(model: string | null): void;
@@ -53,7 +53,7 @@ interface PropertySchemaParserInterface {
 
 export class PropertySchemaParser implements PropertySchemaParserInterface {
   private readonly propertySchemas: ListOfSchemas;
-  private userFlow: UserFlow;
+  private flow: Flow;
   private activeModel: string | null;
   private readonly propertyName: string;
   private activeModelObj: any;
@@ -65,7 +65,7 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
   constructor(propertySchemas: ListOfSchemas) {
     this.propertySchemas = propertySchemas;
     this.propertyName = propertySchemas.name;
-    this.userFlow = UserFlow.ADD_MODEL;
+    this.flow = Flow.ADD_MODEL;
     this.activeModel = null;
     this.activeModelObj = null;
     this.userProperties = null;
@@ -96,7 +96,8 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
   }
 
   public checkIfRefField(property: any): boolean {
-    return _.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf');
+    const refTypes = this.getRefTypes(property);
+    return refTypes.length > 0;
   }
 
   public getDefaultValues(): { [key: string]: any } {
@@ -108,9 +109,8 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
     if ('json_schema' in schema) {
       Object.entries(schema.json_schema.properties).forEach(([key, property]: [string, any]) => {
         const isReferenceField = this.checkIfRefField(property);
-        const refTypes = this.getRefTypes(property);
-        if (isReferenceField && refTypes.length > 0) {
-          this.handleReferenceField(key, property, refTypes, defaultValues);
+        if (isReferenceField) {
+          this.handleReferenceField(key, property, defaultValues);
         } else {
           this.handleNonReferenceField(key, property, defaultValues);
         }
@@ -119,12 +119,8 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
     return defaultValues;
   }
 
-  private handleReferenceField(
-    key: string,
-    property: any,
-    refTypes: string[],
-    defaultValues: { [key: string]: any }
-  ): void {
+  private handleReferenceField(key: string, property: any, defaultValues: { [key: string]: any }): void {
+    const refTypes = this.getRefTypes(property);
     const matchingProperties = this.getMatchingProperties(refTypes);
     const enumValues = this.createEnumValues(matchingProperties);
     const isOptional = this.isOptionalField(property);
@@ -225,18 +221,18 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
 
   private getNonDropdownDefaultValue(key: string, property: any): any {
     if (this.activeModelObj) {
-      return this.activeModelObj?.json_str?.[key] ?? '';
+      return this.activeModelObj.json_str?.[key] ?? '';
     } else {
       return property.default !== undefined ? property.default : '';
     }
   }
 
-  public getUserFlow(): UserFlow {
-    return this.userFlow;
+  public getFlow(): Flow {
+    return this.flow;
   }
 
-  public setUserFlow(flow: UserFlow): void {
-    this.userFlow = flow;
+  public setFlow(flow: Flow): void {
+    this.flow = flow;
   }
 
   public getModelNames(): SelectOption[] {

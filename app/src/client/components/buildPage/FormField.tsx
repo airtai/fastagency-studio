@@ -8,7 +8,7 @@ import { SECRETS_TO_MASK } from '../../utils/constants';
 import { TextArea } from '../form/TextArea';
 import { SelectOption } from './PropertySchemaParser';
 
-const customStyles: StylesConfig<SelectOption, false> = {
+const markAddPropertyOption: StylesConfig<SelectOption, false> = {
   control: (baseStyles) => ({
     ...baseStyles,
     borderColor: '#003257',
@@ -105,7 +105,7 @@ export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey,
           defaultValue={defaultValue}
           isSearchable={true}
           isClearable={isOptionalRefField}
-          styles={customStyles}
+          styles={markAddPropertyOption}
         />
       ) : fieldKey === 'system_message' ? (
         <TextArea

@@ -27,13 +27,13 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
   const propertyName = activeProperty === 'llm' ? 'LLM' : capitalizeFirstLetter(activeProperty);
   const propertySchemasList = filerOutComponentData(propertiesSchema, activeProperty);
 
-  const { parser, activeModel, createParser } = usePropertySchemaParser(propertySchemasList);
+  const { parser, activeModel, createParser } = usePropertySchemaParser(propertiesSchema, activeProperty);
 
   const { data: userProperties, refetch: refetchUserProperties, isLoading: isLoading } = useQuery(getModels);
   const userPropertiesByType = (userProperties && filterPropertiesByType(userProperties, activeProperty)) || [];
 
   const setActiveModel = (model: string | null, flow: Flow = Flow.ADD_MODEL) => {
-    createParser({ propertySchemasList, activeModel: model, flow: flow, userProperties });
+    createParser({ propertiesSchema, activeProperty, activeModel: model, flow: flow, userProperties });
   };
 
   const addProperty = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -44,7 +44,8 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
   const getSelectedUserProperty = (index: number) => {
     const selectedProperty = userPropertiesByType[index];
     createParser({
-      propertySchemasList,
+      propertiesSchema,
+      activeProperty,
       activeModel: selectedProperty.model_name,
       activeModelObj: selectedProperty,
       flow: Flow.UPDATE_MODEL,

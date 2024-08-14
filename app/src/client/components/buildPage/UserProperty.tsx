@@ -11,7 +11,7 @@ import { ModelSelector } from '../buildPage/ModelSelector';
 import { navLinkItems } from '../CustomSidebar';
 import { PropertiesSchema } from '../../interfaces/BuildPageInterfaces';
 import LoadingComponent from '../LoadingComponent';
-import { usePropertySchemaParser } from './usePropertySchemaParser';
+import { useFormHandler } from './useFormHandler';
 
 import { filerOutComponentData, capitalizeFirstLetter, filterPropertiesByType } from './buildPageUtils';
 import { Flow } from './PropertySchemaParser';
@@ -27,23 +27,39 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
   const propertyName = activeProperty === 'llm' ? 'LLM' : capitalizeFirstLetter(activeProperty);
   const propertySchemasList = filerOutComponentData(propertiesSchema, activeProperty);
 
-  const { parser, activeModel, createParser } = usePropertySchemaParser(propertiesSchema, activeProperty);
+  const { parser, addNewParserToStack, popFromStack, clearStack } = useFormHandler(propertiesSchema, activeProperty);
 
   const { data: userProperties, refetch: refetchUserProperties, isLoading: isLoading } = useQuery(getModels);
   const userPropertiesByType = (userProperties && filterPropertiesByType(userProperties, activeProperty)) || [];
 
-  const setActiveModel = (model: string | null, flow: Flow = Flow.ADD_MODEL) => {
-    createParser({ propertiesSchema, activeProperty, activeModel: model, flow: flow, userProperties });
+  //createNewFormResumeFlow
+  const updateFormStack = (model: string | null, property: string | null = null, flow: Flow = Flow.ADD_MODEL) => {
+    let propertyToShow: string = activeProperty;
+    let replaceLast: boolean = true;
+
+    if (property) {
+      propertyToShow = property;
+      replaceLast = false;
+    }
+
+    addNewParserToStack({
+      propertiesSchema,
+      activeProperty: propertyToShow,
+      activeModel: model,
+      flow: flow,
+      userProperties,
+      replaceLast,
+    });
   };
 
   const addProperty = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setActiveModel(propertySchemasList.schemas[0].name);
+    updateFormStack(propertySchemasList.schemas[0].name);
   };
 
   const getSelectedUserProperty = (index: number) => {
     const selectedProperty = userPropertiesByType[index];
-    createParser({
+    addNewParserToStack({
       propertiesSchema,
       activeProperty,
       activeModel: selectedProperty.model_name,
@@ -54,8 +70,8 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
   };
 
   useEffect(() => {
-    setActiveModel(null);
-  }, [sideNavItemClickCount]);
+    clearStack();
+  }, [sideNavItemClickCount, clearStack]);
 
   const flow = parser?.getFlow();
 
@@ -70,7 +86,7 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
             <LoadingComponent theme='dark' />
           ) : (
             <div className='flex-col flex items-start p-6 gap-3 w-full'>
-              {!activeModel ? (
+              {!parser ? (
                 <>
                   <div className={`${false ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
                     <Button onClick={addProperty} label={`Add ${propertyName}`} />
@@ -96,11 +112,12 @@ export const UserProperty = memo(({ activeProperty, propertiesSchema, sideNavIte
                   <div className='flex flex-col gap-5.5 px-6.5'>
                     <h2 className='text-lg font-semibold text-airt-primary mt-6 '>{`${title}`}</h2>
                     <div className='relative z-20 bg-white dark:bg-form-input'>
-                      {flow === Flow.ADD_MODEL && <ModelSelector parser={parser} setActiveModel={setActiveModel} />}
+                      {flow === Flow.ADD_MODEL && <ModelSelector parser={parser} updateFormStack={updateFormStack} />}
                       <DynamicForm
                         parser={parser}
-                        setActiveModel={setActiveModel}
+                        updateFormStack={updateFormStack}
                         refetchUserProperties={refetchUserProperties}
+                        popFromStack={popFromStack}
                       />
                     </div>
                   </div>

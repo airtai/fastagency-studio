@@ -72,7 +72,7 @@ describe('PropertySchemaParser', () => {
           enum: [
             { value: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b', label: 'secret' },
             {
-              isAddPropertyOption: true,
+              addPropertyForModel: 'AzureOAIAPIKey',
               label: 'Add new "Secret"',
               value: 'secret',
             },
@@ -231,7 +231,7 @@ describe('PropertySchemaParser', () => {
             { value: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b', label: 'secret' },
             { value: 'a0014b3f-bb43-4f64-8732-bb9444d13f7b', label: 'secret 2' },
             {
-              isAddPropertyOption: true,
+              addPropertyForModel: 'AzureOAIAPIKey',
               label: 'Add new "Secret"',
               value: 'secret',
             },
@@ -504,7 +504,7 @@ describe('PropertySchemaParser', () => {
           enum: [
             { value: '1', label: 'Ref1 Instance' },
             {
-              isAddPropertyOption: true,
+              addPropertyForModel: 'Ref1',
               label: 'Add new ""',
               value: '',
             },
@@ -522,7 +522,7 @@ describe('PropertySchemaParser', () => {
           enum: [
             { value: '2', label: 'Ref2 Instance' },
             {
-              isAddPropertyOption: true,
+              addPropertyForModel: 'Ref2',
               label: 'Add new ""',
               value: '',
             },
@@ -615,7 +615,7 @@ describe('PropertySchemaParser', () => {
     expect(refFields.ref.property).toHaveLength(0);
     expect(refFields.ref.htmlForSelectBox.enum).toStrictEqual([
       {
-        isAddPropertyOption: true,
+        addPropertyForModel: 'NonExistent',
         label: 'Add new ""',
         value: '',
       },
@@ -696,7 +696,7 @@ describe('PropertySchemaParser', () => {
       { value: '1', label: 'MultiRef Instance 1' },
       { value: '2', label: 'MultiRef Instance 2' },
       {
-        isAddPropertyOption: true,
+        addPropertyForModel: 'MultiRef',
         label: 'Add new ""',
         value: '',
       },
@@ -723,7 +723,7 @@ describe('PropertySchemaParser', () => {
           description: '',
           enum: [
             {
-              isAddPropertyOption: true,
+              addPropertyForModel: 'OpenAPIAuth',
               label: 'Add new "Secret"',
               value: 'secret',
             },
@@ -770,7 +770,7 @@ describe('PropertySchemaParser', () => {
           enum: [
             { label: 'OpenAIAPI Auth Key', value: '06936c73-f22b-4c69-b107-6f8f9a4982bc' },
             {
-              isAddPropertyOption: true,
+              addPropertyForModel: 'OpenAPIAuth',
               label: 'Add new "Secret"',
               value: 'secret',
             },

@@ -1,14 +1,14 @@
 import Select, { StylesConfig, SingleValue } from 'react-select';
-import { PropertySchemaParser, SetActiveModelType } from './PropertySchemaParser';
+import { PropertySchemaParser, SetUpdateFormStack } from './PropertySchemaParser';
 import { SelectOption } from './PropertySchemaParser';
 import { capitalizeFirstLetter } from './buildPageUtils';
 
 export const ModelSelector = ({
   parser,
-  setActiveModel,
+  updateFormStack,
 }: {
   parser: PropertySchemaParser | null;
-  setActiveModel: SetActiveModelType;
+  updateFormStack: SetUpdateFormStack;
 }) => {
   const selectOptions = parser?.getModelNames();
   const propertyName = parser?.getPropertyName();
@@ -22,7 +22,7 @@ export const ModelSelector = ({
 
   const handleChange = (selectedOption: SingleValue<SelectOption>) => {
     if (selectedOption) {
-      setActiveModel(selectedOption.value);
+      updateFormStack(selectedOption.value);
     }
   };
 

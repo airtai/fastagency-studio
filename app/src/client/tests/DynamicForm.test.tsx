@@ -23,8 +23,9 @@ describe('DynamicForm', () => {
     const activeProperty = 'secret';
     const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('AnthropicAPIKey');
-    const mockSetActiveModel = vi.fn();
+    const mockUpdateFormStack = vi.fn();
     const mockRefetchUserProperties = vi.fn();
+    const mockPopFromStack = vi.fn();
 
     vi.mocked(operations.validateForm).mockResolvedValue({});
     vi.mocked(operations.addUserModels).mockResolvedValue({});
@@ -32,8 +33,9 @@ describe('DynamicForm', () => {
     renderInContext(
       <DynamicForm
         parser={parser}
-        setActiveModel={mockSetActiveModel}
+        updateFormStack={mockUpdateFormStack}
         refetchUserProperties={mockRefetchUserProperties}
+        popFromStack={mockPopFromStack}
       />
     );
 
@@ -54,7 +56,7 @@ describe('DynamicForm', () => {
     expect(operations.addUserModels).toHaveBeenCalled();
 
     // Check if the form was reset and properties were refetched
-    expect(mockSetActiveModel).toHaveBeenCalledWith(null);
+    expect(mockUpdateFormStack).toHaveBeenCalledWith(null);
     expect(mockRefetchUserProperties).toHaveBeenCalled();
   });
 
@@ -62,8 +64,9 @@ describe('DynamicForm', () => {
     const activeProperty = 'secret';
     const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('AnthropicAPIKey');
-    const mockSetActiveModel = vi.fn();
+    const mockUpdateFormStack = vi.fn();
     const mockRefetchUserProperties = vi.fn();
+    const mockPopFromStack = vi.fn();
 
     vi.mocked(operations.validateForm).mockResolvedValue({});
     vi.mocked(operations.addUserModels).mockResolvedValue({});
@@ -73,8 +76,9 @@ describe('DynamicForm', () => {
     renderInContext(
       <DynamicForm
         parser={parser}
-        setActiveModel={mockSetActiveModel}
+        updateFormStack={mockUpdateFormStack}
         refetchUserProperties={mockRefetchUserProperties}
+        popFromStack={mockPopFromStack}
       />
     );
 
@@ -90,7 +94,7 @@ describe('DynamicForm', () => {
     await waitFor(() => {
       expect(operations.validateForm).toHaveBeenCalled();
       expect(operations.addUserModels).toHaveBeenCalled();
-      expect(mockSetActiveModel).toHaveBeenCalledWith(null);
+      expect(mockUpdateFormStack).toHaveBeenCalledWith(null);
       expect(mockRefetchUserProperties).toHaveBeenCalled();
     });
   });
@@ -99,8 +103,9 @@ describe('DynamicForm', () => {
     const activeProperty = 'secret';
     const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('AnthropicAPIKey');
-    const mockSetActiveModel = vi.fn();
+    const mockUpdateFormStack = vi.fn();
     const mockRefetchUserProperties = vi.fn();
+    const mockPopFromStack = vi.fn();
 
     const mockError = {
       message: JSON.stringify([{ loc: ['name'], msg: 'Name is required', type: 'value_error' }]),
@@ -113,8 +118,9 @@ describe('DynamicForm', () => {
     renderInContext(
       <DynamicForm
         parser={parser}
-        setActiveModel={mockSetActiveModel}
+        updateFormStack={mockUpdateFormStack}
         refetchUserProperties={mockRefetchUserProperties}
+        popFromStack={mockPopFromStack}
       />
     );
 
@@ -125,7 +131,7 @@ describe('DynamicForm', () => {
       expect(screen.getByRole('alert')).toHaveTextContent('Name is required');
     });
 
-    expect(mockSetActiveModel).not.toHaveBeenCalled();
+    expect(mockUpdateFormStack).not.toHaveBeenCalled();
     expect(mockRefetchUserProperties).not.toHaveBeenCalled();
   });
 
@@ -133,16 +139,18 @@ describe('DynamicForm', () => {
     const activeProperty = 'secret';
     const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('AnthropicAPIKey');
-    const mockSetActiveModel = vi.fn();
+    const mockUpdateFormStack = vi.fn();
     const mockRefetchUserProperties = vi.fn();
+    const mockPopFromStack = vi.fn();
 
     const user = userEvent.setup();
 
     renderInContext(
       <DynamicForm
         parser={parser}
-        setActiveModel={mockSetActiveModel}
+        updateFormStack={mockUpdateFormStack}
         refetchUserProperties={mockRefetchUserProperties}
+        popFromStack={mockPopFromStack}
       />
     );
 
@@ -154,21 +162,23 @@ describe('DynamicForm', () => {
 
     expect(screen.getByLabelText('Name')).toHaveValue('');
     expect(screen.getByLabelText('Api Key')).toHaveValue('');
-    expect(mockSetActiveModel).toHaveBeenCalledWith(null);
+    expect(mockUpdateFormStack).toHaveBeenCalledWith(null);
   });
 
   it('masks the API key input', () => {
     const activeProperty = 'secret';
     const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('AnthropicAPIKey');
-    const mockSetActiveModel = vi.fn();
+    const mockUpdateFormStack = vi.fn();
     const mockRefetchUserProperties = vi.fn();
+    const mockPopFromStack = vi.fn();
 
     renderInContext(
       <DynamicForm
         parser={parser}
-        setActiveModel={mockSetActiveModel}
+        updateFormStack={mockUpdateFormStack}
         refetchUserProperties={mockRefetchUserProperties}
+        popFromStack={mockPopFromStack}
       />
     );
 

@@ -6,7 +6,7 @@ import Select, { StylesConfig } from 'react-select';
 import { TextInput } from '../form/TextInput';
 import { SECRETS_TO_MASK } from '../../utils/constants';
 import { TextArea } from '../form/TextArea';
-import { SelectOption } from './PropertySchemaParser';
+import { SelectOption, SetUpdateFormStack } from './PropertySchemaParser';
 
 const markAddPropertyOption: StylesConfig<SelectOption, false> = {
   control: (baseStyles) => ({
@@ -17,7 +17,7 @@ const markAddPropertyOption: StylesConfig<SelectOption, false> = {
     ...styles,
     display: 'flex',
     alignItems: 'center',
-    '::before': data.isAddPropertyOption
+    '::before': data.addPropertyForModel
       ? {
           fontFamily: '"Material Symbols Outlined"',
           content: '"\ue147"',
@@ -32,6 +32,7 @@ interface FormFieldProps {
   property: any;
   fieldKey: string;
   isOptionalRefField: boolean;
+  updateFormStack: SetUpdateFormStack;
 }
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
@@ -51,7 +52,13 @@ const getSelectObject = (val: string): {} => {
   return { value: val, label: val };
 };
 
-export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey, isOptionalRefField }) => {
+export const FormField: React.FC<FormFieldProps> = ({
+  field,
+  property,
+  fieldKey,
+  isOptionalRefField,
+  updateFormStack,
+}) => {
   const [selectOptions, setSelectOptions] = useState([]);
   const [defaultValue, setDefaultValue] = useState(null);
   const [key, setKey] = useState(0);
@@ -82,11 +89,13 @@ export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey,
 
   const handleSelectOnchange = (selectedOption: any) => {
     const value = selectedOption?.value || null;
-    const isAddOption = selectedOption?.isAddPropertyOption;
+    const addPropertyForModel = selectedOption?.addPropertyForModel;
 
     field.handleChange(value);
-    if (isAddOption) {
-      console.log('Add option selected for: ', value);
+    if (addPropertyForModel) {
+      const propertyName: string = value;
+      const modelName = addPropertyForModel;
+      updateFormStack(addPropertyForModel, propertyName);
     }
   };
 

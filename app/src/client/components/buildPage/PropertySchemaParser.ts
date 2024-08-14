@@ -8,12 +8,12 @@ export enum Flow {
   ADD_MODEL = 'add_model',
 }
 
-export type SetActiveModelType = (model: string | null) => void;
+export type SetUpdateFormStack = (model: string | null, property?: string | null) => void;
 
 export interface SelectOption {
   value: string;
   label: string;
-  isAddPropertyOption?: boolean;
+  addPropertyForModel?: string;
 }
 
 export interface UserProperties {
@@ -128,8 +128,9 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
   }
 
   private createAddPropertyOption(refTypes: string[]): SelectOption[] {
+    const modelName = refTypes[0];
     const targetPropertyName: string = _.chain(this.propertiesSchema.list_of_schemas)
-      .find((schemaGroup) => _.some(schemaGroup.schemas, { name: refTypes[0] }))
+      .find((schemaGroup) => _.some(schemaGroup.schemas, { name: modelName }))
       .get('name', '')
       .value();
 
@@ -137,7 +138,7 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
       {
         label: `Add new "${this.getCapitalizeTitle(targetPropertyName)}"`,
         value: targetPropertyName,
-        isAddPropertyOption: true,
+        addPropertyForModel: modelName,
       },
     ];
   }

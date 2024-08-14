@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { validateForm, addUserModels, deleteUserModels, updateUserModels } from 'wasp/client/operations';
-import { PropertySchemaParser, SetActiveModelType, Flow } from './PropertySchemaParser';
+import { PropertySchemaParser, SetUpdateFormStack, Flow } from './PropertySchemaParser';
 import { parseValidationErrors } from './formUtils';
 
 export type ctaAction = 'cancel' | 'delete';
@@ -32,8 +32,9 @@ export const onSuccessCallback = async (
 
 export const usePropertyManager = (
   parser: PropertySchemaParser | null,
-  setActiveModel: SetActiveModelType,
-  refetchUserProperties: any
+  updateFormStack: SetUpdateFormStack,
+  refetchUserProperties: any,
+  popFromStack: () => void
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
@@ -103,13 +104,14 @@ export const usePropertyManager = (
 
   const resetFormState = () => {
     form.reset();
-    setActiveModel(null);
+    updateFormStack(null);
     setSuccessResponse(null);
   };
 
   const resetAndRefetchProperties = async () => {
     resetFormState();
     refetchUserProperties();
+    popFromStack();
   };
 
   const deleteProperty = async () => {

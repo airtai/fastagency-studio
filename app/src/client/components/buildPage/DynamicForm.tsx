@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import _ from 'lodash';
-import { PropertySchemaParser, SetActiveModelType, Flow } from './PropertySchemaParser';
+import { PropertySchemaParser, SetUpdateFormStack, Flow } from './PropertySchemaParser';
 import { useEscapeKeyHandler } from '../../hooks/useEscapeKeyHandler';
 import { usePropertyManager } from './usePropertyManager';
 import { FormField } from './FormField';
@@ -11,8 +11,9 @@ import AgentConversationHistory from '../AgentConversationHistory';
 
 interface DynamicFormProps {
   parser: PropertySchemaParser | null;
-  setActiveModel: SetActiveModelType;
+  updateFormStack: SetUpdateFormStack;
   refetchUserProperties: () => void;
+  popFromStack: () => void;
 }
 
 const LoaderContainer = () => (
@@ -57,9 +58,14 @@ const DeploymentInstructions = ({ parser }: { parser: any }) => {
   return <DeploymentNextSteps githubUrl={githubUrl} />;
 };
 
-export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel, refetchUserProperties }) => {
+export const DynamicForm: React.FC<DynamicFormProps> = ({
+  parser,
+  updateFormStack,
+  refetchUserProperties,
+  popFromStack,
+}) => {
   const { form, schema, handleCtaAction, isLoading, setNotification, notification, successResponse } =
-    usePropertyManager(parser, setActiveModel, refetchUserProperties);
+    usePropertyManager(parser, updateFormStack, refetchUserProperties, popFromStack);
 
   const formFields = useMemo(() => {
     if (schema && 'json_schema' in schema) {
@@ -87,7 +93,13 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel
             key={key}
             name={key}
             children={(field) => (
-              <FormField field={field} property={propertyCopy} fieldKey={key} isOptionalRefField={isOptionalRefField} />
+              <FormField
+                field={field}
+                property={propertyCopy}
+                fieldKey={key}
+                isOptionalRefField={isOptionalRefField}
+                updateFormStack={updateFormStack}
+              />
             )}
             validators={{
               onChange: ({ value }) => undefined,

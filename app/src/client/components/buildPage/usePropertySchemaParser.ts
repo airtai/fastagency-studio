@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { PropertySchemaParser, UserFlow } from './PropertySchemaParser';
-import { ListOfSchemas, PropertiesSchema } from '../../interfaces/BuildPageInterfaces';
-import { filerOutComponentData } from './buildPageUtils';
+import { PropertySchemaParser, Flow } from './PropertySchemaParser';
+import { PropertiesSchema } from '../../interfaces/BuildPageInterfaces';
 
 interface CustomInitOptions {
   propertiesSchema: PropertiesSchema;
   activeProperty: string;
   activeModel: string | null;
-  userFlow: UserFlow;
+  flow: Flow;
   activeModelObj?: any;
   userProperties: any;
 }
@@ -27,8 +26,8 @@ export function usePropertySchemaParser(propertiesSchema: PropertiesSchema, acti
     const newParser = new PropertySchemaParser(customOptions.propertiesSchema, customOptions.activeProperty);
     newParser.setActiveModel(customOptions.activeModel);
 
-    if (customOptions.userFlow) {
-      newParser.setUserFlow(customOptions.userFlow);
+    if (customOptions.flow) {
+      newParser.setFlow(customOptions.flow);
     }
 
     if (customOptions.activeModelObj) {

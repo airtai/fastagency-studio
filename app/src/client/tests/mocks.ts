@@ -519,170 +519,43 @@ export const mockPropertieSchemas: PropertiesSchema = {
         },
       ],
     },
+    {
+      name: 'agent',
+      schemas: [
+        {
+          name: 'UserProxyAgent',
+          json_schema: {
+            properties: {
+              name: {
+                description: 'The name of the item',
+                minLength: 1,
+                title: 'Name',
+                type: 'string',
+              },
+              max_consecutive_auto_reply: {
+                anyOf: [
+                  {
+                    type: 'integer',
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+                default: null,
+                description: 'The maximum number of consecutive auto-replies the agent can make',
+                title: 'Max Consecutive Auto Reply',
+              },
+            },
+            required: ['name'],
+            title: 'UserProxyAgent',
+            type: 'object',
+          },
+        },
+      ],
+    },
   ],
 };
 
-export const llmProperty: ListOfSchemas = {
-  name: 'llm',
-  schemas: [
-    {
-      name: 'Anthropic',
-      json_schema: {
-        $defs: {
-          AnthropicAPIKeyRef: {
-            properties: {
-              type: {
-                const: 'secret',
-                default: 'secret',
-                description: 'The name of the type of the data',
-                enum: ['secret'],
-                title: 'Type',
-                type: 'string',
-              },
-              name: {
-                const: 'AnthropicAPIKey',
-                default: 'AnthropicAPIKey',
-                description: 'The name of the data',
-                enum: ['AnthropicAPIKey'],
-                title: 'Name',
-                type: 'string',
-              },
-              uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
-            },
-            required: ['uuid'],
-            title: 'AnthropicAPIKeyRef',
-            type: 'object',
-          },
-        },
-        properties: {
-          name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
-          model: {
-            default: 'claude-3-5-sonnet-20240620',
-            description: "The model to use for the Anthropic API, e.g. 'claude-3-5-sonnet-20240620'",
-            enum: [
-              'claude-3-5-sonnet-20240620',
-              'claude-3-opus-20240229',
-              'claude-3-sonnet-20240229',
-              'claude-3-haiku-20240307',
-            ],
-            title: 'Model',
-            type: 'string',
-          },
-          api_key: { $ref: '#/$defs/AnthropicAPIKeyRef' },
-          base_url: {
-            default: 'https://api.anthropic.com/v1',
-            description: 'The base URL of the Anthropic API',
-            format: 'uri',
-            maxLength: 2083,
-            minLength: 1,
-            title: 'Base Url',
-            type: 'string',
-          },
-          api_type: {
-            const: 'anthropic',
-            default: 'anthropic',
-            description: "The type of the API, must be 'anthropic'",
-            enum: ['anthropic'],
-            title: 'API Type',
-            type: 'string',
-          },
-          temperature: {
-            default: 0.8,
-            description: 'The temperature to use for the model, must be between 0 and 2',
-            title: 'Temperature',
-            type: 'number',
-          },
-        },
-        required: ['name', 'api_key'],
-        title: 'Anthropic',
-        type: 'object',
-      },
-    },
-    {
-      name: 'AzureOAI',
-      json_schema: {
-        $defs: {
-          AzureOAIAPIKeyRef: {
-            properties: {
-              type: {
-                const: 'secret',
-                default: 'secret',
-                description: 'The name of the type of the data',
-                enum: ['secret'],
-                title: 'Type',
-                type: 'string',
-              },
-              name: {
-                const: 'AzureOAIAPIKey',
-                default: 'AzureOAIAPIKey',
-                description: 'The name of the data',
-                enum: ['AzureOAIAPIKey'],
-                title: 'Name',
-                type: 'string',
-              },
-              uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
-            },
-            required: ['uuid'],
-            title: 'AzureOAIAPIKeyRef',
-            type: 'object',
-          },
-        },
-        properties: {
-          name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
-          model: {
-            default: 'gpt-3.5-turbo',
-            description: "The model to use for the Azure OpenAI API, e.g. 'gpt-3.5-turbo'",
-            title: 'Model',
-            type: 'string',
-          },
-          api_key: { $ref: '#/$defs/AzureOAIAPIKeyRef' },
-          base_url: {
-            default: 'https://api.openai.com/v1',
-            description: 'The base URL of the Azure OpenAI API',
-            format: 'uri',
-            maxLength: 2083,
-            minLength: 1,
-            title: 'Base Url',
-            type: 'string',
-          },
-          api_type: {
-            const: 'azure',
-            default: 'azure',
-            description: "The type of the API, must be 'azure'",
-            enum: ['azure'],
-            title: 'API type',
-            type: 'string',
-          },
-          api_version: {
-            default: '2024-02-01',
-            description: "The version of the Azure OpenAI API, e.g. '2024-02-01'",
-            enum: [
-              '2023-05-15',
-              '2023-06-01-preview',
-              '2023-10-01-preview',
-              '2024-02-15-preview',
-              '2024-03-01-preview',
-              '2024-04-01-preview',
-              '2024-05-01-preview',
-              '2024-02-01',
-            ],
-            title: 'Api Version',
-            type: 'string',
-          },
-          temperature: {
-            default: 0.8,
-            description: 'The temperature to use for the model, must be between 0 and 2',
-            title: 'Temperature',
-            type: 'number',
-          },
-        },
-        required: ['name', 'api_key'],
-        title: 'AzureOAI',
-        type: 'object',
-      },
-    },
-  ],
-};
 // @ts-ignore
 export const llmUserProperties: UserProperties[] = [
   {

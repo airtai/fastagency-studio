@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { ListOfSchemas, PropertiesSchema, Schema } from '../../interfaces/BuildPageInterfaces';
 import { filerOutComponentData } from './buildPageUtils';
 
-export enum UserFlow {
+export enum Flow {
   UPDATE_MODEL = 'update_model',
   ADD_MODEL = 'add_model',
 }
@@ -31,8 +31,8 @@ export interface UserProperties {
 }
 
 interface PropertySchemaParserInterface {
-  getUserFlow(): UserFlow;
-  setUserFlow(flow: UserFlow): void;
+  getFlow(): Flow;
+  setFlow(flow: Flow): void;
   getModelNames(): SelectOption[];
   getActiveModel(): string | null;
   setActiveModel(model: string | null): void;
@@ -57,7 +57,7 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
   private readonly propertiesSchema: PropertiesSchema;
   private readonly propertyName: string;
   private readonly propertySchemas: ListOfSchemas;
-  private userFlow: UserFlow;
+  private flow: Flow;
   private activeModel: string | null;
   private activeModelObj: any;
   private schema: Schema | undefined;
@@ -69,7 +69,7 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
     this.propertiesSchema = propertiesSchema;
     this.propertyName = propertyName;
     this.propertySchemas = filerOutComponentData(propertiesSchema, propertyName);
-    this.userFlow = UserFlow.ADD_MODEL;
+    this.flow = Flow.ADD_MODEL;
     this.activeModel = null;
     this.activeModelObj = null;
     this.userProperties = null;
@@ -100,7 +100,8 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
   }
 
   public checkIfRefField(property: any): boolean {
-    return _.has(property, '$ref') || _.has(property, 'anyOf') || _.has(property, 'allOf');
+    const refTypes = this.getRefTypes(property);
+    return refTypes.length > 0;
   }
 
   public getDefaultValues(): { [key: string]: any } {
@@ -244,15 +245,19 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
   }
 
   private getNonDropdownDefaultValue(key: string, property: any): any {
-    return this.activeModelObj?.json_str?.[key] ?? property.default ?? '';
+    if (this.activeModelObj) {
+      return this.activeModelObj.json_str?.[key] ?? '';
+    } else {
+      return property.default !== undefined ? property.default : '';
+    }
   }
 
-  public getUserFlow(): UserFlow {
-    return this.userFlow;
+  public getFlow(): Flow {
+    return this.flow;
   }
 
-  public setUserFlow(flow: UserFlow): void {
-    this.userFlow = flow;
+  public setFlow(flow: Flow): void {
+    this.flow = flow;
   }
 
   public getModelNames(): SelectOption[] {

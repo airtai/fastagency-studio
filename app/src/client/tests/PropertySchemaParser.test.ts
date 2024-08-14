@@ -1,7 +1,7 @@
 import { test, expect, describe } from 'vitest';
 import _ from 'lodash';
 
-import { PropertySchemaParser, UserProperties, UserFlow } from '../components/buildPage/PropertySchemaParser';
+import { PropertySchemaParser, UserProperties, Flow } from '../components/buildPage/PropertySchemaParser';
 import { PropertiesSchema } from '../interfaces/BuildPageInterfaces';
 import { llmUserProperties, mockPropertieSchemas } from './mocks';
 
@@ -36,7 +36,6 @@ describe('PropertySchemaParser', () => {
     expect(Object.keys(refFields)).toHaveLength(0);
   });
   test('Should parse llm', () => {
-    // const property: ListOfSchemas = _.cloneDeep(llmProperty);
     const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
     const activeProperty = 'llm';
     const propertySchemaParser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
@@ -97,7 +96,7 @@ describe('PropertySchemaParser', () => {
     propertySchemaParser.setUserProperties(userProperties);
     expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
 
-    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
+    propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
     expect(userProperties[0].type_name).toBe('secret');
     propertySchemaParser.setActiveModelObj(userProperties[0]);
 
@@ -205,7 +204,7 @@ describe('PropertySchemaParser', () => {
     const schema = propertySchemaParser.getSchemaForModel();
     expect(schema).toEqual(mockPropertieSchemas.list_of_schemas[1].schemas[1]);
 
-    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
+    propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
     expect(userProperties[3].type_name).toBe('llm');
     propertySchemaParser.setActiveModelObj(userProperties[3]);
 
@@ -341,7 +340,7 @@ describe('PropertySchemaParser', () => {
     propertySchemaParser.setUserProperties(userProperties);
     expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
 
-    propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
+    propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
     expect(userProperties[3].type_name).toBe('llm');
 
     let defaultValues = propertySchemaParser.getDefaultValues();
@@ -783,5 +782,64 @@ describe('PropertySchemaParser', () => {
         isOptional: true,
       },
     });
+  });
+
+  test('Should display correct default values while adding the user proxy agent', () => {
+    const activeProperty = 'agent';
+    const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
+
+    const propertySchemaParser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
+    propertySchemaParser.setActiveModel('UserProxyAgent');
+    expect(propertySchemaParser).toBeInstanceOf(PropertySchemaParser);
+
+    propertySchemaParser.setUserProperties(userProperties);
+    expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
+
+    const schema = propertySchemaParser.getSchemaForModel();
+    expect(schema).toEqual(mockPropertieSchemas.list_of_schemas[3].schemas[0]);
+
+    propertySchemaParser.setFlow(Flow.ADD_MODEL);
+
+    let defaultValues = propertySchemaParser.getDefaultValues();
+
+    // @ts-ignore
+    const expectedDefaultValues = { name: '', max_consecutive_auto_reply: null };
+    expect(defaultValues).toEqual(expectedDefaultValues);
+  });
+
+  test('Should display correct default values while updating the user proxy agent', () => {
+    const activeProperty = 'agent';
+    const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
+
+    // append the following to the userProperties
+    userProperties.push({
+      uuid: '9619e8cb-58d1-4cd6-8206-4c9173d0c63a',
+      user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+      type_name: 'agent',
+      model_name: 'UserProxyAgent',
+      json_str: { name: 'User Proxy Agent', max_consecutive_auto_reply: 1000 },
+      created_at: '2024-08-09T13:09:30.192000Z',
+      updated_at: '2024-08-09T13:09:30.192000Z',
+    });
+
+    const propertySchemaParser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
+    propertySchemaParser.setActiveModel('UserProxyAgent');
+    propertySchemaParser.setActiveModelObj(userProperties[2]);
+    expect(propertySchemaParser).toBeInstanceOf(PropertySchemaParser);
+
+    propertySchemaParser.setUserProperties(userProperties);
+    expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
+
+    const schema = propertySchemaParser.getSchemaForModel();
+    expect(schema).toEqual(mockPropertieSchemas.list_of_schemas[3].schemas[0]);
+
+    propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
+    expect(userProperties[2].type_name).toBe('agent');
+
+    let defaultValues = propertySchemaParser.getDefaultValues();
+
+    // @ts-ignore
+    const expectedDefaultValues = { name: 'User Proxy Agent', max_consecutive_auto_reply: 1000 };
+    expect(defaultValues).toEqual(expectedDefaultValues);
   });
 });

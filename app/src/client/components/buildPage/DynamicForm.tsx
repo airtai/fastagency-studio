@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import _ from 'lodash';
-import { PropertySchemaParser, SetActiveModelType, UserFlow } from './PropertySchemaParser';
+import { PropertySchemaParser, SetActiveModelType, Flow } from './PropertySchemaParser';
 import { useEscapeKeyHandler } from '../../hooks/useEscapeKeyHandler';
 import { usePropertyManager } from './usePropertyManager';
 import { FormField } from './FormField';
@@ -72,8 +72,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel
         let isOptionalRefField = false;
         if (isReferenceField) {
           const refFields = parser?.getRefFields();
-          const refTypes = parser?.getRefTypes(property);
-          if (refTypes && refTypes.length > 0 && refFields && refFields[key]) {
+          if (refFields && refFields[key]) {
             propertyCopy = refFields[key].htmlForSelectBox;
             isOptionalRefField = refFields[key].isOptional;
           }
@@ -111,8 +110,8 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel
   const propertyName = parser?.getPropertyName() || '';
   const isDeploymentProperty = propertyName === 'deployment';
 
-  const userFlow = parser?.getUserFlow();
-  const isAddUserFlow = userFlow === UserFlow.ADD_MODEL;
+  const flow = parser?.getFlow();
+  const isAddUserFlow = flow === Flow.ADD_MODEL;
 
   return (
     <form
@@ -161,7 +160,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({ parser, setActiveModel
                   {isSubmitting ? 'Saving...' : 'Save'}
                 </button>
               </div>
-              {parser?.getUserFlow() === 'update_model' && (
+              {parser?.getFlow() === 'update_model' && (
                 <button
                   type='button'
                   className='float-left rounded-md px-3.5 py-2.5 text-sm border bg-airt-error text-airt-font-base hover:bg-opacity-80 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'

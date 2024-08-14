@@ -24,7 +24,7 @@ export function usePropertySchemaParser(propertiesSchema: PropertiesSchema, acti
   }, [propertiesSchema, activeProperty]);
 
   const createParser = useCallback((customOptions: CustomInitOptions) => {
-    const newParser = new PropertySchemaParser(propertiesSchema, activeProperty);
+    const newParser = new PropertySchemaParser(customOptions.propertiesSchema, customOptions.activeProperty);
     newParser.setActiveModel(customOptions.activeModel);
 
     if (customOptions.userFlow) {

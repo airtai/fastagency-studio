@@ -70,7 +70,14 @@ describe('PropertySchemaParser', () => {
         htmlForSelectBox: {
           default: { value: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b', label: 'secret' },
           description: '',
-          enum: [{ value: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b', label: 'secret' }],
+          enum: [
+            { value: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b', label: 'secret' },
+            {
+              isAddPropertyOption: true,
+              label: 'Add new "Secret"',
+              value: 'secret',
+            },
+          ],
           title: 'Api Key',
         },
         isOptional: false,
@@ -224,6 +231,11 @@ describe('PropertySchemaParser', () => {
           enum: [
             { value: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b', label: 'secret' },
             { value: 'a0014b3f-bb43-4f64-8732-bb9444d13f7b', label: 'secret 2' },
+            {
+              isAddPropertyOption: true,
+              label: 'Add new "Secret"',
+              value: 'secret',
+            },
           ],
           title: 'Api Key',
         },
@@ -490,7 +502,14 @@ describe('PropertySchemaParser', () => {
         htmlForSelectBox: {
           default: { value: '1', label: 'Ref1 Instance' },
           description: '',
-          enum: [{ value: '1', label: 'Ref1 Instance' }],
+          enum: [
+            { value: '1', label: 'Ref1 Instance' },
+            {
+              isAddPropertyOption: true,
+              label: 'Add new ""',
+              value: '',
+            },
+          ],
           title: 'Ref1',
         },
         isOptional: false,
@@ -501,7 +520,14 @@ describe('PropertySchemaParser', () => {
         htmlForSelectBox: {
           default: { value: '2', label: 'Ref2 Instance' },
           description: '',
-          enum: [{ value: '2', label: 'Ref2 Instance' }],
+          enum: [
+            { value: '2', label: 'Ref2 Instance' },
+            {
+              isAddPropertyOption: true,
+              label: 'Add new ""',
+              value: '',
+            },
+          ],
           title: 'Ref2',
         },
         isOptional: false,
@@ -588,7 +614,13 @@ describe('PropertySchemaParser', () => {
     const refFields = parser.getRefFields();
 
     expect(refFields.ref.property).toHaveLength(0);
-    expect(refFields.ref.htmlForSelectBox.enum).toStrictEqual([]);
+    expect(refFields.ref.htmlForSelectBox.enum).toStrictEqual([
+      {
+        isAddPropertyOption: true,
+        label: 'Add new ""',
+        value: '',
+      },
+    ]);
     expect(defaultValues).toEqual({
       name: '',
       ref: null,
@@ -664,6 +696,11 @@ describe('PropertySchemaParser', () => {
     expect(refFields.ref.htmlForSelectBox.enum).toEqual([
       { value: '1', label: 'MultiRef Instance 1' },
       { value: '2', label: 'MultiRef Instance 2' },
+      {
+        isAddPropertyOption: true,
+        label: 'Add new ""',
+        value: '',
+      },
     ]);
     expect(defaultValues).toEqual({
       name: '',
@@ -683,7 +720,18 @@ describe('PropertySchemaParser', () => {
     expect(refFields).toEqual({
       openapi_auth: {
         property: [],
-        htmlForSelectBox: { description: '', enum: [], default: null, title: 'Openapi Auth' },
+        htmlForSelectBox: {
+          description: '',
+          enum: [
+            {
+              isAddPropertyOption: true,
+              label: 'Add new "Secret"',
+              value: 'secret',
+            },
+          ],
+          default: null,
+          title: 'Openapi Auth',
+        },
         initialFormValue: null,
         isOptional: true,
       },
@@ -720,7 +768,14 @@ describe('PropertySchemaParser', () => {
         property: [userProperties[0]],
         htmlForSelectBox: {
           description: '',
-          enum: [{ label: 'OpenAIAPI Auth Key', value: '06936c73-f22b-4c69-b107-6f8f9a4982bc' }],
+          enum: [
+            { label: 'OpenAIAPI Auth Key', value: '06936c73-f22b-4c69-b107-6f8f9a4982bc' },
+            {
+              isAddPropertyOption: true,
+              label: 'Add new "Secret"',
+              value: 'secret',
+            },
+          ],
           default: null,
           title: 'Openapi Auth',
         },

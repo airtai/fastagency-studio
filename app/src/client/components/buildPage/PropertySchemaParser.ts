@@ -1,6 +1,7 @@
 import _ from 'lodash';
 
 import { ListOfSchemas, PropertiesSchema, Schema } from '../../interfaces/BuildPageInterfaces';
+import { filerOutComponentData } from './buildPageUtils';
 
 export enum UserFlow {
   UPDATE_MODEL = 'update_model',
@@ -12,6 +13,7 @@ export type SetActiveModelType = (model: string | null) => void;
 export interface SelectOption {
   value: string;
   label: string;
+  isAddPropertyOption?: boolean;
 }
 
 export interface UserProperties {
@@ -66,16 +68,12 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
   constructor(propertiesSchema: PropertiesSchema, propertyName: string) {
     this.propertiesSchema = propertiesSchema;
     this.propertyName = propertyName;
-    this.propertySchemas = this.filerOutComponentData(propertiesSchema, propertyName);
+    this.propertySchemas = filerOutComponentData(propertiesSchema, propertyName);
     this.userFlow = UserFlow.ADD_MODEL;
     this.activeModel = null;
     this.activeModelObj = null;
     this.userProperties = null;
   }
-
-  private filerOutComponentData = (propertiesSchema: PropertiesSchema, propertyName: string): ListOfSchemas => {
-    return propertiesSchema.list_of_schemas.filter((schema: any) => schema.name === propertyName)[0];
-  };
 
   private capitalizeWords(str: string): string {
     return str
@@ -124,20 +122,41 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
     return defaultValues;
   }
 
+  private getCapitalizeTitle(key: string): string {
+    return key === 'llm' ? 'LLM' : this.capitalizeWords(key);
+  }
+
+  private createAddPropertyOption(refTypes: string[]): SelectOption[] {
+    const targetPropertyName: string = _.chain(this.propertiesSchema.list_of_schemas)
+      .find((schemaGroup) => _.some(schemaGroup.schemas, { name: refTypes[0] }))
+      .get('name', '')
+      .value();
+
+    return [
+      {
+        label: `Add new "${this.getCapitalizeTitle(targetPropertyName)}"`,
+        value: targetPropertyName,
+        isAddPropertyOption: true,
+      },
+    ];
+  }
+
   private handleReferenceField(key: string, property: any, defaultValues: { [key: string]: any }): void {
     const refTypes = this.getRefTypes(property);
     const matchingProperties = this.getMatchingProperties(refTypes);
-    const enumValues = this.createEnumValues(matchingProperties);
+    const userOptions = this.getUserOptions(matchingProperties);
+    const addPropertyOption = this.createAddPropertyOption(refTypes);
     const isOptional = this.isOptionalField(property);
-    const defaultValue = this.getDefaultValueForRefField(key, enumValues, isOptional);
+    const defaultValue = this.getDefaultValueForRefField(key, userOptions, isOptional);
+    const options = [...userOptions, ...addPropertyOption];
 
     this.refFields[key] = {
       property: matchingProperties,
       htmlForSelectBox: {
         description: '',
-        enum: enumValues,
+        enum: options,
         default: defaultValue,
-        title: this.capitalizeWords(key),
+        title: this.getCapitalizeTitle(key),
       },
       initialFormValue: defaultValue?.value ?? null,
       isOptional: isOptional,
@@ -194,7 +213,7 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
     defaultValues[key] = this.nonRefButDropdownFields[key].initialFormValue;
   }
 
-  private createEnumValues(properties: UserProperties[]): SelectOption[] {
+  private getUserOptions(properties: UserProperties[]): SelectOption[] {
     return properties.map((prop) => ({
       value: prop.uuid,
       label: prop.json_str.name,

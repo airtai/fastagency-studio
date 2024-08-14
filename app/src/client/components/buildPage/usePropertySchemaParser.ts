@@ -1,28 +1,30 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PropertySchemaParser, UserFlow } from './PropertySchemaParser';
-import { ListOfSchemas } from '../../interfaces/BuildPageInterfaces';
+import { ListOfSchemas, PropertiesSchema } from '../../interfaces/BuildPageInterfaces';
+import { filerOutComponentData } from './buildPageUtils';
 
 interface CustomInitOptions {
-  propertySchemasList: ListOfSchemas;
+  propertiesSchema: PropertiesSchema;
+  activeProperty: string;
   activeModel: string | null;
   userFlow: UserFlow;
   activeModelObj?: any;
   userProperties: any;
 }
 
-export function usePropertySchemaParser(propertySchemasList: ListOfSchemas) {
+export function usePropertySchemaParser(propertiesSchema: PropertiesSchema, activeProperty: string) {
   const [activeModel, setActiveModel] = useState<string | null>(null);
   const [parser, setParser] = useState<PropertySchemaParser | null>(null);
 
   // Recreate the parser when propertySchemasList or activeModel changes
   useEffect(() => {
-    const newParser = new PropertySchemaParser(propertySchemasList);
+    const newParser = new PropertySchemaParser(propertiesSchema, activeProperty);
     newParser.setActiveModel(activeModel);
     setParser(newParser);
-  }, [propertySchemasList]);
+  }, [propertiesSchema, activeProperty]);
 
   const createParser = useCallback((customOptions: CustomInitOptions) => {
-    const newParser = new PropertySchemaParser(customOptions.propertySchemasList);
+    const newParser = new PropertySchemaParser(propertiesSchema, activeProperty);
     newParser.setActiveModel(customOptions.activeModel);
 
     if (customOptions.userFlow) {

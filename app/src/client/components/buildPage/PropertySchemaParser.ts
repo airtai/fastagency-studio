@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { ListOfSchemas, Schema } from '../../interfaces/BuildPageInterfaces';
+import { ListOfSchemas, PropertiesSchema, Schema } from '../../interfaces/BuildPageInterfaces';
 
 export enum UserFlow {
   UPDATE_MODEL = 'update_model',
@@ -52,24 +52,30 @@ interface PropertySchemaParserInterface {
 }
 
 export class PropertySchemaParser implements PropertySchemaParserInterface {
+  private readonly propertiesSchema: PropertiesSchema;
+  private readonly propertyName: string;
   private readonly propertySchemas: ListOfSchemas;
   private userFlow: UserFlow;
   private activeModel: string | null;
-  private readonly propertyName: string;
   private activeModelObj: any;
   private schema: Schema | undefined;
   private userProperties: UserProperties[] | null;
   private refFields: { [key: string]: any } = {};
   private nonRefButDropdownFields: { [key: string]: any } = {};
 
-  constructor(propertySchemas: ListOfSchemas) {
-    this.propertySchemas = propertySchemas;
-    this.propertyName = propertySchemas.name;
+  constructor(propertiesSchema: PropertiesSchema, propertyName: string) {
+    this.propertiesSchema = propertiesSchema;
+    this.propertyName = propertyName;
+    this.propertySchemas = this.filerOutComponentData(propertiesSchema, propertyName);
     this.userFlow = UserFlow.ADD_MODEL;
     this.activeModel = null;
     this.activeModelObj = null;
     this.userProperties = null;
   }
+
+  private filerOutComponentData = (propertiesSchema: PropertiesSchema, propertyName: string): ListOfSchemas => {
+    return propertiesSchema.list_of_schemas.filter((schema: any) => schema.name === propertyName)[0];
+  };
 
   private capitalizeWords(str: string): string {
     return str

@@ -2,41 +2,13 @@ import { test, expect, describe } from 'vitest';
 import _ from 'lodash';
 
 import { PropertySchemaParser, UserProperties, UserFlow } from '../components/buildPage/PropertySchemaParser';
-import { ListOfSchemas } from '../interfaces/BuildPageInterfaces';
-import { llmProperty, llmUserProperties } from './mocks';
+import { PropertiesSchema } from '../interfaces/BuildPageInterfaces';
+import { llmUserProperties, mockPropertieSchemas } from './mocks';
 
 describe('PropertySchemaParser', () => {
   test('Should parse secret', () => {
-    const property = {
-      name: 'secret',
-      schemas: [
-        {
-          name: 'AnthropicAPIKey',
-          json_schema: {
-            properties: {
-              name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
-              api_key: { description: 'The API Key from Anthropic', title: 'Api Key', type: 'string' },
-            },
-            required: ['name', 'api_key'],
-            title: 'AnthropicAPIKey',
-            type: 'object',
-          },
-        },
-        {
-          name: 'AzureOAIAPIKey',
-          json_schema: {
-            properties: {
-              name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
-              api_key: { description: 'The API Key from Azure OpenAI', title: 'Api Key', type: 'string' },
-            },
-            required: ['name', 'api_key'],
-            title: 'AzureOAIAPIKey',
-            type: 'object',
-          },
-        },
-      ],
-    };
-    const propertySchemaParser = new PropertySchemaParser(property);
+    const activeProperty = 'secret';
+    const propertySchemaParser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     propertySchemaParser.setActiveModel('AzureOAIAPIKey');
     expect(propertySchemaParser).toBeInstanceOf(PropertySchemaParser);
 
@@ -64,18 +36,20 @@ describe('PropertySchemaParser', () => {
     expect(Object.keys(refFields)).toHaveLength(0);
   });
   test('Should parse llm', () => {
-    const property: ListOfSchemas = _.cloneDeep(llmProperty);
+    // const property: ListOfSchemas = _.cloneDeep(llmProperty);
     const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
-
-    const propertySchemaParser = new PropertySchemaParser(property);
+    const activeProperty = 'llm';
+    const propertySchemaParser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     propertySchemaParser.setActiveModel('AzureOAI');
+
     expect(propertySchemaParser).toBeInstanceOf(PropertySchemaParser);
+    expect(propertySchemaParser.getActiveModel()).toBe('AzureOAI');
 
     propertySchemaParser.setUserProperties(userProperties);
     expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
 
     const schema = propertySchemaParser.getSchemaForModel();
-    expect(schema).toEqual(property.schemas[1]);
+    expect(schema).toEqual(mockPropertieSchemas.list_of_schemas[1].schemas[1]);
 
     const defaultValues = propertySchemaParser.getDefaultValues();
     const expectedDefaultValues = {
@@ -106,10 +80,10 @@ describe('PropertySchemaParser', () => {
   });
 
   test('Should delete a property only if its is not referred by any other property', () => {
-    const property: ListOfSchemas = _.cloneDeep(llmProperty);
     const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
 
-    const propertySchemaParser = new PropertySchemaParser(property);
+    const activeProperty = 'llm';
+    const propertySchemaParser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     propertySchemaParser.setActiveModel('AzureOAIAPIKey');
     expect(propertySchemaParser).toBeInstanceOf(PropertySchemaParser);
 
@@ -182,7 +156,6 @@ describe('PropertySchemaParser', () => {
   });
 
   test('Should update the default value of ref and non-fields dropdowns for LLM', () => {
-    const property: ListOfSchemas = _.cloneDeep(llmProperty);
     const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
     // append the following to the userProperties
     userProperties.push(
@@ -214,7 +187,8 @@ describe('PropertySchemaParser', () => {
       }
     );
 
-    const propertySchemaParser = new PropertySchemaParser(property);
+    const activeProperty = 'llm';
+    const propertySchemaParser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     propertySchemaParser.setActiveModel('AzureOAI');
     expect(propertySchemaParser).toBeInstanceOf(PropertySchemaParser);
 
@@ -222,7 +196,7 @@ describe('PropertySchemaParser', () => {
     expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
 
     const schema = propertySchemaParser.getSchemaForModel();
-    expect(schema).toEqual(property.schemas[1]);
+    expect(schema).toEqual(mockPropertieSchemas.list_of_schemas[1].schemas[1]);
 
     propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
     expect(userProperties[3].type_name).toBe('llm');
@@ -315,7 +289,6 @@ describe('PropertySchemaParser', () => {
   });
 
   test('Should update the default value of non-fields dropdowns for LLM', () => {
-    const property: ListOfSchemas = _.cloneDeep(llmProperty);
     const userProperties: UserProperties[] = _.cloneDeep(llmUserProperties);
     userProperties.push(
       {
@@ -348,15 +321,13 @@ describe('PropertySchemaParser', () => {
       }
     );
 
-    const propertySchemaParser = new PropertySchemaParser(property);
+    const activeProperty = 'llm';
+    const propertySchemaParser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     propertySchemaParser.setActiveModelObj(userProperties[3]);
     expect(propertySchemaParser).toBeInstanceOf(PropertySchemaParser);
 
     propertySchemaParser.setUserProperties(userProperties);
     expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
-
-    const schema = propertySchemaParser.getSchemaForModel();
-    expect(schema).toEqual(property.schemas[3]);
 
     propertySchemaParser.setUserFlow(UserFlow.UPDATE_MODEL);
     expect(userProperties[3].type_name).toBe('llm');
@@ -425,58 +396,62 @@ describe('PropertySchemaParser', () => {
   });
 
   test('Should handle schema with multiple reference fields', () => {
-    const property: ListOfSchemas = {
-      name: 'multiref',
-      schemas: [
+    const property: PropertiesSchema = {
+      list_of_schemas: [
         {
-          name: 'MultiRefSchema',
-          json_schema: {
-            $defs: {
-              Ref1: {
-                properties: {
-                  type: {
-                    const: 'secret',
-                    default: 'secret',
-                    enum: ['secret'],
-                    type: 'string',
-                    title: 'Type',
-                    description: 'The name of the type of the data',
+          name: 'multiref',
+          schemas: [
+            {
+              name: 'MultiRefSchema',
+              json_schema: {
+                $defs: {
+                  Ref1: {
+                    properties: {
+                      type: {
+                        const: 'secret',
+                        default: 'secret',
+                        enum: ['secret'],
+                        type: 'string',
+                        title: 'Type',
+                        description: 'The name of the type of the data',
+                      },
+                      name: {
+                        const: 'Ref1',
+                        default: 'Ref1',
+                        enum: ['Ref1'],
+                        type: 'string',
+                        title: 'Name',
+                        description: 'The name of the data',
+                      },
+                      uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+                    },
+                    required: ['uuid'],
+                    type: 'object',
+                    title: 'Ref1',
                   },
-                  name: {
-                    const: 'Ref1',
-                    default: 'Ref1',
-                    enum: ['Ref1'],
-                    type: 'string',
-                    title: 'Name',
-                    description: 'The name of the data',
+                  Ref2: {
+                    properties: {
+                      type: { const: 'secret', default: 'secret', enum: ['secret'], type: 'string' },
+                      name: { const: 'Ref2', default: 'Ref2', enum: ['Ref2'], type: 'string' },
+                      uuid: { type: 'string', format: 'uuid' },
+                    },
+                    required: ['uuid'],
+                    type: 'object',
+                    title: 'Ref2',
                   },
-                  uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
                 },
-                required: ['uuid'],
-                type: 'object',
-                title: 'Ref1',
-              },
-              Ref2: {
                 properties: {
-                  type: { const: 'secret', default: 'secret', enum: ['secret'], type: 'string' },
-                  name: { const: 'Ref2', default: 'Ref2', enum: ['Ref2'], type: 'string' },
-                  uuid: { type: 'string', format: 'uuid' },
+                  name: { type: 'string', minLength: 1 },
+                  ref1: { $ref: '#/$defs/Ref1' },
+                  ref2: { $ref: '#/$defs/Ref2' },
+                  api_type: { const: 'multiref', default: 'multiref', enum: ['multiref'], type: 'string' },
                 },
-                required: ['uuid'],
+                required: ['name', 'ref1', 'ref2'],
                 type: 'object',
-                title: 'Ref2',
+                title: 'MultiRefSchema',
               },
             },
-            properties: {
-              name: { type: 'string', minLength: 1 },
-              ref1: { $ref: '#/$defs/Ref1' },
-              ref2: { $ref: '#/$defs/Ref2' },
-              api_type: { const: 'multiref', default: 'multiref', enum: ['multiref'], type: 'string' },
-            },
-            required: ['name', 'ref1', 'ref2'],
-            type: 'object',
-            title: 'MultiRefSchema',
-          },
+          ],
         },
       ],
     };
@@ -502,7 +477,8 @@ describe('PropertySchemaParser', () => {
       },
     ];
 
-    const parser = new PropertySchemaParser(property);
+    const activeProperty = 'multiref';
+    const parser = new PropertySchemaParser(property, activeProperty);
     parser.setActiveModel('MultiRefSchema');
     parser.setUserProperties(userProperties);
 
@@ -543,47 +519,51 @@ describe('PropertySchemaParser', () => {
   });
 
   test('Should handle when no matching user properties are found for a reference field', () => {
-    const property: ListOfSchemas = {
-      name: 'nomatch',
-      schemas: [
+    const property: PropertiesSchema = {
+      list_of_schemas: [
         {
-          name: 'NoMatchSchema',
-          json_schema: {
-            $defs: {
-              NonExistentRef: {
-                properties: {
-                  type: {
-                    const: 'secret',
-                    default: 'secret',
-                    enum: ['secret'],
-                    type: 'string',
-                    title: 'Type',
-                    description: 'The name of the type of the data',
+          name: 'nomatch',
+          schemas: [
+            {
+              name: 'NoMatchSchema',
+              json_schema: {
+                $defs: {
+                  NonExistentRef: {
+                    properties: {
+                      type: {
+                        const: 'secret',
+                        default: 'secret',
+                        enum: ['secret'],
+                        type: 'string',
+                        title: 'Type',
+                        description: 'The name of the type of the data',
+                      },
+                      name: {
+                        const: 'NonExistentRef',
+                        default: 'NonExistentRef',
+                        enum: ['NonExistentRef'],
+                        type: 'string',
+                        title: 'Name',
+                        description: 'The name of the data',
+                      },
+                      uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+                    },
+                    required: ['uuid'],
+                    type: 'object',
+                    title: 'NonExistentRef',
                   },
-                  name: {
-                    const: 'NonExistentRef',
-                    default: 'NonExistentRef',
-                    enum: ['NonExistentRef'],
-                    type: 'string',
-                    title: 'Name',
-                    description: 'The name of the data',
-                  },
-                  uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
                 },
-                required: ['uuid'],
+                properties: {
+                  name: { type: 'string', minLength: 1 },
+                  ref: { $ref: '#/$defs/NonExistentRef' },
+                  api_type: { const: 'nomatch', default: 'nomatch', enum: ['nomatch'], type: 'string' },
+                },
+                required: ['name', 'ref'],
                 type: 'object',
-                title: 'NonExistentRef',
+                title: 'NoMatchSchema',
               },
             },
-            properties: {
-              name: { type: 'string', minLength: 1 },
-              ref: { $ref: '#/$defs/NonExistentRef' },
-              api_type: { const: 'nomatch', default: 'nomatch', enum: ['nomatch'], type: 'string' },
-            },
-            required: ['name', 'ref'],
-            type: 'object',
-            title: 'NoMatchSchema',
-          },
+          ],
         },
       ],
     };
@@ -599,8 +579,8 @@ describe('PropertySchemaParser', () => {
         updated_at: '2024-08-08T08:59:02.111000Z',
       },
     ];
-
-    const parser = new PropertySchemaParser(property);
+    const activeProperty = 'nomatch';
+    const parser = new PropertySchemaParser(property, activeProperty);
     parser.setActiveModel('NoMatchSchema');
     parser.setUserProperties(userProperties);
 
@@ -617,33 +597,37 @@ describe('PropertySchemaParser', () => {
   });
 
   test('Should handle when multiple matching user properties are found for a reference field', () => {
-    const property: ListOfSchemas = {
-      name: 'multimatch',
-      schemas: [
+    const property: PropertiesSchema = {
+      list_of_schemas: [
         {
-          name: 'MultiMatchSchema',
-          json_schema: {
-            $defs: {
-              MultiRef: {
-                properties: {
-                  type: { const: 'secret', default: 'secret', enum: ['secret'], type: 'string' },
-                  name: { const: 'MultiRef', default: 'MultiRef', enum: ['MultiRef'], type: 'string' },
-                  uuid: { type: 'string', format: 'uuid' },
+          name: 'multimatch',
+          schemas: [
+            {
+              name: 'MultiMatchSchema',
+              json_schema: {
+                $defs: {
+                  MultiRef: {
+                    properties: {
+                      type: { const: 'secret', default: 'secret', enum: ['secret'], type: 'string' },
+                      name: { const: 'MultiRef', default: 'MultiRef', enum: ['MultiRef'], type: 'string' },
+                      uuid: { type: 'string', format: 'uuid' },
+                    },
+                    required: ['uuid'],
+                    type: 'object',
+                    title: 'MultiRef',
+                  },
                 },
-                required: ['uuid'],
+                properties: {
+                  name: { type: 'string', minLength: 1 },
+                  ref: { $ref: '#/$defs/MultiRefRef' },
+                  api_type: { const: 'multimatch', default: 'multimatch', enum: ['multimatch'], type: 'string' },
+                },
+                required: ['name', 'ref'],
                 type: 'object',
-                title: 'MultiRef',
+                title: 'MultiMatchSchema',
               },
             },
-            properties: {
-              name: { type: 'string', minLength: 1 },
-              ref: { $ref: '#/$defs/MultiRefRef' },
-              api_type: { const: 'multimatch', default: 'multimatch', enum: ['multimatch'], type: 'string' },
-            },
-            required: ['name', 'ref'],
-            type: 'object',
-            title: 'MultiMatchSchema',
-          },
+          ],
         },
       ],
     };
@@ -668,8 +652,8 @@ describe('PropertySchemaParser', () => {
         updated_at: '2024-08-08T08:59:02.111000Z',
       },
     ];
-
-    const parser = new PropertySchemaParser(property);
+    const activeProperty = 'multimatch';
+    const parser = new PropertySchemaParser(property, activeProperty);
     parser.setActiveModel('MultiMatchSchema');
     parser.setUserProperties(userProperties);
 
@@ -689,63 +673,8 @@ describe('PropertySchemaParser', () => {
   });
 
   test('Should render toolbox - without reference', () => {
-    const property: ListOfSchemas = {
-      name: 'toolbox',
-      schemas: [
-        {
-          name: 'Toolbox',
-          json_schema: {
-            $defs: {
-              OpenAPIAuthRef: {
-                properties: {
-                  type: {
-                    const: 'secret',
-                    default: 'secret',
-                    description: 'The name of the type of the data',
-                    enum: ['secret'],
-                    title: 'Type',
-                    type: 'string',
-                  },
-                  name: {
-                    const: 'OpenAPIAuth',
-                    default: 'OpenAPIAuth',
-                    description: 'The name of the data',
-                    enum: ['OpenAPIAuth'],
-                    title: 'Name',
-                    type: 'string',
-                  },
-                  uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
-                },
-                required: ['uuid'],
-                title: 'OpenAPIAuthRef',
-                type: 'object',
-              },
-            },
-            properties: {
-              name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
-              openapi_url: {
-                description: 'The URL of OpenAPI specification file',
-                format: 'uri',
-                maxLength: 2083,
-                minLength: 1,
-                title: 'OpenAPI URL',
-                type: 'string',
-              },
-              openapi_auth: {
-                anyOf: [{ $ref: '#/$defs/OpenAPIAuthRef' }, { type: 'null' }],
-                default: null,
-                description: 'Authentication information for the API mentioned in the OpenAPI specification',
-                title: 'OpenAPI Auth',
-              },
-            },
-            required: ['name', 'openapi_url'],
-            title: 'Toolbox',
-            type: 'object',
-          },
-        },
-      ],
-    };
-    const parser = new PropertySchemaParser(property);
+    const activeProperty = 'toolbox';
+    const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('toolbox');
 
     let defaultValues = parser.getDefaultValues();
@@ -761,62 +690,6 @@ describe('PropertySchemaParser', () => {
     });
   });
   test('Should render toolbox - with reference', () => {
-    const property: ListOfSchemas = {
-      name: 'toolbox',
-      schemas: [
-        {
-          name: 'Toolbox',
-          json_schema: {
-            $defs: {
-              OpenAPIAuthRef: {
-                properties: {
-                  type: {
-                    const: 'secret',
-                    default: 'secret',
-                    description: 'The name of the type of the data',
-                    enum: ['secret'],
-                    title: 'Type',
-                    type: 'string',
-                  },
-                  name: {
-                    const: 'OpenAPIAuth',
-                    default: 'OpenAPIAuth',
-                    description: 'The name of the data',
-                    enum: ['OpenAPIAuth'],
-                    title: 'Name',
-                    type: 'string',
-                  },
-                  uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
-                },
-                required: ['uuid'],
-                title: 'OpenAPIAuthRef',
-                type: 'object',
-              },
-            },
-            properties: {
-              name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
-              openapi_url: {
-                description: 'The URL of OpenAPI specification file',
-                format: 'uri',
-                maxLength: 2083,
-                minLength: 1,
-                title: 'OpenAPI URL',
-                type: 'string',
-              },
-              openapi_auth: {
-                anyOf: [{ $ref: '#/$defs/OpenAPIAuthRef' }, { type: 'null' }],
-                default: null,
-                description: 'Authentication information for the API mentioned in the OpenAPI specification',
-                title: 'OpenAPI Auth',
-              },
-            },
-            required: ['name', 'openapi_url'],
-            title: 'Toolbox',
-            type: 'object',
-          },
-        },
-      ],
-    };
     const userProperties: UserProperties[] = [
       {
         uuid: '06936c73-f22b-4c69-b107-6f8f9a4982bc',
@@ -833,7 +706,8 @@ describe('PropertySchemaParser', () => {
       },
     ];
 
-    const parser = new PropertySchemaParser(property);
+    const activeProperty = 'toolbox';
+    const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('toolbox');
     parser.setUserProperties(userProperties);
 

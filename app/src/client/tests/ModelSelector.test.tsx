@@ -8,58 +8,10 @@ import selectEvent from 'react-select-event';
 
 import { ModelSelector } from '../components/buildPage/ModelSelector';
 import { PropertySchemaParser, SetActiveModelType } from '../components/buildPage/PropertySchemaParser';
+import { mockPropertieSchemas } from './mocks';
 
-const mockSchemas = [
-  {
-    name: 'AnthropicAPIKey',
-    json_schema: {
-      properties: {
-        name: {
-          description: 'The name of the item',
-          minLength: 1,
-          title: 'Name',
-          type: 'string',
-        },
-        api_key: {
-          description: 'The API Key from Anthropic',
-          title: 'Api Key',
-          type: 'string',
-        },
-      },
-      required: ['name', 'api_key'],
-      title: 'AnthropicAPIKey',
-      type: 'object',
-    },
-  },
-  {
-    name: 'AzureOAIAPIKey',
-    json_schema: {
-      properties: {
-        name: {
-          description: 'The name of the item',
-          minLength: 1,
-          title: 'Name',
-          type: 'string',
-        },
-        api_key: {
-          description: 'The API Key from Azure OpenAI',
-          title: 'Api Key',
-          type: 'string',
-        },
-      },
-      required: ['name', 'api_key'],
-      title: 'AzureOAIAPIKey',
-      type: 'object',
-    },
-  },
-];
-
-const mockPropertySchemasList = {
-  name: 'secret',
-  schemas: mockSchemas,
-};
-
-const parser = new PropertySchemaParser(mockPropertySchemasList);
+const activeProperty = 'secret';
+const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
 const mockSetActiveModel: SetActiveModelType = vi.fn();
 
 describe('ModelSelector', () => {
@@ -73,7 +25,7 @@ describe('ModelSelector', () => {
     fireEvent.mouseDown(selectElement);
 
     const options = screen.getAllByRole('option');
-    expect(options).toHaveLength(mockPropertySchemasList.schemas.length);
+    expect(options).toHaveLength(mockPropertieSchemas.list_of_schemas[0].schemas.length);
   });
 
   it('renders correct number of options', () => {
@@ -86,7 +38,7 @@ describe('ModelSelector', () => {
     fireEvent.mouseDown(selectElement);
 
     const options = screen.getAllByRole('option');
-    expect(options).toHaveLength(mockSchemas.length);
+    expect(options).toHaveLength(mockPropertieSchemas.list_of_schemas[0].schemas.length);
   });
 
   it('calls setActiveModel with correct value when option is selected', async () => {

@@ -6,6 +6,26 @@ import Select, { StylesConfig } from 'react-select';
 import { TextInput } from '../form/TextInput';
 import { SECRETS_TO_MASK } from '../../utils/constants';
 import { TextArea } from '../form/TextArea';
+import { SelectOption } from './PropertySchemaParser';
+
+const markAddPropertyOption: StylesConfig<SelectOption, false> = {
+  control: (baseStyles) => ({
+    ...baseStyles,
+    borderColor: '#003257',
+  }),
+  option: (styles, { data }) => ({
+    ...styles,
+    display: 'flex',
+    alignItems: 'center',
+    '::before': data.isAddPropertyOption
+      ? {
+          fontFamily: '"Material Symbols Outlined"',
+          content: '"\ue147"',
+          marginRight: '5px',
+        }
+      : {},
+  }),
+};
 
 interface FormFieldProps {
   field: FieldApi<any, any, any, any>;
@@ -60,6 +80,16 @@ export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey,
     }
   }, [property.enum]);
 
+  const handleSelectOnchange = (selectedOption: any) => {
+    const value = selectedOption?.value || null;
+    const isAddOption = selectedOption?.isAddPropertyOption;
+
+    field.handleChange(value);
+    if (isAddOption) {
+      console.log('Add option selected for: ', value);
+    }
+  };
+
   return (
     <div className='w-full mt-2'>
       <label htmlFor={fieldKey}>{`${property.title} ${isOptionalRefField ? ' (Optional)' : ''}`}</label>
@@ -70,12 +100,12 @@ export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey,
           classNamePrefix='react-select'
           inputId={fieldKey}
           options={selectOptions}
-          onChange={(e: any) => field.handleChange(e?.value || null)} // field.handleChange(e.value)
+          onChange={handleSelectOnchange}
           className='pt-1 pb-1'
           defaultValue={defaultValue}
           isSearchable={true}
           isClearable={isOptionalRefField}
-          // styles={customStyles}
+          styles={markAddPropertyOption}
         />
       ) : fieldKey === 'system_message' ? (
         <TextArea

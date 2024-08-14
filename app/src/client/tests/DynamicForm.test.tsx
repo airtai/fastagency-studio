@@ -9,8 +9,8 @@ import { renderInContext } from 'wasp/client/test';
 import * as operations from 'wasp/client/operations';
 
 import { DynamicForm } from '../components/buildPage/DynamicForm';
-import { ListOfSchemas } from '../interfaces/BuildPageInterfaces';
 import { PropertySchemaParser } from '../components/buildPage/PropertySchemaParser';
+import { mockPropertieSchemas } from './mocks';
 
 // Mock the operation
 vi.mock('wasp/client/operations', () => ({
@@ -18,57 +18,10 @@ vi.mock('wasp/client/operations', () => ({
   addUserModels: vi.fn(),
 }));
 
-const mockPropertySchemasList: ListOfSchemas = {
-  name: 'secret',
-  schemas: [
-    {
-      name: 'AnthropicAPIKey',
-      json_schema: {
-        properties: {
-          name: {
-            description: 'The name of the item',
-            minLength: 1,
-            title: 'Name',
-            type: 'string',
-          },
-          api_key: {
-            description: 'The API Key from Anthropic',
-            title: 'Api Key',
-            type: 'string',
-          },
-        },
-        required: ['name', 'api_key'],
-        title: 'AnthropicAPIKey',
-        type: 'object',
-      },
-    },
-    {
-      name: 'AzureOAIAPIKey',
-      json_schema: {
-        properties: {
-          name: {
-            description: 'The name of the item',
-            minLength: 1,
-            title: 'Name',
-            type: 'string',
-          },
-          api_key: {
-            description: 'The API Key from Azure OpenAI',
-            title: 'Api Key',
-            type: 'string',
-          },
-        },
-        required: ['name', 'api_key'],
-        title: 'AzureOAIAPIKey',
-        type: 'object',
-      },
-    },
-  ],
-};
-
 describe('DynamicForm', () => {
   it('renders form fields based on the AnthropicAPIKey schema and handles submission', async () => {
-    const parser = new PropertySchemaParser(mockPropertySchemasList);
+    const activeProperty = 'secret';
+    const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('AnthropicAPIKey');
     const mockSetActiveModel = vi.fn();
     const mockRefetchUserProperties = vi.fn();
@@ -106,7 +59,8 @@ describe('DynamicForm', () => {
   });
 
   it('renders form fields and handles successful submission', async () => {
-    const parser = new PropertySchemaParser(mockPropertySchemasList);
+    const activeProperty = 'secret';
+    const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('AnthropicAPIKey');
     const mockSetActiveModel = vi.fn();
     const mockRefetchUserProperties = vi.fn();
@@ -142,7 +96,8 @@ describe('DynamicForm', () => {
   });
 
   it('handles form submission failure due to validation error', async () => {
-    const parser = new PropertySchemaParser(mockPropertySchemasList);
+    const activeProperty = 'secret';
+    const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('AnthropicAPIKey');
     const mockSetActiveModel = vi.fn();
     const mockRefetchUserProperties = vi.fn();
@@ -175,7 +130,8 @@ describe('DynamicForm', () => {
   });
 
   it('calls handleCancel when cancel button is clicked', async () => {
-    const parser = new PropertySchemaParser(mockPropertySchemasList);
+    const activeProperty = 'secret';
+    const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('AnthropicAPIKey');
     const mockSetActiveModel = vi.fn();
     const mockRefetchUserProperties = vi.fn();
@@ -202,7 +158,8 @@ describe('DynamicForm', () => {
   });
 
   it('masks the API key input', () => {
-    const parser = new PropertySchemaParser(mockPropertySchemasList);
+    const activeProperty = 'secret';
+    const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('AnthropicAPIKey');
     const mockSetActiveModel = vi.fn();
     const mockRefetchUserProperties = vi.fn();

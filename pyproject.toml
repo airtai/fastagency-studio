@@ -45,80 +45,37 @@ dynamic = ["version"]
 
 dependencies = [
     "fastagency @ git+https://github.com/airtai/fastagencyapi.git@main",
-    "pyautogen[anthropic,together]==0.2.32",
-    "faststream[nats]>=0.5.10,<0.6",
-    "typing-extensions>=4.8.0,<5",
-    "pydantic>=2.3,<3",
-    "fastapi==0.111.1",
-    "prisma>=0.13.1,<0.14",
-    "fastapi-code-generator==0.5.1",
-    "asyncer==0.0.7",
-    "markdownify==0.13.1", # Needed by autogen.WebSurferAgent but not included
-    "httpx==0.27.0",
-    "python-weather==2.0.3",  # should be removed when we move API to another project
-    "together>=1.2.1,<2",
 ]
 
 [project.optional-dependencies]
 # public distributions
 
 server = [
-    "uvicorn==0.30.1",
+    "fastagency[server] @ git+https://github.com/airtai/fastagencyapi.git@main",
 ]
 
 # dev dependencies
 devdocs = [
-    "mkdocs-material==9.5.29",
-    "mkdocs-static-i18n==1.2.3",
-    "mdx-include==1.4.2",
-    "mkdocstrings[python]==0.25.1",
-    "mkdocs-literate-nav==0.6.1",
-    "mkdocs-git-revision-date-localized-plugin==1.2.6",
-    "mike==2.1.2",  # versioning
-    "mkdocs-minify-plugin==0.8.0",
-    "mkdocs-macros-plugin==1.0.5",  # includes with variables
-    "mkdocs-glightbox==0.4.0",  # img zoom
-    "pillow==10.3.0",
-    "cairosvg==2.7.1",
-    "requests",  # do not pin it
+    "fastagency[devdocs] @ git+https://github.com/airtai/fastagencyapi.git@main",
 ]
 
 lint = [
-    "types-PyYAML",
-    "types-setuptools",
-    "types-ujson",
-    "types-Pygments",
-    "types-docutils",
-    "mypy==1.10.1",
-    "ruff==0.5.2",
-    "pyupgrade-directories==0.3.0",
-    "bandit==1.7.9",
-    "semgrep==1.78.0",
-    "pytest-mypy-plugins==3.1.2",
+    "fastagency[lint] @ git+https://github.com/airtai/fastagencyapi.git@main",
 ]
 
 test-core = [
-    "coverage[toml]==7.6.0",
-    "pytest==8.2.2",
-    "pytest-asyncio==0.23.7",
-    "dirty-equals==0.7.1.post0",
-    "pytest-rerunfailures==14.0",
+    "fastagency[test-core] @ git+https://github.com/airtai/fastagencyapi.git@main",
 ]
 
 testing = [
     "fastagency-studio[test-core]",
     "fastagency-studio[server]", # Uvicorn is needed for testing
-    "pydantic-settings==2.3.4",
-    "PyYAML==6.0.1",
-    "watchfiles==0.22.0",
-    "email-validator==2.2.0",
+    "fastagency[testing] @ git+https://github.com/airtai/fastagencyapi.git@main",
 ]
 
 dev = [
     "fastagency-studio[server,lint,testing,devdocs]",
-    "pre-commit==3.7.1",
-    "detect-secrets==1.5.0",
-    "asyncer==0.0.7",
+    "fastagency[dev] @ git+https://github.com/airtai/fastagencyapi.git@main",
 ]
 
 [project.urls]

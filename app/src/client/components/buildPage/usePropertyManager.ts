@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { validateForm, addUserModels, deleteUserModels, updateUserModels } from 'wasp/client/operations';
-import { PropertySchemaParser, SetUpdateFormStack, Flow } from './PropertySchemaParser';
+import { PropertySchemaParser, SetUpdateFormStack, Flow, UserProperties } from './PropertySchemaParser';
 import { parseValidationErrors } from './formUtils';
 
 export type ctaAction = 'cancel' | 'delete';
@@ -34,7 +34,7 @@ export const usePropertyManager = (
   parser: PropertySchemaParser | null,
   updateFormStack: SetUpdateFormStack,
   refetchUserProperties: any,
-  popFromStack: () => void
+  popFromStack: (userProperties: UserProperties[] | null) => void
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
@@ -108,10 +108,15 @@ export const usePropertyManager = (
     setSuccessResponse(null);
   };
 
-  const resetAndRefetchProperties = async () => {
+  const resetAndPopFromStack = () => {
     resetFormState();
-    refetchUserProperties();
-    popFromStack();
+    popFromStack(null);
+  };
+
+  const resetAndRefetchProperties = async () => {
+    const { data: userProperties } = await refetchUserProperties();
+    resetFormState();
+    popFromStack(userProperties);
   };
 
   const deleteProperty = async () => {
@@ -140,7 +145,7 @@ export const usePropertyManager = (
 
   const handleCtaAction = async (ctaAction: ctaAction) => {
     if (ctaAction === 'cancel') {
-      resetAndRefetchProperties();
+      resetAndPopFromStack();
     } else {
       await deleteProperty();
     }

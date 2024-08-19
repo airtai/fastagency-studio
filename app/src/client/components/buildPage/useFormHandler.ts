@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { PropertySchemaParser, Flow } from './PropertySchemaParser';
+import { PropertySchemaParser, Flow, UserProperties } from './PropertySchemaParser';
 import { PropertiesSchema } from '../../interfaces/BuildPageInterfaces';
 
-interface CustomInitOptions {
+interface pushParser {
   propertiesSchema: PropertiesSchema;
   activeProperty: string;
   activeModel: string | null;
@@ -12,7 +12,7 @@ interface CustomInitOptions {
   replaceLast?: boolean;
 }
 
-export function useFormHandler(propertiesSchema: PropertiesSchema, activeProperty: string) {
+export function useFormHandler(setActiveProperty: (activeProperty: string) => void) {
   const [stack, setStack] = useState<PropertySchemaParser[]>([]);
   console.log('stack: ', stack);
 
@@ -20,7 +20,7 @@ export function useFormHandler(propertiesSchema: PropertiesSchema, activePropert
     return stack.length > 0 ? stack[stack.length - 1] : null;
   }, [stack]);
 
-  const addNewParserToStack = useCallback((customOptions: CustomInitOptions) => {
+  const pushNewParser = useCallback((customOptions: pushParser) => {
     const newParser = new PropertySchemaParser(customOptions.propertiesSchema, customOptions.activeProperty);
     newParser.setActiveModel(customOptions.activeModel);
 
@@ -37,16 +37,28 @@ export function useFormHandler(propertiesSchema: PropertiesSchema, activePropert
     }
 
     setStack((prevStack) => {
+      // When the model is updated in the same property, we need to replace the last parser in the stack
       if (customOptions.replaceLast && prevStack.length > 0) {
         return [...prevStack.slice(0, -1), newParser];
       } else {
+        // this is for rest of the cases
         return [...prevStack, newParser];
       }
     });
+
+    setActiveProperty(customOptions.activeProperty);
   }, []);
 
-  const popFromStack = useCallback(() => {
-    setStack((prevStack) => prevStack.slice(0, -1));
+  const popFromStack = useCallback((userProperties: UserProperties[] | null) => {
+    setStack((prevStack) => {
+      const stackWithoutLast = prevStack.slice(0, -1);
+      const lastProperty = stackWithoutLast[stackWithoutLast.length - 1];
+      const previousPropertyName = lastProperty?.getPropertyName();
+
+      userProperties && lastProperty?.setUserProperties(userProperties);
+      !!previousPropertyName && setActiveProperty(previousPropertyName);
+      return stackWithoutLast;
+    });
   }, []);
 
   const clearStack = useCallback(() => {
@@ -55,7 +67,7 @@ export function useFormHandler(propertiesSchema: PropertiesSchema, activePropert
 
   return {
     parser: getCurrentParser(),
-    addNewParserToStack,
+    pushNewParser,
     popFromStack,
     clearStack,
   };

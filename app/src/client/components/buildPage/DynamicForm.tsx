@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import _ from 'lodash';
-import { PropertySchemaParser, SetUpdateFormStack, Flow } from './PropertySchemaParser';
+import { PropertySchemaParser, SetUpdateFormStack, Flow, UserProperties } from './PropertySchemaParser';
 import { useEscapeKeyHandler } from '../../hooks/useEscapeKeyHandler';
 import { usePropertyManager } from './usePropertyManager';
 import { FormField } from './FormField';
@@ -13,7 +13,7 @@ interface DynamicFormProps {
   parser: PropertySchemaParser | null;
   updateFormStack: SetUpdateFormStack;
   refetchUserProperties: () => void;
-  popFromStack: () => void;
+  popFromStack: (userProperties: UserProperties[] | null) => void;
 }
 
 const LoaderContainer = () => (

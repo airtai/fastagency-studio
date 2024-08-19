@@ -95,7 +95,7 @@ export const FormField: React.FC<FormFieldProps> = ({
     if (addPropertyForModel) {
       const propertyName: string = value;
       const modelName = addPropertyForModel;
-      updateFormStack(addPropertyForModel, propertyName);
+      updateFormStack(modelName, propertyName);
     }
   };
 

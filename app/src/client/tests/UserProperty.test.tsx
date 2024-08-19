@@ -118,7 +118,7 @@ describe('UserProperty', () => {
       refetch: vi.fn(),
     });
 
-    const { getByText, getByRole } = renderInContext(<UserProperty {...mockProps} />);
+    const { getByText, getByRole, container } = renderInContext(<UserProperty {...mockProps} />);
 
     fireEvent.click(screen.getByText('Add Secret'));
 
@@ -138,6 +138,7 @@ describe('UserProperty', () => {
     const cancelButton = getByText('Cancel');
     fireEvent.click(cancelButton);
 
+    console.log('container.innerHTML: ', container.innerHTML);
     expect(screen.getByText('Add Secret')).toBeInTheDocument();
     expect(screen.getByText('No Secrets found. Please add one.')).toBeInTheDocument();
   });

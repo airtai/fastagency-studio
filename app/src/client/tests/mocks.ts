@@ -1,3 +1,5 @@
+import { vi } from 'vitest';
+
 import { ListOfSchemas, PropertiesSchema } from '../interfaces/BuildPageInterfaces';
 
 import { UserProperties } from '../components/buildPage/PropertySchemaParser';
@@ -118,6 +120,7 @@ export const mockProps = {
     ],
   },
   sideNavItemClickCount: 0,
+  setActiveProperty: vi.fn(),
 };
 
 export const mockPropertieSchemas: PropertiesSchema = {

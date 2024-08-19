@@ -19,13 +19,19 @@ vi.mock('wasp/client/operations', () => ({
 }));
 
 describe('DynamicForm', () => {
+  const mockUpdateFormStack = vi.fn();
+  const mockRefetchUserProperties = vi.fn();
+  const mockPopFromStack = vi.fn();
+  mockRefetchUserProperties.mockResolvedValue({
+    data: {
+      userProperties: [],
+    },
+  });
+
   it('renders form fields based on the AnthropicAPIKey schema and handles submission', async () => {
     const activeProperty = 'secret';
     const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('AnthropicAPIKey');
-    const mockUpdateFormStack = vi.fn();
-    const mockRefetchUserProperties = vi.fn();
-    const mockPopFromStack = vi.fn();
 
     vi.mocked(operations.validateForm).mockResolvedValue({});
     vi.mocked(operations.addUserModels).mockResolvedValue({});
@@ -64,9 +70,6 @@ describe('DynamicForm', () => {
     const activeProperty = 'secret';
     const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
     parser.setActiveModel('AnthropicAPIKey');
-    const mockUpdateFormStack = vi.fn();
-    const mockRefetchUserProperties = vi.fn();
-    const mockPopFromStack = vi.fn();
 
     vi.mocked(operations.validateForm).mockResolvedValue({});
     vi.mocked(operations.addUserModels).mockResolvedValue({});
@@ -105,7 +108,6 @@ describe('DynamicForm', () => {
     parser.setActiveModel('AnthropicAPIKey');
     const mockUpdateFormStack = vi.fn();
     const mockRefetchUserProperties = vi.fn();
-    const mockPopFromStack = vi.fn();
 
     const mockError = {
       message: JSON.stringify([{ loc: ['name'], msg: 'Name is required', type: 'value_error' }]),

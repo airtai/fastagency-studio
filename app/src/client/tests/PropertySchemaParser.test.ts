@@ -796,7 +796,7 @@ describe('PropertySchemaParser', () => {
     expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
 
     const schema = propertySchemaParser.getSchemaForModel();
-    expect(schema).toEqual(mockPropertieSchemas.list_of_schemas[3].schemas[0]);
+    expect(schema).toEqual(mockPropertieSchemas.list_of_schemas[3].schemas[1]);
 
     propertySchemaParser.setFlow(Flow.ADD_MODEL);
 
@@ -831,7 +831,7 @@ describe('PropertySchemaParser', () => {
     expect(propertySchemaParser.getUserProperties()).toEqual(userProperties);
 
     const schema = propertySchemaParser.getSchemaForModel();
-    expect(schema).toEqual(mockPropertieSchemas.list_of_schemas[3].schemas[0]);
+    expect(schema).toEqual(mockPropertieSchemas.list_of_schemas[3].schemas[1]);
 
     propertySchemaParser.setFlow(Flow.UPDATE_MODEL);
     expect(userProperties[2].type_name).toBe('agent');

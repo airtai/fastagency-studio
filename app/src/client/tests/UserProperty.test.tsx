@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { UserProperty } from '../components/buildPage/UserProperty';
 import { renderInContext } from 'wasp/client/test';
@@ -40,7 +41,6 @@ describe('UserProperty', () => {
     (useQuery as Mock).mockReturnValue({ data: undefined, refetch: vi.fn(), isLoading: true });
 
     const { getByText, container } = renderInContext(<UserProperty {...mockProps} />);
-    console.log(container.innerHTML);
 
     expect(getByText('Loading...')).toBeInTheDocument();
   });
@@ -138,8 +138,62 @@ describe('UserProperty', () => {
     const cancelButton = getByText('Cancel');
     fireEvent.click(cancelButton);
 
-    console.log('container.innerHTML: ', container.innerHTML);
     expect(screen.getByText('Add Secret')).toBeInTheDocument();
     expect(screen.getByText('No Secrets found. Please add one.')).toBeInTheDocument();
+  });
+});
+
+describe('End-to-End mock test for form save and resume functaionality', () => {
+  it('Should presist the user filled form data when pressed cancel on the resume flow', async () => {
+    const user = userEvent.setup();
+    const agentProps = {
+      ...mockProps,
+      activeProperty: 'agent',
+    };
+
+    const { getByText, getAllByRole, container } = renderInContext(<UserProperty {...agentProps} />);
+
+    // Click 'Add Agent' button
+    await user.click(screen.getByText('Add Agent'));
+
+    // Wait for the form to appear
+    await waitFor(() => {
+      expect(screen.getByText('AssistantAgent')).toBeInTheDocument();
+      expect(screen.getByText('LLM')).toBeInTheDocument();
+    });
+
+    // Update the Name
+    const nameInput = screen.getByLabelText('Name');
+    await user.type(nameInput, 'Test Name');
+
+    // Open the LLM dropdown
+    const selectElements = getAllByRole('combobox');
+    await user.click(selectElements[1]);
+
+    // Check the listbox content
+    const listbox = screen.getByRole('listbox');
+    expect(listbox.children.length).toBe(1);
+    expect(screen.getByText('Add new "LLM"')).toBeInTheDocument();
+
+    // Click the 'Add new "LLM"' option
+    await user.click(screen.getByText('Add new "LLM"'));
+
+    // Wait for the new LLM form to appear
+    await waitFor(() => {
+      expect(screen.getByText('Select LLM')).toBeInTheDocument();
+    });
+
+    // press cancelButton
+    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+    await user.click(cancelButton);
+
+    // Wait for the previous form to optn
+    await waitFor(() => {
+      expect(screen.getByText('AssistantAgent')).toBeInTheDocument();
+      expect(screen.getByText('LLM')).toBeInTheDocument();
+
+      // check if the previous form is able to presist the user input
+      expect(nameInput).toHaveValue('Test Name');
+    });
   });
 });

@@ -6,7 +6,7 @@ import Select, { StylesConfig } from 'react-select';
 import { TextInput } from '../form/TextInput';
 import { SECRETS_TO_MASK } from '../../utils/constants';
 import { TextArea } from '../form/TextArea';
-import { SelectOption, SetUpdateFormStack } from './PropertySchemaParser';
+import { SelectOption } from './PropertySchemaParser';
 
 const markAddPropertyOption: StylesConfig<SelectOption, false> = {
   control: (baseStyles) => ({
@@ -27,12 +27,16 @@ const markAddPropertyOption: StylesConfig<SelectOption, false> = {
   }),
 };
 
+interface AddPropertyHandler {
+  (modelName: string, propertyName: string, fieldKey: string): void;
+}
+
 interface FormFieldProps {
   field: FieldApi<any, any, any, any>;
   property: any;
   fieldKey: string;
   isOptionalRefField: boolean;
-  updateFormStack: SetUpdateFormStack;
+  addPropertyHandler: AddPropertyHandler;
 }
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
@@ -57,7 +61,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   property,
   fieldKey,
   isOptionalRefField,
-  updateFormStack,
+  addPropertyHandler,
 }) => {
   const [selectOptions, setSelectOptions] = useState([]);
   const [defaultValue, setDefaultValue] = useState(null);
@@ -95,7 +99,7 @@ export const FormField: React.FC<FormFieldProps> = ({
     if (addPropertyForModel) {
       const propertyName: string = value;
       const modelName = addPropertyForModel;
-      updateFormStack(modelName, propertyName);
+      addPropertyHandler(modelName, propertyName, fieldKey);
     }
   };
 

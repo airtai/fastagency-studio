@@ -11,7 +11,7 @@ import { ModelSelector } from '../buildPage/ModelSelector';
 import { navLinkItems } from '../CustomSidebar';
 import { PropertiesSchema } from '../../interfaces/BuildPageInterfaces';
 import LoadingComponent from '../LoadingComponent';
-import { useFormHandler } from './useFormHandler';
+import { useFormHandler, PushParser } from './useFormHandler';
 
 import { filerOutComponentData, capitalizeFirstLetter, filterPropertiesByType } from './buildPageUtils';
 import { Flow } from './PropertySchemaParser';
@@ -38,6 +38,7 @@ export const UserProperty = memo(
     const updateFormStack = async (
       model: string | null,
       property: string | null = null,
+      formState: any = null,
       flow: Flow = Flow.ADD_MODEL
     ) => {
       let propertyToShow: string = activeProperty;
@@ -48,14 +49,20 @@ export const UserProperty = memo(
         replaceLast = false;
       }
 
-      pushNewParser({
+      const parserParams: PushParser = {
         propertiesSchema,
         activeProperty: propertyToShow,
         activeModel: model,
         flow: flow,
         userProperties,
         replaceLast,
-      });
+      };
+
+      if (formState) {
+        parserParams.formState = formState;
+      }
+
+      pushNewParser(parserParams);
     };
 
     const addProperty = (e: React.MouseEvent<HTMLButtonElement>) => {

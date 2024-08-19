@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { validateForm, addUserModels, deleteUserModels, updateUserModels } from 'wasp/client/operations';
 import { PropertySchemaParser, SetUpdateFormStack, Flow, UserProperties } from './PropertySchemaParser';
@@ -34,11 +34,12 @@ export const usePropertyManager = (
   parser: PropertySchemaParser | null,
   updateFormStack: SetUpdateFormStack,
   refetchUserProperties: any,
-  popFromStack: (userProperties: UserProperties[] | null) => void
+  popFromStack: (userProperties: UserProperties[] | null, validateDataResponse?: any) => void
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [successResponse, setSuccessResponse] = useState<any>(null);
+  const formValuesRef = useRef<any>(null);
 
   const propertyName = parser?.getPropertyName() || '';
   const modelName = parser?.getActiveModel() || '';
@@ -78,7 +79,7 @@ export const usePropertyManager = (
         await setSuccessResponse(response);
 
         if (!isDeploymentProperty) {
-          await resetAndRefetchProperties();
+          await resetAndRefetchProperties(validatedData);
         }
       } catch (error: any) {
         try {
@@ -98,6 +99,19 @@ export const usePropertyManager = (
     },
   });
 
+  const formState = form.useStore((state) => state.values);
+  useEffect(() => {
+    formValuesRef.current = formState;
+  }, [formState]);
+
+  const popFromStackWithFormState = (modelName: string, propertyName: string, fieldKey: string) => {
+    const formState = {
+      values: formValuesRef.current,
+      fieldKey,
+    };
+    updateFormStack(modelName, propertyName, formState);
+  };
+
   useEffect(() => {
     form.reset();
   }, [schema]);
@@ -113,10 +127,10 @@ export const usePropertyManager = (
     popFromStack(null);
   };
 
-  const resetAndRefetchProperties = async () => {
+  const resetAndRefetchProperties = async (validateDataResponse: any = null) => {
     const { data: userProperties } = await refetchUserProperties();
     resetFormState();
-    popFromStack(userProperties);
+    popFromStack(userProperties, validateDataResponse);
   };
 
   const deleteProperty = async () => {
@@ -159,5 +173,6 @@ export const usePropertyManager = (
     setNotification,
     notification,
     successResponse,
+    popFromStackWithFormState,
   };
 };

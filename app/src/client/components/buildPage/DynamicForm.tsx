@@ -13,7 +13,7 @@ interface DynamicFormProps {
   parser: PropertySchemaParser | null;
   updateFormStack: SetUpdateFormStack;
   refetchUserProperties: () => void;
-  popFromStack: (userProperties: UserProperties[] | null) => void;
+  popFromStack: (userProperties: UserProperties[] | null, validateDataResponse?: any) => void;
 }
 
 const LoaderContainer = () => (
@@ -64,8 +64,20 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
   refetchUserProperties,
   popFromStack,
 }) => {
-  const { form, schema, handleCtaAction, isLoading, setNotification, notification, successResponse } =
-    usePropertyManager(parser, updateFormStack, refetchUserProperties, popFromStack);
+  const {
+    form,
+    schema,
+    handleCtaAction,
+    isLoading,
+    setNotification,
+    notification,
+    successResponse,
+    popFromStackWithFormState,
+  } = usePropertyManager(parser, updateFormStack, refetchUserProperties, popFromStack);
+
+  const addPropertyHandler = (modelName: string, propertyName: string, fieldKey: string) => {
+    popFromStackWithFormState(modelName, propertyName, fieldKey);
+  };
 
   const formFields = useMemo(() => {
     if (schema && 'json_schema' in schema) {
@@ -98,7 +110,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
                 property={propertyCopy}
                 fieldKey={key}
                 isOptionalRefField={isOptionalRefField}
-                updateFormStack={updateFormStack}
+                addPropertyHandler={addPropertyHandler}
               />
             )}
             validators={{

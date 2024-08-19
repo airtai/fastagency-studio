@@ -8,7 +8,7 @@ export enum Flow {
   ADD_MODEL = 'add_model',
 }
 
-export type SetUpdateFormStack = (model: string | null, property?: string | null) => void;
+export type SetUpdateFormStack = (model: string | null, property?: string | null, formState?: any) => void;
 
 export interface SelectOption {
   value: string;

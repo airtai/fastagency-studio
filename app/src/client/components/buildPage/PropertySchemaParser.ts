@@ -228,7 +228,11 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
     isOptional: boolean
   ): SelectOption | null {
     if (this.activeModelObj?.json_str?.[key]) {
-      const matchingUserProperty = this.getMatchingUserProperty(this.activeModelObj.json_str[key].uuid);
+      const uuid =
+        typeof this.activeModelObj.json_str[key] === 'string'
+          ? this.activeModelObj.json_str[key]
+          : this.activeModelObj.json_str[key].uuid;
+      const matchingUserProperty = this.getMatchingUserProperty(uuid);
       if (matchingUserProperty) {
         return { label: matchingUserProperty.json_str.name, value: matchingUserProperty.uuid };
       }

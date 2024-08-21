@@ -17,7 +17,7 @@ const markAddPropertyOption: StylesConfig<SelectOption, false> = {
     ...styles,
     display: 'flex',
     alignItems: 'center',
-    '::before': data.isAddPropertyOption
+    '::before': data.addPropertyForModel
       ? {
           fontFamily: '"Material Symbols Outlined"',
           content: '"\ue147"',
@@ -27,11 +27,16 @@ const markAddPropertyOption: StylesConfig<SelectOption, false> = {
   }),
 };
 
+interface AddPropertyHandler {
+  (modelName: string, propertyName: string, fieldKey: string): void;
+}
+
 interface FormFieldProps {
   field: FieldApi<any, any, any, any>;
   property: any;
   fieldKey: string;
   isOptionalRefField: boolean;
+  addPropertyHandler: AddPropertyHandler;
 }
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
@@ -51,7 +56,13 @@ const getSelectObject = (val: string): {} => {
   return { value: val, label: val };
 };
 
-export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey, isOptionalRefField }) => {
+export const FormField: React.FC<FormFieldProps> = ({
+  field,
+  property,
+  fieldKey,
+  isOptionalRefField,
+  addPropertyHandler,
+}) => {
   const [selectOptions, setSelectOptions] = useState([]);
   const [defaultValue, setDefaultValue] = useState(null);
   const [key, setKey] = useState(0);
@@ -82,11 +93,13 @@ export const FormField: React.FC<FormFieldProps> = ({ field, property, fieldKey,
 
   const handleSelectOnchange = (selectedOption: any) => {
     const value = selectedOption?.value || null;
-    const isAddOption = selectedOption?.isAddPropertyOption;
+    const addPropertyForModel = selectedOption?.addPropertyForModel;
 
     field.handleChange(value);
-    if (isAddOption) {
-      console.log('Add option selected for: ', value);
+    if (addPropertyForModel) {
+      const propertyName: string = value;
+      const modelName = addPropertyForModel;
+      addPropertyHandler(modelName, propertyName, fieldKey);
     }
   };
 

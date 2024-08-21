@@ -81,6 +81,7 @@ const BuildPage = ({ user }: BuildPageProps) => {
                   activeProperty={activeProperty}
                   propertiesSchema={propertiesSchema}
                   sideNavItemClickCount={sideNavItemClickCount}
+                  setActiveProperty={setActiveProperty}
                 />
               </div>
             </main>

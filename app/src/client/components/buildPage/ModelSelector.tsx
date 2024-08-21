@@ -1,17 +1,38 @@
+import { useEffect, useMemo, useState } from 'react';
 import Select, { StylesConfig, SingleValue } from 'react-select';
-import { PropertySchemaParser, SetActiveModelType } from './PropertySchemaParser';
+import { PropertySchemaParser, SetUpdateFormStack } from './PropertySchemaParser';
 import { SelectOption } from './PropertySchemaParser';
 import { capitalizeFirstLetter } from './buildPageUtils';
 
 export const ModelSelector = ({
   parser,
-  setActiveModel,
+  updateFormStack,
 }: {
   parser: PropertySchemaParser | null;
-  setActiveModel: SetActiveModelType;
+  updateFormStack: SetUpdateFormStack;
 }) => {
-  const selectOptions = parser?.getModelNames();
+  const selectOptions = useMemo(() => parser?.getModelNames() || [], [parser]);
   const propertyName = parser?.getPropertyName();
+  const activeModel = parser?.getActiveModel();
+
+  const [selectedOption, setSelectedOption] = useState<SelectOption | null>(() => {
+    if (activeModel) {
+      return selectOptions.find((opt) => opt.value === activeModel) || null;
+    }
+    return selectOptions.length > 0 ? selectOptions[0] : null;
+  });
+
+  useEffect(() => {
+    if (activeModel) {
+      const option = selectOptions.find((opt) => opt.value === activeModel);
+      if (option && option.value !== selectedOption?.value) {
+        setSelectedOption(option);
+      }
+    } else if (selectOptions.length > 0 && !selectedOption) {
+      setSelectedOption(selectOptions[0]);
+    }
+  }, [activeModel, selectOptions]);
+
   const propertyHeader = propertyName ? capitalizeFirstLetter(propertyName) : propertyName;
   const customStyles: StylesConfig<SelectOption, false> = {
     control: (baseStyles) => ({
@@ -20,13 +41,13 @@ export const ModelSelector = ({
     }),
   };
 
-  const handleChange = (selectedOption: SingleValue<SelectOption>) => {
-    if (selectedOption) {
-      setActiveModel(selectedOption.value);
+  const handleChange = (newValue: SingleValue<SelectOption>) => {
+    if (newValue) {
+      setSelectedOption(newValue);
+      updateFormStack(newValue.value);
     }
   };
 
-  const activeModel = parser?.getActiveModel();
   const header = propertyHeader === 'Llm' ? 'Select LLM' : `Select ${propertyHeader}`;
 
   return (
@@ -41,7 +62,7 @@ export const ModelSelector = ({
               options={selectOptions}
               onChange={handleChange}
               className='pt-1 pb-1'
-              defaultValue={activeModel ? { value: activeModel, label: activeModel } : selectOptions[0]}
+              value={selectedOption}
               isSearchable={true}
               isClearable={false}
               styles={customStyles}

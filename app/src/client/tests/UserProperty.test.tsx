@@ -1,16 +1,24 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { UserProperty } from '../components/buildPage/UserProperty';
 import { renderInContext } from 'wasp/client/test';
 import { useQuery } from 'wasp/client/operations';
 import { mockProps } from './mocks';
 
+const validateAndSaveMockResponse = {
+  json: {
+    name: 'My LLM',
+    api_key: 'test-api-key', // pragma: allowlist secret
+    uuid: 'test-uuid-563ec0df-3ecd-4d2a-a43a',
+  },
+};
+
 // Mock the wasp/client/operations
 vi.mock('wasp/client/operations', () => ({
   useQuery: vi.fn(() => ({
-    // todo: fix the data strucure. pass the user added models
     data: [
       { uuid: '1', type_name: 'testProperty', model_name: 'Model1', json_str: {} },
       { uuid: '2', type_name: 'testProperty', model_name: 'Model2', json_str: {} },
@@ -19,6 +27,8 @@ vi.mock('wasp/client/operations', () => ({
     refetch: vi.fn(),
   })),
   getModels: vi.fn(),
+  validateForm: vi.fn(() => Promise.resolve(validateAndSaveMockResponse)),
+  addUserModels: vi.fn(() => Promise.resolve(validateAndSaveMockResponse)),
 }));
 
 describe('UserProperty', () => {
@@ -40,7 +50,6 @@ describe('UserProperty', () => {
     (useQuery as Mock).mockReturnValue({ data: undefined, refetch: vi.fn(), isLoading: true });
 
     const { getByText, container } = renderInContext(<UserProperty {...mockProps} />);
-    console.log(container.innerHTML);
 
     expect(getByText('Loading...')).toBeInTheDocument();
   });
@@ -118,7 +127,7 @@ describe('UserProperty', () => {
       refetch: vi.fn(),
     });
 
-    const { getByText, getByRole } = renderInContext(<UserProperty {...mockProps} />);
+    const { getByText, getByRole, container } = renderInContext(<UserProperty {...mockProps} />);
 
     fireEvent.click(screen.getByText('Add Secret'));
 

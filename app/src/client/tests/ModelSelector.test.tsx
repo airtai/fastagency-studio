@@ -7,16 +7,16 @@ import { renderInContext } from 'wasp/client/test';
 import selectEvent from 'react-select-event';
 
 import { ModelSelector } from '../components/buildPage/ModelSelector';
-import { PropertySchemaParser, SetActiveModelType } from '../components/buildPage/PropertySchemaParser';
+import { PropertySchemaParser, SetUpdateFormStack } from '../components/buildPage/PropertySchemaParser';
 import { mockPropertieSchemas } from './mocks';
 
 const activeProperty = 'secret';
 const parser = new PropertySchemaParser(mockPropertieSchemas, activeProperty);
-const mockSetActiveModel: SetActiveModelType = vi.fn();
+const mockUpdateFormStack: SetUpdateFormStack = vi.fn();
 
 describe('ModelSelector', () => {
   it('renders correct number of options', () => {
-    const { getByRole } = renderInContext(<ModelSelector parser={parser} setActiveModel={mockSetActiveModel} />);
+    const { getByRole } = renderInContext(<ModelSelector parser={parser} updateFormStack={mockUpdateFormStack} />);
 
     expect(screen.getByText('Select Secret')).toBeInTheDocument();
 
@@ -29,7 +29,7 @@ describe('ModelSelector', () => {
   });
 
   it('renders correct number of options', () => {
-    const { getByRole } = renderInContext(<ModelSelector parser={parser} setActiveModel={mockSetActiveModel} />);
+    const { getByRole } = renderInContext(<ModelSelector parser={parser} updateFormStack={mockUpdateFormStack} />);
 
     expect(screen.getByText('Select Secret')).toBeInTheDocument();
 
@@ -43,7 +43,7 @@ describe('ModelSelector', () => {
 
   it('calls setActiveModel with correct value when option is selected', async () => {
     const { getByRole, getByText } = renderInContext(
-      <ModelSelector parser={parser} setActiveModel={mockSetActiveModel} />
+      <ModelSelector parser={parser} updateFormStack={mockUpdateFormStack} />
     );
 
     expect(getByText('AnthropicAPIKey')).toBeInTheDocument();
@@ -55,6 +55,6 @@ describe('ModelSelector', () => {
     // Select an option
     await selectEvent.select(selectElement, 'AzureOAIAPIKey');
 
-    expect(mockSetActiveModel).toHaveBeenCalledWith('AzureOAIAPIKey');
+    expect(mockUpdateFormStack).toHaveBeenCalledWith('AzureOAIAPIKey');
   });
 });

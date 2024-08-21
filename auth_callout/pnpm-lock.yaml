@@ -30,8 +30,8 @@ importers:
         specifier: ^2.6.1
         version: 2.18.0
       nats-jwt:
-        specifier: ^0.0.7
-        version: 0.0.7
+        specifier: ^0.0.9
+        version: 0.0.9
       nkeys.js:
         specifier: ^1.0.5
         version: 1.0.5
@@ -392,8 +392,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nats-jwt@0.0.7:
-    resolution: {integrity: sha512-4TsK+EvmSufteQJwVnBw3mH0+R8RA/HwOUGZnox6mKh2y0xY9XaUKkoK42A5i/lugTM8jtPTELevr9GZZu6sKw==}
+  nats-jwt@0.0.9:
+    resolution: {integrity: sha512-1kcxqP4oHoG99HA/+h5qU1yBwScd5CaewD23gWDCdmpIFKJhUfd2NkkFFpCKbcfjwZKHOmCBy9DE2Z1ZVyaZ3g==}
 
   nats@2.18.0:
     resolution: {integrity: sha512-zZF004ejzf67Za0Tva+xphxoxBMNc5IMLqbZ7Ho0j9TMuisjpo+qCd1EktXRCLNxmrZ8O6Tbm1dBsZYNF6yR1A==}
@@ -401,6 +401,10 @@ packages:
 
   nkeys.js@1.0.5:
     resolution: {integrity: sha512-u25YnRPHiGVsNzwyHnn+PT90sgAhnS8jUJ1nxmkHMFYCJ6+Ic0lv291w7uhRBpJVJ3PH2GWbYqA151lGCRrB5g==}
+    engines: {node: '>=10.0.0'}
+
+  nkeys.js@1.1.0:
+    resolution: {integrity: sha512-tB/a0shZL5UZWSwsoeyqfTszONTt4k2YS0tuQioMOD180+MbombYVgzDUYHlx+gejYK6rgf08n/2Df99WY0Sxg==}
     engines: {node: '>=10.0.0'}
 
   normalize-path@3.0.0:
@@ -900,15 +904,19 @@ snapshots:
 
   nanoid@3.3.7: {}
 
-  nats-jwt@0.0.7:
+  nats-jwt@0.0.9:
     dependencies:
-      nkeys.js: 1.0.5
+      nkeys.js: 1.1.0
 
   nats@2.18.0:
     dependencies:
       nkeys.js: 1.0.5
 
   nkeys.js@1.0.5:
+    dependencies:
+      tweetnacl: 1.0.3
+
+  nkeys.js@1.1.0:
     dependencies:
       tweetnacl: 1.0.3
 

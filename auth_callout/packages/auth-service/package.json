@@ -11,7 +11,7 @@
     "@types/node": "^20.9.0"
   },
   "dependencies": {
-    "@prisma/client": "^5.16.1",
+    "@prisma/client": "^5.18.0",
     "nats": "^2.6.1",
     "nats-jwt": "^0.0.7",
     "nkeys.js": "^1.0.5",

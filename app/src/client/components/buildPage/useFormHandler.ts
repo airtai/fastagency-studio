@@ -20,6 +20,10 @@ export function useFormHandler(setActiveProperty: (activeProperty: string) => vo
     return stack.length > 0 ? stack[stack.length - 1] : null;
   }, [stack]);
 
+  const getPropertyNamesFromStack = useCallback(() => {
+    return stack.map((parser) => parser.getFormattedPropertyName());
+  }, [stack]);
+
   const pushNewParser = useCallback((customOptions: PushParser) => {
     const newParser = new PropertySchemaParser(customOptions.propertiesSchema, customOptions.activeProperty);
     newParser.setActiveModel(customOptions.activeModel);
@@ -58,28 +62,35 @@ export function useFormHandler(setActiveProperty: (activeProperty: string) => vo
     setActiveProperty(customOptions.activeProperty);
   }, []);
 
-  const popFromStack = useCallback((userProperties: UserProperties[] | null, validateDataResponse: any = null) => {
-    setStack((prevStack) => {
-      const stackWithoutLast = prevStack.slice(0, -1);
-      const lastProperty = stackWithoutLast[stackWithoutLast.length - 1];
-      const previousPropertyName = lastProperty?.getPropertyName();
+  const popFromStack = useCallback(
+    (userProperties: UserProperties[] | null, validateDataResponse: any = null, index: number = -1) => {
+      setStack((prevStack) => {
+        const newStack = prevStack.slice(0, index === -1 ? -1 : index + 1);
+        const lastProperty = newStack[newStack.length - 1];
+        const previousPropertyName = lastProperty?.getPropertyName();
 
-      userProperties && lastProperty?.setUserProperties(userProperties);
-      if (validateDataResponse && lastProperty) {
-        const lastPropertyActiveModelObj = lastProperty?.getActiveModelObj();
-        if (lastPropertyActiveModelObj && lastPropertyActiveModelObj.fieldKey) {
-          lastPropertyActiveModelObj.json_str[lastPropertyActiveModelObj.fieldKey] = {
-            uuid: validateDataResponse.uuid,
-            name: validateDataResponse.name,
-          };
-          delete lastPropertyActiveModelObj.fieldKey;
+        if (userProperties && lastProperty) {
+          lastProperty.setUserProperties(userProperties);
         }
-        lastProperty.setActiveModelObj(lastPropertyActiveModelObj);
-      }
-      !!previousPropertyName && setActiveProperty(previousPropertyName);
-      return stackWithoutLast;
-    });
-  }, []);
+        if (validateDataResponse && lastProperty) {
+          const lastPropertyActiveModelObj = lastProperty?.getActiveModelObj();
+          if (lastPropertyActiveModelObj && lastPropertyActiveModelObj.fieldKey) {
+            lastPropertyActiveModelObj.json_str[lastPropertyActiveModelObj.fieldKey] = {
+              uuid: validateDataResponse.uuid,
+              name: validateDataResponse.name,
+            };
+            delete lastPropertyActiveModelObj.fieldKey;
+          }
+          lastProperty.setActiveModelObj(lastPropertyActiveModelObj);
+        }
+        if (previousPropertyName) {
+          setActiveProperty(previousPropertyName);
+        }
+        return newStack;
+      });
+    },
+    []
+  );
 
   const clearStack = useCallback(() => {
     setStack([]);
@@ -87,6 +98,7 @@ export function useFormHandler(setActiveProperty: (activeProperty: string) => vo
 
   return {
     parser: getCurrentParser(),
+    propertiesInStack: getPropertyNamesFromStack(),
     pushNewParser,
     popFromStack,
     clearStack,

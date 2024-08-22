@@ -37,6 +37,7 @@ interface PropertySchemaParserInterface {
   getActiveModel(): string | null;
   setActiveModel(model: string | null): void;
   getPropertyName(): string;
+  getFormattedPropertyName(): string;
   getValidationURL(): string;
   getDefaultValues(): { [key: string]: any };
   getSchemaForModel(): Schema | undefined;
@@ -123,8 +124,8 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
     return defaultValues;
   }
 
-  private getCapitalizeTitle(key: string): string {
-    return key === 'llm' ? 'LLM' : this.capitalizeWords(key);
+  public formatTitleCase(s: string): string {
+    return s === 'llm' ? 'LLM' : this.capitalizeWords(s);
   }
 
   private createAddPropertyOption(refTypes: string[]): SelectOption[] {
@@ -136,7 +137,7 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
 
     return [
       {
-        label: `Add new "${this.getCapitalizeTitle(targetPropertyName)}"`,
+        label: `Add new "${this.formatTitleCase(targetPropertyName)}"`,
         value: targetPropertyName,
         addPropertyForModel: modelName,
       },
@@ -158,7 +159,7 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
         description: '',
         enum: options,
         default: defaultValue,
-        title: this.getCapitalizeTitle(key),
+        title: this.formatTitleCase(key),
       },
       initialFormValue: defaultValue?.value ?? null,
       isOptional: isOptional,
@@ -279,6 +280,10 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
 
   public getPropertyName(): string {
     return this.propertyName;
+  }
+
+  public getFormattedPropertyName(): string {
+    return this.formatTitleCase(this.propertyName);
   }
 
   public getValidationURL(): string {

@@ -3,7 +3,6 @@ import { useHistory } from 'react-router-dom';
 import { type Chat } from 'wasp/entities';
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 import { CreateNewChatProps } from '../interfaces/PlaygroundPageInterface';
-import CustomBreadcrumb from './CustomBreadcrumb';
 import NotificationBox from './NotificationBox';
 import { SelectInput } from './form/SelectInput';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -76,7 +75,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
   return (
     <div className='lg:mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10'>
       <div className='w-full lg:min-w-[700px] 2xl:min-w-[1200px]'>
-        <CustomBreadcrumb pageName='Enter details to start new chat' />
+        <h2 className='mb-6 text-title-md2 font-semibold text-airt-primary'>Enter details to start new chat</h2>
         <div className='rounded-lg border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[420px] pt-7'>
           <form onSubmit={handleSubmit} className='px-6.5 py-2'>
             <label className='text-airt-primary' htmlFor='selectTeam'>

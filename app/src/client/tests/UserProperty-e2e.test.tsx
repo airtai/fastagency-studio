@@ -79,6 +79,13 @@ const createSecret = async (user: UserEvent): Promise<void> => {
   ];
 
   mockRefetch.mockResolvedValue({ data: mockData });
+
+  // Check if the breadcrumbs are displayed correctly
+  expect(screen.getByTestId('breadcrumb-link-Agent')).toBeInTheDocument();
+  expect(screen.getByTestId('breadcrumb-link-LLM')).toBeInTheDocument();
+  expect(screen.getByTestId('breadcrumb-link-Secret')).toBeInTheDocument();
+
+  // Save the form
   await user.click(screen.getByRole('button', { name: 'Save' }));
 
   await waitFor(() => {
@@ -138,6 +145,12 @@ const createLLM = async (user: UserEvent): Promise<void> => {
   });
 
   mockRefetch.mockResolvedValue({ data: mockData });
+
+  // Check if the breadcrumbs are displayed correctly
+  expect(screen.getByTestId('breadcrumb-link-Agent')).toBeInTheDocument();
+  expect(screen.getByTestId('breadcrumb-link-LLM')).toBeInTheDocument();
+
+  // Save the form
   await user.click(screen.getByRole('button', { name: 'Save' }));
 
   await waitFor(async () => {
@@ -285,4 +298,49 @@ describe('UserProperty Component Tests', () => {
       expect(screen.getByText('My Toolbox Name')).toBeInTheDocument();
     });
   });
+
+  it('should show correct form when clicking the breadcrumbs', async () => {
+    const { user } = await setupComponent();
+
+    // Enter name for Agent
+    await user.type(screen.getByLabelText('Name'), 'My Anthropic Agent');
+
+    // Create LLM but do not save the form
+    await user.click(screen.getAllByRole('combobox')[1]);
+    await user.click(screen.getByText('Add new "LLM"'));
+    await waitFor(() => expect(screen.getByText('Select LLM')).toBeInTheDocument());
+    await user.type(screen.getByLabelText('Name'), 'My Anthropic LLM');
+
+    // Check if the breadcrumbs are displayed correctly
+    expect(screen.getByTestId('breadcrumb-link-Agent')).toBeInTheDocument();
+    expect(screen.getByTestId('breadcrumb-link-LLM')).toBeInTheDocument();
+
+    // Create Secret but do not save the form
+    await user.click(screen.getAllByRole('combobox')[2]);
+    await user.click(screen.getByText('Add new "Secret"'));
+    await waitFor(() => expect(screen.getByText('Select Secret')).toBeInTheDocument());
+    expect(screen.getByText('AnthropicAPIKey')).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Name'), 'My AnthropicAPIKey Secret');
+    await user.type(screen.getByLabelText('Api Key'), 'My Api Key');
+
+    // Check if the breadcrumbs are displayed correctly
+    expect(screen.getByTestId('breadcrumb-link-Agent')).toBeInTheDocument();
+    expect(screen.getByTestId('breadcrumb-link-LLM')).toBeInTheDocument();
+    expect(screen.getByTestId('breadcrumb-link-Secret')).toBeInTheDocument();
+
+    // Click the last item in the breadcrumb and nothing should change in the UI
+    await user.click(screen.getByTestId('breadcrumb-link-Secret'));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Name')).toHaveValue('My AnthropicAPIKey Secret');
+      expect(screen.getByLabelText('Api Key')).toHaveValue('My Api Key');
+    });
+
+    // Click on the first item the user should be taken back to the Agent screen
+    await user.click(screen.getByTestId('breadcrumb-link-Agent'));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Name')).toHaveValue('My Anthropic Agent');
+    });
+  }, 10000);
 });

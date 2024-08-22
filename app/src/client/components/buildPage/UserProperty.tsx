@@ -29,7 +29,7 @@ export const UserProperty = memo(
     const propertyName = activeProperty === 'llm' ? 'LLM' : capitalizeFirstLetter(activeProperty);
     const propertySchemasList = filerOutComponentData(propertiesSchema, activeProperty);
 
-    const { parser, pushNewParser, popFromStack, clearStack } = useFormHandler(setActiveProperty);
+    const { parser, propertiesInStack, pushNewParser, popFromStack, clearStack } = useFormHandler(setActiveProperty);
 
     const { data: userProperties, refetch: refetchUserProperties, isLoading: isLoading } = useQuery(getModels);
     const userPropertiesByType = (userProperties && filterPropertiesByType(userProperties, activeProperty)) || [];
@@ -92,7 +92,11 @@ export const UserProperty = memo(
 
     return (
       <>
-        <CustomBreadcrumb pageName={`${propertyHeader}`} />
+        <CustomBreadcrumb
+          pageName={`${propertyHeader}`}
+          propertiesInStack={propertiesInStack}
+          popFromStack={popFromStack}
+        />
         <div className='flex flex-col gap-10'>
           <div className='rounded-lg border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[600px]'>
             {isLoading ? (

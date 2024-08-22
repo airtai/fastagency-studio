@@ -34,7 +34,7 @@ export const usePropertyManager = (
   parser: PropertySchemaParser | null,
   updateFormStack: SetUpdateFormStack,
   refetchUserProperties: any,
-  popFromStack: (userProperties: UserProperties[] | null, validateDataResponse?: any) => void
+  popFromStack: (userProperties: UserProperties[] | null, validateDataResponse?: any, index?: number) => void
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);

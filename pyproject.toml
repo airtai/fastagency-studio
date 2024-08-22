@@ -44,38 +44,38 @@ classifiers = [
 dynamic = ["version"]
 
 dependencies = [
-    "fastagency @ git+https://github.com/airtai/fastagencyapi.git@main",
+    "fastagency @ git+https://github.com/airtai/fastagency.git@main",
 ]
 
 [project.optional-dependencies]
 # public distributions
 
 server = [
-    "fastagency[server] @ git+https://github.com/airtai/fastagencyapi.git@main",
+    "fastagency[server] @ git+https://github.com/airtai/fastagency.git@main",
 ]
 
 # dev dependencies
 devdocs = [
-    "fastagency[devdocs] @ git+https://github.com/airtai/fastagencyapi.git@main",
+    "fastagency[devdocs] @ git+https://github.com/airtai/fastagency.git@main",
 ]
 
 lint = [
-    "fastagency[lint] @ git+https://github.com/airtai/fastagencyapi.git@main",
+    "fastagency[lint] @ git+https://github.com/airtai/fastagency.git@main",
 ]
 
 test-core = [
-    "fastagency[test-core] @ git+https://github.com/airtai/fastagencyapi.git@main",
+    "fastagency[test-core] @ git+https://github.com/airtai/fastagency.git@main",
 ]
 
 testing = [
     "fastagency-studio[test-core]",
     "fastagency-studio[server]", # Uvicorn is needed for testing
-    "fastagency[testing] @ git+https://github.com/airtai/fastagencyapi.git@main",
+    "fastagency[testing] @ git+https://github.com/airtai/fastagency.git@main",
 ]
 
 dev = [
     "fastagency-studio[server,lint,testing,devdocs]",
-    "fastagency[dev] @ git+https://github.com/airtai/fastagencyapi.git@main",
+    "fastagency[dev] @ git+https://github.com/airtai/fastagency.git@main",
 ]
 
 [project.urls]

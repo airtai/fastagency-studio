@@ -9,7 +9,7 @@
         "${containerEnv:CONTAINER_PREFIX}-nats-py310-fastagency-studio:9222"
     ],
     "shutdownAction": "stopCompose",
-    "workspaceFolder": "/workspaces/fastagency",
+    "workspaceFolder": "/workspaces/fastagency-studio",
     // "runArgs": [],
     "remoteEnv": {},
     "features": {

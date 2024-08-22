@@ -13,7 +13,7 @@ interface DynamicFormProps {
   parser: PropertySchemaParser | null;
   updateFormStack: SetUpdateFormStack;
   refetchUserProperties: () => void;
-  popFromStack: (userProperties: UserProperties[] | null, validateDataResponse?: any) => void;
+  popFromStack: (userProperties: UserProperties[] | null, validateDataResponse?: any, index?: number) => void;
 }
 
 const LoaderContainer = () => (

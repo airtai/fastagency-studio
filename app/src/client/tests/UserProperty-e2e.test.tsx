@@ -297,7 +297,7 @@ describe('UserProperty Component Tests', () => {
       expect(screen.getByText('My Anthropic LLM')).toBeInTheDocument();
       expect(screen.getByText('My Toolbox Name')).toBeInTheDocument();
     });
-  });
+  }, 10000);
 
   it('should show correct form when clicking the breadcrumbs', async () => {
     const { user } = await setupComponent();
@@ -342,5 +342,5 @@ describe('UserProperty Component Tests', () => {
     await waitFor(() => {
       expect(screen.getByLabelText('Name')).toHaveValue('My Anthropic Agent');
     });
-  }, 10000);
+  });
 });

@@ -24,6 +24,8 @@ export interface Property {
   allOf?: Array<{ $ref: string }>;
   maxLength?: number;
   minLength?: number;
+  maximum?: number;
+  minimum?: number;
   anyOf?: SchemaReference[];
   $ref?: string;
 }

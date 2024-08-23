@@ -159,7 +159,7 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
         description: '',
         enum: options,
         default: defaultValue,
-        title: this.formatTitleCase(key),
+        title: property.title,
       },
       initialFormValue: defaultValue?.value ?? null,
       isOptional: isOptional,
@@ -209,7 +209,7 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
         description: '',
         enum: enumValues,
         default: defaultValue,
-        title: this.capitalizeWords(key),
+        title: property.title,
       },
       initialFormValue: defaultValue?.value ?? null,
     };

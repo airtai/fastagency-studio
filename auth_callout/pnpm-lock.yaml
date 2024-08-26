@@ -27,8 +27,8 @@ importers:
         specifier: ^5.18.0
         version: 5.18.0(prisma@5.18.0)
       nats:
-        specifier: ^2.6.1
-        version: 2.18.0
+        specifier: ^2.28.2
+        version: 2.28.2
       nats-jwt:
         specifier: ^0.0.9
         version: 0.0.9
@@ -389,13 +389,9 @@ packages:
   nats-jwt@0.0.9:
     resolution: {integrity: sha512-1kcxqP4oHoG99HA/+h5qU1yBwScd5CaewD23gWDCdmpIFKJhUfd2NkkFFpCKbcfjwZKHOmCBy9DE2Z1ZVyaZ3g==}
 
-  nats@2.18.0:
-    resolution: {integrity: sha512-zZF004ejzf67Za0Tva+xphxoxBMNc5IMLqbZ7Ho0j9TMuisjpo+qCd1EktXRCLNxmrZ8O6Tbm1dBsZYNF6yR1A==}
+  nats@2.28.2:
+    resolution: {integrity: sha512-02cvR8EPach+0BfVaQjPgsbPFn6uMjEQAuvXS2ppg8jiWEm2KYdfmeFmtshiU9b2+kFh3LSEKMEaIfRgk3K8tw==}
     engines: {node: '>= 14.0.0'}
-
-  nkeys.js@1.0.5:
-    resolution: {integrity: sha512-u25YnRPHiGVsNzwyHnn+PT90sgAhnS8jUJ1nxmkHMFYCJ6+Ic0lv291w7uhRBpJVJ3PH2GWbYqA151lGCRrB5g==}
-    engines: {node: '>=10.0.0'}
 
   nkeys.js@1.1.0:
     resolution: {integrity: sha512-tB/a0shZL5UZWSwsoeyqfTszONTt4k2YS0tuQioMOD180+MbombYVgzDUYHlx+gejYK6rgf08n/2Df99WY0Sxg==}
@@ -901,13 +897,9 @@ snapshots:
     dependencies:
       nkeys.js: 1.1.0
 
-  nats@2.18.0:
+  nats@2.28.2:
     dependencies:
-      nkeys.js: 1.0.5
-
-  nkeys.js@1.0.5:
-    dependencies:
-      tweetnacl: 1.0.3
+      nkeys.js: 1.1.0
 
   nkeys.js@1.1.0:
     dependencies:

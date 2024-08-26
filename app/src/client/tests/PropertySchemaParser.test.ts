@@ -17,7 +17,7 @@ describe('PropertySchemaParser', () => {
       json_schema: {
         properties: {
           name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
-          api_key: { description: 'The API Key from Azure OpenAI', title: 'Api Key', type: 'string' },
+          api_key: { description: 'The API Key from Azure OpenAI', title: 'API Key', type: 'string' },
         },
         required: ['name', 'api_key'],
         title: 'AzureOAIAPIKey',
@@ -77,7 +77,7 @@ describe('PropertySchemaParser', () => {
               value: 'secret',
             },
           ],
-          title: 'Api Key',
+          title: 'API Key',
         },
         isOptional: false,
         initialFormValue: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b',
@@ -236,7 +236,7 @@ describe('PropertySchemaParser', () => {
               value: 'secret',
             },
           ],
-          title: 'Api Key',
+          title: 'API Key',
         },
         isOptional: false,
         initialFormValue: 'a0014b3f-bb43-4f64-8732-bb9444d13f7b',
@@ -248,7 +248,7 @@ describe('PropertySchemaParser', () => {
       api_type: {
         htmlForSelectBox: {
           description: '',
-          title: 'Api Type',
+          title: 'API Type',
           default: { value: 'azure', label: 'azure' },
           enum: [{ value: 'azure', label: 'azure' }],
         },
@@ -257,7 +257,7 @@ describe('PropertySchemaParser', () => {
       api_version: {
         htmlForSelectBox: {
           description: '',
-          title: 'Api Version',
+          title: 'API Version',
           default: { value: '2024-03-01-preview', label: '2024-03-01-preview' },
           enum: [
             {
@@ -399,7 +399,7 @@ describe('PropertySchemaParser', () => {
             label: 'anthropic',
             value: 'anthropic',
           },
-          title: 'Api Type',
+          title: 'API Type',
         },
         initialFormValue: 'anthropic',
       },
@@ -453,8 +453,24 @@ describe('PropertySchemaParser', () => {
                 },
                 properties: {
                   name: { type: 'string', minLength: 1 },
-                  ref1: { $ref: '#/$defs/Ref1' },
-                  ref2: { $ref: '#/$defs/Ref2' },
+                  ref1: {
+                    allOf: [
+                      {
+                        $ref: '#/$defs/Ref1',
+                      },
+                    ],
+                    description: 'Ref1',
+                    title: 'Ref1',
+                  },
+                  ref2: {
+                    allOf: [
+                      {
+                        $ref: '#/$defs/Ref2',
+                      },
+                    ],
+                    description: 'Ref2',
+                    title: 'Ref2',
+                  },
                   api_type: { const: 'multiref', default: 'multiref', enum: ['multiref'], type: 'string' },
                 },
                 required: ['name', 'ref1', 'ref2'],
@@ -729,7 +745,7 @@ describe('PropertySchemaParser', () => {
             },
           ],
           default: null,
-          title: 'Openapi Auth',
+          title: 'OpenAPI Auth',
         },
         initialFormValue: null,
         isOptional: true,
@@ -776,7 +792,7 @@ describe('PropertySchemaParser', () => {
             },
           ],
           default: null,
-          title: 'Openapi Auth',
+          title: 'OpenAPI Auth',
         },
         initialFormValue: null,
         isOptional: true,

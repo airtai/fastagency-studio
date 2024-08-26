@@ -47,11 +47,11 @@ describe('DynamicForm', () => {
 
     // Check if form fields are rendered
     expect(screen.getByLabelText('Name')).toBeInTheDocument();
-    expect(screen.getByLabelText('Api Key')).toBeInTheDocument();
+    expect(screen.getByLabelText('API Key')).toBeInTheDocument();
 
     // Fill out the form
     await userEvent.type(screen.getByLabelText('Name'), 'Test Name');
-    await userEvent.type(screen.getByLabelText('Api Key'), 'test-api-key');
+    await userEvent.type(screen.getByLabelText('API Key'), 'test-api-key');
 
     // Submit the form
     const submitButton = screen.getByRole('button', { name: 'Save' });
@@ -86,10 +86,10 @@ describe('DynamicForm', () => {
     );
 
     expect(screen.getByLabelText('Name')).toBeInTheDocument();
-    expect(screen.getByLabelText('Api Key')).toBeInTheDocument();
+    expect(screen.getByLabelText('API Key')).toBeInTheDocument();
 
     await user.type(screen.getByLabelText('Name'), 'Test Name');
-    await user.type(screen.getByLabelText('Api Key'), 'test-api-key');
+    await user.type(screen.getByLabelText('API Key'), 'test-api-key');
 
     const submitButton = screen.getByRole('button', { name: 'Save' });
     await user.click(submitButton);
@@ -157,13 +157,13 @@ describe('DynamicForm', () => {
     );
 
     await user.type(screen.getByLabelText('Name'), 'Test Name');
-    await user.type(screen.getByLabelText('Api Key'), 'test-api-key');
+    await user.type(screen.getByLabelText('API Key'), 'test-api-key');
 
     const cancelButton = screen.getByRole('button', { name: 'Cancel' });
     await user.click(cancelButton);
 
     expect(screen.getByLabelText('Name')).toHaveValue('');
-    expect(screen.getByLabelText('Api Key')).toHaveValue('');
+    expect(screen.getByLabelText('API Key')).toHaveValue('');
     expect(mockUpdateFormStack).toHaveBeenCalledWith(null);
   });
 
@@ -184,7 +184,7 @@ describe('DynamicForm', () => {
       />
     );
 
-    const apiKeyInput = screen.getByLabelText('Api Key');
+    const apiKeyInput = screen.getByLabelText('API Key');
     expect(apiKeyInput).toHaveAttribute('type', 'password');
   });
 });

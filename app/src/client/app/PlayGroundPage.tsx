@@ -31,6 +31,11 @@ import SelectTeamToChat from '../components/SelectTeamToChat';
 import Loader from '../admin/common/Loader';
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 
+interface FormattedMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 const PlayGroundPage = ({ user }: { user: User }) => {
   const { data: userTeams, isLoading: isLoading } = useQuery(getModels, { type_name: 'team' });
   const [refetchAllChatDetails, setRefetchAllChatDetails] = useState(false);
@@ -104,8 +109,10 @@ const PlayGroundPage = ({ user }: { user: User }) => {
           await updateCurrentChatStatus(activeChatId, isUserRespondedWithNextAction, removeQueryParameters);
           setTriggerChatFormSubmitMsg(null);
         }
-        const messages: any = await getFormattedChatMessages(activeChatId, userQuery, retrySameChat);
-        inProgressConversation = await getInProgressConversation(activeChatId, userQuery, retrySameChat);
+        const messages: FormattedMessage[] = await getFormattedChatMessages(activeChatId, userQuery, retrySameChat);
+
+        const sanitizedUserQuery: string = _.last(messages)!.content;
+        inProgressConversation = await getInProgressConversation(activeChatId, sanitizedUserQuery, retrySameChat);
         const selectedTeam: SelectedModelSchema | undefined = userTeams?.find(
           (team: any) => team.json_str.name === currentChatDetails.selectedTeam
         ) as SelectedModelSchema;
@@ -116,7 +123,7 @@ const PlayGroundPage = ({ user }: { user: User }) => {
               socket,
               currentChatDetails,
               inProgressConversation,
-              userQuery,
+              sanitizedUserQuery,
               messages,
               activeChatId,
               selectedTeam

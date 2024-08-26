@@ -20,7 +20,7 @@ import {
   type DeleteLastConversationInChat,
   type RetryTeamChat,
 } from 'wasp/server/operations';
-import { sanitizeData } from './common/inputSanitizer';
+import { sanitizeData, sanitizeInput } from './common/inputSanitizer';
 // import Stripe from 'stripe';
 // import type { StripePaymentResult } from '../shared/types';
 // import { fetchStripeCustomer, createStripeCheckoutSession } from './payments/stripeUtils.js';
@@ -440,11 +440,12 @@ export const createNewAndReturnAllConversations: CreateNewAndReturnAllConversati
     throw new HttpError(500, 'No Subscription Found');
   }
 
+  const sanitizedUserQuery = sanitizeInput(userQuery);
   await context.entities.Conversation.create({
     data: {
       chat: { connect: { id: chatId } },
       user: { connect: { id: context.user.id } },
-      message: userQuery,
+      message: sanitizedUserQuery,
       role,
     },
   });

@@ -20,6 +20,7 @@ import {
   type DeleteLastConversationInChat,
   type RetryTeamChat,
 } from 'wasp/server/operations';
+import { sanitizeData } from './common/inputSanitizer';
 // import Stripe from 'stripe';
 // import type { StripePaymentResult } from '../shared/types';
 // import { fetchStripeCustomer, createStripeCheckoutSession } from './payments/stripeUtils.js';
@@ -158,10 +159,13 @@ export const addUserModels: AddUserModels<AddUserModelsPayload, any> = async (ar
   }
   try {
     const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models/${args.type_name}/${args.model_name}/${args.uuid}`;
+    const data = { ...args };
+    const sanitizedData = sanitizeData(data);
+
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...args }),
+      body: JSON.stringify(sanitizedData),
     });
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 
@@ -200,10 +204,13 @@ export const updateUserModels: UpdateUserModels<UpdateUserModelsPayload, void> =
   }
   try {
     const url = `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/models/${args.data.type_name}/${args.data.model_name}/${args.uuid}`;
+    const data = { ...args.data };
+    const sanitizedData = sanitizeData(data);
+
     const response = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...args.data }),
+      body: JSON.stringify(sanitizedData),
     });
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 
@@ -254,13 +261,15 @@ export const validateForm: ValidateForm<{ data: any; validationURL: string; isSe
   }
   try {
     if (!data.uuid) data.uuid = uuidv4();
+
+    const sanitizedData = sanitizeData(data);
     const url = isSecretUpdate
       ? `${FASTAGENCY_SERVER_URL}/user/${context.user.uuid}/${validationURL}`
       : `${FASTAGENCY_SERVER_URL}/${validationURL}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify(sanitizedData),
     });
 
     const json = await response.json();
@@ -271,14 +280,14 @@ export const validateForm: ValidateForm<{ data: any; validationURL: string; isSe
       );
     }
     if (!json.uuid) {
-      json.uuid = data.uuid;
+      json.uuid = sanitizedData.uuid;
     }
     if (isSecretUpdate) {
-      if (data.api_key) {
-        json.api_key = data.api_key;
+      if (sanitizedData.api_key) {
+        json.api_key = sanitizedData.api_key;
       }
     }
-    const retVal = isSecretUpdate ? json : data;
+    const retVal = isSecretUpdate ? json : sanitizedData;
     return retVal;
   } catch (error: any) {
     throw new HttpError(error.statusCode || 500, error.message || 'Server or network error occurred');

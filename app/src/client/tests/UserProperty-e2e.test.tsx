@@ -55,7 +55,7 @@ const createSecret = async (user: UserEvent): Promise<void> => {
   await waitFor(() => expect(screen.getByText('Select Secret')).toBeInTheDocument());
   expect(screen.getByText('AnthropicAPIKey')).toBeInTheDocument();
   await user.type(screen.getByLabelText('Name'), 'My AnthropicAPIKey Secret');
-  await user.type(screen.getByLabelText('Api Key'), 'My Api Key');
+  await user.type(screen.getByLabelText('API Key'), 'My Api Key');
 
   mockValidateForm.mockResolvedValue({
     name: 'My AnthropicAPIKey Secret',
@@ -321,7 +321,7 @@ describe('UserProperty Component Tests', () => {
     await waitFor(() => expect(screen.getByText('Select Secret')).toBeInTheDocument());
     expect(screen.getByText('AnthropicAPIKey')).toBeInTheDocument();
     await user.type(screen.getByLabelText('Name'), 'My AnthropicAPIKey Secret');
-    await user.type(screen.getByLabelText('Api Key'), 'My Api Key');
+    await user.type(screen.getByLabelText('API Key'), 'My Api Key');
 
     // Check if the breadcrumbs are displayed correctly
     expect(screen.getByTestId('breadcrumb-link-Agent')).toBeInTheDocument();
@@ -333,7 +333,7 @@ describe('UserProperty Component Tests', () => {
 
     await waitFor(() => {
       expect(screen.getByLabelText('Name')).toHaveValue('My AnthropicAPIKey Secret');
-      expect(screen.getByLabelText('Api Key')).toHaveValue('My Api Key');
+      expect(screen.getByLabelText('API Key')).toHaveValue('My Api Key');
     });
 
     // Click on the first item the user should be taken back to the Agent screen

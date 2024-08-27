@@ -3,6 +3,7 @@ import { useForm } from '@tanstack/react-form';
 import { validateForm, addUserModels, deleteUserModels, updateUserModels } from 'wasp/client/operations';
 import { PropertySchemaParser, SetUpdateFormStack, Flow, UserProperties } from './PropertySchemaParser';
 import { parseValidationErrors } from './formUtils';
+import _ from 'lodash';
 
 export type ctaAction = 'cancel' | 'delete';
 
@@ -54,10 +55,18 @@ export const usePropertyManager = (
     onSubmit: async ({ value, formApi }) => {
       try {
         const isSecretUpdate = propertyName === 'secret' && flow === Flow.UPDATE_MODEL;
-        const validationURL: string = isSecretUpdate
-          ? parser?.getSecretUpdateValidationURL() || ''
-          : parser?.getValidationURL() || '';
-        const data = value;
+        let validationURL: string = parser?.getValidationURL() || '';
+
+        const data = _.cloneDeep(value);
+        if (isSecretUpdate) {
+          validationURL = parser?.getSecretUpdateValidationURL() || '';
+          if (value.api_key === defaultValues!.api_key) {
+            // While updating secret, if the api_key is not touched and only the name is updated,
+            // then we should not send the api_key in the payload
+            delete data.api_key;
+          }
+        }
+
         if (refFields) {
           Object.entries(data).forEach(([key, val]) => {
             if (refFields[key]) {

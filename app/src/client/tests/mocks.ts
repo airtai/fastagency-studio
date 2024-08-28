@@ -21,7 +21,7 @@ export const mockPropertieSchemas: PropertiesSchema = {
               },
               api_key: {
                 description: 'The API Key from Anthropic',
-                title: 'Api Key',
+                title: 'API Key',
                 type: 'string',
               },
             },
@@ -42,7 +42,7 @@ export const mockPropertieSchemas: PropertiesSchema = {
               },
               api_key: {
                 description: 'The API Key from Azure OpenAI',
-                title: 'Api Key',
+                title: 'API Key',
                 type: 'string',
               },
             },
@@ -63,7 +63,7 @@ export const mockPropertieSchemas: PropertiesSchema = {
               },
               api_key: {
                 description: 'The API Key from OpenAI',
-                title: 'Api Key',
+                title: 'API Key',
                 type: 'string',
               },
             },
@@ -86,7 +86,7 @@ export const mockPropertieSchemas: PropertiesSchema = {
                 description: 'The API Key from Together.ai',
                 maxLength: 64,
                 minLength: 64,
-                title: 'Api Key',
+                title: 'API Key',
                 type: 'string',
               },
             },
@@ -106,12 +106,12 @@ export const mockPropertieSchemas: PropertiesSchema = {
                 type: 'string',
               },
               username: {
-                description: 'username for openapi routes authentication',
+                description: 'Username for OpenAPI routes authentication',
                 title: 'Username',
                 type: 'string',
               },
               password: {
-                description: 'password for openapi routes authentication',
+                description: 'Password for OpenAPI routes authentication',
                 title: 'Password',
                 type: 'string',
               },
@@ -133,7 +133,7 @@ export const mockPropertieSchemas: PropertiesSchema = {
               },
               api_key: {
                 description: 'The API Key from Bing',
-                title: 'Api Key',
+                title: 'API Key',
                 type: 'string',
               },
             },
@@ -175,7 +175,7 @@ export const mockPropertieSchemas: PropertiesSchema = {
               },
               gh_token: {
                 description: 'The GitHub token to use for creating a new repository',
-                title: 'Gh Token',
+                title: 'GH Token',
                 type: 'string',
               },
             },
@@ -211,7 +211,12 @@ export const mockPropertieSchemas: PropertiesSchema = {
                     title: 'Name',
                     type: 'string',
                   },
-                  uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+                  uuid: {
+                    description: 'The unique identifier',
+                    format: 'uuid',
+                    title: 'UUID',
+                    type: 'string',
+                  },
                 },
                 required: ['uuid'],
                 title: 'AnthropicAPIKeyRef',
@@ -219,7 +224,12 @@ export const mockPropertieSchemas: PropertiesSchema = {
               },
             },
             properties: {
-              name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
+              name: {
+                description: 'The name of the item',
+                minLength: 1,
+                title: 'Name',
+                type: 'string',
+              },
               model: {
                 default: 'claude-3-5-sonnet-20240620',
                 description: "The model to use for the Anthropic API, e.g. 'claude-3-5-sonnet-20240620'",
@@ -232,7 +242,15 @@ export const mockPropertieSchemas: PropertiesSchema = {
                 title: 'Model',
                 type: 'string',
               },
-              api_key: { $ref: '#/$defs/AnthropicAPIKeyRef' },
+              api_key: {
+                allOf: [
+                  {
+                    $ref: '#/$defs/AnthropicAPIKeyRef',
+                  },
+                ],
+                description: 'The API Key from Anthropic',
+                title: 'API Key',
+              },
               base_url: {
                 default: 'https://api.anthropic.com/v1',
                 description: 'The base URL of the Anthropic API',
@@ -253,6 +271,8 @@ export const mockPropertieSchemas: PropertiesSchema = {
               temperature: {
                 default: 0.8,
                 description: 'The temperature to use for the model, must be between 0 and 2',
+                maximum: 2,
+                minimum: 0,
                 title: 'Temperature',
                 type: 'number',
               },
@@ -284,7 +304,12 @@ export const mockPropertieSchemas: PropertiesSchema = {
                     title: 'Name',
                     type: 'string',
                   },
-                  uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+                  uuid: {
+                    description: 'The unique identifier',
+                    format: 'uuid',
+                    title: 'UUID',
+                    type: 'string',
+                  },
                 },
                 required: ['uuid'],
                 title: 'AzureOAIAPIKeyRef',
@@ -292,14 +317,27 @@ export const mockPropertieSchemas: PropertiesSchema = {
               },
             },
             properties: {
-              name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
+              name: {
+                description: 'The name of the item',
+                minLength: 1,
+                title: 'Name',
+                type: 'string',
+              },
               model: {
                 default: 'gpt-3.5-turbo',
                 description: "The model to use for the Azure OpenAI API, e.g. 'gpt-3.5-turbo'",
                 title: 'Model',
                 type: 'string',
               },
-              api_key: { $ref: '#/$defs/AzureOAIAPIKeyRef' },
+              api_key: {
+                allOf: [
+                  {
+                    $ref: '#/$defs/AzureOAIAPIKeyRef',
+                  },
+                ],
+                description: 'The API Key from Azure OpenAI',
+                title: 'API Key',
+              },
               base_url: {
                 default: 'https://api.openai.com/v1',
                 description: 'The base URL of the Azure OpenAI API',
@@ -314,7 +352,7 @@ export const mockPropertieSchemas: PropertiesSchema = {
                 default: 'azure',
                 description: "The type of the API, must be 'azure'",
                 enum: ['azure'],
-                title: 'API type',
+                title: 'API Type',
                 type: 'string',
               },
               api_version: {
@@ -330,12 +368,14 @@ export const mockPropertieSchemas: PropertiesSchema = {
                   '2024-05-01-preview',
                   '2024-02-01',
                 ],
-                title: 'Api Version',
+                title: 'API Version',
                 type: 'string',
               },
               temperature: {
                 default: 0.8,
                 description: 'The temperature to use for the model, must be between 0 and 2',
+                maximum: 2,
+                minimum: 0,
                 title: 'Temperature',
                 type: 'number',
               },
@@ -372,7 +412,12 @@ export const mockPropertieSchemas: PropertiesSchema = {
                     title: 'Name',
                     type: 'string',
                   },
-                  uuid: { description: 'The unique identifier', format: 'uuid', title: 'UUID', type: 'string' },
+                  uuid: {
+                    description: 'The unique identifier',
+                    format: 'uuid',
+                    title: 'UUID',
+                    type: 'string',
+                  },
                 },
                 required: ['uuid'],
                 title: 'OpenAPIAuthRef',
@@ -380,7 +425,12 @@ export const mockPropertieSchemas: PropertiesSchema = {
               },
             },
             properties: {
-              name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
+              name: {
+                description: 'The name of the item',
+                minLength: 1,
+                title: 'Name',
+                type: 'string',
+              },
               openapi_url: {
                 description: 'The URL of OpenAPI specification file',
                 format: 'uri',
@@ -390,7 +440,14 @@ export const mockPropertieSchemas: PropertiesSchema = {
                 type: 'string',
               },
               openapi_auth: {
-                anyOf: [{ $ref: '#/$defs/OpenAPIAuthRef' }, { type: 'null' }],
+                anyOf: [
+                  {
+                    $ref: '#/$defs/OpenAPIAuthRef',
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
                 default: null,
                 description: 'Authentication information for the API mentioned in the OpenAPI specification',
                 title: 'OpenAPI Auth',
@@ -941,6 +998,7 @@ export const mockPropertieSchemas: PropertiesSchema = {
                 ],
                 default: null,
                 description: 'The Bing API key for the browser',
+                title: 'Bing API Key',
               },
             },
             required: ['name', 'llm', 'summarizer_llm'],

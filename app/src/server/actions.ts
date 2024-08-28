@@ -273,11 +273,6 @@ export const validateForm: ValidateForm<{ data: any; validationURL: string; isSe
     if (!json.uuid) {
       json.uuid = data.uuid;
     }
-    if (isSecretUpdate) {
-      if (data.api_key) {
-        json.api_key = data.api_key;
-      }
-    }
     const retVal = isSecretUpdate ? json : data;
     return retVal;
   } catch (error: any) {

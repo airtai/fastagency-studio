@@ -16,6 +16,7 @@ module.exports = {
         'airt-secondary': '#FFC800',
         'airt-font-base': '#fff',
         'airt-light-red': '#F25C49',
+        'airt-blue': '#0080FF',
         'airt-error': '#EF5C00',
         current: 'currentColor',
         transparent: 'transparent',

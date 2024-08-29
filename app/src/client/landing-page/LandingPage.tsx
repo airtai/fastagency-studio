@@ -155,7 +155,7 @@ export default function LandingPage() {
           backgroundSize: 'cover',
         }}
       ></div>
-      <main className='z-10 isolate dark:bg-boxdark-2'>
+      <main className='z-20 isolate dark:bg-boxdark-2'>
         {/* Hero section */}
         <div className='relative pt-18 w-full '>
           <div className='py-24 sm:py-32'>
@@ -256,13 +256,13 @@ export default function LandingPage() {
         </div> */}
       </main>
       <div
-        className='absolute z-0 inset-x-0 bottom-[0px] h-[50vh] dark:bg-boxdark-2 h-screen bg-no-repeat bg-center'
+        className='absolute z-0 inset-x-0 bottom-[0px] h-[40vh] dark:bg-boxdark-2 bg-no-repeat bg-center'
         style={{
           backgroundImage: `
       linear-gradient(to bottom, 
-        rgba(242, 92, 73, 1) 0%,
-        rgba(242, 92, 73, 0.9) 20%,
-        rgba(242, 92, 73, 0.9) 40%,
+        rgba(242, 92, 73, 0.5) 0%,
+        rgba(242, 92, 73, 0.7) 20%,
+        rgba(242, 92, 73, 0.5) 40%,
         rgba(227, 63, 42, 0.5) 60%,
         rgba(227, 63, 42, 0.5) 80%,
         rgba(227, 63, 42, 0.6) 95%,

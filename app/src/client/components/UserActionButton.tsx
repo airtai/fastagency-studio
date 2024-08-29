@@ -15,7 +15,7 @@ const UserActionButton: React.FC<UserActionButtonProps> = ({ user, renderGoToCha
     return (
       <Link
         to='/signup'
-        className={`relative inline-block rounded-full px-6 py-3 text-sm font-bold ${themeClass}  transition-all duration-200 ease-in-out`}
+        className={`relative inline-block rounded-full hover:opacity-80 px-6 py-3 text-sm font-bold ${themeClass}  transition-all duration-200 ease-in-out`}
         style={{
           boxShadow: '5px 5px 0px 0px #0080FF',
         }}
@@ -32,9 +32,12 @@ const UserActionButton: React.FC<UserActionButtonProps> = ({ user, renderGoToCha
   return renderGoToChat ? (
     <a
       href='/build'
-      className={`rounded-md pl-3.5 pr-7 py-2.5 text-sm  ${themeClass}   hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
+      className={`rounded-full font-bold hover:opacity-80 pl-3.5 pr-7 py-2.5 text-sm  ${themeClass}   hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
+      style={{
+        boxShadow: '5px 5px 0px 0px #0080FF',
+      }}
     >
-      Build team{' '}
+      BUILD TEAM{' '}
       <span aria-hidden='true' className='inline-block absolute mt-[1.4px] ml-1'>
         →
       </span>

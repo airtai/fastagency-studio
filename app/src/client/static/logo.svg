@@ -90,7 +90,8 @@
       }
 
       .cls-22 {
-        fill: #c7c4c3;
+        fill: #000000;
+        opacity: 0.3;
         mix-blend-mode: multiply;
       }
 

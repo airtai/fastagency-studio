@@ -6,7 +6,7 @@ import { AiFillCloseCircle } from 'react-icons/ai';
 import { HiBars3 } from 'react-icons/hi2';
 import { BiLogIn } from 'react-icons/bi';
 import logo from '../static/logo.svg';
-import faMainLogo from '../static/fa-main-logo.png';
+import faMainLogo from '../static/fa-main-logo.svg';
 import podLoga from '../static/pod-loga.svg';
 import { features, navigation } from './contentSections';
 import DropdownUser from '../components/DropdownUser';
@@ -180,7 +180,7 @@ export default function LandingPage() {
                   <UserActionButton user={user} renderGoToChat={true} />
                 </div>
               </div>
-              <div className='mt-14 flow-root sm:mt-14 '>
+              <div className='mt-40 flow-root sm:mt-40 '>
                 <div className='-m-2 rounded-xl  lg:-m-4 lg:rounded-2xl lg:p-4'>
                   <div className='video-responsive'>
                     <iframe
@@ -255,6 +255,25 @@ export default function LandingPage() {
           </div>
         </div> */}
       </main>
+      <div
+        className='absolute z-0 inset-x-0 bottom-[0px] h-[50vh] dark:bg-boxdark-2 h-screen bg-no-repeat bg-center'
+        style={{
+          backgroundImage: `
+      linear-gradient(to bottom, 
+        rgba(242, 92, 73, 1) 0%,
+        rgba(242, 92, 73, 0.9) 20%,
+        rgba(242, 92, 73, 0.9) 40%,
+        rgba(227, 63, 42, 0.5) 60%,
+        rgba(227, 63, 42, 0.5) 80%,
+        rgba(227, 63, 42, 0.6) 95%,
+        rgba(227, 63, 42, 1) 100%
+      ),
+      url(${podLoga})
+    `,
+          backgroundSize: 'cover',
+          transform: 'scaleX(-1)',
+        }}
+      ></div>
     </div>
   );
 }

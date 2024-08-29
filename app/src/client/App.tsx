@@ -115,7 +115,7 @@ export default function App({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <div className='bg-gradient-to-b from-airt-hero-gradient-start via-airt-hero-gradient-middle to-airt-secondary min-h-screen dark:text-white dark:bg-boxdark-2'>
+      <div className='bg-airt-light-red min-h-screen dark:text-white dark:bg-boxdark-2'>
         {isError && (addServerErrorClass(), (<ServerNotRechableComponent />))}
         {isAdminDashboard || isPlayGroundPage || isBuildPage ? (
           <>

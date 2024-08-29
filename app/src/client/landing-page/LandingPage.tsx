@@ -6,6 +6,8 @@ import { AiFillCloseCircle } from 'react-icons/ai';
 import { HiBars3 } from 'react-icons/hi2';
 import { BiLogIn } from 'react-icons/bi';
 import logo from '../static/logo.svg';
+import faMainLogo from '../static/fa-main-logo.png';
+import podLoga from '../static/pod-loga.svg';
 import { features, navigation } from './contentSections';
 import DropdownUser from '../components/DropdownUser';
 import { UserMenuItems } from '../components/UserMenuItems';
@@ -17,9 +19,7 @@ export default function LandingPage() {
 
   const { data: user, isLoading: isUserLoading } = useAuth();
 
-  const NavLogo = () => (
-    <img className='h-5 sm:h-6 lg:h-5 xl:h-6' src={logo} style={{ width: '1.8rem' }} alt='FastAgency Studio' />
-  );
+  const NavLogo = () => <img src={logo} style={{ width: '200px' }} alt='FastAgency Studio' />;
 
   return (
     <div className='dark:text-white dark:bg-boxdark-2'>
@@ -32,12 +32,12 @@ export default function LandingPage() {
               className='flex items-center -m-1.5 py-1 sm:py-0 md:py-0 text-airt-font-base duration-300 ease-in-out hover:text-airt-secondary'
             >
               <NavLogo />
-              <span className='ml-1 mt-[6px] xl:mt-[7px] xl:mt-0 text-lg sm:text-2xl md:text-2xl min-[1024px]:text-sm min-[1100px]:text-lg xl:text-2xl font-rubik text-airt-font-base dark:text-white'>
+              {/* <span className='ml-1 mt-[6px] xl:mt-[7px] xl:mt-0 text-lg sm:text-2xl md:text-2xl min-[1024px]:text-sm min-[1100px]:text-lg xl:text-2xl font-rubik text-airt-font-base dark:text-white'>
                 FastAgency Studio
               </span>
               <span className='ml-1 text-xs font-semibold leading-6 '>
                 <sup className='text-xs text-airt-font-base'>αlpha</sup>
-              </span>
+              </span> */}
             </a>
           </div>
           <div className='flex lg:hidden'>
@@ -137,13 +137,31 @@ export default function LandingPage() {
           </Dialog.Panel>
         </Dialog>
       </header>
-
-      <main className='isolate dark:bg-boxdark-2'>
+      <div
+        className='absolute z-0 inset-x-0 top-[105px] dark:bg-boxdark-2 h-screen bg-no-repeat bg-center'
+        style={{
+          backgroundImage: `
+      linear-gradient(to bottom, 
+        #E33F2A 0%, 
+        rgba(227, 63, 42, 0) 20%, 
+        rgba(227, 63, 42, 0) 65%,
+        rgba(242, 92, 73, 0.7) 80%,
+        rgba(242, 92, 73, 0.9) 90%,
+        #F25C49 95%,
+        #F25C49 100%
+      ),
+      url(${podLoga})
+    `,
+          backgroundSize: 'cover',
+        }}
+      ></div>
+      <main className='z-10 isolate dark:bg-boxdark-2'>
         {/* Hero section */}
-        <div className='relative pt-14 w-full '>
+        <div className='relative pt-18 w-full '>
           <div className='py-24 sm:py-32'>
             <div className='mx-auto max-w-8xl px-6 lg:px-8'>
               <div className='lg:mb-18 mx-auto max-w-5xl text-center'>
+                <img src={faMainLogo} className='w-3/4 mx-auto mb-10 mt-0' alt='FastAgency Studio Main Logo' />
                 <h1 className='text-4xl font-rubik text-airt-font-base sm:text-5xl dark:text-white'>
                   FastAgency Studio: A Low-Code Platform for Building <span className='italic'>Multi-Agent </span> AI
                   Services.

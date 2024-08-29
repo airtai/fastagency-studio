@@ -289,7 +289,7 @@ input[type='text'][class^='react-select']:focus {
 /* react-select */
 
 .social-icons-wrapper .discord-link:before {
-  background-color: #8c9fae;
+  background-color: #fff;
   content: "";
   display: flex;
   height: 24px;
@@ -299,7 +299,7 @@ input[type='text'][class^='react-select']:focus {
 }
 
 .social-icons-wrapper .github-link:before {
-  background-color: #8c9fae;
+  background-color: #fff;
   content: "";
   display: flex;
   height: 24px;

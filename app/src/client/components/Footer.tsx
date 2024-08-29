@@ -3,7 +3,7 @@ import FooterMascot from '../static/robot-footer.svg';
 
 export default function Footer() {
   return (
-    <div className='bg-airt-primary px-6 lg:px-8 dark:bg-boxdark-2 pb-15 mt-30 sm:mt-40'>
+    <div className='px-6 lg:px-8 dark:bg-boxdark-2 pb-15 mt-30 sm:mt-40'>
       <section className='relative'>
         <div className='flex items-center justify-center'>
           <img className='absolute -top-17 left-1/2 transform -translate-x-1/2 h-auto w-28' src={FooterMascot} />

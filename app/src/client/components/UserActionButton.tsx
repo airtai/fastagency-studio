@@ -10,14 +10,17 @@ interface UserActionButtonProps {
 }
 
 const UserActionButton: React.FC<UserActionButtonProps> = ({ user, renderGoToChat, theme = 'dark' }) => {
-  const themeClass = theme === 'dark' ? 'bg-airt-primary text-airt-font-base' : 'bg-airt-secondary text-airt-primary';
+  const themeClass = theme === 'dark' ? 'bg-airt-secondary text-airt-primary' : 'bg-airt-secondary text-airt-primary';
   if (!user) {
     return (
       <Link
         to='/signup'
-        className={`rounded-md px-3.5 pt-2 pb-2.5 text-sm  ${themeClass}   hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
+        className={`relative inline-block rounded-full px-6 py-3 text-sm font-bold ${themeClass}  transition-all duration-200 ease-in-out`}
+        style={{
+          boxShadow: '5px 5px 0px 0px #0080FF',
+        }}
       >
-        Create an account
+        CREATE ACCOUNT
       </Link>
     );
   }

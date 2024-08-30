@@ -155,6 +155,25 @@ export default function LandingPage() {
           backgroundSize: 'cover',
         }}
       ></div>
+      <div
+        className='z-0 absolute inset-x-0 bottom-[0px] h-[50vh] dark:bg-boxdark-2 bg-no-repeat bg-center'
+        style={{
+          backgroundImage: `
+      linear-gradient(to bottom, 
+        rgba(242, 92, 73, 0.9) 0%,
+        rgba(242, 92, 73, 0.8) 20%,
+        rgba(242, 92, 73, 0.5) 40%,
+        rgba(227, 63, 42, 0.5) 60%,
+        rgba(227, 63, 42, 0.5) 80%,
+        rgba(227, 63, 42, 0.9) 95%,
+        rgba(227, 63, 42, 0.9) 100%
+      ),
+      url(${podLoga})
+    `,
+          backgroundSize: 'cover',
+          transform: 'scaleX(-1)',
+        }}
+      ></div>
       <main className='z-20 isolate dark:bg-boxdark-2'>
         {/* Hero section */}
         <div className='relative pt-18 w-full '>
@@ -207,7 +226,7 @@ export default function LandingPage() {
               <br /> Work smarter.
             </p> */}
           </div>
-          <div className='mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl'>
+          <div className='mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-7xl'>
             <dl className='grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16'>
               {features.map((feature) => (
                 <div key={feature.name} className={`relative pl-16`}>
@@ -255,25 +274,6 @@ export default function LandingPage() {
           </div>
         </div> */}
       </main>
-      <div
-        className='absolute z-0 inset-x-0 bottom-[0px] h-[40vh] dark:bg-boxdark-2 bg-no-repeat bg-center'
-        style={{
-          backgroundImage: `
-      linear-gradient(to bottom, 
-        rgba(242, 92, 73, 0.5) 0%,
-        rgba(242, 92, 73, 0.7) 20%,
-        rgba(242, 92, 73, 0.5) 40%,
-        rgba(227, 63, 42, 0.5) 60%,
-        rgba(227, 63, 42, 0.5) 80%,
-        rgba(227, 63, 42, 0.6) 95%,
-        rgba(227, 63, 42, 1) 100%
-      ),
-      url(${podLoga})
-    `,
-          backgroundSize: 'cover',
-          transform: 'scaleX(-1)',
-        }}
-      ></div>
     </div>
   );
 }

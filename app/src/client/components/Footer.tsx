@@ -9,10 +9,10 @@ export default function Footer() {
     <div className='pt-30'>
       <section className='relative'>
         <div className='w-full'>
-          <hr className='border border-t border-airt-font-base opacity-20' />
+          <hr className='border-t border-airt-font-base border-opacity-20 border-t-1' />
         </div>
       </section>
-      <div className='px-6 lg:px-8 dark:bg-boxdark-2 pb-15'>
+      <div className='mx-auto max-w-7xl w-full px-6 lg:px-8 dark:bg-boxdark-2 pb-15'>
         <footer aria-labelledby='footer-heading' className='relative dark:border-gray-200/10'>
           <h2 id='footer-heading' className='sr-only'>
             Footer

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import Logo from '../static/logo.svg';
 import { cn } from '../../shared/utils';
 
 interface NavLinkItem {
@@ -265,9 +264,9 @@ const CustomSidebar = ({ sidebarOpen, setSidebarOpen, onSideNavItemClick, active
   return (
     <aside
       ref={sidebar}
-      style={{ top: '75px' }}
+      style={{ top: '105px' }}
       className={cn(
-        'h-[calc(100vh-75px)] absolute left-0 z-9999 flex w-75 flex-col overflow-y-hidden bg-airt-primary duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0',
+        'h-[calc(100vh-105px)] absolute left-0 z-9999 flex w-75 flex-col overflow-y-hidden bg-airt-primary duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0',
         {
           'translate-x-0': sidebarOpen,
           '-translate-x-full': !sidebarOpen,

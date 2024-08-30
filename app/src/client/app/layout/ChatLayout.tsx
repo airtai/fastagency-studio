@@ -47,8 +47,8 @@ const ChatLayout: FC<Props> = ({
   useSocketListener('streamFromTeamFinished', () => setShouldAutoScroll(false));
 
   const wrapperClass = document.body.classList.contains('server-error')
-    ? 'h-[calc(100vh-173px)]'
-    : 'h-[calc(100vh-75px)]';
+    ? 'h-[calc(100vh-203px)]'
+    : 'h-[calc(100vh-105px)]';
 
   return (
     <div className='dark:bg-boxdark-2 dark:text-bodydark'>

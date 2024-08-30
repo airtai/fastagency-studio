@@ -25,8 +25,8 @@ const BuildPage = ({ user }: BuildPageProps) => {
   const [activeProperty, setActiveProperty] = useState<string | null>(null);
   const [sideNavItemClickCount, setSideNavItemClickCount] = useState(0);
   const wrapperClass = document.body.classList.contains('server-error')
-    ? 'h-[calc(100vh-173px)]'
-    : 'h-[calc(100vh-75px)]';
+    ? 'h-[calc(100vh-203px)]'
+    : 'h-[calc(100vh-105px)]';
 
   const handleSideNavItemClick = (selectedComponentName: string) => {
     setActiveProperty(selectedComponentName);

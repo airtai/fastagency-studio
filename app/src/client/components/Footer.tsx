@@ -6,7 +6,7 @@ import SocialMediaIcons from './SocialMediaIcons';
 
 export default function Footer() {
   return (
-    <div className='pt-30'>
+    <div>
       <section className='relative'>
         <div className='w-full'>
           <hr className='border-t border-airt-font-base border-opacity-20 border-t-1' />

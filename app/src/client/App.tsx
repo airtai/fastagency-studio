@@ -1,5 +1,6 @@
 import { useMemo, useEffect, ReactNode, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { ChakraProvider } from '@chakra-ui/react';
 
 import './Main.css';
 
@@ -52,10 +53,6 @@ export default function App({ children }: { children: ReactNode }) {
 
   const isPlayGroundPage = useMemo(() => {
     return location.pathname.startsWith('/playground');
-  }, [location]);
-
-  const isBuildPage = useMemo(() => {
-    return location.pathname.startsWith('/build');
   }, [location]);
 
   useEffect(() => {
@@ -114,10 +111,10 @@ export default function App({ children }: { children: ReactNode }) {
   }, [location]);
 
   return (
-    <>
+    <ChakraProvider>
       <div className='bg-airt-light-red min-h-screen dark:text-white dark:bg-boxdark-2'>
         {isError && (addServerErrorClass(), (<ServerNotRechableComponent />))}
-        {isAdminDashboard || isPlayGroundPage || isBuildPage ? (
+        {isAdminDashboard || isPlayGroundPage ? (
           <>
             {showTosAndMarketingEmailsModal ? (
               <>
@@ -153,6 +150,6 @@ export default function App({ children }: { children: ReactNode }) {
           </div>
         )}
       </div>
-    </>
+    </ChakraProvider>
   );
 }

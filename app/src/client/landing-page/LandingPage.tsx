@@ -16,24 +16,6 @@ export default function LandingPage() {
       {/* Header */}
       <AppNavBar position='absolute' />
       <div
-        className='absolute z-0 inset-x-0 top-[105px] dark:bg-boxdark-2 h-screen bg-no-repeat bg-center'
-        style={{
-          backgroundImage: `
-      linear-gradient(to bottom, 
-        #E33F2A 0%, 
-        rgba(227, 63, 42, 0) 20%, 
-        rgba(227, 63, 42, 0) 65%,
-        rgba(242, 92, 73, 0.7) 80%,
-        rgba(242, 92, 73, 0.9) 90%,
-        #F25C49 95%,
-        #F25C49 100%
-      ),
-      url(${podLoga})
-    `,
-          backgroundSize: 'cover',
-        }}
-      ></div>
-      <div
         className='z-0 absolute inset-x-0 bottom-[0px] h-[50vh] dark:bg-boxdark-2 bg-no-repeat bg-center'
         style={{
           backgroundImage: `
@@ -52,7 +34,7 @@ export default function LandingPage() {
           transform: 'scaleX(-1)',
         }}
       ></div>
-      <main className='z-20 isolate dark:bg-boxdark-2'>
+      <main className='z-20 isolate dark:bg-boxdark-2 pb-40'>
         {/* Hero section */}
         <div className='relative pt-18 w-full '>
           <div className='py-24 sm:py-32'>

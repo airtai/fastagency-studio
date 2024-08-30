@@ -80,7 +80,7 @@ page PlayGroundPage {
 
 route BuildRoute { path: "/build/:type?", to: BuildPage }
 page BuildPage {
-  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPage"
+  component: import BuildPageWithCustomAuth from "@src/client/app/BuildPageNew"
 }
 
 route LoginRoute { path: "/login", to: LoginPage }

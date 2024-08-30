@@ -69,8 +69,15 @@ const BuildPage = ({ user }: BuildPageProps) => {
 
             {/* <!-- ===== Main Content Start ===== --> */}
             <main className='lg:mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10'>
-              <div className='w-full lg:min-w-[700px] 2xl:min-w-[1200px]'>
-                <BuildPageTabs />
+              {/* <div className='w-full lg:min-w-[700px] 2xl:min-w-[1200px]'> */}
+              <div className='w-full lg:min-w-[700px] 2xl:min-w-[1000px]'>
+                <BuildPageTabs
+                  onSideNavItemClick={handleSideNavItemClick}
+                  activeProperty={activeProperty}
+                  propertiesSchema={propertiesSchema}
+                  sideNavItemClickCount={sideNavItemClickCount}
+                  setActiveProperty={setActiveProperty}
+                />
                 {/* <UserProperty
                   activeProperty={activeProperty}
                   propertiesSchema={propertiesSchema}

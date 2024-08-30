@@ -20,7 +20,7 @@ export default function Footer() {
           <div className='mt-10 mx-auto max-w-7xl sm:px-6 md:flex md:items-center md:justify-between lg:px-8'>
             {/* This container should be vertically centered and should be on the left cornor of the parent */}
             <div className='relative'>
-              <div className='rounded-full bg-airt-blue flex items-center justify-center md:justify-end px-6 py-3'>
+              <div className='rounded-full bg-airt-light-blue flex items-center justify-center md:justify-end px-6 py-3'>
                 <p className='text-xs text-center text-white md:ml-28 md:mr-10'>
                   <b>2024</b> © airt. All rights reserved.
                 </p>

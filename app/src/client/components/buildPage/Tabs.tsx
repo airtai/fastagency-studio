@@ -1,16 +1,36 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
 
 import { navLinkItems } from '../../components/CustomSidebar';
+import { UserProperty } from './UserProperty';
+import { PropertiesSchema } from '../../interfaces/BuildPageInterfaces';
 
-const BuildPageTabs = () => {
+interface Props {
+  onSideNavItemClick: (selectedItem: string) => void;
+  activeProperty: string;
+  propertiesSchema: PropertiesSchema;
+  sideNavItemClickCount: number;
+  setActiveProperty: (activeProperty: string) => void;
+}
+
+const BuildPageTabs = ({
+  activeProperty,
+  onSideNavItemClick,
+  propertiesSchema,
+  sideNavItemClickCount,
+  setActiveProperty,
+}: Props) => {
   const [activeTab, setActiveTab] = useState(0);
 
   const handleTabClick = (index: number) => {
-    setActiveTab(index);
-    console.log(navLinkItems[index].componentName);
+    onSideNavItemClick(navLinkItems[index].componentName);
   };
+
+  useEffect(() => {
+    const index = navLinkItems.findIndex((item) => item.componentName === activeProperty);
+    setActiveTab(index);
+  }, [activeProperty]);
   return (
     <Tabs size='lg' variant='unstyled' index={activeTab} onChange={setActiveTab}>
       <TabList>
@@ -18,10 +38,10 @@ const BuildPageTabs = () => {
           <Tab
             key={index}
             onClick={() => handleTabClick(index)}
-            bg={activeTab === index ? '#0080FF' : 'rgba(255, 255, 255, 0.2)'}
+            bg={activeTab === index ? '#0A58D6' : 'rgba(255, 255, 255, 0.2)'}
             color={activeTab === index ? '#FFF' : 'rgba(255, 255, 255, 1)'}
             _hover={{
-              bg: '#0080FF',
+              bg: '#0A58D6',
               opacity: 0.8,
             }}
             transition='all 0.3s'
@@ -37,10 +57,15 @@ const BuildPageTabs = () => {
         ))}
       </TabList>
 
-      <TabPanels bg='#0080FF' borderRadius='0 20px 20px 20px'>
+      <TabPanels bg='#0A58D6' borderRadius='0 20px 20px 20px'>
         {navLinkItems.map((tab, index) => (
-          <TabPanel key={index}>
-            <p>Content for {tab.label}</p>
+          <TabPanel key={index} p={0}>
+            <UserProperty
+              activeProperty={activeProperty}
+              propertiesSchema={propertiesSchema}
+              sideNavItemClickCount={sideNavItemClickCount}
+              setActiveProperty={setActiveProperty}
+            />
           </TabPanel>
         ))}
       </TabPanels>

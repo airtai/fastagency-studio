@@ -93,21 +93,20 @@ export const UserProperty = memo(
     return (
       <>
         <CustomBreadcrumb
+          propertyName={propertyName}
+          addProperty={addProperty}
           pageName={`${propertyHeader}`}
           propertiesInStack={propertiesInStack}
           popFromStack={popFromStack}
         />
-        <div className='flex flex-col gap-10'>
-          <div className='rounded-lg border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[600px]'>
+        <div>
+          <div className='bg-white min-h-[300px] sm:min-h-[400px]'>
             {isLoading ? (
               <LoadingComponent theme='dark' />
             ) : (
-              <div className='flex-col flex items-start p-6 gap-3 w-full'>
+              <div className='flex-col flex items-start p-8 gap-3 w-full'>
                 {!parser ? (
                   <>
-                    <div className={`${false ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
-                      <Button onClick={addProperty} label={`Add ${propertyName}`} />
-                    </div>
                     {userPropertiesByType.length === 0 && (
                       <div className='flex flex-col gap-3'>
                         {/* <h2 className='text-lg font-semibold text-airt-primary'>Available Models</h2> */}

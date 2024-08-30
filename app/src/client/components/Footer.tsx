@@ -17,16 +17,16 @@ export default function Footer() {
           <h2 id='footer-heading' className='sr-only'>
             Footer
           </h2>
-          <div className='flex items-center justify-between mt-10 mx-auto max-w-7xl sm:px-6 lg:px-8'>
+          <div className='mt-10 mx-auto max-w-7xl sm:px-6 md:flex md:items-center md:justify-between lg:px-8'>
             {/* This container should be vertically centered and should be on the left cornor of the parent */}
             <div className='relative'>
-              <div className='rounded-full bg-airt-blue flex items-center justify-end px-6 py-3'>
-                <p className='text-xs text-center text-white ml-28 mr-10'>
+              <div className='rounded-full bg-airt-blue flex items-center justify-center md:justify-end px-6 py-3'>
+                <p className='text-xs text-center text-white md:ml-28 md:mr-10'>
                   <b>2024</b> © airt. All rights reserved.
                 </p>
               </div>
               <img
-                className='absolute left-[30px] bottom-0 h-[165%] w-auto'
+                className='hidden md:block md:absolute left-[50px] md:left-[30px] bottom-0 h-[165%] w-auto'
                 style={{ transform: 'translateY(20%)' }}
                 src={FooterMascot}
                 alt='Footer Mascot'
@@ -35,7 +35,7 @@ export default function Footer() {
             {/* This container should be vertically centered and should be on the left cornor of the parent */}
 
             {/* This container should be vertically centered and should be on the right cornor of the parent */}
-            <div className='flex items-end'>
+            <div className='flex items-end mt-10 md:mt-0 justify-center'>
               <div>
                 <ul role='list' className='flex items-center'>
                   {footerNavigation.company.map((item, index) => (

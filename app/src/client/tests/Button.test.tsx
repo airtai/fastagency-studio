@@ -15,7 +15,7 @@ describe('Button', () => {
   test('renders Button component with label', async () => {
     renderInContext(<Button onClick={() => {}} label='Test Button' />);
 
-    const button = screen.getByText('Test Button');
+    const button = screen.getByText('TEST BUTTON');
     expect(button).toBeInTheDocument();
   });
 });

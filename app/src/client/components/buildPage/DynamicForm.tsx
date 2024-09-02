@@ -165,7 +165,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
             <div className='col-span-full mt-7'>
               <div className='float-right'>
                 <button
-                  className='rounded-md px-3.5 py-2.5 text-sm border border-airt-error text-airt-primary hover:bg-opacity-10 hover:bg-airt-error shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                  className='rounded-md px-3.5 py-2.5 text-sm border border-airt-dark-blue text-airt-dark-blue hover:bg-opacity-10 hover:bg-airt-dark-blue shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
                   type='reset'
                   onClick={() => handleCtaAction('cancel')}
                   ref={cancelButtonRef}
@@ -176,7 +176,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
                 <button
                   data-testid='form-submit-button'
                   type='submit'
-                  className={`ml-3 rounded-md px-3.5 py-2.5 text-sm bg-airt-primary text-airt-font-base hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
+                  className={`ml-3 rounded-md px-3.5 py-2.5 text-sm bg-airt-dark-blue text-airt-font-base hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
                     !canSubmit ? 'cursor-not-allowed disabled' : ''
                   }`}
                   disabled={!canSubmit}
@@ -187,7 +187,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
               {parser?.getFlow() === 'update_model' && (
                 <button
                   type='button'
-                  className='float-left rounded-md px-3.5 py-2.5 text-sm border bg-airt-error text-airt-font-base hover:bg-opacity-80 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                  className='float-left rounded-md px-3.5 py-2.5 text-sm border bg-airt-primary text-airt-font-base hover:bg-opacity-80 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
                   disabled={isSubmitting}
                   data-testid='form-cancel-button'
                   onClick={() => handleCtaAction('delete')}

@@ -170,7 +170,7 @@ export const LoginSignupForm = ({
           {loginFlow === State.Login ? "Don't have an account? " : 'Already have an account? '}
           <Link
             to={loginFlow === State.Login ? '/signup' : '/login'}
-            className='no-underline hover:underline cursor-pointer text-airt-secondary'
+            className='no-underline hover:underline cursor-pointer text-airt-light-red'
           >
             {loginFlow === State.Login ? 'Sign up' : 'Sign in'}
           </Link>

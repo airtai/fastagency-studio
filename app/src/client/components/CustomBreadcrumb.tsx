@@ -31,7 +31,7 @@ const CustomBreadcrumb: React.FC<BreadcrumbProps> = ({
 
   return (
     <div className='px-8 pt-3 pb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-      <h2 className='text-title-xl font-semibold text-airt-font-base dark:text-white'>{pageName}</h2>
+      <h2 className='text-title-xl font-semibold text-airt-font-base dark:text-white py-3'>{pageName}</h2>
       {propertiesInStack.length > 1 && (
         <Breadcrumb separator='>'>
           {propertiesInStack.map((property, index) => (
@@ -52,7 +52,7 @@ const CustomBreadcrumb: React.FC<BreadcrumbProps> = ({
         </Breadcrumb>
       )}
       {propertiesInStack.length === 0 && (
-        <div className={`${false ? 'hidden' : ''} flex justify-end w-full px-1 py-3`}>
+        <div className={`${false ? 'hidden' : ''} flex justify-end w-full`}>
           <Button onClick={addProperty} label={`Add ${propertyName}`} />
         </div>
       )}

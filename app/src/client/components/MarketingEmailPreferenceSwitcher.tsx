@@ -68,7 +68,7 @@ export function MarketingEmailPreferenceSwitcher({
         <button
           onClick={() => handleClick(status)}
           disabled={!hasChanged}
-          className={`mt-4 md:-mt-10 no-underline rounded-md px-3.5 py-2.5 text-sm text-airt-font-base ring-1 ring-inset ring-gray-200  shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:text-airt-font-base bg-airt-primary hover:bg-opacity-85 ${
+          className={`mt-4 md:-mt-10 no-underline rounded-md px-3.5 py-2.5 text-sm text-airt-font-base ring-1 ring-inset ring-gray-200  shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:text-airt-font-base bg-airt-dark-blue hover:bg-opacity-85 ${
             !hasChanged ? 'opacity-40 cursor-not-allowed' : ''
           }`}
         >

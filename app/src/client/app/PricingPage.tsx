@@ -62,8 +62,8 @@ const PricingPage = () => {
       <div className='mx-auto max-w-7xl px-6 lg:px-8'>
         <div id='pricing' className='mx-auto max-w-4xl text-center'>
           <h2 className='mt-2 text-4xl font-bold tracking-tight text-airt-font-base sm:text-5xl dark:airt-font-base'>
-            <span className='text-airt-primary'>Coming soon,</span>{' '}
-            <span className='px-2 py-1 bg-airt-primary rounded-md text-airt-font-base'>
+            <span className='text-airt-font-base'>Coming soon,</span>{' '}
+            <span className='px-2 py-1 bg-airt-dark-blue rounded-md text-airt-font-base'>
               everything is free for now!
             </span>
           </h2>

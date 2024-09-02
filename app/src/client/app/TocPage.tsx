@@ -72,7 +72,7 @@ export default function TocPage() {
             <p className='mb-4'>
               If you have any questions about your FastAgency Studio subscription or these terms, please reach out to us
               at{' '}
-              <a href='mailto:support@fastagency.ai' className='no-underline hover:underline text-airt-primary'>
+              <a href='mailto:support@fastagency.ai' className='no-underline hover:underline text-airt-dark-blue'>
                 support@fastagency.ai
               </a>
               .
@@ -185,7 +185,7 @@ export default function TocPage() {
             <h2 className='text-xl font-semibold mb-2'>Contact Us</h2>
             <p className='mb-4'>
               In order to receive further information regarding use of the Site, please contact us at:{' '}
-              <a href='mailto:support@fastagency.ai' className='no-underline hover:underline text-airt-primary'>
+              <a href='mailto:support@fastagency.ai' className='no-underline hover:underline text-airt-dark-blue'>
                 support@fastagency.ai
               </a>
               .

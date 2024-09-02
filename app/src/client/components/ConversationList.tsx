@@ -8,7 +8,7 @@ import LetterByLetterDisplay from './LetterByLetterDisplay';
 import RetryConversation from './RetryConversation';
 import AgentConversationHistory from './AgentConversationHistory';
 import AnimatedCharacterLoader from './AnimatedCharacterLoader';
-import logo from '../static/logo.svg';
+import logo from '../static/fa-small-logo.svg';
 
 type ConversationsListProps = {
   conversations: Conversation[];
@@ -35,15 +35,15 @@ export default function ConversationsList({
     <div data-testid='conversations-wrapper' className='w-full'>
       {conversations.map((conversation, idx) => {
         const isUserConversation = conversation.role === 'user';
-        const conversationBgColor = isUserConversation ? 'airt-secondary' : 'airt-primary';
-        const conversationTextColor = isUserConversation ? 'airt-primary' : 'airt-font-base';
+        const conversationBgColor = isUserConversation ? 'airt-font-base' : 'airt-dark-blue';
+        const conversationTextColor = isUserConversation ? 'airt-dark-blue' : 'airt-font-base';
         const conversationLogo = isUserConversation ? (
           <span
             style={{
               alignItems: 'center',
-              background: '#fff',
+              background: '#0080FF',
               borderRadius: '50%',
-              color: '#003257',
+              color: '#FFF',
               display: 'flex',
               flexBasis: '40px',
               flexGrow: '0',
@@ -60,10 +60,7 @@ export default function ConversationsList({
             <span className='inline-block'>You</span>
           </span>
         ) : (
-          <span
-            className='inline-block bg-airt-font-base'
-            style={{ borderRadius: '50%', width: '93%', height: '93%', paddingTop: '3px' }}
-          >
+          <span className='inline-block'>
             <img
               alt='FastAgency Studio logo'
               className='w-full h-full'
@@ -125,13 +122,13 @@ export default function ConversationsList({
                       {!currentChatDetails.isChatTerminated && !currentChatDetails.isExceptionOccured && (
                         <div className='flex'>
                           <button
-                            className='bg-airt-secondary text-airt-primary hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 inline-block whitespace-nowrap'
+                            className='bg-airt-font-base text-airt-dark-blue hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 inline-block whitespace-nowrap'
                             onClick={() => handleFormSubmit('')}
                           >
                             Auto reply
                           </button>
                           <button
-                            className='bg-airt-secondary text-airt-primary hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 inline-block whitespace-nowrap ml-2'
+                            className='bg-airt-font-base text-airt-dark-blue hover:opacity-90 font-medium rounded-lg text-sm px-3 py-2 m-1 inline-block whitespace-nowrap ml-2'
                             onClick={() => handleFormSubmit('exit')}
                           >
                             Exit

@@ -11,8 +11,8 @@ export const Message = styled('div', {
 });
 
 export const MessageError = styled(Message, {
-  background: '#fff',
-  color: '#003257',
+  background: '#0080FF',
+  color: '#FFF',
 });
 
 interface TosAndMarketingEmailsProps {
@@ -30,15 +30,15 @@ const TosAndMarketingEmails: React.FC<TosAndMarketingEmailsProps> = ({
   handleMarketingEmailsChange,
   errorMessage,
 }) => (
-  <div className='toc-marketing-checkbox-wrapper text-airt-font-base'>
+  <div className='toc-marketing-checkbox-wrapper text-airt-dark-blue'>
     <div className='mt-4'>
       <label className='checkbox-container text-sm mb-2' htmlFor='toc'>
         I agree to the{' '}
-        <Link to='/toc' className='no-underline hover:underline text-airt-secondary' target='_blank'>
+        <Link to='/toc' className='no-underline hover:underline text-airt-primary' target='_blank'>
           Terms & Conditions
         </Link>{' '}
         and{' '}
-        <Link to='/privacy' className='no-underline hover:underline text-airt-secondary' target='_blank'>
+        <Link to='/privacy' className='no-underline hover:underline text-airt-primary' target='_blank'>
           Privacy Policy
         </Link>
         <input type='checkbox' id='toc' checked={tocChecked} onChange={handleTocChange} />

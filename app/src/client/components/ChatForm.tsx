@@ -88,7 +88,7 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
             placeholder='Enter your message...'
             minRows={1}
             maxRows={4}
-            className='w-full p-3 text-sm text-white bg-airt-primary rounded-lg focus:outline-none focus:ring-0'
+            className='w-full p-3 text-sm text-airt-dark-blue bg-airt-font-base rounded-lg focus:outline-none focus:ring-0'
             style={{ resize: 'none', lineHeight: '1.5' }}
           />
           <button
@@ -97,12 +97,12 @@ export default function ChatForm({ handleFormSubmit, currentChatDetails, trigger
             className={`absolute right-2 p-1.5 rounded-lg ${
               isInputDisabled() || !message.trim()
                 ? 'bg-gray-300 cursor-not-allowed'
-                : 'bg-secondary hover:opacity-90 cursor-pointer'
+                : 'bg-airt-dark-blue hover:opacity-90 cursor-pointer'
             }`}
             aria-label='Send message'
           >
             <span className=''>
-              <svg width='24' height='24' viewBox='0 0 24 24' fill='none' className='text-airt-primary'>
+              <svg width='24' height='24' viewBox='0 0 24 24' fill='none' className='text-airt-font-base'>
                 <path
                   d='M7 11L12 6L17 11M12 18V7'
                   stroke='currentColor'

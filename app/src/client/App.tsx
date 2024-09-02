@@ -130,7 +130,7 @@ export default function App({ children }: { children: ReactNode }) {
         ) : (
           <div className='relative flex flex-col min-h-screen justify-between'>
             {shouldDisplayAppNavBar && <AppNavBar />}
-            <div className='mx-auto max-w-7xl sm:px-6 lg:px-8 w-full'>
+            <div className='mx-auto max-w-7xl sm:px-6 lg:px-8 w-full z-10'>
               {isError ? (
                 children
               ) : isLoading ? (

@@ -75,12 +75,10 @@ const SelectTeamToChat = ({ userTeams }: any) => {
   return (
     <div className='lg:mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10'>
       <div className='w-full lg:min-w-[700px] 2xl:min-w-[1200px]'>
-        <h2 className='mb-6 text-title-md2 font-semibold text-airt-primary'>Enter details to start new chat</h2>
+        <h2 className='mb-6 text-title-md2 font-semibold text-airt-font-base'>Enter details to start new chat</h2>
         <div className='rounded-lg border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[420px] pt-7'>
           <form onSubmit={handleSubmit} className='px-6.5 py-2'>
-            <label className='text-airt-primary' htmlFor='selectTeam'>
-              Select Team
-            </label>
+            <label htmlFor='selectTeam'>Select Team</label>
             <SelectInput
               id='selectTeam'
               value={team}
@@ -91,7 +89,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
               isRequired={true}
             />
             {formError.team && <div style={{ color: 'red' }}>{formError.team}</div>}
-            <label className='mt-2  text-airt-primary inline-block' htmlFor='setSystemMessage'>
+            <label className='mt-2 inline-block' htmlFor='setSystemMessage'>
               Message
             </label>
             <TextareaAutosize
@@ -102,7 +100,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
                 resize: 'none',
               }}
               id='setSystemMessage'
-              className='block rounded w-full h-12 text-sm text-airt-primary bg-airt-font-base focus:outline-none focus:ring-0 focus:border-captn-light-blue'
+              className='block rounded w-full h-12 text-sm bg-airt-font-base focus:outline-none focus:ring-0 focus:border-captn-light-blue'
               placeholder=''
               value={message}
               onChange={handleMessageChange}
@@ -119,7 +117,7 @@ const SelectTeamToChat = ({ userTeams }: any) => {
               </div>
             )}
             <button
-              className='rounded-md mt-2 px-3.5 py-2.5 text-sm bg-airt-primary text-airt-font-base hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+              className='rounded-md mt-2 px-3.5 py-2.5 text-sm bg-airt-dark-blue text-airt-font-base hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
               type='submit'
               disabled={isSubmitting || isRedirecting.current}
             >

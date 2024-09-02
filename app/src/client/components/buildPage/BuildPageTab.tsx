@@ -34,6 +34,7 @@ export const BuildPageTab = ({
     const index = navLinkItems.findIndex((item) => item.componentName === activeProperty);
     setActiveTab(index);
   }, [activeProperty]);
+
   return (
     <Box position='relative' marginBottom='40px'>
       <Tabs size='lg' variant='unstyled' index={activeTab} onChange={setActiveTab}>

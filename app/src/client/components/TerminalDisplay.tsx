@@ -55,13 +55,13 @@ const TerminalDisplay: React.FC<TerminalDisplayProps> = ({
   return (
     <div className={`accordion-wrapper terminal ${isMinimized ? 'minimized' : ''}`}>
       <div
-        className={`relative terminal-header ${
-          isMinimized ? 'rounded-lg' : 'rounded-t-lg'
-        } text-airt-font-base p-1 text-right bg-airt-secondary hover:cursor-pointer`}
+        className={`relative terminal-header ${isMinimized ? 'rounded-lg' : 'rounded-t-lg'} ${
+          isModelDeploymentTheme ? 'text-airt-font-base bg-airt-dark-blue' : 'bg-airt-font-base text-airt-dark-blue'
+        }  p-1 text-right hover:cursor-pointer`}
         onClick={() => setIsMinimized(!isMinimized)}
       >
-        <p className='accordion-title text-sm text-left text-airt-primary'>{title}</p>
-        <button className={`absolute right-4 top-4 ${isMinimized ? '' : 'open'} text-sm text-airt-primary `}>
+        <p className='accordion-title text-sm text-left '>{title}</p>
+        <button className={`absolute right-4 top-4 ${isMinimized ? '' : 'open'} text-sm text-font-base `}>
           {isMinimized ? (
             <svg
               xmlns='http://www.w3.org/2000/svg'
@@ -91,12 +91,12 @@ const TerminalDisplay: React.FC<TerminalDisplayProps> = ({
           )}
         </button>
       </div>
-      <div className={`accordion-item rounded-b-lg ${isMinimized ? '' : 'collapsed'}`}>
+      <div className={`accordion-item rounded-b-lg ${isMinimized ? '' : ' border collapsed'}`}>
         <div
           ref={containerRef}
           onScroll={handleUserScroll}
           className={`${
-            isModelDeploymentTheme ? 'text-airt-font-base bg-airt-primary' : 'bg-airt-font-base text-airt-primary'
+            isModelDeploymentTheme ? 'text-airt-dark-blue bg-airt-font-base' : 'bg-airt-font-base text-airt-dark-blue'
           } accordion-content scroll-container p-4 font-mono text-xs overflow-y-auto overflow-x-hidden ${
             isMinimized ? 'hidden' : ''
           }`}

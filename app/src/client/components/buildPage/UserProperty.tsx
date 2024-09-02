@@ -137,7 +137,7 @@ export const UserProperty = memo(
                 ) : (
                   <div className='flex flex-col w-full gap-9 mb-20'>
                     <div className='flex flex-col gap-5.5 px-6.5'>
-                      <h2 className='text-lg font-semibold text-airt-primary mt-6 '>{`${title}`}</h2>
+                      <h2 className='text-lg font-semibold text-airt-dark-blue mt-6 '>{`${title}`}</h2>
                       <div className='relative z-20 bg-white dark:bg-form-input'>
                         {flow === Flow.ADD_MODEL && <ModelSelector parser={parser} updateFormStack={updateFormStack} />}
                         <DynamicForm

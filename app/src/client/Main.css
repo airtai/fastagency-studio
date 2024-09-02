@@ -97,10 +97,10 @@ code {
 
 /* When the checkbox is checked, add a blue background */
 .toc-marketing-checkbox-wrapper .checkbox-container input:checked ~ .checkmark {
-  background-color: #6faabc;
+  background-color: #0080FF;
 }
 .toc-marketing-checkbox-wrapper.light .checkbox-container input:checked ~ .checkmark {
-  background-color: #fff;
+  background-color: #0080FF;
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */

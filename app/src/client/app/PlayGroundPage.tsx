@@ -182,7 +182,7 @@ const PlayGroundPage = ({ user }: { user: User }) => {
           <div className='flex-1 overflow-hidden'>
             {conversations && conversations.length > 0 ? (
               <>
-                <p className='text-center text-lg font-bold bg-airt-primary text-airt-font-base'>
+                <p className='text-center text-lg font-bold bg-airt-dark-blue text-airt-font-base'>
                   Chatting with{' '}
                   <a className='text-airt-secondary hover:underline hover:cursor-pointer' onClick={handleTeamClick}>
                     {currentChatDetails.selectedTeam}

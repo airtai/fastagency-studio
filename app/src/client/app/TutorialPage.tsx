@@ -45,7 +45,7 @@ export default function TutorialPage() {
   return (
     <ChakraProvider>
       <div className='mx-auto max-w-7xl pl-10 pr-10 text-airt-font-base pt-10 pb-24 sm:pb-32 lg:gap-x-8 lg:py-5 lg:px-8'>
-        <h1 className='text-title-md2 font-semibold text-airt-primary dark:text-white my-4'>Tutorials</h1>
+        <h1 className='text-title-md2 font-semibold text-airt-font-base dark:text-white my-4'>Tutorials</h1>
         <div className='rounded-lg border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark min-h-[300px] sm:min-h-[600px]'>
           <div className='p-10'>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>

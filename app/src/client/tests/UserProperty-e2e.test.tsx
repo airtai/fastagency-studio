@@ -39,8 +39,8 @@ vi.mock('wasp/client/operations', () => ({
 // Helper functions
 const setupComponent = async (): Promise<{ user: UserEvent; container: HTMLElement }> => {
   const user = userEvent.setup();
-  const { UserProperty } = await import('../components/buildPage/UserProperty');
-  const renderResult = renderInContext(<UserProperty {...mockProps} activeProperty='agent' />);
+  const { BuildPageTab } = await import('../components/buildPage/BuildPageTab');
+  const renderResult = renderInContext(<BuildPageTab {...mockProps} activeProperty='agent' />);
   await user.click(screen.getByText('Add Agent'));
   await waitFor(() => {
     expect(screen.getByText('AssistantAgent')).toBeInTheDocument();

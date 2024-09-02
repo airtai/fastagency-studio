@@ -1,4 +1,4 @@
-import React, { useEffect, useState, memo } from 'react';
+import React, { useEffect, memo } from 'react';
 
 import _ from 'lodash';
 import { getModels, useQuery } from 'wasp/client/operations';
@@ -11,25 +11,36 @@ import { ModelSelector } from '../buildPage/ModelSelector';
 import { navLinkItems } from '../CustomSidebar';
 import { PropertiesSchema } from '../../interfaces/BuildPageInterfaces';
 import LoadingComponent from '../LoadingComponent';
-import { useFormHandler, PushParser } from './useFormHandler';
+import { PushParser } from './useFormHandler';
 
 import { filerOutComponentData, capitalizeFirstLetter, filterPropertiesByType } from './buildPageUtils';
-import { Flow } from './PropertySchemaParser';
+import { Flow, UserProperties } from './PropertySchemaParser';
 
 interface Props {
   activeProperty: string;
   propertiesSchema: PropertiesSchema;
   sideNavItemClickCount: number;
-  setActiveProperty: (activeProperty: string) => void;
+  parser: any;
+  propertiesInStack: any[];
+  pushNewParser: (params: PushParser) => void;
+  popFromStack: (userProperties: UserProperties[] | null, validateDataResponse?: any, index?: number) => void;
+  clearStack: () => void;
 }
 
 export const UserProperty = memo(
-  ({ activeProperty, propertiesSchema, sideNavItemClickCount, setActiveProperty }: Props) => {
+  ({
+    activeProperty,
+    propertiesSchema,
+    sideNavItemClickCount,
+    parser,
+    propertiesInStack,
+    pushNewParser,
+    popFromStack,
+    clearStack,
+  }: Props) => {
     const propertyHeader = _.find(navLinkItems, ['componentName', activeProperty])?.label;
     const propertyName = activeProperty === 'llm' ? 'LLM' : capitalizeFirstLetter(activeProperty);
     const propertySchemasList = filerOutComponentData(propertiesSchema, activeProperty);
-
-    const { parser, propertiesInStack, pushNewParser, popFromStack, clearStack } = useFormHandler(setActiveProperty);
 
     const { data: userProperties, refetch: refetchUserProperties, isLoading: isLoading } = useQuery(getModels);
     const userPropertiesByType = (userProperties && filterPropertiesByType(userProperties, activeProperty)) || [];
@@ -124,7 +135,7 @@ export const UserProperty = memo(
                     )}
                   </>
                 ) : (
-                  <div className='flex flex-col w-full gap-9'>
+                  <div className='flex flex-col w-full gap-9 mb-20'>
                     <div className='flex flex-col gap-5.5 px-6.5'>
                       <h2 className='text-lg font-semibold text-airt-primary mt-6 '>{`${title}`}</h2>
                       <div className='relative z-20 bg-white dark:bg-form-input'>

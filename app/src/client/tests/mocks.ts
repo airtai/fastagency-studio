@@ -1012,6 +1012,7 @@ export const mockPropertieSchemas: PropertiesSchema = {
 };
 
 export const mockProps = {
+  onSideNavItemClick: vi.fn(),
   activeProperty: 'secret',
   propertiesSchema: mockPropertieSchemas,
   sideNavItemClickCount: 0,

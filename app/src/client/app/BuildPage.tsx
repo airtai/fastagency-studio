@@ -8,7 +8,7 @@ import { useBuildPage } from '../hooks/useBuildPage';
 import CustomAuthRequiredLayout from './layout/CustomAuthRequiredLayout';
 import LoadingComponent from '../components/LoadingComponent';
 import { ErrorComponent } from '../components/ErrorComponent';
-import BuildPageTab from '../components/buildPage/BuildPageTab';
+import { BuildPageTab } from '../components/buildPage/BuildPageTab';
 
 interface BuildPageProps {
   user: User;

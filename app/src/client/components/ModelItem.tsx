@@ -33,7 +33,7 @@ const ModelItem: React.FC<ModelItemProps> = ({ model, onClick }) => {
   const propertyName = model.json_str.name ? model.json_str.name : model.model_name;
   const svgIcon = _.find(navLinkItems, ['componentName', model.type_name])!.svgIcon;
   const typeToClass: TypeToClass = {
-    secret: 'text-airt-primary mt-1 ml-1',
+    secret: 'text-airt-primary mt-1 ml-1', // pragma: allowlist secret
     deployment: 'text-airt-primary mt-1 ml-2',
     llm: 'text-airt-primary ml-0 mt-1',
     default: 'text-airt-primary ml-0',

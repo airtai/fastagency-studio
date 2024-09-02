@@ -19,7 +19,7 @@ export default function LandingPage() {
         className='z-0 absolute inset-x-0 bottom-[0px] h-[50vh] dark:bg-boxdark-2 bg-no-repeat bg-center'
         style={{
           backgroundImage: `
-      linear-gradient(to bottom, 
+      linear-gradient(to bottom,
         rgba(242, 92, 73, 0.9) 0%,
         rgba(242, 92, 73, 0.8) 20%,
         rgba(242, 92, 73, 0.5) 40%,

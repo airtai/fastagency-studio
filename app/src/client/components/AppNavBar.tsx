@@ -153,9 +153,9 @@ export default function AppNavBar({ position = 'sticky' }: Props): JSX.Element {
         className='absolute z-0 inset-x-0 top-[105px] dark:bg-boxdark-2 h-[calc(100vh-105px)] bg-no-repeat bg-center'
         style={{
           backgroundImage: `
-      linear-gradient(to bottom, 
-        #E33F2A 0%, 
-        rgba(227, 63, 42, 0) 20%, 
+      linear-gradient(to bottom,
+        #E33F2A 0%,
+        rgba(227, 63, 42, 0) 20%,
         rgba(227, 63, 42, 0) 65%,
         rgba(242, 92, 73, 0.7) 80%,
         rgba(242, 92, 73, 0.9) 90%,

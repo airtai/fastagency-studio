@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { UserProperty } from '../components/buildPage/UserProperty';
+import { BuildPageTab } from '../components/buildPage/BuildPageTab';
 import { renderInContext } from 'wasp/client/test';
 import { useQuery } from 'wasp/client/operations';
 import { mockProps } from './mocks';
@@ -31,13 +31,13 @@ vi.mock('wasp/client/operations', () => ({
   addUserModels: vi.fn(() => Promise.resolve(validateAndSaveMockResponse)),
 }));
 
-describe('UserProperty', () => {
+describe('BuildPageTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders UserProperty component with add button when no models exist', () => {
-    renderInContext(<UserProperty {...mockProps} />);
+  it('renders BuildPageTab component with add button when no models exist', () => {
+    renderInContext(<BuildPageTab {...mockProps} />);
 
     // Check for the presence of the "Add TestProperty" button
     expect(screen.getByText('Add Secret')).toBeInTheDocument();
@@ -49,7 +49,7 @@ describe('UserProperty', () => {
   it('renders loading component when data is being fetched', () => {
     (useQuery as Mock).mockReturnValue({ data: undefined, refetch: vi.fn(), isLoading: true });
 
-    const { getByText, container } = renderInContext(<UserProperty {...mockProps} />);
+    const { getByText, container } = renderInContext(<BuildPageTab {...mockProps} />);
 
     expect(getByText('Loading...')).toBeInTheDocument();
   });
@@ -64,7 +64,7 @@ describe('UserProperty', () => {
       refetch: vi.fn(),
     });
 
-    renderInContext(<UserProperty {...mockProps} />);
+    renderInContext(<BuildPageTab {...mockProps} />);
 
     expect(screen.getByText('Secret1')).toBeInTheDocument();
     expect(screen.getByText('Secret2')).toBeInTheDocument();
@@ -78,7 +78,7 @@ describe('UserProperty', () => {
       refetch: vi.fn(),
     });
 
-    const { getByText, getAllByTestId } = renderInContext(<UserProperty {...mockProps} />);
+    const { getByText, getAllByTestId } = renderInContext(<BuildPageTab {...mockProps} />);
 
     const addButton = getByText('Add Secret');
     fireEvent.click(addButton);
@@ -100,7 +100,7 @@ describe('UserProperty', () => {
       activeProperty: 'llm',
     };
 
-    renderInContext(<UserProperty {...llmProps} />);
+    renderInContext(<BuildPageTab {...llmProps} />);
 
     expect(screen.getByText('Add LLM')).toBeInTheDocument();
     expect(screen.getByText('No LLMs found. Please add one.')).toBeInTheDocument();
@@ -115,7 +115,7 @@ describe('UserProperty', () => {
       refetch: vi.fn(),
     });
 
-    renderInContext(<UserProperty {...mockProps} />);
+    renderInContext(<BuildPageTab {...mockProps} />);
 
     expect(screen.getByText('Secret1')).toBeInTheDocument();
     expect(screen.queryByText('LLM1')).not.toBeInTheDocument();
@@ -127,7 +127,7 @@ describe('UserProperty', () => {
       refetch: vi.fn(),
     });
 
-    const { getByText, getByRole, container } = renderInContext(<UserProperty {...mockProps} />);
+    const { getByText, getByRole, container } = renderInContext(<BuildPageTab {...mockProps} />);
 
     fireEvent.click(screen.getByText('Add Secret'));
 

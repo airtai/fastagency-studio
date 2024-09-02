@@ -6,6 +6,7 @@ import { navLinkItems } from '../CustomSidebar';
 import { UserProperty } from './UserProperty';
 import { PropertiesSchema } from '../../interfaces/BuildPageInterfaces';
 import faLogoWithoutText from '../../static/fa-logo-without-text.svg';
+import { useFormHandler } from './useFormHandler';
 
 interface Props {
   onSideNavItemClick: (selectedItem: string) => void;
@@ -15,7 +16,7 @@ interface Props {
   setActiveProperty: (activeProperty: string) => void;
 }
 
-const BuildPageTab = ({
+export const BuildPageTab = ({
   activeProperty,
   onSideNavItemClick,
   propertiesSchema,
@@ -23,6 +24,7 @@ const BuildPageTab = ({
   setActiveProperty,
 }: Props) => {
   const [activeTab, setActiveTab] = useState(0);
+  const { parser, propertiesInStack, pushNewParser, popFromStack, clearStack } = useFormHandler(setActiveProperty);
 
   const handleTabClick = (index: number) => {
     onSideNavItemClick(navLinkItems[index].componentName);
@@ -66,7 +68,11 @@ const BuildPageTab = ({
                 activeProperty={activeProperty}
                 propertiesSchema={propertiesSchema}
                 sideNavItemClickCount={sideNavItemClickCount}
-                setActiveProperty={setActiveProperty}
+                parser={parser}
+                propertiesInStack={propertiesInStack}
+                pushNewParser={pushNewParser}
+                popFromStack={popFromStack}
+                clearStack={clearStack}
               />
             </TabPanel>
           ))}
@@ -93,5 +99,3 @@ const BuildPageTab = ({
     </Box>
   );
 };
-
-export default BuildPageTab;

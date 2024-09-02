@@ -38,7 +38,7 @@ const CustomBreadcrumb: React.FC<BreadcrumbProps> = ({
             <BreadcrumbItem
               key={index}
               isCurrentPage={index === lastIndex}
-              className={`${index === lastIndex ? 'text-airt-primary' : 'text-airt-font-base'}`}
+              className={`${index === lastIndex ? 'text-airt-secondary' : 'text-airt-font-base'}`}
             >
               <BreadcrumbLink
                 href='#'

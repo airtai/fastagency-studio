@@ -18,74 +18,102 @@ describe('Auth', () => {
     vi.clearAllMocks();
   });
 
-  test('renders Auth component in signup state correctly', () => {
-    renderInContext(<Auth state={State.Signup} />);
+  describe('Sign up state', () => {
+    test('renders Auth component in signup state correctly', () => {
+      renderInContext(<Auth state={State.Signup} />);
 
-    expect(screen.getByText('Create an account')).toBeDefined();
-    expect(screen.getByTestId('username-label')).toBeDefined();
-    expect(screen.getByTestId('password-label')).toBeDefined();
-    expect(screen.getAllByRole('button', { name: /sign up/i })).toBeDefined();
-    expect(screen.getAllByText(/sign up with google/i)).toBeDefined();
-  });
+      expect(screen.getByText('Create an account')).toBeDefined();
+      expect(screen.getByTestId('username-label')).toBeDefined();
+      expect(screen.getByTestId('password-label')).toBeDefined();
+      expect(screen.getAllByRole('button', { name: /sign up/i })).toBeDefined();
+      expect(screen.getAllByText(/sign up with google/i)).toBeDefined();
+    });
 
-  test('renders Auth component in login state correctly', () => {
-    renderInContext(<Auth state={State.Login} />);
+    test('displays error message when form is submitted without input', async () => {
+      renderInContext(<Auth state={State.Signup} />);
 
-    expect(screen.getByText('Sign in to your account')).toBeDefined();
-    expect(screen.getByTestId('username-label')).toBeDefined();
-    expect(screen.getByTestId('password-label')).toBeDefined();
-    expect(screen.getAllByRole('button', { name: /sign in/i })).toBeDefined();
-    expect(screen.getAllByText(/sign in with google/i)).toBeDefined();
-  });
+      const signUpButton = screen.getByTestId('form-submit');
+      fireEvent.click(signUpButton);
 
-  test('displays error message when form is submitted without input', async () => {
-    renderInContext(<Auth state={State.Signup} />);
+      await waitFor(() => {
+        expect(
+          screen.getByText("To proceed, please ensure you've accepted our Terms & Conditions and Privacy Policy.")
+        ).toBeDefined();
+      });
+    });
 
-    const signUpButton = screen.getByTestId('form-submit');
-    fireEvent.click(signUpButton);
+    test('displays error when form is filled and submitted without checking ToS', async () => {
+      renderInContext(<Auth state={State.Signup} />);
 
-    await waitFor(() => {
-      expect(
-        screen.getByText("To proceed, please ensure you've accepted our Terms & Conditions and Privacy Policy.")
-      ).toBeDefined();
+      const usernameInput = screen.getByTestId('username');
+      const passwordInput = screen.getByTestId('password');
+      const signUpButton = screen.getByTestId('form-submit');
+
+      fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+      fireEvent.change(passwordInput, { target: { value: 'password123' } });
+      fireEvent.click(signUpButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("To proceed, please ensure you've accepted our Terms & Conditions and Privacy Policy.")
+        ).toBeDefined();
+      });
+    });
+
+    test('displays error when form is not filled and submitted with checking ToS', async () => {
+      renderInContext(<Auth state={State.Signup} />);
+
+      const usernameInput = screen.getByTestId('username');
+      const tocCheckbox = screen.getByTestId('toc-checkbox');
+      const signUpButton = screen.getByTestId('form-submit');
+
+      fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+      fireEvent.click(tocCheckbox);
+
+      expect(tocCheckbox).toBeChecked();
+
+      fireEvent.click(signUpButton);
+
+      await waitFor(() => {
+        expect(screen.queryByText('Username is required')).not.toBeInTheDocument();
+        expect(screen.queryByText('Password is required')).toBeInTheDocument();
+      });
     });
   });
 
-  test('displays error when form is filled and submitted without checking ToS', async () => {
-    renderInContext(<Auth state={State.Signup} />);
+  describe('Log in state', () => {
+    test('renders Auth component in login state correctly', () => {
+      renderInContext(<Auth state={State.Login} />);
 
-    const usernameInput = screen.getByTestId('username');
-    const passwordInput = screen.getByTestId('password');
-    const signUpButton = screen.getByTestId('form-submit');
+      expect(screen.getByText('Sign in to your account')).toBeDefined();
+      expect(screen.getByTestId('username-label')).toBeDefined();
+      expect(screen.getByTestId('password-label')).toBeDefined();
+      expect(screen.getAllByRole('button', { name: /sign in/i })).toBeDefined();
+      expect(screen.getAllByText(/sign in with google/i)).toBeDefined();
 
-    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.click(signUpButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("To proceed, please ensure you've accepted our Terms & Conditions and Privacy Policy.")
-      ).toBeDefined();
+      const tocCheckbox = screen.queryByTestId('toc-checkbox');
+      expect(tocCheckbox).toBeNull();
     });
-  });
 
-  test('displays error when form is not filled and submitted with checking ToS', async () => {
-    renderInContext(<Auth state={State.Signup} />);
+    test('displays error message when form is submitted without input', async () => {
+      renderInContext(<Auth state={State.Login} />);
 
-    const usernameInput = screen.getByTestId('username');
-    const tocCheckbox = screen.getByTestId('toc-checkbox');
-    const signUpButton = screen.getByTestId('form-submit');
+      const signUpButton = screen.getByTestId('form-submit');
+      fireEvent.click(signUpButton);
 
-    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-    fireEvent.click(tocCheckbox);
+      await waitFor(() => {
+        expect(screen.queryByText('Username is required')).toBeInTheDocument();
+        expect(screen.queryByText('Password is required')).toBeInTheDocument();
+      });
 
-    expect(tocCheckbox).toBeChecked();
+      const usernameInput = screen.getByTestId('username');
+      fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+      fireEvent.click(signUpButton);
 
-    fireEvent.click(signUpButton);
-
-    await waitFor(() => {
-      expect(screen.queryByText('Username is required')).not.toBeInTheDocument();
-      expect(screen.queryByText('Password is required')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByText('Username is required')).not.toBeInTheDocument();
+        expect(screen.queryByText('Password is required')).toBeInTheDocument();
+      });
     });
   });
 });

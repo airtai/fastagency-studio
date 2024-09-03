@@ -41,7 +41,7 @@ const TosAndMarketingEmails: React.FC<TosAndMarketingEmailsProps> = ({
         <Link to='/privacy' className='no-underline hover:underline text-airt-secondary' target='_blank'>
           Privacy Policy
         </Link>
-        <input type='checkbox' id='toc' checked={tocChecked} onChange={handleTocChange} />
+        <input type='checkbox' id='toc' data-testid='toc-checkbox' checked={tocChecked} onChange={handleTocChange} />
         <span className='checkmark'></span>
       </label>
     </div>

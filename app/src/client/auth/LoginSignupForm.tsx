@@ -222,8 +222,9 @@ export const LoginSignupForm = ({
         }}
       >
         <FormItemGroup>
-          <FormLabel>Username</FormLabel>
+          <FormLabel data-testid='username-label'>Username</FormLabel>
           <FormInput
+            data-testid='username'
             {...register('username', {
               required: 'Username is required',
             })}
@@ -233,8 +234,9 @@ export const LoginSignupForm = ({
           {errors.username && <FormError>{errors.username.message}</FormError>}
         </FormItemGroup>
         <FormItemGroup>
-          <FormLabel>Password</FormLabel>
+          <FormLabel data-testid='password-label'>Password</FormLabel>
           <FormInput
+            data-testid='password'
             {...register('password', {
               required: 'Password is required',
             })}
@@ -249,13 +251,13 @@ export const LoginSignupForm = ({
           additionalSignupFields={additionalSignupFields}
         />
         <FormItemGroup>
-          <SubmitButton type='submit' disabled={isLoading}>
+          <SubmitButton data-testid='form-submit' type='submit' disabled={isLoading}>
             {cta}
           </SubmitButton>
         </FormItemGroup>
       </Form>
       <div className='flex items-center justify-center'>
-        <span className='text-sm block'>
+        <span className='text-sm block switch-link'>
           {loginFlow === State.Login ? "Don't have an account? " : 'Already have an account? '}
           <Link
             to={loginFlow === State.Login ? '/signup' : '/login'}

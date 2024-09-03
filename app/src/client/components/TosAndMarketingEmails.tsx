@@ -11,7 +11,7 @@ export const Message = styled('div', {
 });
 
 export const MessageError = styled(Message, {
-  background: '#fff',
+  background: '#FED7D7',
   color: '#003257',
 });
 
@@ -57,7 +57,7 @@ const TosAndMarketingEmails: React.FC<TosAndMarketingEmailsProps> = ({
         <span className='checkmark'></span>
       </label>
     </div>
-    {errorMessage && (
+    {/* {errorMessage && (
       <div className='text-sm'>
         <MessageError>
           {errorMessage.title}
@@ -65,7 +65,7 @@ const TosAndMarketingEmails: React.FC<TosAndMarketingEmailsProps> = ({
           {errorMessage.description}
         </MessageError>
       </div>
-    )}
+    )} */}
   </div>
 );
 

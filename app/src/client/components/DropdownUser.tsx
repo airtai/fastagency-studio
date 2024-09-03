@@ -7,7 +7,7 @@ import { AuthUser } from 'wasp/auth';
 
 const DropdownUser = ({ user }: { user: AuthUser }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const username = user.username || user.identities.username?.id;
+  const username = user.username || user.identities?.username?.id;
 
   const trigger = useRef<any>(null);
   const dropdown = useRef<any>(null);

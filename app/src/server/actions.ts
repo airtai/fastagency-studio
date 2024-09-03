@@ -285,9 +285,9 @@ export const createNewChat: CreateNewChat<any, Chat> = async (args, context) => 
     throw new HttpError(401);
   }
 
-  if (!context.user.hasPaid) {
-    throw new HttpError(500, 'No Subscription Found');
-  }
+  // if (!context.user.hasPaid) {
+  //   throw new HttpError(500, 'No Subscription Found');
+  // }
 
   const chat = await context.entities.Chat.create({
     data: {
@@ -422,9 +422,9 @@ export const createNewAndReturnAllConversations: CreateNewAndReturnAllConversati
     throw new HttpError(401);
   }
 
-  if (!context.user.hasPaid) {
-    throw new HttpError(500, 'No Subscription Found');
-  }
+  // if (!context.user.hasPaid) {
+  //   throw new HttpError(500, 'No Subscription Found');
+  // }
 
   await context.entities.Conversation.create({
     data: {
@@ -454,9 +454,9 @@ export const createNewAndReturnLastConversation: CreateNewAndReturnLastConversat
     throw new HttpError(401);
   }
 
-  if (!context.user.hasPaid) {
-    throw new HttpError(500, 'No Subscription Found');
-  }
+  // if (!context.user.hasPaid) {
+  //   throw new HttpError(500, 'No Subscription Found');
+  // }
 
   return await context.entities.Conversation.create({
     data: {

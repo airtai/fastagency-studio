@@ -154,7 +154,7 @@ export const LoginSignupForm = ({
           handleTocChange={handleTocChange}
           marketingEmailsChecked={marketingEmailsChecked}
           handleMarketingEmailsChange={handleMarketingEmailsChange}
-          errorMessage={errorMessage}
+          errorMessage={null}
         />
       )}
       <SocialAuth>

@@ -31,6 +31,7 @@ app FastAgency {
   auth: {
     userEntity: User,
     methods: {
+      usernameAndPassword: {},
       google: { // Guide for setting up Auth via Google https://wasp-lang.dev/docs/auth/social-auth/overview
         userSignupFields: import { getGoogleUserFields } from "@src/server/auth/setUsername.js",
         configFn: import { getGoogleAuthConfig } from "@src/server/auth/setUsername.js",

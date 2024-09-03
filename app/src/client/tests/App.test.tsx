@@ -41,6 +41,9 @@ function setupMocks(mockUser: any, pathName = '/') {
   // Always mock useAuth with provided user data
   vi.doMock('wasp/client/auth', () => ({ useAuth: () => mockUser }));
 
+  // Mock Wasp API and handleApiError functions
+  vi.doMock('wasp/client/api', () => ({ api: () => vi.fn(), handleApiError: () => vi.fn() }));
+
   // Correctly mock useLocation to consistently return a pathname
   vi.doMock('react-router-dom', () => ({
     ...vi.importActual('react-router-dom'), // Maintain other hooks and routing components

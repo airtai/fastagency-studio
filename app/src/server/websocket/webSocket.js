@@ -52,10 +52,10 @@ export const socketFn = (io, context) => {
   // When a new user is connected
   io.on('connection', async (socket) => {
     if (socket.data.user) {
-      const userEmail = socket.data.user.email;
+      const username = socket.data.user.username || socket.data.user.identities.username.id;
       const userUUID = socket.data.user.uuid;
       console.log('========');
-      console.log('a user connected: ', userEmail);
+      console.log('a user connected: ', username);
 
       socket.on(
         'sendMessageToTeam',

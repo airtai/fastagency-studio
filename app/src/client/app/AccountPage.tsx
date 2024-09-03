@@ -1,13 +1,16 @@
 import { Link } from 'wasp/client/router';
 import { type User } from 'wasp/entities';
 import { logout } from 'wasp/client/auth';
+import { AuthUser } from 'wasp/auth';
 // import { STRIPE_CUSTOMER_PORTAL_LINK } from '../../shared/constants';
 import CustomAuthRequiredLayout from '../app/layout/CustomAuthRequiredLayout';
 import Button from '../components/Button';
 // import FreeTrialButton from '../components/FreeTrialButton';
 import { MarketingEmailPreferenceSwitcher } from '../components/MarketingEmailPreferenceSwitcher';
 
-const AccountPage = ({ user }: { user: User }) => {
+const AccountPage = ({ user }: { user: AuthUser }) => {
+  const username = user.username || user.identities.username?.id;
+
   return (
     <div className='mt-10 px-6'>
       <div className='overflow-hidden border border-airt-primary shadow-lg sm:rounded-lg lg:m-8 dark:border-gray-100/10'>
@@ -24,11 +27,11 @@ const AccountPage = ({ user }: { user: User }) => {
                 </dd>
               </div>
             )}
-            {!!user.username && (
+            {!!username && (
               <div className='py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5 sm:px-6'>
                 <dt className='text-sm font-medium text-airt-font-base dark:text-white'>Username</dt>
                 <dd className='mt-1 text-sm text-airt-font-base dark:text-airt-font-base sm:col-span-2 sm:mt-0'>
-                  {user.username}
+                  {username}
                 </dd>
               </div>
             )}

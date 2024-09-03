@@ -36,11 +36,12 @@ const ChatLayout: FC<Props> = ({
   useEffect(() => {
     if (!user) {
       history.push('/login');
-    } else {
-      if (!user.hasPaid && user.isSignUpComplete) {
-        history.push('/pricing');
-      }
     }
+    // else {
+    //   if (!user.hasPaid && user.isSignUpComplete) {
+    //     history.push('/pricing');
+    //   }
+    // }
   }, [user, history]);
 
   useSocketListener('newMessageFromTeam', () => setShouldAutoScroll(true));

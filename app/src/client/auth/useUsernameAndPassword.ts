@@ -1,5 +1,5 @@
-import signup from './signup';
-import login from './login';
+import { signup } from 'wasp/client/auth';
+import { login } from 'wasp/client/auth';
 
 // PRIVATE API
 export function useUsernameAndPassword({

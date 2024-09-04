@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, UseFormReturn } from 'react-hook-form';
 
 import { styled } from './configs/stitches.config';
 import { AuthContext } from './Auth';
@@ -7,6 +7,12 @@ import config from './configs/config';
 import TosAndMarketingEmails from '../components/TosAndMarketingEmails';
 import { State } from './Auth';
 import { Link } from 'wasp/client/router';
+import { Form, FormInput, FormItemGroup, FormLabel, FormError, FormTextarea, SubmitButton } from './Form';
+
+import type { AdditionalSignupFields, AdditionalSignupField, AdditionalSignupFieldRenderFn, FormState } from './types';
+
+import { useUsernameAndPassword } from './useUsernameAndPassword';
+import { useHistory } from 'react-router-dom';
 
 const SocialAuth = styled('div', {
   marginTop: '1.5rem',
@@ -68,6 +74,10 @@ export const LoginSignupForm = ({
   const [tocChecked, setTocChecked] = useState(false);
   const [marketingEmailsChecked, setMarketingEmailsChecked] = useState(false);
   const [loginFlow, setLoginFlow] = useState(state);
+
+  const isLogin = state === 'login';
+  const cta = isLogin ? 'Sign in' : 'Sign up';
+
   const hookForm = useForm<LoginSignupFormFields>();
   const {
     register,
@@ -110,8 +120,31 @@ export const LoginSignupForm = ({
       }
     }
   };
+  const history = useHistory();
+  const onErrorHandler = (error: any) => {
+    setErrorMessage({ title: error.message, description: error.data?.data?.message });
+  };
 
   const googleBtnText = loginFlow === State.Login ? 'Sign in with Google' : 'Sign up with Google';
+
+  const { handleSubmit } = useUsernameAndPassword({
+    isLogin,
+    onError: onErrorHandler,
+    onSuccess() {
+      history.push('/build');
+    },
+  });
+
+  async function onSubmit(data: any) {
+    setIsLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      await handleSubmit(data);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <>
@@ -121,7 +154,7 @@ export const LoginSignupForm = ({
           handleTocChange={handleTocChange}
           marketingEmailsChecked={marketingEmailsChecked}
           handleMarketingEmailsChange={handleMarketingEmailsChange}
-          errorMessage={errorMessage}
+          errorMessage={null}
         />
       )}
       <SocialAuth>
@@ -165,8 +198,66 @@ export const LoginSignupForm = ({
           </button>
         </SocialAuthButtons>
       </SocialAuth>
+      <div className='mt-2 mb-5 relative'>
+        <div className='absolute inset-0 flex items-center'>
+          <div className='w-full border-t border-gray-500'></div>
+        </div>
+        <div className='relative flex justify-center text-sm'>
+          <span className='bg-airt-primary px-2'>Or continue with</span>
+        </div>
+      </div>
+      <Form
+        onSubmit={(e: any) => {
+          e.preventDefault();
+          if (loginFlow === State.Signup) {
+            if (tocChecked) {
+              updateLocalStorage();
+              hookFormHandleSubmit(onSubmit)();
+            } else {
+              setErrorMessage(checkBoxErrMsg);
+            }
+          } else {
+            hookFormHandleSubmit(onSubmit)();
+          }
+        }}
+      >
+        <FormItemGroup>
+          <FormLabel data-testid='username-label'>Username</FormLabel>
+          <FormInput
+            data-testid='username'
+            {...register('username', {
+              required: 'Username is required',
+            })}
+            type='text'
+            disabled={isLoading}
+          />
+          {errors.username && <FormError>{errors.username.message}</FormError>}
+        </FormItemGroup>
+        <FormItemGroup>
+          <FormLabel data-testid='password-label'>Password</FormLabel>
+          <FormInput
+            data-testid='password'
+            {...register('password', {
+              required: 'Password is required',
+            })}
+            type='password'
+            disabled={isLoading}
+          />
+          {errors.password && <FormError>{errors.password.message}</FormError>}
+        </FormItemGroup>
+        <AdditionalFormFields
+          hookForm={hookForm}
+          formState={{ isLoading }}
+          additionalSignupFields={additionalSignupFields}
+        />
+        <FormItemGroup>
+          <SubmitButton data-testid='form-submit' type='submit' disabled={isLoading}>
+            {cta}
+          </SubmitButton>
+        </FormItemGroup>
+      </Form>
       <div className='flex items-center justify-center'>
-        <span className='text-sm block'>
+        <span className='text-sm block switch-link'>
           {loginFlow === State.Login ? "Don't have an account? " : 'Already have an account? '}
           <Link
             to={loginFlow === State.Login ? '/signup' : '/login'}
@@ -179,3 +270,68 @@ export const LoginSignupForm = ({
     </>
   );
 };
+
+function AdditionalFormFields({
+  hookForm,
+  formState: { isLoading },
+  additionalSignupFields,
+}: {
+  hookForm: UseFormReturn<LoginSignupFormFields>;
+  formState: FormState;
+  additionalSignupFields: AdditionalSignupFields;
+}) {
+  const {
+    register,
+    formState: { errors },
+  } = hookForm;
+
+  function renderField<ComponentType extends React.JSXElementConstructor<any>>(
+    field: AdditionalSignupField,
+    // Ideally we would use ComponentType here, but it doesn't work with react-hook-form
+    Component: any,
+    props?: React.ComponentProps<ComponentType>
+  ) {
+    return (
+      <FormItemGroup key={field.name}>
+        <FormLabel>{field.label}</FormLabel>
+        <Component {...register(field.name, field.validations)} {...props} disabled={isLoading} />
+        {errors[field.name] && <FormError>{errors[field.name]!.message}</FormError>}
+      </FormItemGroup>
+    );
+  }
+
+  if (areAdditionalFieldsRenderFn(additionalSignupFields)) {
+    return additionalSignupFields(hookForm, { isLoading });
+  }
+
+  return (
+    additionalSignupFields &&
+    additionalSignupFields.map((field) => {
+      if (isFieldRenderFn(field)) {
+        return field(hookForm, { isLoading });
+      }
+      switch (field.type) {
+        case 'input':
+          return renderField<typeof FormInput>(field, FormInput, {
+            type: 'text',
+          });
+        case 'textarea':
+          return renderField<typeof FormTextarea>(field, FormTextarea);
+        default:
+          throw new Error(`Unsupported additional signup field type: ${field.type}`);
+      }
+    })
+  );
+}
+
+function isFieldRenderFn(
+  additionalSignupField: AdditionalSignupField | AdditionalSignupFieldRenderFn
+): additionalSignupField is AdditionalSignupFieldRenderFn {
+  return typeof additionalSignupField === 'function';
+}
+
+function areAdditionalFieldsRenderFn(
+  additionalSignupFields: AdditionalSignupFields
+): additionalSignupFields is AdditionalSignupFieldRenderFn {
+  return typeof additionalSignupFields === 'function';
+}

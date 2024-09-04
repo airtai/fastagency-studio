@@ -121,7 +121,7 @@ export default function LandingPage() {
                 <div className='py-6'>
                   {isUserLoading ? null : !user ? (
                     <Link to='/login'>
-                      <div className='text-sm flex justify-start items-center duration-300 ease-in-out text-airt-font-base hover:text-airt-secondary dark:text-white'>
+                      <div className='text-sm flex justify-start items-center duration-300 ease-in-out text-airt-primary hover:text-airt-secondary dark:text-white'>
                         Log in <BiLogIn size='1.1rem' className='ml-1' />
                       </div>
                     </Link>

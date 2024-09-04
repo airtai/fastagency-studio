@@ -121,7 +121,7 @@ export const UserProperty = memo(
                     {userPropertiesByType.length === 0 && (
                       <div className='flex flex-col gap-3'>
                         {/* <h2 className='text-lg font-semibold text-airt-primary'>Available Models</h2> */}
-                        <p className='text-airt-primary mt-1 -mt-3 opacity-50'>{`No ${propertyHeader} found. Please add one.`}</p>
+                        <p className='text-airt-dark-blue mt-1 -mt-3'>{`No ${propertyHeader} found. Please add one.`}</p>
                       </div>
                     )}
                     {userPropertiesByType.length > 0 && (

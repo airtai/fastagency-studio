@@ -53,7 +53,9 @@ code {
     monospace;
 }
 
-
+.toc-marketing-checkbox-wrapper {
+  margin-top: 24px;
+}
 .toc-marketing-checkbox-wrapper .checkbox-container {
   padding-left: 22px;
   display: block;

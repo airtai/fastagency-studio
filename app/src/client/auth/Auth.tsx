@@ -35,6 +35,12 @@ const Container = styled('div', {
   flexDirection: 'column',
 });
 
+export const MessageError = styled(Message, {
+  background: '$errorBackground',
+  color: '$errorText',
+  fontSize: '0.875rem',
+});
+
 // const HeaderText = styled('h2', {
 //   fontSize: '1.875rem',
 //   fontWeight: '700',
@@ -80,18 +86,20 @@ function Auth({
   return (
     <div className={customTheme}>
       <div>
-        {logo && <img className='mt-10 mx-auto' style={logoStyle} src={logo} alt='Capt’n.ai' />}
+        {logo && <img className='mt-10 mx-auto' style={logoStyle} src={logo} alt='FastAgency logo' />}
         {/* <HeaderText>{title}</HeaderText> */}
-        <p className='mt-6 text-2xl text-center'>{state === 'signup' ? titles.signup : titles.login}</p>
+        <p className='text-airt-dark-blue mt-6 text-2xl text-center'>
+          {state === 'signup' ? titles.signup : titles.login}
+        </p>
       </div>
 
-      {/* {errorMessage && (
+      {errorMessage && (
         <MessageError>
           {errorMessage.title}
           {errorMessage.description && ': '}
           {errorMessage.description}
         </MessageError>
-      )} */}
+      )}
       {successMessage && <MessageSuccess>{successMessage}</MessageSuccess>}
       <AuthContext.Provider value={{ isLoading, setIsLoading, setErrorMessage, setSuccessMessage }}>
         {(state === 'login' || state === 'signup') && (

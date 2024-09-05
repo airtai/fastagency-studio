@@ -82,7 +82,8 @@ const PlayGroundPage = ({ user }: { user: User }) => {
   useEffect(() => {
     if (formSubmitMsg && currentChatDetails) {
       if (!currentChatDetails.userRespondedWithNextAction) {
-        setTriggerChatFormSubmitMsg(formSubmitMsg);
+        const decodedMessage = decodeURIComponent(formSubmitMsg);
+        setTriggerChatFormSubmitMsg(decodedMessage);
       }
       removeQueryParameters();
     }

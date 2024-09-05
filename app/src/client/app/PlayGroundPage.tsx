@@ -82,7 +82,19 @@ const PlayGroundPage = ({ user }: { user: User }) => {
   useEffect(() => {
     if (formSubmitMsg && currentChatDetails) {
       if (!currentChatDetails.userRespondedWithNextAction) {
-        setTriggerChatFormSubmitMsg(formSubmitMsg);
+        try {
+          const decodedMessage = decodeURIComponent(formSubmitMsg);
+          setTriggerChatFormSubmitMsg(decodedMessage);
+        } catch (err: any) {
+          console.log('Error: ' + err.message);
+          setNotificationErrorMessage('There was an error processing your message. Please start a new chat.');
+          updateCurrentChat({
+            id: activeChatId,
+            data: {
+              isChatTerminated: true,
+            },
+          });
+        }
       }
       removeQueryParameters();
     }
@@ -197,9 +209,11 @@ const PlayGroundPage = ({ user }: { user: User }) => {
                 />
               </>
             ) : (
-              <div className='z-[999999] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
-                <Loader />
-              </div>
+              !currentChatDetails.isChatTerminated && (
+                <div className='z-[10000] absolute inset-0 flex items-center justify-center bg-white bg-opacity-50'>
+                  <Loader />
+                </div>
+              )
             )}
           </div>
         ) : (

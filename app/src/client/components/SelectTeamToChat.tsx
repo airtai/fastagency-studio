@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
+import Select from 'react-select';
 import { type Chat } from 'wasp/entities';
 import { SelectedModelSchema } from '../interfaces/BuildPageInterfaces';
 import { CreateNewChatProps } from '../interfaces/PlaygroundPageInterface';
 import NotificationBox from './NotificationBox';
-import { SelectInput } from './form/SelectInput';
 import TextareaAutosize from 'react-textarea-autosize';
 import { createNewChat } from 'wasp/client/operations';
 
@@ -18,8 +18,8 @@ const SelectTeamToChat = ({ userTeams }: any) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isRedirecting = useRef(false);
 
-  const handleTeamChange = (value: string) => {
-    setTeam(value);
+  const handleTeamChange = (selectedOption: { value: string; label: string } | null) => {
+    setTeam(selectedOption ? selectedOption.value : '');
   };
 
   const handleMessageChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -70,7 +70,12 @@ const SelectTeamToChat = ({ userTeams }: any) => {
     setNotificationErrorMessage(null);
   };
 
-  const options = allTeams ? allTeams.map((team: SelectedModelSchema) => team.json_str.name) : [];
+  const options = allTeams
+    ? allTeams.map((team: SelectedModelSchema) => ({
+        value: team.json_str.name,
+        label: team.json_str.name,
+      }))
+    : [];
 
   return (
     <div className='lg:mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10'>
@@ -81,14 +86,13 @@ const SelectTeamToChat = ({ userTeams }: any) => {
             <label className='text-airt-primary' htmlFor='selectTeam'>
               Select Team
             </label>
-            <SelectInput
+            <Select
               id='selectTeam'
-              value={team}
               options={options}
               onChange={handleTeamChange}
-              propertyTypes={null}
-              handleAddProperty={() => {}}
-              isRequired={true}
+              className='pt-1 pb-1'
+              value={options.find((option) => option.value === team) || null}
+              isSearchable={true}
             />
             {formError.team && <div style={{ color: 'red' }}>{formError.team}</div>}
             <label className='mt-2  text-airt-primary inline-block' htmlFor='setSystemMessage'>

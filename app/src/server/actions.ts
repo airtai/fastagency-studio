@@ -163,12 +163,13 @@ export const addUserModels: AddUserModels<AddUserModelsPayload, any> = async (ar
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...args }),
     });
-    const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 
+    const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
     if (!response.ok) {
-      const errorMsg = json.detail || `HTTP error with status code ${response.status}`;
-      console.error('Server Error:', errorMsg);
-      throw new Error(errorMsg);
+      throw new HttpError(
+        response.status,
+        JSON.stringify(json.detail) || `HTTP error with status code ${response.status}`
+      );
     }
 
     return json;
@@ -208,9 +209,10 @@ export const updateUserModels: UpdateUserModels<UpdateUserModelsPayload, void> =
     const json: any = (await response.json()) as { detail?: string }; // Parse JSON once
 
     if (!response.ok) {
-      const errorMsg = json.detail || `HTTP error with status code ${response.status}`;
-      console.error('Server Error:', errorMsg);
-      throw new Error(errorMsg);
+      throw new HttpError(
+        response.status,
+        JSON.stringify(json.detail) || `HTTP error with status code ${response.status}`
+      );
     }
   } catch (error: any) {
     throw new HttpError(500, error.message);

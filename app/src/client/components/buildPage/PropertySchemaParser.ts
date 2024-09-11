@@ -164,6 +164,12 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
       initialFormValue: defaultValue?.value ?? null,
       isOptional: isOptional,
     };
+
+    // Add metadata key only if it exists in the property
+    if ('metadata' in property) {
+      this.refFields[key].metadata = property.metadata;
+    }
+
     defaultValues[key] = this.refFields[key].initialFormValue;
   }
 

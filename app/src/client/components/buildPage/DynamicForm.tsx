@@ -79,50 +79,59 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
     popFromStackWithFormState(modelName, propertyName, fieldKey);
   };
 
-  const formFields = useMemo(() => {
-    if (schema && 'json_schema' in schema) {
-      return Object.entries(schema.json_schema.properties).map(([key, property]: [string, any]) => {
-        if (key === 'uuid') {
-          return null;
-        }
-        const isReferenceField = parser?.checkIfRefField(property);
-        let propertyCopy = Object.assign({}, property);
-        let isOptionalRefField = false;
-        if (isReferenceField) {
-          const refFields = parser?.getRefFields();
-          if (refFields && refFields[key]) {
-            propertyCopy = refFields[key].htmlForSelectBox;
-            isOptionalRefField = refFields[key].isOptional;
+  const formFields = useMemo(
+    () => (isUpdateModelFlow: boolean) => {
+      if (schema && 'json_schema' in schema) {
+        return Object.entries(schema.json_schema.properties).map(([key, property]: [string, any]) => {
+          if (key === 'uuid') {
+            return null;
           }
-        } else {
-          const isNonRefButDropDownFields = parser?.getNonRefButDropdownFields();
-          if (isNonRefButDropDownFields && isNonRefButDropDownFields[key]) {
-            propertyCopy = isNonRefButDropDownFields[key].htmlForSelectBox;
+          const isReferenceField = parser?.checkIfRefField(property);
+          let propertyCopy = Object.assign({}, property);
+
+          let isOptionalRefField = false;
+          if (isReferenceField) {
+            const refFields = parser?.getRefFields();
+            if (refFields && refFields[key]) {
+              propertyCopy = refFields[key].htmlForSelectBox;
+              isOptionalRefField = refFields[key].isOptional;
+              const metadata = refFields[key]?.metadata;
+              if (metadata) {
+                propertyCopy.metadata = metadata;
+              }
+            }
+          } else {
+            const isNonRefButDropDownFields = parser?.getNonRefButDropdownFields();
+            if (isNonRefButDropDownFields && isNonRefButDropDownFields[key]) {
+              propertyCopy = isNonRefButDropDownFields[key].htmlForSelectBox;
+            }
           }
-        }
-        return (
-          <form.Field
-            key={key}
-            name={key}
-            children={(field) => (
-              <FormField
-                field={field}
-                property={propertyCopy}
-                fieldKey={key}
-                isOptionalRefField={isOptionalRefField}
-                addPropertyHandler={addPropertyHandler}
-              />
-            )}
-            validators={{
-              onChange: ({ value }) => undefined,
-            }}
-          />
-        );
-      });
-    } else {
-      return null;
-    }
-  }, [schema, form]);
+          return (
+            <form.Field
+              key={key}
+              name={key}
+              children={(field) => (
+                <FormField
+                  field={field}
+                  property={propertyCopy}
+                  fieldKey={key}
+                  isOptionalRefField={isOptionalRefField}
+                  addPropertyHandler={addPropertyHandler}
+                  isUpdateModelFlow={isUpdateModelFlow}
+                />
+              )}
+              validators={{
+                onChange: ({ value }) => undefined,
+              }}
+            />
+          );
+        });
+      } else {
+        return null;
+      }
+    },
+    [schema, form]
+  );
 
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
   useEscapeKeyHandler(cancelButtonRef);
@@ -136,6 +145,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
 
   const flow = parser?.getFlow();
   const isAddUserFlow = flow === Flow.ADD_MODEL;
+  const isUpdateModelFlow = flow === Flow.UPDATE_MODEL;
 
   return (
     <form
@@ -151,7 +161,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
       {isDeploymentProperty && isAddUserFlow && !successResponse && (
         <DeploymentPrerequisites successResponse={successResponse} />
       )}
-      {formFields}
+      {formFields(isUpdateModelFlow)}
       {isDeploymentProperty && isAddUserFlow && successResponse && (
         <DeploymentPrerequisites successResponse={successResponse} />
       )}

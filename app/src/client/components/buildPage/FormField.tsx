@@ -37,6 +37,7 @@ interface FormFieldProps {
   fieldKey: string;
   isOptionalRefField: boolean;
   addPropertyHandler: AddPropertyHandler;
+  isUpdateModelFlow: boolean;
 }
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
@@ -62,6 +63,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   fieldKey,
   isOptionalRefField,
   addPropertyHandler,
+  isUpdateModelFlow,
 }) => {
   const [selectOptions, setSelectOptions] = useState([]);
   const [defaultValue, setDefaultValue] = useState(null);
@@ -103,6 +105,8 @@ export const FormField: React.FC<FormFieldProps> = ({
     }
   };
 
+  const immutableAfterCreation = isUpdateModelFlow && property?.metadata?.immutable_after_creation;
+
   return (
     <div className='w-full mt-2'>
       <label htmlFor={fieldKey}>{`${property.title} ${isOptionalRefField ? ' (Optional)' : ''}`}</label>
@@ -119,6 +123,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           isSearchable={true}
           isClearable={isOptionalRefField}
           styles={markAddPropertyOption}
+          isDisabled={immutableAfterCreation}
         />
       ) : fieldKey === 'system_message' ? (
         <TextArea
@@ -126,6 +131,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           value={field.state.value}
           placeholder={property.description || ''}
           onChange={(e) => field.handleChange(e)}
+          isDisabled={immutableAfterCreation}
         />
       ) : (
         <TextInput
@@ -134,6 +140,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           onChange={(e) => field.handleChange(e)}
           type={getInputType()}
           placeholder={property.description || ''}
+          isDisabled={immutableAfterCreation}
         />
       )}
       <FieldInfo field={field} />

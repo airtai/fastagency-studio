@@ -48,11 +48,14 @@ export function useFormHandler(setActiveProperty: (activeProperty: string) => vo
         // this is for rest of the cases
         if (customOptions.formState) {
           const lastParser = prevStack[prevStack.length - 1];
-          lastParser &&
+          if (lastParser) {
+            const lastParserActiveModelObj = lastParser.getActiveModelObj() || {};
             lastParser.setActiveModelObj({
+              ...lastParserActiveModelObj,
               json_str: customOptions.formState.values,
               fieldKey: customOptions.formState.fieldKey,
             });
+          }
         }
 
         return [...prevStack, newParser];

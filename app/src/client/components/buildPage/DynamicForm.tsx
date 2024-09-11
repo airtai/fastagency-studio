@@ -80,7 +80,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
   };
 
   const formFields = useMemo(
-    () => (isUpdateModelFlow: boolean) => {
+    () => (checkForImmutableFields: boolean) => {
       if (schema && 'json_schema' in schema) {
         return Object.entries(schema.json_schema.properties).map(([key, property]: [string, any]) => {
           if (key === 'uuid') {
@@ -117,7 +117,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
                   fieldKey={key}
                   isOptionalRefField={isOptionalRefField}
                   addPropertyHandler={addPropertyHandler}
-                  isUpdateModelFlow={isUpdateModelFlow}
+                  checkForImmutableFields={checkForImmutableFields}
                 />
               )}
               validators={{
@@ -147,6 +147,10 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
   const isAddUserFlow = flow === Flow.ADD_MODEL;
   const isUpdateModelFlow = flow === Flow.UPDATE_MODEL;
 
+  const isDeploymentCreatedSuccessfully = isDeploymentProperty && isAddUserFlow && successResponse;
+
+  const checkForImmutableFields = isDeploymentCreatedSuccessfully || isUpdateModelFlow;
+
   return (
     <form
       onSubmit={(e) => {
@@ -161,10 +165,8 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
       {isDeploymentProperty && isAddUserFlow && !successResponse && (
         <DeploymentPrerequisites successResponse={successResponse} />
       )}
-      {formFields(isUpdateModelFlow)}
-      {isDeploymentProperty && isAddUserFlow && successResponse && (
-        <DeploymentPrerequisites successResponse={successResponse} />
-      )}
+      {formFields(checkForImmutableFields)}
+      {isDeploymentCreatedSuccessfully && <DeploymentPrerequisites successResponse={successResponse} />}
       {isDeploymentProperty && !isAddUserFlow && <DeploymentInstructions parser={parser} />}
 
       <form.Subscribe
@@ -187,9 +189,9 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
                   data-testid='form-submit-button'
                   type='submit'
                   className={`ml-3 rounded-md px-3.5 py-2.5 text-sm bg-airt-primary text-airt-font-base hover:bg-opacity-85 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
-                    !canSubmit ? 'cursor-not-allowed disabled' : ''
+                    !canSubmit || isDeploymentCreatedSuccessfully ? 'cursor-not-allowed disabled' : ''
                   }`}
-                  disabled={!canSubmit}
+                  disabled={!canSubmit || isDeploymentCreatedSuccessfully}
                 >
                   {isSubmitting ? 'Saving...' : 'Save'}
                 </button>

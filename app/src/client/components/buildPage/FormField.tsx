@@ -37,7 +37,7 @@ interface FormFieldProps {
   fieldKey: string;
   isOptionalRefField: boolean;
   addPropertyHandler: AddPropertyHandler;
-  isUpdateModelFlow: boolean;
+  checkForImmutableFields: boolean;
 }
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
@@ -63,7 +63,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   fieldKey,
   isOptionalRefField,
   addPropertyHandler,
-  isUpdateModelFlow,
+  checkForImmutableFields,
 }) => {
   const [selectOptions, setSelectOptions] = useState([]);
   const [defaultValue, setDefaultValue] = useState(null);
@@ -105,7 +105,7 @@ export const FormField: React.FC<FormFieldProps> = ({
     }
   };
 
-  const immutableAfterCreation = isUpdateModelFlow && property?.metadata?.immutable_after_creation;
+  const immutableAfterCreation = checkForImmutableFields && property?.metadata?.immutable_after_creation;
 
   return (
     <div className='w-full mt-2'>

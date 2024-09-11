@@ -8,8 +8,8 @@
   "devDependencies": {
     "tsx": "^4.19.0",
     "typescript": "^5.5.4",
-    "vite": "^5.4.2",
-    "vite-plugin-checker": "^0.7.2"
+    "vite": "^5.4.3",
+    "vite-plugin-checker": "^0.8.0"
   },
   "scripts": {
     "au": "pnpm --filter @nats-chat/auth-service run",

@@ -24,10 +24,16 @@ export function useFormHandler(setActiveProperty: (activeProperty: string) => vo
     return stack.map((parser) => parser.getFormattedPropertyName());
   }, [stack]);
 
+  /**
+   * Pushes a new parser to the stack and updates the existing one based on user actions.
+   * @param customOptions Options for creating or updating a parser.
+   */
   const pushNewParser = useCallback((customOptions: PushParser) => {
+    // This function gets called whenever user tries to create a new form or a nested form
     const newParser = new PropertySchemaParser(customOptions.propertiesSchema, customOptions.activeProperty);
     newParser.setActiveModel(customOptions.activeModel);
 
+    // Configure the new parser
     if (customOptions.flow) {
       newParser.setFlow(customOptions.flow);
     }
@@ -40,15 +46,25 @@ export function useFormHandler(setActiveProperty: (activeProperty: string) => vo
       newParser.setUserProperties(customOptions.userProperties);
     }
 
+    // Update the parser stack to control dynamic form field rendering
     setStack((prevStack) => {
-      // When the model dropdown is updated within the same property, we need to replace the last parser in the stack
       if (customOptions.replaceLast && prevStack.length > 0) {
+        // Replace the last parser in the stack with the new parser when updating the 'select model' dropdown instead of appending to it
         return [...prevStack.slice(0, -1), newParser];
       } else {
-        // this is for rest of the cases
+        // This will be called when user creates a new nested form
         if (customOptions.formState) {
           const lastParser = prevStack[prevStack.length - 1];
           if (lastParser) {
+            /**
+             * Update the last parser before adding a new one for nested forms.
+             * @remarks
+             * This process involves:
+             * 1. Saving the current state of the outer form in json_str.
+             *    This retains the values when navigating back to the outer form.
+             * 2. Storing the fieldKey to identify the outer form's key.
+             *    This allows pre-population of the outer form with nested form values.
+             */
             const lastParserActiveModelObj = lastParser.getActiveModelObj() || {};
             lastParser.setActiveModelObj({
               ...lastParserActiveModelObj,

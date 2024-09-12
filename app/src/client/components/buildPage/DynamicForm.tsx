@@ -104,6 +104,10 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
             const isNonRefButDropDownFields = parser?.getNonRefButDropdownFields();
             if (isNonRefButDropDownFields && isNonRefButDropDownFields[key]) {
               propertyCopy = isNonRefButDropDownFields[key].htmlForSelectBox;
+              const metadata = isNonRefButDropDownFields[key]?.metadata;
+              if (metadata) {
+                propertyCopy.metadata = metadata;
+              }
             }
           }
           return (

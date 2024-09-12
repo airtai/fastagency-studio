@@ -219,6 +219,12 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
       },
       initialFormValue: defaultValue?.value ?? null,
     };
+
+    // Add metadata key only if it exists in the property
+    if ('metadata' in property) {
+      this.nonRefButDropdownFields[key].metadata = property.metadata;
+    }
+
     defaultValues[key] = this.nonRefButDropdownFields[key].initialFormValue;
   }
 

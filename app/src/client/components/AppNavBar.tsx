@@ -5,7 +5,7 @@ import { Dialog } from '@headlessui/react';
 import { BiLogIn } from 'react-icons/bi';
 import { AiFillCloseCircle } from 'react-icons/ai';
 import { HiBars3 } from 'react-icons/hi2';
-import logo from '../static/logo.svg';
+import logo from '../static/logo.png';
 import DropdownUser from './DropdownUser';
 import { DOCS_URL, BLOG_URL } from '../../shared/constants';
 import UserActionButton from '../components/UserActionButton';

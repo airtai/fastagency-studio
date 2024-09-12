@@ -1,5 +1,5 @@
 import { AuthWrapper } from './authWrapper';
-import imgUrl from '../static/logo.svg';
+import imgUrl from '../static/logo.png';
 import { State, LoginForm } from './LoginPage';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from 'wasp/client/auth';

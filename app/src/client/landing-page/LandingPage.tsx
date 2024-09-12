@@ -1,7 +1,7 @@
 import { useAuth } from 'wasp/client/auth';
 import { useState } from 'react';
-import logo from '../static/logo.svg';
-import faMainLogo from '../static/fa-main-logo.svg';
+import logo from '../static/logo.png';
+import faMainLogo from '../static/fa-main-logo.png';
 import podLoga from '../static/pod-loga.svg';
 import { features } from './contentSections';
 import UserActionButton from '../components/UserActionButton';

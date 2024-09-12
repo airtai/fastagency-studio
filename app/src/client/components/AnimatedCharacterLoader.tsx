@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import logo from '../static/logo.svg';
+import logo from '../static/logo.png';
 
 interface AnimatedCharacterLoaderProps {
   loadingMessage?: string; // Optional prop for customizing the loading message

@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom';
 import { useEffect } from 'react';
 import { AuthWrapper } from './authWrapper';
 import Auth from './Auth';
-import imgUrl from '../static/logo.svg';
+import imgUrl from '../static/logo.png';
 
 export enum State {
   Login = 'login',

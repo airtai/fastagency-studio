@@ -87,9 +87,10 @@ export const usePropertyManager = (
         const response = await onSuccessCallback(validatedData, propertyName, modelName, propertyUUIDToUpdate);
         await setSuccessResponse(response);
 
-        if (!isDeploymentProperty) {
-          await resetAndRefetchProperties(validatedData);
+        if (isDeploymentProperty && flow === Flow.ADD_MODEL) {
+          return;
         }
+        await resetAndRefetchProperties(validatedData);
       } catch (error: any) {
         try {
           const errorMsgObj = JSON.parse(error.message);

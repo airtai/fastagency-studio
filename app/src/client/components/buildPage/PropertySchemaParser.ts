@@ -83,6 +83,12 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
       .join(' ');
   }
 
+  private addMetadataIfExists(field: any, property: any): void {
+    if ('metadata' in property) {
+      field.metadata = property.metadata;
+    }
+  }
+
   public getSchemaForModel(): Schema | undefined {
     if (!this.activeModel) {
       return undefined;
@@ -165,10 +171,7 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
       isOptional: isOptional,
     };
 
-    // Add metadata key only if it exists in the property
-    if ('metadata' in property) {
-      this.refFields[key].metadata = property.metadata;
-    }
+    this.addMetadataIfExists(this.refFields[key], property);
 
     defaultValues[key] = this.refFields[key].initialFormValue;
   }
@@ -220,10 +223,7 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
       initialFormValue: defaultValue?.value ?? null,
     };
 
-    // Add metadata key only if it exists in the property
-    if ('metadata' in property) {
-      this.nonRefButDropdownFields[key].metadata = property.metadata;
-    }
+    this.addMetadataIfExists(this.nonRefButDropdownFields[key], property);
 
     defaultValues[key] = this.nonRefButDropdownFields[key].initialFormValue;
   }

@@ -105,7 +105,7 @@ export const FormField: React.FC<FormFieldProps> = ({
     }
   };
 
-  const immutableAfterCreation = checkForImmutableFields && property?.metadata?.immutable_after_creation;
+  const immutableAfterCreation = checkForImmutableFields && property.metadata?.immutable_after_creation;
 
   return (
     <div className='w-full mt-2'>

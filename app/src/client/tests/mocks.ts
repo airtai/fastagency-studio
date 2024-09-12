@@ -3,6 +3,7 @@ import { vi } from 'vitest';
 import { ListOfSchemas, PropertiesSchema } from '../interfaces/BuildPageInterfaces';
 
 import { UserProperties } from '../components/buildPage/PropertySchemaParser';
+import _ from 'lodash';
 
 export const mockPropertieSchemas: PropertiesSchema = {
   list_of_schemas: [
@@ -1008,6 +1009,322 @@ export const mockPropertieSchemas: PropertiesSchema = {
         },
       ],
     },
+    {
+      name: 'team',
+      schemas: [
+        {
+          name: 'TwoAgentTeam',
+          json_schema: {
+            $defs: {
+              AssistantAgentRef: {
+                properties: {
+                  type: {
+                    const: 'agent',
+                    default: 'agent',
+                    description: 'The name of the type of the data',
+                    enum: ['agent'],
+                    title: 'Type',
+                    type: 'string',
+                  },
+                  name: {
+                    const: 'AssistantAgent',
+                    default: 'AssistantAgent',
+                    description: 'The name of the data',
+                    enum: ['AssistantAgent'],
+                    title: 'Name',
+                    type: 'string',
+                  },
+                  uuid: {
+                    description: 'The unique identifier',
+                    format: 'uuid',
+                    title: 'UUID',
+                    type: 'string',
+                  },
+                },
+                required: ['uuid'],
+                title: 'AssistantAgentRef',
+                type: 'object',
+              },
+              UserProxyAgentRef: {
+                properties: {
+                  type: {
+                    const: 'agent',
+                    default: 'agent',
+                    description: 'The name of the type of the data',
+                    enum: ['agent'],
+                    title: 'Type',
+                    type: 'string',
+                  },
+                  name: {
+                    const: 'UserProxyAgent',
+                    default: 'UserProxyAgent',
+                    description: 'The name of the data',
+                    enum: ['UserProxyAgent'],
+                    title: 'Name',
+                    type: 'string',
+                  },
+                  uuid: {
+                    description: 'The unique identifier',
+                    format: 'uuid',
+                    title: 'UUID',
+                    type: 'string',
+                  },
+                },
+                required: ['uuid'],
+                title: 'UserProxyAgentRef',
+                type: 'object',
+              },
+              WebSurferAgentRef: {
+                properties: {
+                  type: {
+                    const: 'agent',
+                    default: 'agent',
+                    description: 'The name of the type of the data',
+                    enum: ['agent'],
+                    title: 'Type',
+                    type: 'string',
+                  },
+                  name: {
+                    const: 'WebSurferAgent',
+                    default: 'WebSurferAgent',
+                    description: 'The name of the data',
+                    enum: ['WebSurferAgent'],
+                    title: 'Name',
+                    type: 'string',
+                  },
+                  uuid: {
+                    description: 'The unique identifier',
+                    format: 'uuid',
+                    title: 'UUID',
+                    type: 'string',
+                  },
+                },
+                required: ['uuid'],
+                title: 'WebSurferAgentRef',
+                type: 'object',
+              },
+            },
+            properties: {
+              name: {
+                description: 'The name of the item',
+                minLength: 1,
+                title: 'Name',
+                type: 'string',
+              },
+              is_termination_msg_regex: {
+                default: 'TERMINATE',
+                description:
+                  'Whether the message is a termination message or not. If it is a termination message, the chat will terminate.',
+                title: 'Is Termination Msg Regex',
+                type: 'string',
+              },
+              human_input_mode: {
+                default: 'ALWAYS',
+                description: 'Mode for human input',
+                enum: ['ALWAYS', 'TERMINATE', 'NEVER'],
+                title: 'Human Input Mode',
+                type: 'string',
+              },
+              initial_agent: {
+                anyOf: [
+                  {
+                    $ref: '#/$defs/AssistantAgentRef',
+                  },
+                  {
+                    $ref: '#/$defs/UserProxyAgentRef',
+                  },
+                  {
+                    $ref: '#/$defs/WebSurferAgentRef',
+                  },
+                ],
+                description: 'Agent that starts the conversation',
+                title: 'Initial Agent',
+              },
+              secondary_agent: {
+                anyOf: [
+                  {
+                    $ref: '#/$defs/AssistantAgentRef',
+                  },
+                  {
+                    $ref: '#/$defs/UserProxyAgentRef',
+                  },
+                  {
+                    $ref: '#/$defs/WebSurferAgentRef',
+                  },
+                ],
+                description: 'Agent that continues the conversation',
+                title: 'Secondary Agent',
+              },
+            },
+            required: ['name', 'initial_agent', 'secondary_agent'],
+            title: 'TwoAgentTeam',
+            type: 'object',
+          },
+        },
+      ],
+    },
+    {
+      name: 'deployment',
+      schemas: [
+        {
+          name: 'Deployment',
+          json_schema: {
+            $defs: {
+              FlyTokenRef: {
+                properties: {
+                  type: {
+                    const: 'secret',
+                    default: 'secret',
+                    description: 'The name of the type of the data',
+                    enum: ['secret'],
+                    title: 'Type',
+                    type: 'string',
+                  },
+                  name: {
+                    const: 'FlyToken',
+                    default: 'FlyToken',
+                    description: 'The name of the data',
+                    enum: ['FlyToken'],
+                    title: 'Name',
+                    type: 'string',
+                  },
+                  uuid: {
+                    description: 'The unique identifier',
+                    format: 'uuid',
+                    title: 'UUID',
+                    type: 'string',
+                  },
+                },
+                required: ['uuid'],
+                title: 'FlyTokenRef',
+                type: 'object',
+              },
+              GitHubTokenRef: {
+                properties: {
+                  type: {
+                    const: 'secret',
+                    default: 'secret',
+                    description: 'The name of the type of the data',
+                    enum: ['secret'],
+                    title: 'Type',
+                    type: 'string',
+                  },
+                  name: {
+                    const: 'GitHubToken',
+                    default: 'GitHubToken',
+                    description: 'The name of the data',
+                    enum: ['GitHubToken'],
+                    title: 'Name',
+                    type: 'string',
+                  },
+                  uuid: {
+                    description: 'The unique identifier',
+                    format: 'uuid',
+                    title: 'UUID',
+                    type: 'string',
+                  },
+                },
+                required: ['uuid'],
+                title: 'GitHubTokenRef',
+                type: 'object',
+              },
+              TwoAgentTeamRef: {
+                properties: {
+                  type: {
+                    const: 'team',
+                    default: 'team',
+                    description: 'The name of the type of the data',
+                    enum: ['team'],
+                    title: 'Type',
+                    type: 'string',
+                  },
+                  name: {
+                    const: 'TwoAgentTeam',
+                    default: 'TwoAgentTeam',
+                    description: 'The name of the data',
+                    enum: ['TwoAgentTeam'],
+                    title: 'Name',
+                    type: 'string',
+                  },
+                  uuid: {
+                    description: 'The unique identifier',
+                    format: 'uuid',
+                    title: 'UUID',
+                    type: 'string',
+                  },
+                },
+                required: ['uuid'],
+                title: 'TwoAgentTeamRef',
+                type: 'object',
+              },
+            },
+            properties: {
+              name: {
+                description: 'The application name to use on the website.',
+                minLength: 1,
+                title: 'Name',
+                type: 'string',
+              },
+              repo_name: {
+                description: 'The name of the GitHub repository.',
+                metadata: {
+                  immutable_after_creation: true,
+                },
+                minLength: 1,
+                title: 'Repo Name',
+                type: 'string',
+              },
+              fly_app_name: {
+                description: 'The name of the Fly.io application.',
+                maxLength: 30,
+                metadata: {
+                  immutable_after_creation: true,
+                },
+                minLength: 1,
+                title: 'Fly App Name',
+                type: 'string',
+              },
+              team: {
+                allOf: [
+                  {
+                    $ref: '#/$defs/TwoAgentTeamRef',
+                  },
+                ],
+                description: 'The team that is used in the deployment',
+                title: 'Team Name',
+              },
+              gh_token: {
+                allOf: [
+                  {
+                    $ref: '#/$defs/GitHubTokenRef',
+                  },
+                ],
+                description: 'The GitHub token to use for creating a new repository',
+                metadata: {
+                  immutable_after_creation: true,
+                },
+                title: 'GH Token',
+              },
+              fly_token: {
+                allOf: [
+                  {
+                    $ref: '#/$defs/FlyTokenRef',
+                  },
+                ],
+                description: 'The Fly.io token to use for deploying the deployment',
+                metadata: {
+                  immutable_after_creation: true,
+                },
+                title: 'Fly Token',
+              },
+            },
+            required: ['name', 'repo_name', 'fly_app_name', 'team', 'gh_token', 'fly_token'],
+            title: 'Deployment',
+            type: 'object',
+          },
+        },
+      ],
+    },
   ],
 };
 
@@ -1045,5 +1362,90 @@ export const llmUserProperties: UserProperties[] = [
     },
     created_at: '2024-08-08T09:09:52.523000Z',
     updated_at: '2024-08-08T09:09:52.523000Z',
+  },
+];
+
+// @ts-ignore
+export const deploymentUserProperties: UserProperties[] = [
+  ..._.cloneDeep(llmUserProperties),
+  {
+    uuid: '42e34575-2029-4055-9460-3bf5e2745ddf',
+    user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+    type_name: 'secret',
+    model_name: 'GitHubToken',
+    json_str: {
+      name: 'GitHub Token',
+      gh_token: 'ghp-someRadomToken', // pragma: allowlist secret
+    },
+    created_at: '2024-09-11T10:00:26.817000Z',
+    updated_at: '2024-09-11T10:00:26.817000Z',
+  },
+  {
+    uuid: 'e94cf6f2-f82a-4513-81dc-03adfe8ca9c9',
+    user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+    type_name: 'secret',
+    model_name: 'FlyToken',
+    json_str: {
+      name: 'Fly Token',
+      fly_token: 'Fly-someRadomToken', // pragma: allowlist secret
+    },
+    created_at: '2024-09-11T10:00:40.198000Z',
+    updated_at: '2024-09-11T10:00:40.198000Z',
+  },
+  {
+    uuid: 'b36dabf6-cc06-4673-8060-68d7b58f6c4e',
+    user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+    type_name: 'agent',
+    model_name: 'AssistantAgent',
+    json_str: {
+      llm: {
+        name: 'AzureOAI',
+        type: 'llm',
+        uuid: 'db945991-c142-4863-a96b-d81cc03e99de',
+      },
+      name: 'Standup_Comedian',
+      toolbox_1: null,
+      toolbox_2: null,
+      toolbox_3: null,
+      system_message:
+        'As a standup comedian, your task is to deliver short jokes in response to user questions. Whenever people ask who are you or what you do, just say you are "standup comedian"',
+    },
+    created_at: '2024-09-11T09:50:24.914000Z',
+    updated_at: '2024-09-11T09:50:24.914000Z',
+  },
+  {
+    uuid: '2329d22e-ced3-417a-9ff6-b09964512344',
+    user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+    type_name: 'agent',
+    model_name: 'UserProxyAgent',
+    json_str: {
+      name: 'UserProxy_Agent',
+      max_consecutive_auto_reply: null,
+    },
+    created_at: '2024-09-11T09:50:34.719000Z',
+    updated_at: '2024-09-11T09:50:34.719000Z',
+  },
+  {
+    uuid: '31273537-4cd5-4437-b5d0-222e3549259f',
+    user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+    type_name: 'team',
+    model_name: 'TwoAgentTeam',
+    json_str: {
+      name: 'Standup Comedian',
+      initial_agent: {
+        name: 'UserProxyAgent',
+        type: 'agent',
+        uuid: '2329d22e-ced3-417a-9ff6-b09964512344',
+      },
+      secondary_agent: {
+        name: 'AssistantAgent',
+        type: 'agent',
+        uuid: 'b36dabf6-cc06-4673-8060-68d7b58f6c4e',
+      },
+      human_input_mode: 'ALWAYS',
+      is_termination_msg_regex: 'TERMINATE',
+    },
+    created_at: '2024-09-11T09:50:44.674000Z',
+    updated_at: '2024-09-11T09:50:44.674000Z',
   },
 ];

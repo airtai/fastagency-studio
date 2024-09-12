@@ -1,10 +1,11 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { screen, waitFor, RenderResult, within } from '@testing-library/react';
 import userEvent, { UserEvent } from '@testing-library/user-event';
 import { renderInContext } from 'wasp/client/test';
 import { useQuery } from 'wasp/client/operations';
-import { mockProps } from './mocks';
+import { llmUserProperties, mockProps } from './mocks';
+import _ from 'lodash';
 
 // Types
 interface MockData {
@@ -24,6 +25,7 @@ const mockRefetch = vi.fn();
 const mockGetModels = vi.fn();
 const mockValidateForm = vi.fn();
 const mockAddUserModels = vi.fn();
+const mockUpdateUserModels = vi.fn();
 
 vi.mock('wasp/client/operations', () => ({
   useQuery: vi.fn(() => ({
@@ -34,6 +36,7 @@ vi.mock('wasp/client/operations', () => ({
   getModels: (...args: any[]) => mockGetModels(...args),
   validateForm: (...args: any[]) => mockValidateForm(...args),
   addUserModels: (...args: any[]) => mockAddUserModels(...args),
+  updateUserModels: (...args: any[]) => mockUpdateUserModels(...args),
 }));
 
 function getActiveTabPanel(): HTMLElement {
@@ -377,5 +380,83 @@ describe('UserProperty Component Tests', () => {
     await waitFor(() => {
       expect(agentNameInput).toHaveValue('My Anthropic Agent');
     });
+  });
+
+  it('Should call the update function correctly when the top level model is updated', async () => {
+    // The below test checks the following:
+    // 1. Click one of the existing LLM
+    // 2. Changes the api_key for that LLM, and selects the 'Add new secret' option from the dropdown
+    // 3. Creates a new secret key and ensures the addModel function is called
+    // 4. Now saves the LLM form and ensures the updateModel function is called
+
+    const user = userEvent.setup();
+    const { BuildPageTab } = await import('../components/buildPage/BuildPageTab');
+
+    // Mock useQuery to return llmUserProperties
+    const data = _.cloneDeep(llmUserProperties);
+    (useQuery as Mock).mockReturnValue({
+      data: data,
+      refetch: vi.fn().mockResolvedValue({ data: data }),
+      isLoading: false,
+    });
+
+    renderInContext(<BuildPageTab {...mockProps} activeProperty='llm' />);
+    const activePanel = getActiveTabPanel();
+
+    // click the data-testid which starts with the regex "model-item-"
+    await user.click(within(activePanel).getByTestId(/model-item-.*/));
+    expect(within(activePanel).getByText('Update LLM')).toBeInTheDocument();
+
+    // Create Secret
+    await user.click(within(activePanel).getAllByRole('combobox')[0]);
+    await user.click(within(activePanel).getByText('Add new "Secret"'));
+
+    await waitFor(() => expect(within(activePanel).getByText('Select Secret')).toBeInTheDocument());
+    expect(within(activePanel).getByText('AzureOAIAPIKey')).toBeInTheDocument();
+
+    const nameInput = within(activePanel).getByPlaceholderText('The name of the item');
+    await user.type(nameInput, 'My AzureOAIAPIKey Secret');
+
+    const apiKeyInput = within(activePanel).getByPlaceholderText('The API Key from Azure OpenAI');
+    await user.type(apiKeyInput, 'My Api Key');
+
+    // Mock validateForm to return the secret form
+    mockValidateForm.mockResolvedValue({
+      name: 'My AzureOAIAPIKey Secret',
+      api_key: 'test-api-key-12345678910', // pragma: allowlist secret
+      uuid: 'test-uuid-secret-123',
+    });
+    data.push({
+      uuid: 'test-uuid-secret-123',
+      user_uuid: 'test-user-uuid-563ec0df-3ecd-4d2a',
+      type_name: 'secret',
+      model_name: 'AzureOAIAPIKey',
+      json_str: {
+        name: 'My AzureOAIAPIKey Secret',
+        api_key: 'test-api-key-12345678910', // pragma: allowlist secret
+      },
+      created_at: '2024-08-19T11:28:32.875000Z',
+      updated_at: '2024-08-19T11:28:32.875000Z',
+    });
+    // Mock useQuery to return llmUserProperties
+    (useQuery as Mock).mockReturnValue({
+      data,
+      refetch: vi.fn().mockResolvedValue({ data: data }),
+      isLoading: false,
+    });
+    // Save the secret form
+    await user.click(within(activePanel).getByRole('button', { name: 'Save' }));
+
+    // Check if the addModel function is called correctly
+    expect(mockAddUserModels).toHaveBeenCalledOnce();
+    expect(mockUpdateUserModels).not.toHaveBeenCalled();
+    expect(within(activePanel).getByText('My AzureOAIAPIKey Secret')).toBeInTheDocument();
+
+    // Save the LLM form
+    await user.click(within(activePanel).getByRole('button', { name: 'Save' }));
+
+    // Check if the updateModel function is called correctly
+    expect(mockUpdateUserModels).toHaveBeenCalledOnce();
+    expect(within(activePanel).getByText('LLM')).toBeInTheDocument();
   });
 });

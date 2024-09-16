@@ -121,7 +121,7 @@ const createLLM = async (user: UserEvent): Promise<void> => {
 
   // Check tooltips
   const tooltips = {
-    api_key: 'Choose the API key that will be used to authenticate requests to Anthropic services.',
+    api_key: 'Choose the API key that will be used to authenticate requests to Anthropic services.', // pragma: allowlist secret
     model: 'Choose the model that the LLM should use to generate responses.',
     base_url: 'The base URL that the LLM uses to interact with Anthropic services.',
     temperature:

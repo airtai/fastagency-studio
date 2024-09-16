@@ -56,6 +56,16 @@ const createSecret = async (user: UserEvent): Promise<void> => {
   await user.click(screen.getByText('Add new "Secret"'));
   await waitFor(() => expect(screen.getByText('Select Secret')).toBeInTheDocument());
   expect(screen.getByText('AnthropicAPIKey')).toBeInTheDocument();
+
+  // Check Api Key Tooltip
+  const apiKeyTooltip = screen.getByTestId('api_key-tooltip');
+  await user.hover(apiKeyTooltip);
+  await waitFor(() => {
+    expect(
+      screen.getByText('The API key specified here will be used to authenticate requests to Anthropic services.')
+    ).toBeInTheDocument();
+  });
+
   await user.type(screen.getByLabelText('Name'), 'My AnthropicAPIKey Secret');
   await user.type(screen.getByLabelText('API Key'), 'My Api Key');
 
@@ -108,6 +118,24 @@ const createLLM = async (user: UserEvent): Promise<void> => {
   await user.click(screen.getByText('Add new "LLM"'));
   await waitFor(() => expect(screen.getByText('Select LLM')).toBeInTheDocument());
   await user.type(screen.getByLabelText('Name'), 'My Anthropic LLM');
+
+  // Check tooltips
+  const tooltips = {
+    api_key: 'Choose the API key that will be used to authenticate requests to Anthropic services.',
+    model: 'Choose the model that the LLM should use to generate responses.',
+    base_url: 'The base URL that the LLM uses to interact with Anthropic services.',
+    temperature:
+      'Adjust the temperature to change the response style. Lower values lead to more consistent answers, while higher values make the responses more creative. The values must be between 0 and 2.',
+  };
+
+  // Check Tooltips
+  for (const [key, value] of Object.entries(tooltips)) {
+    const tooltip = screen.getByTestId(`${key}-tooltip`);
+    await user.hover(tooltip);
+    await waitFor(() => {
+      expect(screen.getByText(value)).toBeInTheDocument();
+    });
+  }
 
   await createSecret(user);
 

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 import { FieldApi } from '@tanstack/react-form';
 import Select, { StylesConfig } from 'react-select';
+import { Tooltip } from '@chakra-ui/react';
+import { IoIosInformationCircleOutline } from 'react-icons/io';
 
 import { TextInput } from '../form/TextInput';
 import { SECRETS_TO_MASK } from '../../utils/constants';
@@ -106,10 +108,26 @@ export const FormField: React.FC<FormFieldProps> = ({
   };
 
   const immutableAfterCreation = checkForImmutableFields && property.metadata?.immutable_after_creation;
+  const toolTipMessage = property.metadata?.tooltip_message;
 
   return (
     <div className='w-full mt-2'>
-      <label htmlFor={fieldKey}>{`${property.title} ${isOptionalRefField ? ' (Optional)' : ''}`}</label>
+      <label htmlFor={fieldKey} className='flex items-center'>
+        {`${property.title} ${isOptionalRefField ? ' (Optional)' : ''}`}
+        {toolTipMessage && (
+          <Tooltip
+            hasArrow
+            label={toolTipMessage}
+            className='bg-airt-secondary text-airt-font-base'
+            bg='brand.airtPrimary'
+            color='white'
+          >
+            <span className='ml-1 text-airt-primary' data-testid={`${fieldKey}-tooltip`}>
+              <IoIosInformationCircleOutline />
+            </span>
+          </Tooltip>
+        )}
+      </label>
       {property.enum ? (
         <Select
           key={key}

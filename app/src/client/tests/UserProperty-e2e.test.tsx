@@ -1,10 +1,10 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, prettyDOM } from '@testing-library/react';
 import userEvent, { UserEvent } from '@testing-library/user-event';
 import { renderInContext } from 'wasp/client/test';
 import { useQuery } from 'wasp/client/operations';
-import { llmUserProperties, mockProps } from './mocks';
+import { deploymentUserProperties, llmUserProperties, mockProps } from './mocks';
 import _ from 'lodash';
 
 // Types
@@ -56,6 +56,16 @@ const createSecret = async (user: UserEvent): Promise<void> => {
   await user.click(screen.getByText('Add new "Secret"'));
   await waitFor(() => expect(screen.getByText('Select Secret')).toBeInTheDocument());
   expect(screen.getByText('AnthropicAPIKey')).toBeInTheDocument();
+
+  // Check Api Key Tooltip
+  const apiKeyTooltip = screen.getByTestId('api_key-tooltip');
+  await user.hover(apiKeyTooltip);
+  await waitFor(() => {
+    expect(
+      screen.getByText('The API key specified here will be used to authenticate requests to Anthropic services.')
+    ).toBeInTheDocument();
+  });
+
   await user.type(screen.getByLabelText('Name'), 'My AnthropicAPIKey Secret');
   await user.type(screen.getByLabelText('API Key'), 'My Api Key');
 
@@ -108,6 +118,24 @@ const createLLM = async (user: UserEvent): Promise<void> => {
   await user.click(screen.getByText('Add new "LLM"'));
   await waitFor(() => expect(screen.getByText('Select LLM')).toBeInTheDocument());
   await user.type(screen.getByLabelText('Name'), 'My Anthropic LLM');
+
+  // Check tooltips
+  const tooltips = {
+    api_key: 'Choose the API key that will be used to authenticate requests to Anthropic services.', // pragma: allowlist secret
+    model: 'Choose the model that the LLM should use to generate responses.',
+    base_url: 'The base URL that the LLM uses to interact with Anthropic services.',
+    temperature:
+      'Adjust the temperature to change the response style. Lower values lead to more consistent answers, while higher values make the responses more creative. The values must be between 0 and 2.',
+  };
+
+  // Check Tooltips
+  for (const [key, value] of Object.entries(tooltips)) {
+    const tooltip = screen.getByTestId(`${key}-tooltip`);
+    await user.hover(tooltip);
+    await waitFor(() => {
+      expect(screen.getByText(value)).toBeInTheDocument();
+    });
+  }
 
   await createSecret(user);
 
@@ -414,5 +442,105 @@ describe('UserProperty Component Tests', () => {
     // Check if the updateModel function is called correctly
     expect(mockUpdateUserModels).toHaveBeenCalledOnce();
     expect(screen.getByText('LLM')).toBeInTheDocument();
+  });
+
+  it('Should mark specific form fields as non-editable while editing the property', async () => {
+    // The below test checks the following:
+    // 1. Create a new Deployment and save it
+    // 2. Open the saved deployment from the list and check if the form fields "Repo Name", "Fly App Name", "GH Token" and "FLY Token" are non-editable
+
+    const user = userEvent.setup();
+    const { UserProperty } = await import('../components/buildPage/UserProperty');
+
+    // Mock useQuery to return llmUserProperties
+    const data = _.cloneDeep(deploymentUserProperties);
+    (useQuery as Mock).mockReturnValue({
+      data: data,
+      refetch: vi.fn().mockResolvedValue({ data: data }),
+      isLoading: false,
+    });
+
+    const { container } = renderInContext(<UserProperty {...mockProps} activeProperty='deployment' />);
+
+    await user.click(screen.getByText('Add Deployment'));
+    expect(screen.getByText('Add a new Deployment')).toBeInTheDocument();
+
+    // Fill the deployment form
+    await user.type(screen.getByLabelText('Name'), 'My Deployment Name');
+    await user.type(screen.getByLabelText('Repo Name'), 'My Repo Name');
+    await user.type(screen.getByLabelText('Fly App Name'), 'My Fly App Name');
+
+    const mockValidateFormResponse = {
+      name: 'My Deployment Name',
+      team: {
+        name: 'TwoAgentTeam',
+        type: 'team',
+        uuid: '31273537-4cd5-4437-b5d0-222e3549259f',
+      },
+      gh_token: {
+        name: 'GitHubToken',
+        type: 'secret',
+        uuid: '42e34575-2029-4055-9460-3bf5e2745ddf',
+      },
+      fly_token: {
+        name: 'FlyToken',
+        type: 'secret',
+        uuid: 'e94cf6f2-f82a-4513-81dc-03adfe8ca9c9',
+      },
+      repo_name: 'My Repo Name',
+      gh_repo_url: 'https://github.com/harishmohanraj/my-deployment-name',
+      fly_app_name: 'My Fly App Name',
+      app_deploy_status: 'inprogress',
+      uuid: 'c5e3fbc7-70e0-4abe-b512-f11c0a77d330',
+    };
+
+    mockValidateForm.mockResolvedValue(mockValidateFormResponse);
+
+    const mockSuccessResponse = {
+      uuid: 'c5e3fbc7-70e0-4abe-b512-f11c0a77d330',
+      user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+      type_name: 'deployment',
+      model_name: 'Deployment',
+      json_str: mockValidateFormResponse,
+      created_at: '2024-09-11T12:31:27.477000Z',
+      updated_at: '2024-09-11T12:31:27.477000Z',
+    };
+    mockAddUserModels.mockResolvedValue(mockSuccessResponse);
+    data.push(mockSuccessResponse);
+
+    // Mock useQuery to return llmUserProperties
+    (useQuery as Mock).mockReturnValue({
+      data,
+      refetch: vi.fn().mockResolvedValue({ data: data }),
+      isLoading: false,
+    });
+
+    // Save the deployment form
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(mockAddUserModels).toHaveBeenCalledOnce();
+
+    // check if the form submit button is disabled
+    expect(screen.getByTestId('form-submit-button')).toBeDisabled();
+
+    // check if the form fields are non-editable
+    expect(screen.getByLabelText('Repo Name')).toBeDisabled();
+    expect(screen.getByLabelText('Fly App Name')).toBeDisabled();
+    expect(screen.getByLabelText('GH Token')).toBeDisabled();
+    expect(screen.getByLabelText('Fly Token')).toBeDisabled();
+
+    // Click on the cancel button
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    // Click on the deployment from the list
+    await user.click(screen.getByText('My Deployment Name'));
+
+    // Check if the form fields are non-editable
+    expect(screen.getByLabelText('Repo Name')).toBeDisabled();
+    expect(screen.getByLabelText('Fly App Name')).toBeDisabled();
+    expect(screen.getByLabelText('GH Token')).toBeDisabled();
+    expect(screen.getByLabelText('Fly Token')).toBeDisabled();
+
+    // Check if the form submit button is enabled
+    expect(screen.getByTestId('form-submit-button')).toBeEnabled();
   });
 });

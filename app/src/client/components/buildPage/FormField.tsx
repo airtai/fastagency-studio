@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 import { FieldApi } from '@tanstack/react-form';
 import Select, { StylesConfig } from 'react-select';
+import { Tooltip } from '@chakra-ui/react';
+import { IoIosInformationCircleOutline } from 'react-icons/io';
 
 import { TextInput } from '../form/TextInput';
 import { SECRETS_TO_MASK } from '../../utils/constants';
@@ -37,6 +39,7 @@ interface FormFieldProps {
   fieldKey: string;
   isOptionalRefField: boolean;
   addPropertyHandler: AddPropertyHandler;
+  checkForImmutableFields: boolean;
 }
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
@@ -62,6 +65,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   fieldKey,
   isOptionalRefField,
   addPropertyHandler,
+  checkForImmutableFields,
 }) => {
   const [selectOptions, setSelectOptions] = useState([]);
   const [defaultValue, setDefaultValue] = useState(null);
@@ -103,9 +107,27 @@ export const FormField: React.FC<FormFieldProps> = ({
     }
   };
 
+  const immutableAfterCreation = checkForImmutableFields && property.metadata?.immutable_after_creation;
+  const toolTipMessage = property.metadata?.tooltip_message;
+
   return (
     <div className='w-full mt-2'>
-      <label htmlFor={fieldKey}>{`${property.title} ${isOptionalRefField ? ' (Optional)' : ''}`}</label>
+      <label htmlFor={fieldKey} className='flex items-center'>
+        {`${property.title} ${isOptionalRefField ? ' (Optional)' : ''}`}
+        {toolTipMessage && (
+          <Tooltip
+            hasArrow
+            label={toolTipMessage}
+            className='bg-airt-secondary text-airt-font-base'
+            bg='brand.airtPrimary'
+            color='white'
+          >
+            <span className='ml-1 text-airt-primary' data-testid={`${fieldKey}-tooltip`}>
+              <IoIosInformationCircleOutline />
+            </span>
+          </Tooltip>
+        )}
+      </label>
       {property.enum ? (
         <Select
           key={key}
@@ -119,6 +141,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           isSearchable={true}
           isClearable={isOptionalRefField}
           styles={markAddPropertyOption}
+          isDisabled={immutableAfterCreation}
         />
       ) : fieldKey === 'system_message' ? (
         <TextArea
@@ -126,6 +149,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           value={field.state.value}
           placeholder={property.description || ''}
           onChange={(e) => field.handleChange(e)}
+          disabled={immutableAfterCreation}
         />
       ) : (
         <TextInput
@@ -134,6 +158,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           onChange={(e) => field.handleChange(e)}
           type={getInputType()}
           placeholder={property.description || ''}
+          disabled={immutableAfterCreation}
         />
       )}
       <FieldInfo field={field} />

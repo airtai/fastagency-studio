@@ -19,6 +19,8 @@ module.exports = {
         'airt-hero-gradient-middle': '#5cbae0',
         'airt-footer-copyrights': '#003a60',
         'airt-error': '#EF5C00',
+        'airt-disabled-input-bg': '#F2F2F2',
+        'airt-disabled-input-color': '#999999',
         current: 'currentColor',
         transparent: 'transparent',
         // white: '#FFFFFF',

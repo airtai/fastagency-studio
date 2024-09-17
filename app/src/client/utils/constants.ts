@@ -16,7 +16,8 @@ function deepFreeze(object: any) {
 
 export const SECRETS_TO_MASK = ['api_key', 'gh_token', 'fly_token', 'password'];
 
-export const DEPLOYMENT_INSTRUCTIONS = `<div class="leading-loose ml-2 mr-2"><span class="text-l inline-block my-2 underline">GitHub Repository Created</span>
+export const DEPLOYMENT_INSTRUCTIONS = `<div class="leading-loose ml-2 mr-2"><span class="text-l inline-block my-2">Hurray!!! The deployment is successful. Please follow the below instructions for further details.</span>
+<span class="text-l inline-block my-2 underline">GitHub Repository Created</span>
 <span class="ml-5">- We have created a new <a class="underline" href="<gh_repo_url>" target="_blank" rel="noopener noreferrer">GitHub repository</a> in your GitHub account.</span>
 <span class="ml-5">- The application code will be pushed to this repository in a few seconds.</span>
 <span class="text-l inline-block my-2 underline">Checking Deployment Status</span>

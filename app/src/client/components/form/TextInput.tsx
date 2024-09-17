@@ -6,10 +6,10 @@ interface TextInputProps {
   value: string;
   placeholder: string;
   onChange: (value: string) => void;
-  isDisabled?: boolean;
+  disabled?: boolean;
 }
 
-export const TextInput: React.FC<TextInputProps> = ({ id, type, value, placeholder, onChange, isDisabled }) => (
+export const TextInput: React.FC<TextInputProps> = ({ id, type, value, placeholder, onChange, disabled }) => (
   <input
     type={type}
     value={value}
@@ -17,6 +17,6 @@ export const TextInput: React.FC<TextInputProps> = ({ id, type, value, placehold
     onChange={(e) => onChange(e.target.value)}
     className='my-2 p-2 border rounded w-full disabled:bg-airt-disabled-input-bg disabled:text-airt-disabled-input-color'
     id={id}
-    disabled={isDisabled}
+    disabled={disabled}
   />
 );

@@ -149,7 +149,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           value={field.state.value}
           placeholder={property.description || ''}
           onChange={(e) => field.handleChange(e)}
-          isDisabled={immutableAfterCreation}
+          disabled={immutableAfterCreation}
         />
       ) : (
         <TextInput
@@ -158,7 +158,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           onChange={(e) => field.handleChange(e)}
           type={getInputType()}
           placeholder={property.description || ''}
-          isDisabled={immutableAfterCreation}
+          disabled={immutableAfterCreation}
         />
       )}
       <FieldInfo field={field} />

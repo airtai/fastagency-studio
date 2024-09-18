@@ -94,6 +94,11 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
   const formFields = useMemo(() => {
     if (schema && 'json_schema' in schema) {
       return Object.entries(schema.json_schema.properties).map(([key, property]: [string, any]) => {
+        if (isDeploymentCreatedSuccessfully) {
+          parser?.setActiveModelObj({
+            json_str: successResponse,
+          });
+        }
         if (key === 'uuid') {
           return null;
         }

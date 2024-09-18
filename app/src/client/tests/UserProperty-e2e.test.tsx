@@ -470,6 +470,19 @@ describe('UserProperty Component Tests', () => {
     await user.type(screen.getByLabelText('Repo Name'), 'My Repo Name');
     await user.type(screen.getByLabelText('Fly App Name'), 'My Fly App Name');
 
+    // Click the team select box and make sure weatherman and Standup Comedian team are shown in the options
+    await user.click(screen.getAllByRole('combobox')[0]);
+    const selectMenu = container.querySelector('.react-select__menu');
+    expect(selectMenu).toBeInTheDocument();
+    expect(selectMenu).toHaveTextContent('Weatherman');
+    expect(selectMenu).toHaveTextContent('Standup Comedian');
+
+    // Click on the Standup Comedian option
+    await user.click(screen.getByText('Standup Comedian'));
+
+    // Verify that Standup Comedian is now selected
+    expect(screen.getByText('Standup Comedian')).toBeInTheDocument();
+
     const mockValidateFormResponse = {
       name: 'My Deployment Name',
       team: {
@@ -528,6 +541,11 @@ describe('UserProperty Component Tests', () => {
     expect(screen.getByLabelText('GH Token')).toBeDisabled();
     expect(screen.getByLabelText('Fly Token')).toBeDisabled();
 
+    expect(screen.getByLabelText('Team Name')).not.toBeDisabled();
+
+    // Verify that Standup Comedian is selected
+    expect(screen.getByText('Standup Comedian')).toBeInTheDocument();
+
     // Click on the cancel button
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
@@ -539,6 +557,9 @@ describe('UserProperty Component Tests', () => {
     expect(screen.getByLabelText('Fly App Name')).toBeDisabled();
     expect(screen.getByLabelText('GH Token')).toBeDisabled();
     expect(screen.getByLabelText('Fly Token')).toBeDisabled();
+
+    // Verify that Standup Comedian is now selected
+    expect(screen.getByText('Standup Comedian')).toBeInTheDocument();
 
     // Check if the form submit button is enabled
     expect(screen.getByTestId('form-submit-button')).toBeEnabled();

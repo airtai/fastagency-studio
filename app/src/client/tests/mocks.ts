@@ -1630,6 +1630,29 @@ export const deploymentUserProperties: UserProperties[] = [
     updated_at: '2024-09-11T09:50:34.719000Z',
   },
   {
+    uuid: '11122233-4cd5-4437-b5d0-222e3549259f',
+    user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+    type_name: 'team',
+    model_name: 'TwoAgentTeam',
+    json_str: {
+      name: 'Weatherman',
+      initial_agent: {
+        name: 'UserProxyAgent',
+        type: 'agent',
+        uuid: '2329d22e-ced3-417a-9ff6-b09964512344',
+      },
+      secondary_agent: {
+        name: 'AssistantAgent',
+        type: 'agent',
+        uuid: 'b36dabf6-cc06-4673-8060-68d7b58f6c4e',
+      },
+      human_input_mode: 'ALWAYS',
+      is_termination_msg_regex: 'TERMINATE',
+    },
+    created_at: '2024-09-11T09:50:44.674000Z',
+    updated_at: '2024-09-11T09:50:44.674000Z',
+  },
+  {
     uuid: '31273537-4cd5-4437-b5d0-222e3549259f',
     user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
     type_name: 'team',

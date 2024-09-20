@@ -17,7 +17,15 @@ describe('PropertySchemaParser', () => {
       json_schema: {
         properties: {
           name: { description: 'The name of the item', minLength: 1, title: 'Name', type: 'string' },
-          api_key: { description: 'The API Key from Azure OpenAI', title: 'API Key', type: 'string' },
+          api_key: {
+            description: 'The API Key from Azure OpenAI',
+            metadata: {
+              tooltip_message:
+                'The API key specified here will be used to authenticate requests to Azure OpenAI services.',
+            },
+            title: 'API Key',
+            type: 'string',
+          },
         },
         required: ['name', 'api_key'],
         title: 'AzureOAIAPIKey',
@@ -55,7 +63,7 @@ describe('PropertySchemaParser', () => {
       name: '',
       model: 'gpt-3.5-turbo',
       api_key: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b', // pragma: allowlist secret
-      base_url: 'https://api.openai.com/v1',
+      base_url: 'https://{your-resource-name}.openai.azure.com',
       api_type: 'azure',
       api_version: '2024-02-01',
       temperature: 0.8,
@@ -80,6 +88,9 @@ describe('PropertySchemaParser', () => {
           title: 'API Key',
         },
         isOptional: false,
+        metadata: {
+          tooltip_message: 'Choose the API key that will be used to authenticate requests to Azure OpenAI services.',
+        },
         initialFormValue: 'b9714b3f-bb43-4f64-8732-bb9444d13f7b',
       },
     });
@@ -239,6 +250,9 @@ describe('PropertySchemaParser', () => {
           title: 'API Key',
         },
         isOptional: false,
+        metadata: {
+          tooltip_message: 'Choose the API key that will be used to authenticate requests to Azure OpenAI services.',
+        },
         initialFormValue: 'a0014b3f-bb43-4f64-8732-bb9444d13f7b',
       },
     });
@@ -293,6 +307,10 @@ describe('PropertySchemaParser', () => {
               value: '2024-02-01',
             },
           ],
+        },
+        metadata: {
+          tooltip_message:
+            'The version of the Azure OpenAI API that the LLM uses to interact with Azure OpenAI services.',
         },
         initialFormValue: '2024-03-01-preview',
       },
@@ -385,6 +403,9 @@ describe('PropertySchemaParser', () => {
           title: 'Model',
         },
         initialFormValue: 'claude-3-opus-20240229',
+        metadata: {
+          tooltip_message: 'Choose the model that the LLM should use to generate responses.',
+        },
       },
       api_type: {
         htmlForSelectBox: {
@@ -739,7 +760,7 @@ describe('PropertySchemaParser', () => {
           description: '',
           enum: [
             {
-              addPropertyForModel: 'OpenAPIAuth',
+              addPropertyForModel: 'OpenAPIAuthToken',
               label: 'Add new "Secret"',
               value: 'secret',
             },
@@ -749,6 +770,10 @@ describe('PropertySchemaParser', () => {
         },
         initialFormValue: null,
         isOptional: true,
+        metadata: {
+          tooltip_message:
+            'Choose the authentication method that will be used to authenticate requests to the above OpenAPI routes. Leave this field as it is if the OpenAPI routes do not require authentication.',
+        },
       },
     });
   });
@@ -786,7 +811,7 @@ describe('PropertySchemaParser', () => {
           enum: [
             { label: 'OpenAIAPI Auth Key', value: '06936c73-f22b-4c69-b107-6f8f9a4982bc' },
             {
-              addPropertyForModel: 'OpenAPIAuth',
+              addPropertyForModel: 'OpenAPIAuthToken',
               label: 'Add new "Secret"',
               value: 'secret',
             },
@@ -795,6 +820,10 @@ describe('PropertySchemaParser', () => {
           title: 'OpenAPI Auth',
         },
         initialFormValue: null,
+        metadata: {
+          tooltip_message:
+            'Choose the authentication method that will be used to authenticate requests to the above OpenAPI routes. Leave this field as it is if the OpenAPI routes do not require authentication.',
+        },
         isOptional: true,
       },
     });

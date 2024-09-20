@@ -83,6 +83,12 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
       .join(' ');
   }
 
+  private addMetadataIfExists(field: any, property: any): void {
+    if ('metadata' in property) {
+      field.metadata = property.metadata;
+    }
+  }
+
   public getSchemaForModel(): Schema | undefined {
     if (!this.activeModel) {
       return undefined;
@@ -164,6 +170,9 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
       initialFormValue: defaultValue?.value ?? null,
       isOptional: isOptional,
     };
+
+    this.addMetadataIfExists(this.refFields[key], property);
+
     defaultValues[key] = this.refFields[key].initialFormValue;
   }
 
@@ -213,6 +222,9 @@ export class PropertySchemaParser implements PropertySchemaParserInterface {
       },
       initialFormValue: defaultValue?.value ?? null,
     };
+
+    this.addMetadataIfExists(this.nonRefButDropdownFields[key], property);
+
     defaultValues[key] = this.nonRefButDropdownFields[key].initialFormValue;
   }
 

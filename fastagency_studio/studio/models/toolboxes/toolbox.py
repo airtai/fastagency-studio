@@ -2,10 +2,10 @@ from typing import Annotated, Any, Optional, Union
 from uuid import UUID
 
 import httpx
+from fastagency.api.openapi.client import OpenAPI
 from pydantic import AfterValidator, HttpUrl
 from typing_extensions import TypeAlias
 
-from fastagency.api.openapi.client import OpenAPI
 from ..base import Field, Model
 from ..registry import Registry
 

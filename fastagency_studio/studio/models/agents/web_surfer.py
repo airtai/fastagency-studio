@@ -4,9 +4,8 @@ from uuid import UUID
 from asyncer import syncify
 from autogen.agentchat import AssistantAgent as AutoGenAssistantAgent
 from autogen.agentchat import ConversableAgent as AutoGenConversableAgent
-from typing_extensions import TypeAlias
-
 from fastagency.studio.models.agents.web_surfer_autogen import WebSurferChat
+from typing_extensions import TypeAlias
 
 from ..base import Field, Model
 from ..registry import register
@@ -47,7 +46,7 @@ class WebSurferToolbox:
             task: Annotated[str, "task for websurfer"],
         ) -> str:
             try:
-                return syncify(self.websurfer_chat.create_new_task)(task)
+                return syncify(self.websurfer_chat.create_new_task)(task)  # type: ignore [no-any-return]
             except Exception as e:
                 raise e
 
@@ -62,7 +61,7 @@ class WebSurferToolbox:
             ],
         ) -> str:
             try:
-                return syncify(
+                return syncify(  # type: ignore [no-any-return]
                     self.websurfer_chat.continue_task_with_additional_instructions
                 )(message)
             except Exception as e:

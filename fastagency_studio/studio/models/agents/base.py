@@ -1,9 +1,8 @@
 from typing import Annotated, Optional, Union
 from uuid import UUID
 
-from typing_extensions import TypeAlias
-
 from fastagency.api.openapi import OpenAPI
+from typing_extensions import TypeAlias
 
 from ..base import Field, Model
 from ..registry import Registry

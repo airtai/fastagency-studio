@@ -50,6 +50,17 @@ dependencies = [
 [project.optional-dependencies]
 # public distributions
 
+studio = [
+    "faststream[nats]>=0.5.10,<0.6",
+    "pydantic>=2.3,<3",
+    "fastapi==0.114.2",
+    "prisma>=0.13.1,<0.15",
+    "asyncer==0.0.8",
+    "markdownify==0.13.1", # Needed by autogen.WebSurferAgent but not included
+    "httpx==0.27.2",
+    "python-weather==2.0.3",  # should be removed when we move API to another project
+]
+
 server = [
     "fastagency[server] @ git+https://github.com/airtai/fastagency.git@main",
 ]
@@ -68,13 +79,14 @@ test-core = [
 ]
 
 testing = [
+    "fastagency-studio[studio]",
     "fastagency-studio[test-core]",
     "fastagency-studio[server]", # Uvicorn is needed for testing
     "fastagency[testing] @ git+https://github.com/airtai/fastagency.git@main",
 ]
 
 dev = [
-    "fastagency-studio[server,lint,testing,devdocs]",
+    "fastagency-studio[studio,server,lint,testing,devdocs]",
     "fastagency[dev] @ git+https://github.com/airtai/fastagency.git@main",
 ]
 

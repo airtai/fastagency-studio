@@ -31,7 +31,9 @@ jobs:
           pip install -e ".[docs,lint,test-core]"
       - name: Run mypy
         shell: bash
-        run: mypy fastagency_studio tests
+        run: |
+          mkdir .mypy_cache # Workaround for bad error message "error: --install-types failed (no mypy cache directory)"; see https://github.com/python/mypy/issues/10768#issuecomment-2178450153
+          mypy fastagency_studio tests
 
       - name: Run bandit
         shell: bash

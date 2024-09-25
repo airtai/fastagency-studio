@@ -28,6 +28,7 @@ export interface Property {
   minimum?: number;
   anyOf?: SchemaReference[];
   $ref?: string;
+  metadata?: { [key: string]: any };
 }
 
 interface SchemaReference {

@@ -1,6 +1,6 @@
 import { useMemo, useEffect, ReactNode, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 
 import './Main.css';
 
@@ -12,6 +12,17 @@ import Footer from './components/Footer';
 import ServerNotRechableComponent from './components/ServerNotRechableComponent';
 import LoadingComponent from './components/LoadingComponent';
 import TosAndMarketingEmailsModal from './components/TosAndMarketingEmailsModal';
+
+const theme = extendTheme({
+  colors: {
+    brand: {
+      airtPrimary: '#003257',
+    },
+  },
+  zIndices: {
+    tooltip: 10000,
+  },
+});
 
 const addServerErrorClass = () => {
   if (!document.body.classList.contains('server-error')) {
@@ -111,8 +122,8 @@ export default function App({ children }: { children: ReactNode }) {
   }, [location]);
 
   return (
-    <ChakraProvider>
-      <div className='bg-airt-light-red min-h-screen dark:text-white dark:bg-boxdark-2'>
+    <ChakraProvider theme={theme}>
+      <div className='bg-gradient-to-b from-airt-hero-gradient-start via-airt-hero-gradient-middle to-airt-secondary min-h-screen dark:text-white dark:bg-boxdark-2'>
         {isError && (addServerErrorClass(), (<ServerNotRechableComponent />))}
         {isAdminDashboard || isPlayGroundPage ? (
           <>

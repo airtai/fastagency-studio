@@ -15,7 +15,6 @@ export interface PushParser {
 
 export function useFormHandler(setActiveProperty: (activeProperty: string) => void) {
   const [stack, setStack] = useState<PropertySchemaParser[]>([]);
-  console.log('stack', stack);
 
   const getCurrentParser = useCallback(() => {
     return stack.length > 0 ? stack[stack.length - 1] : null;

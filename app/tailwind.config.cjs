@@ -19,6 +19,8 @@ module.exports = {
         'airt-light-blue': '#0080FF',
         'airt-dark-blue': '#0080FF',
         'airt-error': '#EF5C00',
+        'airt-disabled-input-bg': '#F2F2F2',
+        'airt-disabled-input-color': '#999999',
         current: 'currentColor',
         transparent: 'transparent',
         // white: '#FFFFFF',

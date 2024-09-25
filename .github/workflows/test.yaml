@@ -31,7 +31,7 @@ jobs:
         image: postgres:13
         env:
           POSTGRES_USER: admin
-          POSTGRES_PASSWORD: password  # pragma: allowlist secret
+          POSTGRES_PASSWORD: password
           POSTGRES_DB: fastagency
         ports:
           - 5432:5432
@@ -40,14 +40,14 @@ jobs:
         image: postgres:13
         env:
           POSTGRES_USER: admin
-          POSTGRES_PASSWORD: password  # pragma: allowlist secret
+          POSTGRES_PASSWORD: password
           POSTGRES_DB: pyfastagency
         ports:
           - 5433:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     env:
-      DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency  # pragma: allowlist secret
-      PY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency  # pragma: allowlist secret
+      DATABASE_URL: postgresql://admin:password@localhost:5432/fastagency
+      PY_DATABASE_URL: postgresql://admin:password@localhost:5433/pyfastagency
       NATS_URL: nats://localhost:4222
 
     steps:

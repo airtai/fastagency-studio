@@ -115,11 +115,11 @@ exclude = [
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-only-include = ["fastagency_studio", "templates"]
+only-include = ["fastagency_studio"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src" = ""
-"scripts" = "fastagency_studio/templates"
+# "scripts" = "fastagency_studio/templates"
 
 [tool.mypy]
 

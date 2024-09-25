@@ -4,17 +4,17 @@ from typing import Any, Optional, TypeVar, Union
 from uuid import UUID
 
 from asyncer import asyncify
-from fastagency.studio.saas_app_generator import (
-    InvalidFlyTokenError,
-    InvalidGHTokenError,
-    SaasAppGenerator,
-)
 from fastapi import BackgroundTasks, HTTPException
 
 from .auth_token.auth import create_deployment_auth_token
 from .db.base import DefaultDB
 from .models.base import Model, ObjectReference
 from .models.registry import Registry
+from .saas_app_generator import (
+    InvalidFlyTokenError,
+    InvalidGHTokenError,
+    SaasAppGenerator,
+)
 
 T = TypeVar("T", bound=Model)
 

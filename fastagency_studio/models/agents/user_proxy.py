@@ -2,7 +2,7 @@ from typing import Annotated, Any, Optional
 from uuid import UUID
 
 import autogen
-from fastagency.api.openapi.client import OpenAPI
+from fastagency.api.openapi import OpenAPI
 
 from ..base import Field, Model
 from ..registry import register

@@ -4,7 +4,7 @@ from uuid import UUID
 from asyncer import syncify
 from autogen.agentchat import AssistantAgent as AutoGenAssistantAgent
 from autogen.agentchat import ConversableAgent as AutoGenConversableAgent
-from fastagency.studio.models.agents.web_surfer_autogen import WebSurferChat
+from fastagency.runtime.autogen.tools import WebSurferTool
 from typing_extensions import TypeAlias
 
 from ..base import Field, Model
@@ -34,19 +34,19 @@ BingAPIKeyRef: TypeAlias = BingAPIKey.get_reference_model()  # type: ignore[vali
 
 
 class WebSurferToolbox:
-    def __init__(self, websurfer_chat: WebSurferChat):
+    def __init__(self, websurfer_tool: WebSurferTool):
         """Create a toolbox for the web surfer agent. This toolbox will contain functions to delegate web surfing tasks to the internal web surfer agent.
 
         Args:
-            websurfer_chat (WebSurferChat): The web surfer chat agent
+            websurfer_tool (WebSurferTool): The web surfer tool to be used in the toolbox
         """
-        self.websurfer_chat = websurfer_chat
+        self.websurfer_tool = websurfer_tool
 
         def create_new_task(
             task: Annotated[str, "task for websurfer"],
         ) -> str:
             try:
-                return syncify(self.websurfer_chat.create_new_task)(task)  # type: ignore [no-any-return]
+                return syncify(self.websurfer_tool.a_create_new_task)(task)  # type: ignore [no-any-return]
             except Exception as e:
                 raise e
 
@@ -62,7 +62,7 @@ class WebSurferToolbox:
         ) -> str:
             try:
                 return syncify(  # type: ignore [no-any-return]
-                    self.websurfer_chat.continue_task_with_additional_instructions
+                    self.websurfer_tool.a_continue_task_with_additional_instructions
                 )(message)
             except Exception as e:
                 raise e
@@ -131,7 +131,7 @@ class WebSurferAgent(AgentBaseModel):
 
         viewport_size = websurfer_model.viewport_size
 
-        websurfer_chat = WebSurferChat(
+        websurfer_tool = WebSurferTool(
             name_prefix=websurfer_model.name,
             llm_config=llm_config,
             summarizer_llm_config=summarizer_llm_config,
@@ -139,7 +139,7 @@ class WebSurferAgent(AgentBaseModel):
             bing_api_key=bing_api_key,
         )
 
-        web_surfer_toolbox = WebSurferToolbox(websurfer_chat)
+        web_surfer_toolbox = WebSurferToolbox(websurfer_tool)
 
         agent_name = websurfer_model.name
 

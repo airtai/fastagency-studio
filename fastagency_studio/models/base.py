@@ -148,7 +148,7 @@ def create_reference_model(
         __base__=ObjectReference,
     )
     reference_model.__module__ = (
-        f"fastagency.studio.models.{type_name}.{model_type_name}._generated"
+        f"fastagency_studio.models.{type_name}.{model_type_name}._generated"
     )
 
     reference_model._data_class = model_class  # type: ignore[attr-defined]

@@ -29,7 +29,7 @@ COPY migrations ./migrations
 COPY templates ./templates
 COPY fastagency_studio ./fastagency_studio
 COPY scripts/* schema.prisma pyproject.toml README.md ./
-RUN pip install -e ".[server]" --ignore-installed blinker
+RUN pip install -e ".[submodules,server]" --ignore-installed blinker
 
 # Install wasp
 RUN curl -sSL https://get.wasp-lang.dev/installer.sh | sh -s -- -v 0.14.0

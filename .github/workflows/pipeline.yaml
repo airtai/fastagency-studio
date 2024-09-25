@@ -118,7 +118,7 @@ jobs:
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: pip install .[docs,testing]
+        run: pip install .[submodules,docs,testing]
       - name: Prisma
         run: prisma generate
       - name: Test
@@ -138,7 +138,7 @@ jobs:
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: pip install .[docs,testing]
+        run: pip install .[submodules,docs,testing]
       - name: Prisma
         run: prisma generate
       - name: Test
@@ -234,7 +234,7 @@ jobs:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
       - name: Install Dependencies
-        run: pip install .[docs,testing]
+        run: pip install .[submodules,docs,testing]
       - name: Prisma
         run: prisma generate
       - uses: pre-commit/action@v3.0.1

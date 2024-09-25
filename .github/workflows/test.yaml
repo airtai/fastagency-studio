@@ -112,7 +112,7 @@ jobs:
         run: cd app && wasp db migrate-dev && cd ..
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: pip install .[docs,testing]
+        run: pip install .[submodules,docs,testing]
       - name: Install Pydantic v2
         run: pip install --pre "pydantic>=2,<3"
       - run: mkdir coverage

@@ -1,4 +1,4 @@
-name: Test
+name: Internal test runner
 
 on:
   workflow_call:
@@ -112,10 +112,12 @@ jobs:
         run: cd app && wasp db migrate-dev && cd ..
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: pip install .[submodules,docs,testing]
+        run: pip install .[docs,testing]
       - name: Install Pydantic v2
         run: pip install --pre "pydantic>=2,<3"
       - run: mkdir coverage
+      - name: Run wasp prisma commands
+        run: prisma db push --schema=wasp_schema.prisma && prisma generate --schema=wasp_schema.prisma
       - name: Prisma
         run: prisma migrate deploy && prisma generate
       - name: Test without LLMs
@@ -131,7 +133,7 @@ jobs:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ inputs.python-version }}-${{ inputs.use-llms }}
           CONTEXT: ${{ runner.os }}-py${{ inputs.python-version }}-${{ inputs.use-llms }}
       - name: Check coverage file
-        run: ls -l coverage
+        run: ls -al coverage
       - name: Store coverage files
         uses: actions/upload-artifact@v4
         with:

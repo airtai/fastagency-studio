@@ -116,8 +116,6 @@ jobs:
       - name: Install Pydantic v2
         run: pip install --pre "pydantic>=2,<3"
       - run: mkdir coverage
-      - name: Run wasp prisma commands
-        run: prisma db push --schema=wasp_schema.prisma && prisma generate --schema=wasp_schema.prisma
       - name: Prisma
         run: prisma migrate deploy && prisma generate
       - name: Test without LLMs

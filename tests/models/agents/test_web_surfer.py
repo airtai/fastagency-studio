@@ -405,7 +405,7 @@ class TestWebSurferAgent:
     #     self,
     #     user_uuid: str,
     #     websurfer_ref: ObjectReference,
-    #     assistant_weather_openai_oai_gpt35_ref: ObjectReference,
+    #     assistant_weather_openai_oai_gpt4o_mini_ref: ObjectReference,
     #     openai_gpt35_turbo_16k_llm_config: Dict[str, Any],
     # ) -> None:
     #     ag_websurfer, _ = await create_autogen(
@@ -414,7 +414,7 @@ class TestWebSurferAgent:
     #     )
 
     #     ag_assistant, ag_toolboxes = await create_autogen(
-    #         model_ref=assistant_weather_openai_oai_gpt35_ref,
+    #         model_ref=assistant_weather_openai_oai_gpt4o_mini_ref,
     #         user_uuid=user_uuid,
     #     )
 

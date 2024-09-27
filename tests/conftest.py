@@ -312,13 +312,13 @@ async def openai_oai_ref(
 
 @tag("llm", "noapi", "weather-llm", "openai-llm")
 @pytest_asyncio.fixture()
-async def openai_oai_gpt35_ref(
+async def openai_oai_gpt4o_mini_ref(
     user_uuid: str,
-    openai_gpt35_turbo_16k_llm_config: dict[str, Any],
+    openai_gpt4o_mini_llm_config: dict[str, Any],
     openai_oai_key_gpt35_ref: ObjectReference,
 ) -> ObjectReference:
     return await openai_oai_ref(
-        user_uuid, openai_gpt35_turbo_16k_llm_config, openai_oai_key_gpt35_ref
+        user_uuid, openai_gpt4o_mini_llm_config, openai_oai_key_gpt35_ref
     )
 
 
@@ -486,7 +486,7 @@ def create_gify_fastapi_app(host: str, port: int) -> FastAPI:
 
 def find_free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(("", 0))
+        s.bind(("127.0.0.1", 0))
         return s.getsockname()[1]  # type: ignore [no-any-return]
 
 

@@ -12,23 +12,23 @@ __all__ = [
     "TogetherAI",
 ]
 
-# retrieve the models from the API on July 19, 2024
+# retrieve the models from the API on Sep 27, 2024
 together_model_string = {
     "Code Llama Instruct (34B)": "togethercomputer/CodeLlama-34b-Instruct",
     "Upstage SOLAR Instruct v1 (11B)": "upstage/SOLAR-10.7B-Instruct-v1.0",
     "Nous Hermes-2 Yi (34B)": "NousResearch/Nous-Hermes-2-Yi-34B",
     "Llama3 8B Chat HF INT4": "togethercomputer/Llama-3-8b-chat-hf-int4",
-    "StripedHyena Nous (7B)": "togethercomputer/StripedHyena-Nous-7B",
     "Gemma Instruct (2B)": "google/gemma-2b-it",
     "MythoMax-L2 (13B)": "Gryphe/MythoMax-L2-13b",
     "Mistral (7B) Instruct": "mistralai/Mistral-7B-Instruct-v0.1",
     "Mistral (7B) Instruct v0.2": "mistralai/Mistral-7B-Instruct-v0.2",
-    "Meta Llama Vision Free": "meta-llama/Llama-Vision-Free",
-    "Meta Llama 3.2 11B Vision Instruct Turbo": "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
     "Meta Llama Guard 3 11B Vision Turbo": "meta-llama/Llama-Guard-3-11B-Vision-Turbo",
-    "Qwen 2 Instruct (72B)": "Qwen/Qwen2-72B-Instruct",
+    "Meta Llama Vision Free": "meta-llama/Llama-Vision-Free",
     "Qwen 1.5 Chat (72B)": "Qwen/Qwen1.5-72B-Chat",
     "DeepSeek LLM Chat (67B)": "deepseek-ai/deepseek-llm-67b-chat",
+    "Qwen 2 Instruct (72B)": "Qwen/Qwen2-72B-Instruct",
+    "Meta Llama 3.2 11B Vision Instruct Turbo": "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
+    "Meta Llama 3.2 3B Instruct Turbo": "meta-llama/Llama-3.2-3B-Instruct-Turbo",
     "Togethercomputer Llama3 8B Instruct Int8": "togethercomputer/Llama-3-8b-chat-hf-int8",
     "Mistral (7B) Instruct v0.3": "mistralai/Mistral-7B-Instruct-v0.3",
     "Qwen 1.5 Chat (110B)": "Qwen/Qwen1.5-110B-Chat",
@@ -55,7 +55,6 @@ together_model_string = {
     "Meta Llama 3.2 90B Vision Instruct Turbo": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
     "Hermes 3 - Llama-3.1 405B": "NousResearch/Hermes-3-Llama-3.1-405B-Turbo",
     "LLaMA-2 Chat (7B)": "togethercomputer/llama-2-7b-chat",
-    "Meta Llama 3.2 3B Instruct Turbo": "meta-llama/Llama-3.2-3B-Instruct-Turbo",
     "WizardLM v1.2 (13B)": "WizardLM/WizardLM-13B-V1.2",
     "Koala (7B)": "togethercomputer/Koala-7B",
     "Qwen 2 Instruct (1.5B)": "Qwen/Qwen2-1.5B-Instruct",

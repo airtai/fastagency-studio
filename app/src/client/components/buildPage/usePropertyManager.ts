@@ -168,7 +168,6 @@ export const usePropertyManager = (
   };
 
   const handleCtaAction = async (ctaAction: ctaAction) => {
-    console.log('inside handleCtaAction');
     if (ctaAction === 'cancel') {
       resetAndPopFromStack();
     } else {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import { screen, waitFor, RenderResult, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent, { UserEvent } from '@testing-library/user-event';
 import { renderInContext } from 'wasp/client/test';
 import { useQuery } from 'wasp/client/operations';
@@ -73,15 +73,13 @@ const createSecret = async (user: UserEvent): Promise<void> => {
   await user.type(apiKeyInput, 'My Api Key');
 
   // Check Api Key Tooltip
-  // const apiKeyTooltip = within(activePanel).getByTestId('api_key-tooltip');
-  // await user.hover(apiKeyTooltip);
-  // await waitFor(() => {
-  //   expect(
-  //     within(activePanel).getByText(
-  //       'The API key specified here will be used to authenticate requests to Anthropic services.'
-  //     )
-  //   ).toBeInTheDocument();
-  // });
+  const apiKeyTooltip = within(activePanel).getByTestId('api_key-tooltip');
+  await user.hover(apiKeyTooltip);
+  await waitFor(() => {
+    expect(
+      screen.getByText('The API key specified here will be used to authenticate requests to Anthropic services.')
+    ).toBeInTheDocument();
+  });
 
   mockValidateForm.mockResolvedValue({
     name: 'My AnthropicAPIKey Secret',
@@ -148,13 +146,14 @@ const createLLM = async (user: UserEvent): Promise<void> => {
   };
 
   // Check Tooltips
-  // for (const [key, value] of Object.entries(tooltips)) {
-  //   const tooltip = screen.getByTestId(`${key}-tooltip`);
-  //   await user.hover(tooltip);
-  //   await waitFor(() => {
-  //     expect(within(activePanel).getByText(value)).toBeInTheDocument();
-  //   });
-  // }
+  for (const [key, value] of Object.entries(tooltips)) {
+    const tooltip = within(activePanel).getByTestId(`${key}-tooltip`);
+    await user.hover(tooltip);
+
+    await waitFor(() => {
+      expect(screen.getByText(value)).toBeInTheDocument();
+    });
+  }
 
   await createSecret(user);
 
@@ -489,109 +488,113 @@ describe('UserProperty Component Tests', () => {
     expect(within(activePanel).getByText('LLM')).toBeInTheDocument();
   });
 
-  // it('Should mark specific form fields as non-editable while editing the property', async () => {
-  //   // The below test checks the following:
-  //   // 1. Create a new Deployment and save it
-  //   // 2. Open the saved deployment from the list and check if the form fields "Repo Name", "Fly App Name", "GH Token" and "FLY Token" are non-editable
+  it('Should mark specific form fields as non-editable while editing the property', async () => {
+    // The below test checks the following:
+    // 1. Create a new Deployment and save it
+    // 2. Open the saved deployment from the list and check if the form fields "Repo Name", "Fly App Name", "GH Token" and "FLY Token" are non-editable
 
-  //   const user = userEvent.setup();
-  //   const { BuildPageTab } = await import('../components/buildPage/BuildPageTab');
+    const user = userEvent.setup();
+    const { BuildPageTab } = await import('../components/buildPage/BuildPageTab');
 
-  //   // Mock useQuery to return llmUserProperties
-  //   const data = _.cloneDeep(deploymentUserProperties);
-  //   (useQuery as Mock).mockReturnValue({
-  //     data: data,
-  //     refetch: vi.fn().mockResolvedValue({ data: data }),
-  //     isLoading: false,
-  //   });
+    // Mock useQuery to return llmUserProperties
+    const data = _.cloneDeep(deploymentUserProperties);
+    (useQuery as Mock).mockReturnValue({
+      data: data,
+      refetch: vi.fn().mockResolvedValue({ data: data }),
+      isLoading: false,
+    });
 
-  //   const { container } = renderInContext(<BuildPageTab {...mockProps} activeProperty='deployment' />);
-  //   const activePanel = getActiveTabPanel();
+    const { container } = renderInContext(<BuildPageTab {...mockProps} activeProperty='deployment' />);
+    const activePanel = getActiveTabPanel();
 
-  //   await user.click(within(activePanel).getByText('Add Deployment'));
-  //   expect(within(activePanel).getByText('Add a new Deployment')).toBeInTheDocument();
+    await user.click(within(activePanel).getByText('ADD DEPLOYMENT'));
+    expect(within(activePanel).getByText('Add a new Deployment')).toBeInTheDocument();
 
-  //   // Fill the deployment form
-  //   const nameInput = within(activePanel).getByPlaceholderText('The name of the SaaS application.');
-  //   await user.type(nameInput, 'My Deployment Name');
+    // Fill the deployment form
+    const nameInput = within(activePanel).getByPlaceholderText('The name of the SaaS application.');
+    await user.type(nameInput, 'My Deployment Name');
 
-  //   const repoInput = within(activePanel).getByPlaceholderText('The name of the GitHub repository.');
-  //   await user.type(repoInput, 'My Repo Name');
+    const repoInput = within(activePanel).getByPlaceholderText('The name of the GitHub repository.');
+    await user.type(repoInput, 'My Repo Name');
 
-  //   const flyInput = within(activePanel).getByPlaceholderText('The name of the Fly.io application.');
-  //   await user.type(flyInput, 'My Fly App Name');
+    const flyInput = within(activePanel).getByPlaceholderText('The name of the Fly.io application.');
+    await user.type(flyInput, 'My Fly App Name');
 
-  //   const mockValidateFormResponse = {
-  //     name: 'My Deployment Name',
-  //     team: {
-  //       name: 'TwoAgentTeam',
-  //       type: 'team',
-  //       uuid: '31273537-4cd5-4437-b5d0-222e3549259f',
-  //     },
-  //     gh_token: {
-  //       name: 'GitHubToken',
-  //       type: 'secret',
-  //       uuid: '42e34575-2029-4055-9460-3bf5e2745ddf',
-  //     },
-  //     fly_token: {
-  //       name: 'FlyToken',
-  //       type: 'secret',
-  //       uuid: 'e94cf6f2-f82a-4513-81dc-03adfe8ca9c9',
-  //     },
-  //     repo_name: 'My Repo Name',
-  //     gh_repo_url: 'https://github.com/harishmohanraj/my-deployment-name',
-  //     fly_app_name: 'My Fly App Name',
-  //     app_deploy_status: 'inprogress',
-  //     uuid: 'c5e3fbc7-70e0-4abe-b512-f11c0a77d330',
-  //   };
+    const mockValidateFormResponse = {
+      name: 'My Deployment Name',
+      team: {
+        name: 'TwoAgentTeam',
+        type: 'team',
+        uuid: '31273537-4cd5-4437-b5d0-222e3549259f',
+      },
+      gh_token: {
+        name: 'GitHubToken',
+        type: 'secret',
+        uuid: '42e34575-2029-4055-9460-3bf5e2745ddf',
+      },
+      fly_token: {
+        name: 'FlyToken',
+        type: 'secret',
+        uuid: 'e94cf6f2-f82a-4513-81dc-03adfe8ca9c9',
+      },
+      repo_name: 'My Repo Name',
+      gh_repo_url: 'https://github.com/harishmohanraj/my-deployment-name',
+      fly_app_name: 'My Fly App Name',
+      app_deploy_status: 'inprogress',
+      uuid: 'c5e3fbc7-70e0-4abe-b512-f11c0a77d330',
+    };
 
-  //   mockValidateForm.mockResolvedValue(mockValidateFormResponse);
+    mockValidateForm.mockResolvedValue(mockValidateFormResponse);
 
-  //   const mockSuccessResponse = {
-  //     uuid: 'c5e3fbc7-70e0-4abe-b512-f11c0a77d330',
-  //     user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
-  //     type_name: 'deployment',
-  //     model_name: 'Deployment',
-  //     json_str: mockValidateFormResponse,
-  //     created_at: '2024-09-11T12:31:27.477000Z',
-  //     updated_at: '2024-09-11T12:31:27.477000Z',
-  //   };
-  //   mockAddUserModels.mockResolvedValue(mockSuccessResponse);
-  //   data.push(mockSuccessResponse);
+    const mockSuccessResponse = {
+      uuid: 'c5e3fbc7-70e0-4abe-b512-f11c0a77d330',
+      user_uuid: 'dae81928-8e99-48c2-be5d-61a5b422cf47',
+      type_name: 'deployment',
+      model_name: 'Deployment',
+      json_str: mockValidateFormResponse,
+      created_at: '2024-09-11T12:31:27.477000Z',
+      updated_at: '2024-09-11T12:31:27.477000Z',
+    };
+    mockAddUserModels.mockResolvedValue(mockSuccessResponse);
+    data.push(mockSuccessResponse);
 
-  //   // Mock useQuery to return llmUserProperties
-  //   (useQuery as Mock).mockReturnValue({
-  //     data,
-  //     refetch: vi.fn().mockResolvedValue({ data: data }),
-  //     isLoading: false,
-  //   });
+    // Mock useQuery to return llmUserProperties
+    (useQuery as Mock).mockReturnValue({
+      data,
+      refetch: vi.fn().mockResolvedValue({ data: data }),
+      isLoading: false,
+    });
 
-  //   // Save the deployment form
-  //   await user.click(within(activePanel).getByRole('button', { name: 'Save' }));
-  //   expect(mockAddUserModels).toHaveBeenCalledOnce();
+    // Save the deployment form
+    await user.click(within(activePanel).getByRole('button', { name: 'Save' }));
+    expect(mockAddUserModels).toHaveBeenCalledOnce();
 
-  //   // check if the form submit button is disabled
-  //   expect(within(activePanel).getByTestId('form-submit-button')).toBeDisabled();
+    // check if the form submit button is disabled
+    expect(within(activePanel).getByTestId('form-submit-button')).toBeDisabled();
 
-  //   // check if the form fields are non-editable
-  //   expect(within(activePanel).getByLabelText('Repo Name')).toBeDisabled();
-  //   expect(within(activePanel).getByLabelText('Fly App Name')).toBeDisabled();
-  //   expect(within(activePanel).getByLabelText('GH Token')).toBeDisabled();
-  //   expect(within(activePanel).getByLabelText('Fly Token')).toBeDisabled();
+    // check if the form fields are non-editable
 
-  //   // Click on the cancel button
-  //   await user.click(within(activePanel).getByRole('button', { name: 'Cancel' }));
+    expect(within(activePanel).getByPlaceholderText('The name of the GitHub repository.')).toBeDisabled();
+    expect(within(activePanel).getByPlaceholderText('The name of the Fly.io application.')).toBeDisabled();
 
-  //   // Click on the deployment from the list
-  //   await user.click(within(activePanel).getByText('My Deployment Name'));
+    // expect(within(activePanel).getAllByRole('combobox')).toBeDisabled();
+    // expect(within(activePanel).getAllByRole('combobox')[2]).toBeDisabled();
 
-  //   // Check if the form fields are non-editable
-  //   expect(within(activePanel).getByLabelText('Repo Name')).toBeDisabled();
-  //   expect(within(activePanel).getByLabelText('Fly App Name')).toBeDisabled();
-  //   expect(within(activePanel).getByLabelText('GH Token')).toBeDisabled();
-  //   expect(within(activePanel).getByLabelText('Fly Token')).toBeDisabled();
+    // expect(within(activePanel).getByLabelText('Fly Token')).toBeDisabled();
 
-  //   // Check if the form submit button is enabled
-  //   expect(within(activePanel).getByTestId('form-submit-button')).toBeEnabled();
-  // });
+    // Click on the cancel button
+    await user.click(within(activePanel).getByRole('button', { name: 'Cancel' }));
+
+    // Click on the deployment from the list
+    await user.click(within(activePanel).getByText('My Deployment Name'));
+
+    // Check if the form fields are non-editable
+    expect(within(activePanel).getByPlaceholderText('The name of the GitHub repository.')).toBeDisabled();
+    expect(within(activePanel).getByPlaceholderText('The name of the Fly.io application.')).toBeDisabled();
+    // expect(within(activePanel).getByLabelText('GH Token')).toBeDisabled();
+    // expect(within(activePanel).getByLabelText('Fly Token')).toBeDisabled();
+
+    // Check if the form submit button is enabled
+    expect(within(activePanel).getByTestId('form-submit-button')).toBeEnabled();
+  });
 });

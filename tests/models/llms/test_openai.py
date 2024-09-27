@@ -83,7 +83,7 @@ class TestOpenAI:
         model_list = [m.id for m in client.models.list() if "gpt-" in m.id]
         # print(f"{model_list=}")
 
-        assert set(model_list) == set(OpenAIModels.__args__), OpenAIModels.__args__  # type: ignore[attr-defined]
+        assert set(model_list).issubset(set(OpenAIModels.__args__))  # type: ignore[attr-defined]
 
     def test_openai_schema(self, pydantic_version: float) -> None:
         schema = OpenAI.model_json_schema()

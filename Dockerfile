@@ -26,7 +26,6 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 RUN python3 -m pip install --upgrade pip
 
 COPY migrations ./migrations
-COPY templates ./templates
 COPY fastagency_studio ./fastagency_studio
 COPY scripts/* schema.prisma pyproject.toml README.md ./
 RUN pip install -e ".[submodules,server]" --ignore-installed blinker

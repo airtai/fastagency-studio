@@ -486,7 +486,7 @@ def create_gify_fastapi_app(host: str, port: int) -> FastAPI:
 
 def find_free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(("127.0.0.1", 0))
+        s.bind(("", 0))
         return s.getsockname()[1]  # type: ignore [no-any-return]
 
 

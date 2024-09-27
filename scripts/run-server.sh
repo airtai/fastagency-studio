@@ -10,6 +10,6 @@ fi
 prisma migrate deploy
 prisma generate --schema=schema.prisma --generator=pyclient
 
-faststream run fastagency.studio.io.ionats:app --workers $workers > faststream.log 2>&1 &
+faststream run fastagency_studio.io.ionats:app --workers $workers > faststream.log 2>&1 &
 
-uvicorn fastagency.studio.app:app --workers $workers --host 0.0.0.0 --proxy-headers
+uvicorn fastagency_studio.app:app --workers $workers --host 0.0.0.0 --proxy-headers

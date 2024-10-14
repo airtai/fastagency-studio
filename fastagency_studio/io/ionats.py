@@ -234,15 +234,15 @@ async def initiate_handler(
         task = asyncio.create_task(async_start_chat())  # type: ignore
         background_tasks.add(task)
 
-        def callback(t: asyncio.Task[Any]) -> None:
+        async def callback(t: asyncio.Task[Any]) -> None:
             try:
                 background_tasks.discard(t)
-                syncify(iostream.subscriber.close)()
+                await iostream.subscriber.close()
             except Exception as e:
                 logger.error(f"Error in callback: {e}")
                 logger.error(traceback.format_exc())
 
-        task.add_done_callback(callback)
+        task.add_done_callback(lambda t: asyncio.create_task(callback(t)))
 
     except Exception as e:
         logger.error(f"Error in handling initiate chat: {e}")

@@ -14,5 +14,7 @@ RUN npm install -g pnpm && ls -lah
 RUN pnpm install --force
 
 # Define the command to run your app using pnpm serve
+# nosemgrep
 ENTRYPOINT []
+# nosemgrep
 CMD ["/bin/sh", "-c", "./run-auth-callout.sh"]

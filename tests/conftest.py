@@ -21,7 +21,7 @@ import openai
 import pytest
 import pytest_asyncio
 import uvicorn
-from fastagency.runtime.autogen.tools.web_surfer import WebSurferTool
+from fastagency.runtimes.autogen.tools import WebSurferTool
 from fastapi import FastAPI, Path
 from pydantic import BaseModel
 from pydantic import __version__ as version_of_pydantic

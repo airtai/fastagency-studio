@@ -4,7 +4,7 @@ from typing import Any
 import autogen.agentchat.contrib.web_surfer
 import pytest
 from asyncer import asyncify
-from fastagency.runtimes.autogen.tools import WebSurferAnswer
+from fastagency.runtimes.autogen.tools.websurfer import WebSurferAnswer
 from fastapi import BackgroundTasks
 
 from fastagency_studio.app import add_model

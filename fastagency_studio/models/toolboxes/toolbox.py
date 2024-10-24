@@ -92,7 +92,7 @@ class Toolbox(Model):
         my_model = await cls.from_db(model_id)
 
         # Download OpenAPI spec
-        with httpx.Client() as httpx_client:
+        with httpx.Client(timeout=30.0) as httpx_client:  # Set timeout to 30 seconds
             response = httpx_client.get(my_model.openapi_url)  # type: ignore[arg-type]
             response.raise_for_status()
             openapi_spec = response.text

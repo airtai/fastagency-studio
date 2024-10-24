@@ -4,7 +4,7 @@ from uuid import UUID
 from asyncer import syncify
 from autogen.agentchat import AssistantAgent as AutoGenAssistantAgent
 from autogen.agentchat import ConversableAgent as AutoGenConversableAgent
-from fastagency.runtime.autogen.tools import WebSurferTool
+from fastagency.runtimes.autogen.tools import WebSurferTool
 from typing_extensions import TypeAlias
 
 from ..base import Field, Model

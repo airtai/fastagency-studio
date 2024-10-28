@@ -55,7 +55,9 @@ async def get_models_schemas() -> Schemas:
 
 async def validate_toolbox(toolbox: Toolbox) -> None:
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(
+            timeout=30.0
+        ) as client:  # Set timeout to 30 seconds
             resp = await client.get(toolbox.openapi_url)  # type: ignore[arg-type]
     except Exception as e:
         raise HTTPException(status_code=422, detail="OpenAPI URL is invalid") from e

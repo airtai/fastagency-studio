@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 def _make_request(
     url: str, headers: dict[str, str]
 ) -> Union[dict[str, Any], list[dict[str, Any]]]:
-    with httpx.Client() as httpx_client:
+    with httpx.Client(timeout=30.0) as httpx_client:  # Set timeout to 30 seconds
         response = httpx_client.get(url, headers=headers)  # type: ignore[arg-type]
         response.raise_for_status()
     ret_val = response.json()

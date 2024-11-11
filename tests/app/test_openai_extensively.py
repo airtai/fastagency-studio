@@ -336,7 +336,7 @@ class TestToolbox:
 
     @pytest.mark.asyncio
     async def test_validate_toolbox_with_yaml_openapi_spec(self) -> None:
-        invalid_url = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/examples/v3.0/petstore.yaml"
+        invalid_url = "https://raw.githubusercontent.com/OAI/learn.openapis.org/refs/heads/main/examples/v3.0/petstore.yaml"
 
         openapi_auth = OpenAPIAuth(
             name="openapi_auth_secret",
